@@ -1,14 +1,15 @@
 /*
- Copyright (c) 2023,
+ Copyright (c) 2019-2024,
  This library class was created by 0xFC963F18DC21 / Shots243
- It is part of an extension library for the game NullpoMino (copyright 2010-2023)
+ It is part of an extension library for the game NullpoMino (copyright 2010-2024)
 
- Kotlin converted and modified by Venom=Nhelv
+ Converted to Kotlin and modified by Venom_Nhelv as bluish-elvis
 
  Herewith shall the term "Library Creator" be given to 0xFC963F18DC21.
  Herewith shall the term "Game Creator" be given to the original creator of NullpoMino, NullNoname.
 
  THIS LIBRARY AND MODE PACK WAS NOT MADE IN ASSOCIATION WITH THE GAME CREATOR.
+ THIS KOTLIN VERSION WAS NOT MADE IN ASSOCIATION WITH THE LIBRARY CREATOR.
 
  Original Repository: https://github.com/Shots243/ModePile
 
@@ -36,19 +37,18 @@
 package zeroxfc.nullpo.custom.libs
 
 import mu.nu.nullpo.game.event.EventReceiver
-import mu.nu.nullpo.gui.common.libs.Vector
 import kotlin.random.Random
 
 /**
- * Create a text object that has its letters fly in from various points on the edges and stays in one spot.
- *
- * @param mainString   String to draw.
- * @param destinationX X-position of pixel of destination.
- * @param destinationY Y-position of pixel of destination.
- * @param flyInTime    Frames to fly in.
- * @param textColor    Text color.
- * @param textScale     Text scale (0.5f, 1.0f, 2.0f).
- * @param seed         Random seed for position.
+Create a text object that has its letters fly in from various points on the edges and stays in one spot.
+
+@param mainString   String to draw.
+@param destinationX X-position of pixel of destination.
+@param destinationY Y-position of pixel of destination.
+@param flyInTime    Frames to fly in.
+@param textColor    Text color.
+@param textScale     Text scale (0.5f, 1.0f, 2.0f).
+@param seed         Random seed for position.
  */
 class StaticFlyInText(private val mainString:String  // String to draw
 	, destinationX:Int, destinationY:Int, private val flyInTime:Int   // Timings
@@ -70,10 +70,10 @@ class StaticFlyInText(private val mainString:String  // String to draw
 		var sMod = 16
 		if(textScale==2.0f) sMod = 32
 		if(textScale==0.5f) sMod = 16
-		val position:List<Pair<Vector, Vector>> = (mainString.indices).map {i ->
+		val position:List<Pair<Vector, Vector>> = (mainString.indices).map { i ->
 			var startX = 0
 			var startY = 0
-			var position:Vector = Vector.zero()
+			var position: Vector = Vector.zero()
 			val dec1 = positionRandomizer.nextFloat()
 			val dec2 = positionRandomizer.nextFloat()
 			if(dec1<.5f) {

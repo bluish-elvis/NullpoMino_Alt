@@ -3,12 +3,13 @@
  This library class was created by 0xFC963F18DC21 / Shots243
  It is part of an extension library for the game NullpoMino (copyright 2010-2024)
 
- Kotlin converted and modified by Venom=Nhelv
+ Converted to Kotlin and modified by Venom_Nhelv as bluish-elvis
 
  Herewith shall the term "Library Creator" be given to 0xFC963F18DC21.
  Herewith shall the term "Game Creator" be given to the original creator of NullpoMino, NullNoname.
 
  THIS LIBRARY AND MODE PACK WAS NOT MADE IN ASSOCIATION WITH THE GAME CREATOR.
+ THIS KOTLIN VERSION WAS NOT MADE IN ASSOCIATION WITH THE LIBRARY CREATOR.
 
  Original Repository: https://github.com/Shots243/ModePile
 
@@ -56,10 +57,10 @@ import zeroxfc.nullpo.custom.libs.backgroundtypes.AnimatedBackgroundHook
 import kotlin.random.Random
 
 /**
- * SUBSCRIBER CHALLENGE Mode
- * Author ry00001
- *
- * Someone take IDEA away from me.
+SUBSCRIBER CHALLENGE Mode
+Author ry00001
+
+Someone take IDEA away from me.
  */
 class SubscriberChallenge:NetDummyMode() {
 	/** Most recent scoring event type  */

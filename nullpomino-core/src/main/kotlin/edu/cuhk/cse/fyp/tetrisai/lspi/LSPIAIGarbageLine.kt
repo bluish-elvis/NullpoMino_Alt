@@ -34,7 +34,7 @@ import mu.nu.nullpo.game.component.Piece
 import mu.nu.nullpo.game.play.GameEngine
 
 /**
- * CommonAI
+CommonAI
  */
 class LSPIAIGarbageLine:LSPIAI() {
 	override val name = "LSPI garbageLine"

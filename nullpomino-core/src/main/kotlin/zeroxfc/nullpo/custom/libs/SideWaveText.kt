@@ -1,14 +1,15 @@
 /*
- Copyright (c) 2023,
+ Copyright (c) 2019-2024,
  This library class was created by 0xFC963F18DC21 / Shots243
- It is part of an extension library for the game NullpoMino (copyright 2010-2023)
+ It is part of an extension library for the game NullpoMino (copyright 2010-2024)
 
- Kotlin converted and modified by Venom=Nhelv
+ Converted to Kotlin and modified by Venom_Nhelv as bluish-elvis
 
  Herewith shall the term "Library Creator" be given to 0xFC963F18DC21.
  Herewith shall the term "Game Creator" be given to the original creator of NullpoMino, NullNoname.
 
  THIS LIBRARY AND MODE PACK WAS NOT MADE IN ASSOCIATION WITH THE GAME CREATOR.
+ THIS KOTLIN VERSION WAS NOT MADE IN ASSOCIATION WITH THE LIBRARY CREATOR.
 
  Original Repository: https://github.com/Shots243/ModePile
 
@@ -37,21 +38,20 @@ package zeroxfc.nullpo.custom.libs
 
 import mu.nu.nullpo.game.event.EventReceiver
 import mu.nu.nullpo.game.play.GameEngine
-import mu.nu.nullpo.gui.common.libs.Vector
 import kotlin.math.PI
 import kotlin.math.sin
 
 /**
- * Creates a Super Collapse II-styled score popup that flies away.<br></br>
- * For now, drawing is manual.
- *
- * @param x           X-coordinate of center (?)
- * @param y           Y-coordinate of center (?)
- * @param frequency   Waving frequency
- * @param offsetWidth Max offset
- * @param text        Text to draw
- * @param big         Should it be float size?
- * @param largeClear  Should it flash and actually wave?
+Creates a Super Collapse II-styled score popup that flies away.<br></br>
+For now, drawing is manual.
+
+@param x           X-coordinate of center (?)
+@param y           Y-coordinate of center (?)
+@param frequency   Waving frequency
+@param offsetWidth Max offset
+@param text        Text to draw
+@param big         Should it be float size?
+@param largeClear  Should it flash and actually wave?
  */
 class SideWaveText(x:Int, y:Int, val frequency:Float, val offsetWidth:Float, val text:String, val big:Boolean, val largeClear:Boolean) {
 	var position = Vector(x, y)

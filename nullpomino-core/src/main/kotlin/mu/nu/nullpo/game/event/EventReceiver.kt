@@ -1,7 +1,9 @@
 /*
  Copyright (c) 2010-2024, NullNoname
- Kotlin converted and modified by Venom=Nhelv.
- THIS WAS NOT MADE IN ASSOCIATION WITH THE GAME CREATOR.
+ All rights reserved.
+
+ Converted to Kotlin and modified by Venom_Nhelv as bluish-elvis
+ THIS IS NOT MADE IN ASSOCIATION WITH THE GAME CREATOR.
 
  Redistribution and use in source and binary forms, with or without
  modification, are permitted provided that the following conditions are met:

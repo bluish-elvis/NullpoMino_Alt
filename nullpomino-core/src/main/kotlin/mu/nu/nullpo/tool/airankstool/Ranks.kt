@@ -1,30 +1,32 @@
 /*
- * Copyright (c) 2010-2022, NullNoname
- * Kotlin converted and modified by Venom=Nhelv.
- * THIS WAS NOT MADE IN ASSOCIATION WITH THE GAME CREATOR.
- *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions are met:
- *     * Redistributions of source code must retain the above copyright
- *       notice, this list of conditions and the following disclaimer.
- *     * Redistributions in binary form must reproduce the above copyright
- *       notice, this list of conditions and the following disclaimer in the
- *       documentation and/or other materials provided with the distribution.
- *     * Neither the name of NullNoname nor the names of its
- *       contributors may be used to endorse or promote products derived from
- *       this software without specific prior written permission.
- *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
- * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
- * ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
- * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
- * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
- * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
- * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
- * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
- * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
- * POSSIBILITY OF SUCH DAMAGE.
+ Copyright (c) 2010-2024, NullNoname
+ All rights reserved.
+
+ Converted to Kotlin and modified by Venom_Nhelv as bluish-elvis
+ THIS IS NOT MADE IN ASSOCIATION WITH THE GAME CREATOR.
+
+ Redistribution and use in source and binary forms, with or without
+ modification, are permitted provided that the following conditions are met:
+     * Redistributions of source code must retain the above copyright
+       notice, this list of conditions and the following disclaimer.
+     * Redistributions in binary form must reproduce the above copyright
+       notice, this list of conditions and the following disclaimer in the
+       documentation and/or other materials provided with the distribution.
+     * Neither the name of NullNoname nor the names of its
+       contributors may be used to endorse or promote products derived from
+       this software without specific prior written permission.
+
+ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
+ LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ POSSIBILITY OF SUCH DAMAGE.
  */
 
 package mu.nu.nullpo.tool.airankstool
@@ -147,10 +149,10 @@ class Ranks:java.io.Serializable {
 
 	fun scaleRanks() {
 		/* int pas =(Integer.MAX_VALUE-rankMin)/4;
- * int n1=0;
- * int n2=0;
- * int n3=0;
- * int n4=0; */
+int n1=0;
+int n2=0;
+int n3=0;
+int n4=0; */
 
 		for(i in 0..<size) {
 			var newValue = (ranks[i]-rankMin).toLong()*(Integer.MAX_VALUE-rankMin).toLong()
@@ -159,17 +161,17 @@ class Ranks:java.io.Serializable {
 			newValue = maxOf(minOf(newValue, (Integer.MAX_VALUE-rankMin).toLong()), 0)
 			newValue += rankMin
 			/* if (newValue/pas==0){
- * n1++;
- * }
- * if (newValue/pas==1){
- * n2++;
- * }
- * if (newValue/pas==2){
- * n3++;
- * }
- * if (newValue/pas==3){
- * n4++;
- * } */
+n1++;
+}
+if (newValue/pas==1){
+n2++;
+}
+if (newValue/pas==2){
+n3++;
+}
+if (newValue/pas==3){
+n4++;
+} */
 			ranks[i] = newValue.toInt()
 		}
 		//System.out.println("n1 = "+n1+" n2 = "+n2+" n3 = "+n3+" n4 = "+n4);

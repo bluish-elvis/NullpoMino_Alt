@@ -1,14 +1,15 @@
 /*
- Copyright (c) 2023,
+ Copyright (c) 2019-2024,
  This library class was created by 0xFC963F18DC21 / Shots243
- It is part of an extension library for the game NullpoMino (copyright 2010-2023)
+ It is part of an extension library for the game NullpoMino (copyright 2010-2024)
 
- Kotlin converted and modified by Venom=Nhelv
+ Converted to Kotlin and modified by Venom_Nhelv as bluish-elvis
 
  Herewith shall the term "Library Creator" be given to 0xFC963F18DC21.
  Herewith shall the term "Game Creator" be given to the original creator of NullpoMino, NullNoname.
 
  THIS LIBRARY AND MODE PACK WAS NOT MADE IN ASSOCIATION WITH THE GAME CREATOR.
+ THIS KOTLIN VERSION WAS NOT MADE IN ASSOCIATION WITH THE LIBRARY CREATOR.
 
  Original Repository: https://github.com/Shots243/ModePile
 
@@ -42,18 +43,18 @@ import mu.nu.nullpo.game.play.GameEngine
 import java.util.Random
 
 /**
- * Deletes blocks with any of the colors in the given array.
- *
- * @param colors Colors to erase
- * @return int[]; Amount of blocks of each color erased
+Deletes blocks with any of the colors in the given array.
+
+@param colors Colors to erase
+@return int[]; Amount of blocks of each color erased
  */
 fun Field.delColors(colors:Array<Block.COLOR>, dir:Boolean = true) = colors.map {delColor(it, dir)}
 /**
- * Deletes all blocks of a certain color on a field.
- *
- * @param color Color to erase
- * @param dir if false, block marked will be erased but not now
- * @return int; Amount of blocks erased
+Deletes all blocks of a certain color on a field.
+
+@param color Color to erase
+@param dir if false, block marked will be erased but not now
+@return int; Amount of blocks erased
  */
 fun Field.delColor(color:Block.COLOR, dir:Boolean = true):Int =
 	findBlocks {it.color==color}.entries.sumOf {(y, row) ->
@@ -63,11 +64,11 @@ fun Field.delColor(color:Block.COLOR, dir:Boolean = true):Int =
 	}
 
 /**
- * Erases a mino in every filled line on a field. Displays the blockbreak effect.
- *
- * @param receiver EventReceiver instance to display blockbreak effect on.
- * @param engine   Current GameEngine
- * @param random   Random instance to use
+Erases a mino in every filled line on a field. Displays the blockbreak effect.
+
+@param receiver EventReceiver instance to display blockbreak effect on.
+@param engine   Current GameEngine
+@param random   Random instance to use
  */
 fun Field.shotgunField(random:Random, receiver:EventReceiver? = null, engine:GameEngine? = null) {
 	(hiddenHeight*-1..<height).associateWith {y ->
@@ -77,20 +78,20 @@ fun Field.shotgunField(random:Random, receiver:EventReceiver? = null, engine:Gam
 	}
 }
 /**
- *
- * Randomises the column order in a field.
- * Requires a random seed. For consistency, try `(engine.randSeed + engine.statistics.time)`.
- *
- * @param seed  Random seed
+
+Randomises the column order in a field.
+Requires a random seed. For consistency, try `(engine.randSeed + engine.statistics.time)`.
+
+@param seed  Random seed
  */
 fun Field.shuffleColumns(seed:Long) = shuffleColumns(Random(seed))
 
 /**
- *
- * Randomises the column order in a field.
- * Requires a pre-instantiated `ArrayRandomizer` instance.
- *
- * @param randomizer Randomizer instance
+
+Randomises the column order in a field.
+Requires a pre-instantiated `ArrayRandomizer` instance.
+
+@param randomizer Randomizer instance
  */
 fun Field.shuffleColumns(randomizer:Random) {
 	val columns = List(width) {it}.shuffled(randomizer)
@@ -99,24 +100,24 @@ fun Field.shuffleColumns(randomizer:Random) {
 	replace(nf)
 }
 /**
- *
- * Randomises the row order in a field.
- * Requires a random seed. For consistency, try `(engine.randSeed + engine.statistics.time)`.
- *
- * @param seed       Random seed
- * @param highestRow Highest row randomised (0 = top visible), recommended / default is >= 2 (inclusive)
- * @param lowestRow  Lowest row randomised (inclusive)
+
+Randomises the row order in a field.
+Requires a random seed. For consistency, try `(engine.randSeed + engine.statistics.time)`.
+
+@param seed       Random seed
+@param highestRow Highest row randomised (0 = top visible), recommended / default is >= 2 (inclusive)
+@param lowestRow  Lowest row randomised (inclusive)
  */
 fun Field.shuffleRows(seed:Long, highestRow:Int = 2, lowestRow:Int = height-1) =
 	shuffleRows(Random(seed), highestRow, lowestRow)
 /**
- *
- * Randomises the row order in a field.
- * Requires a pre-instantiated `ArrayRandomizer` instance.
- *
- * @param randomizer Randomizer instance
- * @param highestRow      Highest row randomised (0 = top visible), recommended / default is >= 2 (inclusive)
- * @param lowestRow       Lowest row randomised (inclusive)
+
+Randomises the row order in a field.
+Requires a pre-instantiated `ArrayRandomizer` instance.
+
+@param randomizer Randomizer instance
+@param highestRow      Highest row randomised (0 = top visible), recommended / default is >= 2 (inclusive)
+@param lowestRow       Lowest row randomised (inclusive)
  */
 fun Field.shuffleRows(randomizer:Random, highestRow:Int = 2, lowestRow:Int = height-1) {
 	if(highestRow<hiddenHeight*-1||highestRow>=hiddenHeight) return
@@ -127,19 +128,19 @@ fun Field.shuffleRows(randomizer:Random, highestRow:Int = 2, lowestRow:Int = hei
 	replace(nf)
 }
 /**
- *
- * Compares two fields and calculates the percentage maps between them. Useful for "build shape modes".
- *
- *
- *
- * NOTE: BOTH FIELDS MUST HAVE THE SAME DIMENSIONS IF USING `exact` MATCHING MODE!
- *
- * NOTE: If using non-`exact` matching, `Field b` is used as the comparator where the percentage reflects how much of `a` is the same as `b`.
- *
- * @param b           A field to compare field with.
- * @param exact       Exact matching (also takes into account absolute block positions)?
- * @param colorMatch Exact color matching (halves match value of non-color matches)?
- * @return A double that denotes the proportion of match between the fields (0 <= value <= 1).
+
+Compares two fields and calculates the percentage maps between them. Useful for "build shape modes".
+
+
+
+NOTE: BOTH FIELDS MUST HAVE THE SAME DIMENSIONS IF USING `exact` MATCHING MODE!
+
+NOTE: If using non-`exact` matching, `Field b` is used as the comparator where the percentage reflects how much of `a` is the same as `b`.
+
+@param b           A field to compare field with.
+@param exact       Exact matching (also takes into account absolute block positions)?
+@param colorMatch Exact color matching (halves match value of non-color matches)?
+@return A double that denotes the proportion of match between the fields (0 <= value <= 1).
  */
 @JvmOverloads fun Field.compare(b:Field, exact:Boolean = false, colorMatch:Boolean = false):Double {
 	val a = this
@@ -345,25 +346,25 @@ fun gcd(a:Int, b:Int):Int = if(a==0) b else gcd(b%a, a)
 // Method to return LCM of two numbers
 fun lcm(a:Int, b:Int):Int = a*b/gcd(a, b)
 /**
- * Gets the number of empty blocks inside the field.
- *
- * @return Number of empty spaces inside (including in hidden height and clear queued line)
+Gets the number of empty blocks inside the field.
+
+@return Number of empty spaces inside (including in hidden height and clear queued line)
  */
 val Field.getNumberOfEmptySpaces:Int
 	get() = (hiddenHeight*-1..<heightWithoutHurryupFloor).sumOf {
 		getRow(it).count {b -> b?.isEmpty ?: true||getLineFlag(it)}
 	}
 /**
- * Gets the coordinates of the top-left and the bottom-right of the smallest bounding square that covers all blocks in the field.
- *
- * @return int[2][2] result: result[0] = top left, result[1] = bottom right. result[i][0] = x, result[i][1] = y.
+Gets the coordinates of the top-left and the bottom-right of the smallest bounding square that covers all blocks in the field.
+
+@return int[2][2] result: result[0] = top left, result[1] = bottom right. result[i][0] = x, result[i][1] = y.
  */
 val Field.opposingCornerCoords
 	get() = listOf(listOf(getLeftMostColumn, highestBlockY), listOf(getRightMostColumn, getBottomMostRow))
 /**
- * Gets the size of the smallest bounding box that covers all blocks in the field.
- *
- * @return int[] results: results[0] = x, results[1] = y.
+Gets the size of the smallest bounding box that covers all blocks in the field.
+
+@return int[] results: results[0] = x, results[1] = y.
  */
 val Field.opposingCornerBoxSize
 	get() = opposingCornerCoords.let {bbox ->
@@ -373,27 +374,27 @@ val Field.opposingCornerBoxSize
 		else listOf(i, j)
 	}
 /**
- * Gets the x coordinate of the left-most filled column a field.
- *
- * @return int; x coordinate
+Gets the x coordinate of the left-most filled column a field.
+
+@return int; x coordinate
  */
 val Field.getLeftMostColumn:Int
 	get() = (0..<width).firstOrNull {x ->
 		(-1*hiddenHeight..<height).any {y -> !getBlockEmpty(x, y)}
 	} ?: (width-1)
 /**
- * Gets the x coordinate of the right-most filled column a field.
- *
- * @return int; x coordinate
+Gets the x coordinate of the right-most filled column a field.
+
+@return int; x coordinate
  */
 val Field.getRightMostColumn:Int
 	get() = (width-1 downTo 0).firstOrNull {x ->
 		(-1*hiddenHeight..<height).any {y -> !getBlockEmpty(x, y)}
 	} ?: 0
 /**
- * Gets the y coordinate of the bottom-most filled row in a field.
- *
- * @return int; y coordinate
+Gets the y coordinate of the bottom-most filled row in a field.
+
+@return int; y coordinate
  */
 val Field.getBottomMostRow:Int
 	get() = (height-1 downTo -1*hiddenHeight).firstOrNull {y ->
