@@ -29,52 +29,60 @@
  POSSIBILITY OF SUCH DAMAGE.
  */
 
-package mu.nu.nullpo.gui.common.bg
+package mu.nu.nullpo.gui.common.bg.dtet
 
-import mu.nu.nullpo.gui.common.AbstractRenderer
-import mu.nu.nullpo.gui.common.ResourceImage
+class BGALExTrans<T>(bg:mu.nu.nullpo.gui.common.ResourceImage<T>):mu.nu.nullpo.gui.common.bg.AbstractBG<T>(bg) {
+	companion object {
+		var TTick = 0
+			set(value) {
+				field = value%80
+			}
+	}
 
-class DTET12Rush<T>(bg:ResourceImage<T>):AbstractBG<T>(bg) {
-	private var tickY = 0f
 	override fun update() {
-		tick -= 73
-		if(tick<0) tick += 640
-		tickY -= 72+(speed)
-		if(tickY<0) tickY += 480
+		tick = ++TTick
 	}
 
 	override fun reset() {
 		tick = 0
-		tickY = 0f
 	}
 
-	override fun draw(render: AbstractRenderer) {
-		val tickX = tick.toFloat()
-		img.draw(0f, 0f, tickX, tickY, 640f, 480f)
-		img.draw(640f-tickX, 0f, 0f, tickY, tickX, 480f)
-		img.draw(0f, 480f-tickY, tickX, 0f, 640f, tickY)
-		img.draw(640f-tickX, 480f-tickY, 0f, 0f, tickX, tickY)
+	override fun draw(render:mu.nu.nullpo.gui.common.AbstractRenderer) {
+		val x = minOf(640f, (speed.toInt()*40f*((8-tick*3)%8)).let {it+if(it<0) 640 else 0}%640)
+		val y = minOf(480f, ((1-speed)*tick*5).let {it+if(it<0) 480 else 0}%480)
+		/*With LdG
+.X = TrM * 40 * (8 - ((FAC * 3) Mod 8))
+.Y = (1 - TrM) * FAC * 5: If .Y < 0 Then .Y = .Y + 480
+End With*/
+		img.draw(0f, -80f, x, y, 640f, 320f)
+		img.draw(0f, 240f, x, y, 640f, 320f)
+		img.draw(640-x, -80f, 0f, y, x, 320f)
+		img.draw(640-x, 240f, 0f, y, x, 320f)
+		img.draw(0f, 240-y, x, 0f, 640f, y)
+		img.draw(0f, 560-y, x, 0f, 640f, y)
+		img.draw(640-x, 240-y, 0f, 0f, x, y)
+		img.draw(640-x, 560-y, 0f, 0f, x, y)
 	}
 }
-/*Case 11 'レベル200（電流）
-With EdG
-.X = .X - 73: If .X < 0 Then .X = .X + 640
-.Y = .Y - 72 - TA * 6: If .Y < 0 Then .Y = .Y + 480
-End With
+/*Case 13 'レベルMAX
 With Src
-.Left = EdG.X: .Top = EdG.Y: .Right = 640: .Bottom = 480
+.Left = LdG.X: .Top = LdG.Y: .Right = 640: .Bottom = 320
 End With
-If Not FS Then BBSf.BltFast 0, 0, BGSf, Src, DDBLTFAST_WAIT
+BltClip 0, -80, BGSf, Src, DDBLTFAST_WAIT
+BltClip 0, 240, BGSf, Src, DDBLTFAST_WAIT
 With Src
-.Left = 0: .Top = EdG.Y: .Right = EdG.X: .Bottom = 480
+.Left = 0: .Top = LdG.Y: .Right = LdG.X: .Bottom = 320
 End With
-If Not FS Then BBSf.BltFast 640 - EdG.X, 0, BGSf, Src, DDBLTFAST_WAIT
+BltClip 640 - LdG.X, -80, BGSf, Src, DDBLTFAST_WAIT
+BltClip 640 - LdG.X, 240, BGSf, Src, DDBLTFAST_WAIT
 With Src
-.Left = EdG.X: .Top = 0: .Right = 640: .Bottom = EdG.Y
+.Left = LdG.X: .Top = 0: .Right = 640: .Bottom = LdG.Y
 End With
-If Not FS Then BBSf.BltFast 0, 480 - EdG.Y, BGSf, Src, DDBLTFAST_WAIT
+BltClip 0, 240 - LdG.Y, BGSf, Src, DDBLTFAST_WAIT
+BltClip 0, 560 - LdG.Y, BGSf, Src, DDBLTFAST_WAIT
 With Src
-.Left = 0: .Top = 0: .Right = EdG.X: .Bottom = EdG.Y
+.Left = 0: .Top = 0: .Right = LdG.X: .Bottom = LdG.Y
 End With
-If Not FS Then BBSf.BltFast 640 - EdG.X, 480 - EdG.Y, BGSf, Src, DDBLTFAST_WAIT
+BltClip 640 - LdG.X, 240 - LdG.Y, BGSf, Src, DDBLTFAST_WAIT
+BltClip 640 - LdG.X, 560 - LdG.Y, BGSf, Src, DDBLTFAST_WAIT
 */

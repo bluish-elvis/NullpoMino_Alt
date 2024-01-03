@@ -29,15 +29,14 @@
  POSSIBILITY OF SUCH DAMAGE.
  */
 
-package mu.nu.nullpo.gui.common.bg
+package mu.nu.nullpo.gui.common.bg.dtet
 
-import mu.nu.nullpo.gui.common.AbstractRenderer
-import mu.nu.nullpo.gui.common.ResourceImage
 import kotlin.math.cos
 import kotlin.math.sin
 import kotlin.random.Random
 
-class DTET03NightClock<T>(img:ResourceImage<T>, private val bg:Boolean = true):AbstractBG<T>(img) {
+class BGADNightClock<T>(img:mu.nu.nullpo.gui.common.ResourceImage<T>, private val bg:Boolean = true):
+	mu.nu.nullpo.gui.common.bg.AbstractBG<T>(img) {
 	/*'（キラキラ振り子）
 FSX = Rnd * 640
 FC = 140: FX = 0: FY = 0
@@ -61,14 +60,14 @@ Next I*/
 			x += vx
 			y += vy
 			/* For I = 0 To 35
-			 * With Kr(I)
-			 * If .V Then
-			 * .A = .A + 1 + (.A >= 5) * 6
-			 * .YY = .YY - 0.1
-			 * .X = .X + .XX: .Y = .Y + .YY
-			 * End If
-			 * End With
-			 * Next I*/
+With Kr(I)
+If .V Then
+.A = .A + 1 + (.A >= 5) * 6
+.YY = .YY - 0.1
+.X = .X + .XX: .Y = .Y + .YY
+End If
+End With
+Next I*/
 		}
 
 		fun reset(fx:Float, fy:Float) {
@@ -116,7 +115,7 @@ FX = Sin(Sin(FC * Rg) * 35 * Rg): FY = Cos(Sin(FC * Rg) * 35 * Rg)
 KrI = KrI + 1 + (KrI = 35) * 36*/
 	}
 
-	override fun draw(render:AbstractRenderer) {
+	override fun draw(render:mu.nu.nullpo.gui.common.AbstractRenderer) {
 		if(bg) {
 			img.draw(0f, 0f, bx, 0f, 640f, 240f)
 			img.draw(0f, 240f, bx, 0f, 640f, 240f)
@@ -126,14 +125,13 @@ KrI = KrI + 1 + (KrI = 35) * 36*/
 		children.filter {it.tick>=0}.forEach {
 			val sx = 16f+it.tick*16
 			img.draw(it.x+Random.nextFloat()*20-10, it.y+Random.nextFloat()*20-10, sx, 368f, sx+16, 384f)
-			/*
-			 * For I = 0 To 35
-			 * If Kr(I).V Then
-			 * With Src
-			 * .Left = 16 + Kr(I).A * 16: .Top = 368: .Right = .Left + 16: .Bottom = .Top + 16
-			 * End With
-			 * BltClip Kr(I).X + (Rnd * 20 - 10) * TrM, Kr(I).Y + (Rnd * 20 - 10) * TrM, BGSf, Src, DDBLTFAST_SRCCOLORKEY Or DDBLTFAST_WAIT
-			 * End If
+			/* For I = 0 To 35
+If Kr(I).V Then
+With Src
+.Left = 16 + Kr(I).A * 16: .Top = 368: .Right = .Left + 16: .Bottom = .Top + 16
+End With
+BltClip Kr(I).X + (Rnd * 20 - 10) * TrM, Kr(I).Y + (Rnd * 20 - 10) * TrM, BGSf, Src, DDBLTFAST_SRCCOLORKEY Or DDBLTFAST_WAIT
+End If
 			 */
 
 		}

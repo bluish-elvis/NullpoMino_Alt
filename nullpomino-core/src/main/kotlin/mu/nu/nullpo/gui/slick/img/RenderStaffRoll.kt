@@ -31,25 +31,6 @@
 
 package mu.nu.nullpo.gui.slick.img
 
-import mu.nu.nullpo.gui.common.BaseStaffRoll
-import mu.nu.nullpo.gui.common.ResourceImage
-import mu.nu.nullpo.gui.slick.ResourceHolder
-import mu.nu.nullpo.gui.slick.ResourceImageSlick
-import mu.nu.nullpo.gui.slick.drawImage
-import org.newdawn.slick.Graphics
-import org.newdawn.slick.Image
-
-object RenderStaffRoll:BaseStaffRoll<Image>() {
-	val BG:Graphics get() = bufI.res.graphics
-	override val bufI:ResourceImage<Image> = ResourceImageSlick(Image(super.width, super.height))
-	override val width get() = bufI?.width ?: super.width
-	override val height get() = bufI?.height ?: super.height
-
-	init {
-		super.init()
-	}
-
-	override fun drawBuf(dx:Float, dy:Float, dw:Float, dh:Float, sx:Float, sy:Float, sw:Float, sh:Float) {
-		BG.drawImage(ResourceHolder.imgFontNano, dx, dy, dw, dh, sx, sy, sw, sh)
-	}
+object RenderStaffRoll:mu.nu.nullpo.gui.common.BaseStaffRoll() {
+	override val img = FontNano.getImg(0)
 }

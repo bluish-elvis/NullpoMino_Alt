@@ -29,16 +29,15 @@
  POSSIBILITY OF SUCH DAMAGE.
  */
 
-package mu.nu.nullpo.gui.common.bg
+package mu.nu.nullpo.gui.common.bg.dtet
 
-import mu.nu.nullpo.gui.common.AbstractRenderer
-import mu.nu.nullpo.gui.common.ResourceImage
 import kotlin.math.cos
 import kotlin.math.sin
 import kotlin.random.Random
 
-class DTET07Beams<T>(res:ResourceImage<T>, private val bg:Boolean = true):AbstractBG<T>(res) {
-	/*'（レーザー）
+class BGAHBeams<T>(res:mu.nu.nullpo.gui.common.ResourceImage<T>, private val bg:Boolean = true):
+	mu.nu.nullpo.gui.common.bg.AbstractBG<T>(res) {
+	/*（レーザー）
 LsrSY = Rnd * 240
 For I = 0 To 59
 If (I Mod 3) = 0 Then
@@ -133,7 +132,7 @@ Next I*/
 		children.forEach {it.reset()}
 	}
 
-	override fun draw(render:AbstractRenderer) {
+	override fun draw(render:mu.nu.nullpo.gui.common.AbstractRenderer) {
 		if(bg) {
 			img.draw(0f, 0f, 0f, 480-by, 640f, 480f)
 			img.draw(0f, by, 0f, 240f, 640f, 480f)

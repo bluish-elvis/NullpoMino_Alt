@@ -29,47 +29,49 @@
  POSSIBILITY OF SUCH DAMAGE.
  */
 
-package mu.nu.nullpo.gui.common.bg
+package mu.nu.nullpo.gui.common.bg.dtet
 
-import mu.nu.nullpo.gui.common.AbstractRenderer
-import mu.nu.nullpo.gui.common.ResourceImage
-import kotlin.math.sin
-
-class DTET10VWave<T>(bg:ResourceImage<T>):AbstractBG<T>(bg) {
-	//	val sc get() = ((1+sin(this.bg.rotation*PI/180)/3)*1024f/minOf(this.bg.width, this.bg.height)).toFloat()
-//	val cx get() = this.bg.width/2*sc
-//	val cy get() = this.bg.height/2*sc
-	private var t = 0f
-	override var tick:Int
-		get() = t.toInt()
-		set(value) {
-			t = value.toFloat()
-		}
-
+class BGAMRush<T>(bg:mu.nu.nullpo.gui.common.ResourceImage<T>):mu.nu.nullpo.gui.common.bg.AbstractBG<T>(bg) {
+	private var tickY = 0f
 	override fun update() {
-		t += 1+speed
-//		bg.rotation = t*.04f
-//		bg.setCenterOfRotation(cx, cy)
-		while(t>=360/.04f) t -= 360
+		tick -= 73
+		if(tick<0) tick += 640
+		tickY -= 72+(speed)
+		if(tickY<0) tickY += 480
 	}
 
 	override fun reset() {
 		tick = 0
+		tickY = 0f
 	}
 
-	override fun draw(render: AbstractRenderer) {
-		for(i in 0..59) {
-			val y = 30f+i*7+sin((t*1.7f+i*6)*RG)*28
-			img.draw(0f, i*8f, 0f, y, 640f, y+8)
-		}
+	override fun draw(render:mu.nu.nullpo.gui.common.AbstractRenderer) {
+		val tickX = tick.toFloat()
+		img.draw(0f, 0f, tickX, tickY, 640f, 480f)
+		img.draw(640f-tickX, 0f, 0f, tickY, tickX, 480f)
+		img.draw(0f, 480f-tickY, tickX, 0f, 640f, tickY)
+		img.draw(640f-tickX, 480f-tickY, 0f, 0f, tickX, tickY)
 	}
 }
-/*
-For I = 0 To 59
-With Src
-.Left = 0: .Top = 30 + I * 7 + Sin((Spa + I * 6) * Rg) * 28: .Right = .Left + 640: .Bottom = .Top + 8
+/*Case 11 'レベル200（電流）
+With EdG
+.X = .X - 73: If .X < 0 Then .X = .X + 640
+.Y = .Y - 72 - TA * 6: If .Y < 0 Then .Y = .Y + 480
 End With
-If Not FS Then BBSf.BltFast 0, I * 8, BGSf, Src, DDBLTFAST_WAIT
-Next I
-Spa = Spa + 1 + Lev * 0.03: If Spa >= 360 Then Spa = Spa - 360
+With Src
+.Left = EdG.X: .Top = EdG.Y: .Right = 640: .Bottom = 480
+End With
+If Not FS Then BBSf.BltFast 0, 0, BGSf, Src, DDBLTFAST_WAIT
+With Src
+.Left = 0: .Top = EdG.Y: .Right = EdG.X: .Bottom = 480
+End With
+If Not FS Then BBSf.BltFast 640 - EdG.X, 0, BGSf, Src, DDBLTFAST_WAIT
+With Src
+.Left = EdG.X: .Top = 0: .Right = 640: .Bottom = EdG.Y
+End With
+If Not FS Then BBSf.BltFast 0, 480 - EdG.Y, BGSf, Src, DDBLTFAST_WAIT
+With Src
+.Left = 0: .Top = 0: .Right = EdG.X: .Bottom = EdG.Y
+End With
+If Not FS Then BBSf.BltFast 640 - EdG.X, 480 - EdG.Y, BGSf, Src, DDBLTFAST_WAIT
 */

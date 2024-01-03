@@ -30,14 +30,11 @@
  */
 package mu.nu.nullpo.gui.slick.img
 
-import mu.nu.nullpo.gui.common.BaseFontNano
-import mu.nu.nullpo.gui.common.ResourceImage
 import mu.nu.nullpo.gui.slick.NullpoMinoSlick
 import mu.nu.nullpo.gui.slick.ResourceHolder
 
 /** 普通の文字列の表示クラス */
-object FontNano:BaseFontNano() {
-	override val rainbowCount:Int get() = NullpoMinoSlick.rainbow
-	override fun getImg(i:Int):ResourceImage<*> = ResourceHolder.imgFontNano
-
+object FontNano:mu.nu.nullpo.gui.common.BaseFontNano() {
+	override val rainbowCount get() = NullpoMinoSlick.rainbow
+	override fun getImg(i:Int) = ResourceHolder.imgFontNano
 }

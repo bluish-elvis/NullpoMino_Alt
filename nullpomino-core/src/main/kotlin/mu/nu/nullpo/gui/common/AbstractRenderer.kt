@@ -184,7 +184,7 @@ abstract class AbstractRenderer:EventReceiver() {
 
 	protected abstract fun drawBG(engine:GameEngine)
 	protected abstract fun drawFrameSpecific(x:Float, y:Float, engine:GameEngine)
-	private fun drawFrame(x:Float, y:Float, engine:GameEngine) {
+	private fun drawFrame(x:Float, y:Float, engine:GameEngine,inside:()->Unit) {
 		// Upと下
 		val s = engine.blockSize
 		val fieldW = engine.field.width// ?: Field.DEFAULT_WIDTH
@@ -250,6 +250,7 @@ abstract class AbstractRenderer:EventReceiver() {
 				img.draw(lX, tY, rX, bY, 0f, 0f, 0f+fW, 0f+fH, fieldBgBright)
 			} else if(showBG) drawRect(lX, tY, 0f+fW, 0f+fH, 0, fieldBgBright)
 
+		inside()
 		drawFrameSpecific(x, y, engine)
 
 		when(engine.frameColor) {
@@ -961,7 +962,7 @@ abstract class AbstractRenderer:EventReceiver() {
 		drawBlock(x, y, engine.mapEditColor, engine.skin, false, bright, 1f, 1f)
 	}
 	/* 各 frame 最初の描画処理 */
-	override fun renderFirst(engine:GameEngine) {
+	override fun renderFirst(engine:GameEngine, inside:()->Unit) {
 		if(engine.playerID==0)
 			drawBG(engine)
 
@@ -970,7 +971,7 @@ abstract class AbstractRenderer:EventReceiver() {
 			val offsetX = engine.fX
 			val offsetY = engine.fY
 
-			drawFrame(offsetX, offsetY, engine)
+			drawFrame(offsetX, offsetY, engine,inside)
 			engine.statc.forEachIndexed {i, it ->
 				printFontSpecific(offsetX-20, offsetY+i*8, "%3d".format(it), BaseFont.FONT.NANO, COLOR.WHITE, .5f, .5f)
 			}

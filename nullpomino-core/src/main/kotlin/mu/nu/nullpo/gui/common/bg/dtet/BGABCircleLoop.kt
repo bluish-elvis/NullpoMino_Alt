@@ -29,32 +29,48 @@
  POSSIBILITY OF SUCH DAMAGE.
  */
 
-package mu.nu.nullpo.gui.common.bg
+package mu.nu.nullpo.gui.common.bg.dtet
 
-import mu.nu.nullpo.gui.common.AbstractRenderer
-import mu.nu.nullpo.gui.common.ResourceImage
-import zeroxfc.nullpo.custom.libs.Vector
+import kotlin.math.cos
+import kotlin.math.sin
 import kotlin.random.Random
 
-class DTET06Texture<T>(bg:ResourceImage<T>):AbstractBG<T>(bg) {
+class BGABCircleLoop<T>(bg:mu.nu.nullpo.gui.common.ResourceImage<T>):mu.nu.nullpo.gui.common.bg.AbstractBG<T>(bg) {
+	/* (アルファベット)
+	With ABG
+	.R = Rnd * 360: .R2 = Rnd * 360: .X = Rnd * 640: .Y = Rnd * 480
+	End With*/
+	private var r = Random.nextFloat()*360
+	private var r2 = Random.nextFloat()*360
 	private var x = Random.nextFloat()*640
 	private var y = Random.nextFloat()*480
 	override fun update() {
-		val v = Vector(16f, speed, true)
-		x += v.x
-		y += v.y
-		if(x<0) x += 640
-		if(x>=640) x -= 640
-		if(y<0) y += 480
-		if(y>=480) y -= 480
+		x += sin(r*RG)*(2+speed*2.7f)
+		y -= cos(r*RG)*(2+speed*2.7f)
+		while(x<0) x += 640
+		while(x>=640) x -= 640
+		while(y<0) y += 480
+		while(y>=480) y -= 480
+		r += .075f+speed*.007f
+		if(speed>1) {
+			r -= minOf(1f, speed-1)*.5f*(1+sin(r2*RG)*.6f)
+			while(r<0) r += 360
+			while(r>=360) r -= 360
+			r2 += (speed-1)*1.3f
+			while(r2<0) r2 += 360
+			while(r2>=360) r2 -= 360
+		}
+
 	}
 
 	override fun reset() {
+		r = Random.nextFloat()*360
+		r2 = Random.nextFloat()*360
 		x = Random.nextFloat()*640
 		y = Random.nextFloat()*480
 	}
 
-	override fun draw(render: AbstractRenderer) {
+	override fun draw(render:mu.nu.nullpo.gui.common.AbstractRenderer) {
 		img.draw(0f, 0f, x, y, 640f, 480f)
 		img.draw(640-x, 0f, 0f, y, x, 480f)
 		img.draw(0f, 480-y, x, 0f, 640f, y)
@@ -62,32 +78,49 @@ class DTET06Texture<T>(bg:ResourceImage<T>):AbstractBG<T>(bg) {
 
 	}
 }
-
-/*
-Case 6 '（カーペット）
-With CptG
-If TrM = 0 Then .X = .X - 16: .Y = .Y + 1
-If TrM = 1 Then .Y = .Y - 15
-If TrM = 2 Then .X = .X - 16: .Y = .Y + 15
+/*Case 1 '（アルファベット）
+With ABG
+.X = .X + Sin(.R * Rg) * (3 + TrM * 5): .Y = .Y - Cos(.R * Rg) * (3 + TrM * 5)
 If .X < 0 Then .X = .X + 640
 If .X >= 640 Then .X = .X - 640
 If .Y < 0 Then .Y = .Y + 480
 If .Y >= 480 Then .Y = .Y - 480
+.R = .R + 0.06 + TrM * 0.02 - (TrM >= 2) * (1 + Sin(.R2 * Rg)) * 0.6
+If .R >= 360 Then .R = .R - 360
+If .R < 0 Then .R = .R + 360
+If TrM >= 2 Then .R2 = .R2 + 2.2: If .R2 >= 360 Then .R2 = .R2 - 360
 End With
 With Src
-.Left = CptG.X: .Top = CptG.Y: .Right = 640: .Bottom = 480
+.Left = ABG.X: .Top = ABG.Y: .Right = 640: .Bottom = 480
 End With
 If Not FS Then BBSf.BltFast 0, 0, BGSf, Src, DDBLTFAST_WAIT
 With Src
-.Left = 0: .Top = CptG.Y: .Right = CptG.X: .Bottom = 480
+.Left = 0: .Top = ABG.Y: .Right = ABG.X: .Bottom = 480
 End With
-If Not FS Then BBSf.BltFast 640 - CptG.X, 0, BGSf, Src, DDBLTFAST_WAIT
+If Not FS Then BBSf.BltFast 640 - ABG.X, 0, BGSf, Src, DDBLTFAST_WAIT
 With Src
-.Left = CptG.X: .Top = 0: .Right = 640: .Bottom = CptG.Y
+.Left = ABG.X: .Top = 0: .Right = 640: .Bottom = ABG.Y
 End With
-If Not FS Then BBSf.BltFast 0, 480 - CptG.Y, BGSf, Src, DDBLTFAST_WAIT
+If Not FS Then BBSf.BltFast 0, 480 - ABG.Y, BGSf, Src, DDBLTFAST_WAIT
 With Src
-.Left = 0: .Top = 0: .Right = CptG.X: .Bottom = CptG.Y
+.Left = 0: .Top = 0: .Right = ABG.X: .Bottom = ABG.Y
 End With
-If Not FS Then BBSf.BltFast 640 - CptG.X, 480 - CptG.Y, BGSf, Src, DDBLTFAST_WAIT
+If Not FS Then BBSf.BltFast 640 - ABG.X, 480 - ABG.Y, BGSf, Src, DDBLTFAST_WAIT
+
+'For I = 0 To 77
+'With A(I)
+'If .X < 100 Then .XXX = 0.1
+'If .X > 524 Then .XXX = -0.1
+'If .Y < 100 Then .YYY = 0.1
+'If .Y > 364 Then .YYY = -0.1
+'.XX = .XX + .XXX: .YY = .YY + .YYY
+'If Abs(.XX) > .MXX Then .XX = .MXX * Sgn(.XX): .XXX = 0
+'If Abs(.YY) > .MYY Then .YY = .MYY * Sgn(.YY): .YYY = 0
+'.X = .X + .XX: .Y = .Y + .YY
+'End With
+'With Src
+'.Left = 256 + (I Mod 8) * 16: .Top = Int(I / 8) * 16: .Right = .Left + 16: .Bottom = .Top + 16
+'End With
+'BltClip A(I).X, A(I).Y, SpSf, Src
+'Next I
 */

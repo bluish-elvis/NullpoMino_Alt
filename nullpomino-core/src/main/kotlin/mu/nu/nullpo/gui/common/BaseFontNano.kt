@@ -41,8 +41,7 @@ abstract class BaseFontNano:BaseFont {
 	}
 
 	abstract override val rainbowCount:Int
-	override fun processTxt(x:Float, y:Float, str:String, color:EventReceiver.COLOR, scale:Float, alpha:Float,
-		rainbow:Int,
+	override fun processTxt(x:Float, y:Float, str:String, color:EventReceiver.COLOR, scale:Float, alpha:Float, rainbow:Int,
 		draw:(i:Int, dx:Float, dy:Float, scale:Float, sx:Int, sy:Int, sw:Int, sh:Int, a:Float)->Unit) {
 		var dx = x
 		var dy = y

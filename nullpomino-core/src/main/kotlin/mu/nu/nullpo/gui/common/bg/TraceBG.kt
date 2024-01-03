@@ -31,10 +31,7 @@
 
 package mu.nu.nullpo.gui.common.bg
 
-import mu.nu.nullpo.gui.common.AbstractRenderer
-import mu.nu.nullpo.gui.common.ResourceImage
-
-class TraceBG():AbstractBG<Nothing?>(ResourceImage.ResourceImageBlank) {
+class TraceBG():AbstractBG<Nothing?>(mu.nu.nullpo.gui.common.ResourceImage.ResourceImageBlank) {
 	override var speed:Float = 1f
 	override fun update() {}
 
@@ -43,7 +40,7 @@ class TraceBG():AbstractBG<Nothing?>(ResourceImage.ResourceImageBlank) {
 		bClear = true
 	}
 
-	override fun draw(render:AbstractRenderer) {
+	override fun draw(render:mu.nu.nullpo.gui.common.AbstractRenderer) {
 		if(bClear) render.drawBlackBG()
 		else render.fillRectSpecific(0, 0, 640, 480, 0, speed*.1f)
 	}

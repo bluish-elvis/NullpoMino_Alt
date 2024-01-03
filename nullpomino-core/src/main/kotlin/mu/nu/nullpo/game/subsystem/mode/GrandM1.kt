@@ -322,6 +322,9 @@ class GrandM1:AbstractMode() {
 		setSpeed(engine)
 	}
 
+	override fun renderFirst(engine:GameEngine) {
+		if(engine.ending==2) receiver.drawStaffRoll(engine, rollTime*1f/ROLLTIMELIMIT)
+	}
 	/* Render score */
 	override fun renderLast(engine:GameEngine) {
 		receiver.drawScoreFont(engine, 0, 0, name, COLOR.CYAN)
@@ -508,7 +511,7 @@ class GrandM1:AbstractMode() {
 	/** levelが上がったときの共通処理 */
 	private fun levelUp(engine:GameEngine, lu:Int = 0) {
 
-		engine.statistics.level+=lu
+		engine.statistics.level += lu
 		engine.meterValue = engine.statistics.level%100/99f
 		engine.meterColor = GameEngine.METER_COLOR_LEVEL
 

@@ -280,6 +280,9 @@ class GrandBasic:AbstractMode() {
 		owner.musMan.bgm = if(engine.statistics.level<500) BGM.GrandA(0) else BGM.GrandA(1)
 	}
 
+	override fun renderFirst(engine:GameEngine) {
+		if(engine.ending==2) receiver.drawStaffRoll(engine, rollTime*1f/ROLLTIMELIMIT)
+	}
 	/** Renders HUD (leaderboard or game statistics) */
 	override fun renderLast(engine:GameEngine) {
 		receiver.drawScoreFont(engine, 0, 0, name, COLOR.COBALT)
@@ -313,7 +316,10 @@ class GrandBasic:AbstractMode() {
 					val totalHanabi = bestSectionHanabi.sum()
 					for(i in 0..<SECTION_MAX) {
 
-						receiver.drawScoreNum(engine, 0, 3+i, "%3d${if(i==SECTION_MAX-1)"+" else "-"}".format(i*100), sectionIsNewRecord[i])
+						receiver.drawScoreNum(
+							engine, 0, 3+i,
+							"%3d${if(i==SECTION_MAX-1) "+" else "-"}".format(i*100), sectionIsNewRecord[i]
+						)
 						receiver.drawScoreNum(engine, 4, 3+i, "%4d".format(bestSectionHanabi[i]), sectionIsNewRecord[i])
 						receiver.drawScoreNum(engine, 8, 3+i, "%6d".format(bestSectionScore[i]), sectionIsNewRecord[i])
 						receiver.drawScoreNum(engine, 14, 3+i, bestSectionTime[i].toTimeStr, sectionIsNewRecord[i])

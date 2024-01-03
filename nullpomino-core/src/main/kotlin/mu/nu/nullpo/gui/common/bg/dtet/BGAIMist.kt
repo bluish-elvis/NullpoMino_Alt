@@ -29,63 +29,46 @@
  POSSIBILITY OF SUCH DAMAGE.
  */
 
-package mu.nu.nullpo.gui.common.bg
+package mu.nu.nullpo.gui.common.bg.dtet
 
-import mu.nu.nullpo.gui.common.AbstractRenderer
-import mu.nu.nullpo.gui.common.ResourceImage
+import kotlin.random.Random
 
-class DTET11ExTrans<T>(bg:ResourceImage<T>):AbstractBG<T>(bg) {
-	companion object {
-		var TTick = 0
-			set(value) {
-				field = value%80
-			}
-	}
-
+class BGAIMist<T>(bg:mu.nu.nullpo.gui.common.ResourceImage<T>):mu.nu.nullpo.gui.common.bg.AbstractBG<T>(bg) {
+	/*'（スターダスト）
+For I = 0 To 59: StD(I) = Rnd * 152: Next I*/
+	private val py = MutableList(60) {Random.nextFloat()*152}
 	override fun update() {
-		tick = ++TTick
+		py.forEachIndexed {i, _ ->
+			py[i] += (i*.1f-2.95f)*(.5f+speed)
+			if(py[i]<0) py[i] += 152f
+			if(py[i]>=152) py[i] -= 152f
+		}
 	}
 
 	override fun reset() {
-		tick = 0
+		py.forEachIndexed {i, _ -> py[i] = Random.nextFloat()*152}
 	}
 
-	override fun draw(render: AbstractRenderer) {
-		val x = minOf(640f, (speed.toInt()*40f*((8-tick*3)%8)).let {it+if(it<0) 640 else 0}%640)
-		val y = minOf(480f, ((1-speed)*tick*5).let {it+if(it<0) 480 else 0}%480)
-		/*With LdG
-.X = TrM * 40 * (8 - ((FAC * 3) Mod 8))
-.Y = (1 - TrM) * FAC * 5: If .Y < 0 Then .Y = .Y + 480
-End With*/
-		img.draw(0f, -80f, x, y, 640f, 320f)
-		img.draw(0f, 240f, x, y, 640f, 320f)
-		img.draw(640-x, -80f, 0f, y, x, 320f)
-		img.draw(640-x, 240f, 0f, y, x, 320f)
-		img.draw(0f, 240-y, x, 0f, 640f, y)
-		img.draw(0f, 560-y, x, 0f, 640f, y)
-		img.draw(640-x, 240-y, 0f, 0f, x, y)
-		img.draw(640-x, 560-y, 0f, 0f, x, y)
+	override fun draw(render: mu.nu.nullpo.gui.common.AbstractRenderer) {
+		py.forEachIndexed {i, it ->
+			val sy = (i%3)*160+it
+			img.draw(0f, i*8f, 0f, sy, 640f, sy+8)
+		}
 	}
 }
-/*Case 13 'レベルMAX
+
+/*Case 8 '（スターダスト）
+For I = 0 To 59
+StD(I) = StD(I) + (I * 0.1 - 2.95) * (1 + (TrM >= 2) * 2)
+If StD(I) < 0 Then StD(I) = StD(I) + 152
+If StD(I) >= 152 Then StD(I) = StD(I) - 152
 With Src
-.Left = LdG.X: .Top = LdG.Y: .Right = 640: .Bottom = 320
+.Left = 0: .Top = (I Mod 3) * 160 + StD(I): .Right = .Left + 640: .Bottom = .Top + 8
 End With
-BltClip 0, -80, BGSf, Src, DDBLTFAST_WAIT
-BltClip 0, 240, BGSf, Src, DDBLTFAST_WAIT
-With Src
-.Left = 0: .Top = LdG.Y: .Right = LdG.X: .Bottom = 320
-End With
-BltClip 640 - LdG.X, -80, BGSf, Src, DDBLTFAST_WAIT
-BltClip 640 - LdG.X, 240, BGSf, Src, DDBLTFAST_WAIT
-With Src
-.Left = LdG.X: .Top = 0: .Right = 640: .Bottom = LdG.Y
-End With
-BltClip 0, 240 - LdG.Y, BGSf, Src, DDBLTFAST_WAIT
-BltClip 0, 560 - LdG.Y, BGSf, Src, DDBLTFAST_WAIT
-With Src
-.Left = 0: .Top = 0: .Right = LdG.X: .Bottom = LdG.Y
-End With
-BltClip 640 - LdG.X, 240 - LdG.Y, BGSf, Src, DDBLTFAST_WAIT
-BltClip 640 - LdG.X, 560 - LdG.Y, BGSf, Src, DDBLTFAST_WAIT
-*/
+If Not FS Then BBSf.BltFast 0, I * 8, BGSf, Src, DDBLTFAST_WAIT
+Next I
+
+'With Src
+'.Left = 0: .Top = 0: .Right = .Left + 640: .Bottom = .Top + 480
+'End With
+'If Not FS Then BBSf.BltFast 0, 0, BGSf, Src, DDBLTFAST_WAIT*/

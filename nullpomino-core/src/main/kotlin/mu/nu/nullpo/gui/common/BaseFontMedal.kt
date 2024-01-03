@@ -32,7 +32,6 @@
 package mu.nu.nullpo.gui.common
 
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
-import mu.nu.nullpo.gui.slick.img.FontMedal
 
 abstract class BaseFontMedal:BaseFont {
 	companion object {
@@ -46,8 +45,6 @@ abstract class BaseFontMedal:BaseFont {
 		const val MB = H-PT
 	}
 
-	abstract val img:ResourceImage<*>
-	final override fun getImg(i:Int):ResourceImage<*> = img
 
 	protected fun processTxt(x:Float, y:Float, str:String, tier:Int, scale:Float,
 		draw:(x:Float, y:Float, dx:Float, dy:Float, sx:Int, sy:Int, sw:Int, sh:Int)->Unit) {
@@ -80,7 +77,7 @@ abstract class BaseFontMedal:BaseFont {
 		darkness:Float = 0f) =
 		processTxt(x, y, str, tier, scale)
 		{dx:Float, dy:Float, w:Float, h:Float, sx:Int, sy:Int, sw:Int, sh:Int ->
-			FontMedal.img.draw(
+			getImg(0).draw(
 				dx, dy, w, h, sx, sy, sw, sh,
 				alpha, (minOf(1f, maxOf(0f, 1f-darkness))).let {brit -> Triple(brit, brit, brit)}
 			)
@@ -96,7 +93,7 @@ abstract class BaseFontMedal:BaseFont {
 	 * @param scale 拡大率
 	 */
 	fun printFontGrid(x:Int, y:Int, str:String, tier:Int = 0, scale:Float = 1f, alpha:Float = if(tier==0) 0.5f else 1f,
-		darkness:Float = 0f) = FontMedal.printFont(x*16, y*16, str, tier, scale, alpha, darkness)
+		darkness:Float = 0f) = printFont(x*16, y*16, str, tier, scale, alpha, darkness)
 
 	private fun col(color:COLOR) = when(color) {
 		COLOR.RED -> 2

@@ -46,7 +46,6 @@ import mu.nu.nullpo.game.subsystem.mode.AbstractMode
 import mu.nu.nullpo.gui.slick.MouseInput
 import mu.nu.nullpo.gui.slick.NullpoMinoSlick
 import zeroxfc.nullpo.custom.libs.backgroundtypes.ResourceHolderCustomAssetExtension
-import mu.nu.nullpo.gui.slick.img.RenderStaffRoll.scale
 import mu.nu.nullpo.util.CustomProperties
 import mu.nu.nullpo.util.GeneralUtil.getONorOFF
 import mu.nu.nullpo.util.GeneralUtil.toTimeStr
@@ -823,7 +822,7 @@ class Collapse:AbstractMode() {
 					for(i in 0..<MAX_RANKING) {
 						receiver.drawScoreFont(engine, 0, topY+i, "%2d".format(i+1), COLOR.YELLOW)
 						receiver.drawScoreFont(engine, 3, topY+i, "${rankingScorePlayer[difficulty][i]}", i==rankingRankPlayer)
-						receiver.drawScoreFont(engine, 12, topY+i, "${rankingLevelPlayer[difficulty][i]}", i==rankingRankPlayer, scale)
+						receiver.drawScoreFont(engine, 12, topY+i, "${rankingLevelPlayer[difficulty][i]}", i==rankingRankPlayer)
 					}
 					receiver.drawScoreFont(engine, 0, topY+MAX_RANKING+1, "PLAYER SCORES", COLOR.BLUE)
 					receiver.drawScoreFont(engine, 0, topY+MAX_RANKING+2, engine.playerProp.nameDisplay, COLOR.WHITE, 2f)

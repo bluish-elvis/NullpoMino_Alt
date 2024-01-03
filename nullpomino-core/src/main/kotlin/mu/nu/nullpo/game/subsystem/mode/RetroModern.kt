@@ -207,6 +207,9 @@ class RetroModern:AbstractMode() {
 		return false
 	}
 
+	override fun renderFirst(engine:GameEngine) {
+		if(engine.ending==2 && rollTime>ROLLTIMELIMIT-3600)receiver.drawStaffRoll(engine, (rollTime-ROLLTIMELIMIT+3600)/3600f)
+	}
 	/** Renders HUD (leaderboard or game statistics) */
 	override fun renderLast(engine:GameEngine) {
 		receiver.drawScoreFont(engine, 0, 0, name, color = COLOR.COBALT)

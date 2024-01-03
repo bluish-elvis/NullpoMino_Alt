@@ -31,13 +31,7 @@
 
 package mu.nu.nullpo.gui.common.bg
 
-import mu.nu.nullpo.gui.common.AbstractRenderer
-import mu.nu.nullpo.gui.common.ResourceImage
-import mu.nu.nullpo.gui.slick.img.bg.AbstractBG
-import org.apache.log4j.Logger
-import kotlin.math.PI
-
-abstract class AbstractBG<T: Any?>(val img:ResourceImage<T>) {
+abstract class AbstractBG<T:Any?>(val img:mu.nu.nullpo.gui.common.ResourceImage<T>) {
 	open val res:T get() = img.res
 	/** Speed Multiplier: Recommended .5f-1f-2f*/
 	open var speed = 1f
@@ -47,18 +41,20 @@ abstract class AbstractBG<T: Any?>(val img:ResourceImage<T>) {
 	/** Resets the background to its base state.*/
 	abstract fun reset()
 	/** Draws the background to the game screen.*/
-	abstract fun draw(render:AbstractRenderer) /*{
+	abstract fun draw(render:mu.nu.nullpo.gui.common.AbstractRenderer) /*{
 		bufI.draw()
 	}*/
 	open fun drawLite() =
 		img.draw(0, 0, 640, 480, 0, 0, img.width, img.height)
-	protected val logger = Logger.getLogger(AbstractBG::class.java)
+
+	protected val logger = org.apache.log4j.Logger.getLogger(AbstractBG::class.java)
+
 	init {
 		logger.debug("${this::class.java.name} created: ${img.name}")
 //		img.load()
 	}
 
 	companion object {
-		const val RG = (PI/180).toFloat()
+		const val RG = (kotlin.math.PI/180).toFloat()
 	}
 }

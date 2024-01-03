@@ -30,14 +30,11 @@
  */
 package mu.nu.nullpo.gui.slick.img
 
-import mu.nu.nullpo.gui.common.BaseFontNormal
-import mu.nu.nullpo.gui.common.ResourceImage
 import mu.nu.nullpo.gui.slick.NullpoMinoSlick
 import mu.nu.nullpo.gui.slick.ResourceHolder
 
 /** Normal display class string */
-object FontNormal:BaseFontNormal() {
+object FontNormal:mu.nu.nullpo.gui.common.BaseFontNormal() {
 	override val rainbowCount get() = NullpoMinoSlick.rainbow
-	override fun getImg(i:Int):ResourceImage<*> = ResourceHolder.imgFont[i]
-
+	override fun getImg(i:Int) = ResourceHolder.imgFont[i]
 }

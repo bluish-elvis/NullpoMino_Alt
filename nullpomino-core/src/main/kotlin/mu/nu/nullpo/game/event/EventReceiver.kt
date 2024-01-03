@@ -36,6 +36,7 @@ import mu.nu.nullpo.game.component.SpeedParam.Companion.spdRank
 import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.game.play.GameManager
 import mu.nu.nullpo.gui.common.BaseFont.FONT
+import mu.nu.nullpo.gui.common.BaseStaffRoll
 import mu.nu.nullpo.gui.common.ConfigGlobal.VisualConf
 import mu.nu.nullpo.gui.common.fx.Effect
 import mu.nu.nullpo.gui.common.fx.PopupCombo
@@ -325,6 +326,14 @@ open class EventReceiver {
 	 */
 	fun drawDirectTTF(playerID:Int, x:Number, y:Number, str:String, flag:Boolean) =
 		drawDirectTTF(x, y, str, if(flag) getPlayerColor(playerID) else COLOR.WHITE)
+
+	open fun drawStaffRoll(x:Number, y:Number, scr:Number, height:Number, alpha:Float = 1f) {}
+	fun drawStaffRoll(engine:GameEngine, scr:Float, height:Number = if(!engine.owner.menuOnly) engine.fieldHeight*BS else 480f, alpha:Float = 1f) =
+		(if(!engine.owner.menuOnly) (engine.fX to engine.fY) else (320f to 0f)).let {
+			drawStaffRoll(
+				it.first, it.second, scr*(height.toFloat()+BaseStaffRoll.height)-height.toFloat(), height.toFloat(), alpha
+			)
+		}
 
 	private fun menuPos(engine:GameEngine, x:Float, y:Float, str:String, font:FONT, scale:Float):Pair<Float, Float> {
 		var sx = if(x<-2) engine.fieldWidth*BS/2-str.length*font.w*scale/2 else BS*x
@@ -653,7 +662,15 @@ open class EventReceiver {
 		)
 
 	@JvmOverloads fun drawBlockForceVisible(x:Number, y:Number, blk:Block, scale:Float = 1f) = drawBlock(
-		x, y, blk.drawColor, blk.skin, blk.getAttribute(Block.ATTRIBUTE.BONE), blk.darkness/2, .25f*blk.alpha+.25f, scale, blk.aint
+		x,
+		y,
+		blk.drawColor,
+		blk.skin,
+		blk.getAttribute(Block.ATTRIBUTE.BONE),
+		blk.darkness/2,
+		.25f*blk.alpha+.25f,
+		scale,
+		blk.aint
 	)
 
 	/** Blockピースを描画 (暗さもしくは明るさの指定可能）
@@ -820,8 +837,9 @@ open class EventReceiver {
 	/** It will be called during the field editor screen.*/
 	open fun onFieldEdit(engine:GameEngine) {}
 
-	/** It will be called at the start of each frame. (For rendering)*/
-	open fun renderFirst(engine:GameEngine) {}
+	/** It will be called at the start of each frame. (For rendering
+	 * @param inside Draw method inside frame*/
+	open fun renderFirst(engine:GameEngine, inside:()->Unit = {}) {}
 
 	/** It will be called at the end of each frame. (For rendering)*/
 	open fun renderLast(engine:GameEngine) {}

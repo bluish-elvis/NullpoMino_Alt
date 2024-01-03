@@ -29,19 +29,13 @@
  POSSIBILITY OF SUCH DAMAGE.
  */
 
-package mu.nu.nullpo.gui.common.bg
+package mu.nu.nullpo.gui.common.bg.dtet
 
-import mu.nu.nullpo.gui.common.AbstractRenderer
-import mu.nu.nullpo.gui.common.ResourceImage
 import kotlin.math.cos
 import kotlin.math.sin
 import kotlin.random.Random
 
-class DTET05KaleidSq<T>(bg:ResourceImage<T>):AbstractBG<T>(bg) {
-	/*（ダイヤ）
-With Dia
-DiaR = Rnd * 360: .X = Rnd * 640: .Y = Rnd * 480
-End With*/
+class BGAFKaleidSq<T>(bg:mu.nu.nullpo.gui.common.ResourceImage<T>):mu.nu.nullpo.gui.common.bg.AbstractBG<T>(bg) {
 	override var speed:Float = 1f
 		set(value) {
 			field = value
@@ -70,7 +64,7 @@ End With*/
 		y = Random.nextFloat()*480
 	}
 
-	override fun draw(render: AbstractRenderer) {
+	override fun draw(render:mu.nu.nullpo.gui.common.AbstractRenderer) {
 		img.draw(0f, 0f, x, y, 320f, 240f)
 		img.draw(320-x, 0f, 0f, y, x, 240f)
 		img.draw(0f, 240-y, x, 0f, 320f, y)

@@ -332,6 +332,9 @@ class GrandM2G:AbstractMode() {
 		owner.musMan.bgm = BGM.values[bgmLv]
 	}
 
+	override fun renderFirst(engine:GameEngine) {
+		if(engine.ending==2) receiver.drawStaffRoll(engine, rollTime*1f/ROLLTIMELIMIT)
+	}
 	/* Render score */
 	override fun renderLast(engine:GameEngine) {
 		receiver.drawScoreFont(engine, 0, 0, name, EventReceiver.COLOR.CYAN)
@@ -488,7 +491,7 @@ class GrandM2G:AbstractMode() {
 	}
 
 	/** levelが上がったときの共通処理 */
-	private fun levelUp(engine:GameEngine,lu:Int=0) {
+	private fun levelUp(engine:GameEngine, lu:Int = 0) {
 		engine.statistics.level += lu
 		// Meter
 		engine.meterValue = engine.statistics.level%100/99f
@@ -500,7 +503,7 @@ class GrandM2G:AbstractMode() {
 		// LV100到達でghost を消す
 		if(engine.statistics.level>=100&&!alwaysGhost) engine.ghost = false
 
-		if(lu<=0)return
+		if(lu<=0) return
 		if(engine.statistics.level==nextSecLv-1&&secAlert) engine.playSE("levelstop")
 		// BGM fadeout
 		if(tableBGMFadeout[bgmLv]!=-1&&engine.statistics.level>=tableBGMFadeout[bgmLv]) owner.musMan.fadeSW = true
@@ -631,7 +634,7 @@ class GrandM2G:AbstractMode() {
 			val levelb = engine.statistics.level
 			var ls = li
 			ls += engine.field.howManyGarbageLineClears
-			levelUp(engine,ls)
+			levelUp(engine, ls)
 
 			if(engine.statistics.level>=999) {
 				// Ending
@@ -721,7 +724,13 @@ class GrandM2G:AbstractMode() {
 
 	/* 結果画面 */
 	override fun renderResult(engine:GameEngine) {
-		receiver.drawMenuFont(engine, 0, 0, "${BaseFont.UP_S}${BaseFont.DOWN_S} PAGE${(engine.statc[1]+1)}/3", EventReceiver.COLOR.RED)
+		receiver.drawMenuFont(
+			engine,
+			0,
+			0,
+			"${BaseFont.UP_S}${BaseFont.DOWN_S} PAGE${(engine.statc[1]+1)}/3",
+			EventReceiver.COLOR.RED
+		)
 
 		when(engine.statc[1]) {
 			0 -> {

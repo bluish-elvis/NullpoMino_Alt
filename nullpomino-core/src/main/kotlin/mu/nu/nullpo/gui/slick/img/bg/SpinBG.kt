@@ -54,6 +54,7 @@ class SpinBG(bgi:ResourceImageSlick, private val addBGFX:BaseBG<*>? = null):Abst
 		a += fact
 		a %= 360f
 		res.setCenterOfRotation(cx, cy)
+		addBGFX?.update()
 	}
 
 	override fun reset() {

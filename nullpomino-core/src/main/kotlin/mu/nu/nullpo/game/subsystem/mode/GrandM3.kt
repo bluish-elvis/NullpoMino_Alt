@@ -572,6 +572,9 @@ class GrandM3:AbstractMode() {
 		owner.musMan.bgm = BGM.GrandT(calcBgmLv(lv))
 	}
 
+	override fun renderFirst(engine:GameEngine) {
+		if(engine.ending==2) receiver.drawStaffRoll(engine, rollTime*1f/ROLLTIMELIMIT)
+	}
 	/* Render score */
 	override fun renderLast(engine:GameEngine) {
 		receiver.drawScoreFont(engine, 0, 0, name, COLOR.CYAN)

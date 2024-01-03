@@ -38,66 +38,70 @@ import mu.nu.nullpo.game.event.EventReceiver.COLOR.WHITE
 import org.apache.logging.log4j.LogManager
 import java.io.FileInputStream
 import java.io.IOException
+import kotlin.math.ceil
+import kotlin.math.floor
 
-abstract class BaseStaffRoll<T> {
-	/** Log */
-	internal val log = LogManager.getLogger()
-	abstract val bufI:ResourceImage<T>
-	val scale = .5f
-	open val width:Int = 160
-	open val height:Int get() = strList.size*14
-	protected val strList by lazy {
-		try {
-			this::class.java.getResource("../staff.lst")?.path?.let {t ->
-				FileInputStream(t).bufferedReader().use {it.readLines()}
-			}?.map {s -> s.trim {it<=' '}}?.filterNot {it.startsWith('#')||it.startsWith("//")} // Commment-line. Ignore it.
-				?: emptyList()
-		} catch(e:IOException) {
-			log.error("Failed to load Staffroll list file", e)
-			emptyList()
+abstract class BaseStaffRoll {
+
+	enum class LineType {
+		Plane, Header,
+	}
+
+	abstract val img:ResourceImage<*>
+
+	/** @param scr scroll amount
+	 * @param dh draw height*/
+	fun draw(x:Float, y:Float, scr:Float, dh:Float, alpha:Float = 1f) {
+		fun cmp(c:Char) = when(c) {
+			' ', ':' -> .5f
+			'(', ')', '.' -> .33f
+			'/', 'I' -> .25f
+			else -> 0f
 		}
-	}
-
-	protected fun cmp(c:Char):Float = when(c) {
-		' ', ':' -> .5f
-		'(', ')', '.' -> .33f
-		'/', 'I' -> .25f
-		else -> 0f
-	}
-
-	abstract fun drawBuf(dx:Float, dy:Float, dw:Float, dh:Float, sx:Float, sy:Float, sw:Float, sh:Float)
-
-	/** Folder names list */
-	protected fun init() {
-		val w = BaseFontNano.W*scale
-		val h = BaseFontNano.H*scale
-
-		var dy = 0f
-		strList.forEach {str ->
-			var dx = width/2f-(str.length-str.sumOf {cmp(it).toDouble()}.toFloat())*.5f*w
-			str.forEachIndexed {i, it ->
-				if(i>0||it!=':') {
-					val fontColor = when(str.first()) {
-						':' -> if(it.isUpperCase()) BLUE else GREEN
-						else -> if(it.isUpperCase()) ORANGE else WHITE
+		strList.drop(maxOf(0, floor(scr/lh).toInt())).take(1+ceil(maxOf(0f, minOf(dh, dh+scr))/lh).toInt()).let {list ->
+			list.forEachIndexed {l, (type, str) ->
+				str.fold(x+width/2f-(str.length-str.sumOf {cmp(it).toDouble()}.toFloat())*.5f*fw) {cx, it ->
+					val fontColor = when(type) {
+						LineType.Header -> if(it.isUpperCase()) BLUE else GREEN
+						LineType.Plane -> if(it.isUpperCase()) ORANGE else WHITE
 					}
 					val chr = it.uppercaseChar().code
-					val sx = BaseFontNano.W*((chr-32)%32)
-					val sy = BaseFontNano.H*((chr-32)/32+fontColor.ordinal*3)
-					dx -= w*cmp(it)/2
-					drawBuf(dx, dy, dx+w, dy+h, sx.toFloat(), sy.toFloat(), sx+12f, sy+14f)
-					dx += w*(1f-cmp(it)/2)
+					val sx = BW*((chr-32)%32)
+					val sy = BH*((chr-32)/32+fontColor.ordinal*3)
+					val dx = cx-fw*cmp(it)/2
+					val dy = y+l*lh-if(scr<0) scr else scr%lh
+					img.draw(
+						dx, maxOf(y, dy), cx+fw, maxOf(y, minOf(y+dh, dy+fh)),
+						sx.toFloat(), if(dy<y) sy+minOf(14f, (y-dy)/scale) else sy.toFloat(), sx+BW.toFloat(),
+						if(dy+fh>y+dh) sy+14f-minOf(14f, (dy+fh-y-dh)/scale) else sy+14f, alpha
+					)
+					cx+fw-fw*cmp(it)/2
 				}
 			}
-			dy += 20*scale
 		}
 	}
 
-	fun draw() = bufI.draw()
-	fun draw(x:Float, y:Float, sy:Float, h:Float, alpha:Float = 1f,
-		color:Triple<Float, Float, Float> = Triple(1f, 1f, 1f)) =
-		bufI.draw(
-			x, y-minOf(0f, sy), x+width, y+h, 0f, maxOf(0f, sy), 0f+width, minOf(sy+h, 0f+height),
-			alpha, color
-		)
+	companion object {
+		/** Log */
+		internal val log = LogManager.getLogger()
+		const val scale = .5f
+		const val width = 160
+		private const val BW = BaseFontNano.W
+		private const val BH = BaseFontNano.H
+		private const val fw = BW*scale
+		private const val fh = BH*scale
+		private const val lh = fh+2
+		private val strList by lazy {
+			try {
+				this::class.java.getResource("/staff.lst")?.path?.let {t ->
+					FileInputStream(t).bufferedReader().use {it.readLines()}
+				}?.map {s -> s.trim {it<=' '}}?.filterNot {it.startsWith('#')||it.startsWith("//")} // Commment-line. Ignore it.
+					?.map {(if(it.startsWith(':')) LineType.Header else LineType.Plane) to it} ?: emptyList()
+			} catch(e:IOException) {
+				log.error("Failed to load Staffroll list file", e)
+				emptyList()
+			}
+		}
+		val height get() = (strList.size*lh)
+	}
 }

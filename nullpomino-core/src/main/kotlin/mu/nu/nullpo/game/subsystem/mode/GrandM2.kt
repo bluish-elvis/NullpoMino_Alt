@@ -402,6 +402,9 @@ class GrandM2:AbstractMode() {
 		owner.musMan.bgm = BGM.GrandA(calcBgmLv(lv))
 	}
 
+	override fun renderFirst(engine:GameEngine) {
+		if(engine.ending==2) receiver.drawStaffRoll(engine, rollTime*1f/ROLLTIMELIMIT)
+	}
 	/* Render score */
 	override fun renderLast(engine:GameEngine) {
 		receiver.drawScoreFont(engine, 0, 0, name, COLOR.CYAN)
@@ -563,7 +566,7 @@ class GrandM2:AbstractMode() {
 	override fun onMove(engine:GameEngine):Boolean {
 		// 新規ピース出現時
 		if(engine.ending==0&&engine.statc[0]==0&&!engine.holdDisable&&!lvupFlag)
-			// Level up
+		// Level up
 			levelUp(engine, (engine.statistics.level<nextSecLv-1).toInt())
 
 		if(engine.ending==0&&engine.statc[0]>0&&(version>=1||!engine.holdDisable)) lvupFlag = false
@@ -749,7 +752,7 @@ class GrandM2:AbstractMode() {
 			}
 			// Level up
 			val levelb = engine.statistics.level
-			levelUp(engine,  li+maxOf(0, minOf(2, ev.b2b)))
+			levelUp(engine, li+maxOf(0, minOf(2, ev.b2b)))
 
 			if(engine.statistics.level>=999) {
 				// Ending

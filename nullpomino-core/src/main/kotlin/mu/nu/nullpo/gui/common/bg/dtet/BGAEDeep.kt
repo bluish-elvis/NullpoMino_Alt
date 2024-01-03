@@ -29,16 +29,14 @@
  POSSIBILITY OF SUCH DAMAGE.
  */
 
-package mu.nu.nullpo.gui.common.bg
+package mu.nu.nullpo.gui.common.bg.dtet
 
-import mu.nu.nullpo.gui.common.AbstractRenderer
-import mu.nu.nullpo.gui.common.ResourceImage
-import zeroxfc.nullpo.custom.libs.Vector
 import zeroxfc.nullpo.custom.libs.Interpolation
+import zeroxfc.nullpo.custom.libs.Vector
 import kotlin.math.sin
 import kotlin.random.Random
 
-class DTET04Deep<T>(bg:ResourceImage<T>):AbstractBG<T>(bg) {
+class BGAEDeep<T>(bg:mu.nu.nullpo.gui.common.ResourceImage<T>):mu.nu.nullpo.gui.common.bg.AbstractBG<T>(bg) {
 	/*'（オーロラ）
 Crs = Rnd * 360
 CrsF = Rnd * 640
@@ -80,7 +78,7 @@ End If*/
 		spdN = 0f
 	}
 
-	override fun draw(render: AbstractRenderer) {
+	override fun draw(render:mu.nu.nullpo.gui.common.AbstractRenderer) {
 		for(i in 0..79) {
 			for(j in 0..7) {
 				val ww = 5+3*(.5f+spdN)

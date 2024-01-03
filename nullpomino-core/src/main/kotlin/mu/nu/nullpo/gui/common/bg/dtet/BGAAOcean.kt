@@ -29,17 +29,15 @@
  POSSIBILITY OF SUCH DAMAGE.
  */
 
-package mu.nu.nullpo.gui.common.bg
+package mu.nu.nullpo.gui.common.bg.dtet
 
-import mu.nu.nullpo.gui.common.AbstractRenderer
-import mu.nu.nullpo.gui.common.ResourceImage
 import zeroxfc.nullpo.custom.libs.Vector.Companion.almostEqual
 import zeroxfc.nullpo.custom.libs.Interpolation
 import kotlin.math.pow
 import kotlin.math.sin
 import kotlin.random.Random
 
-class DTET00Ocean<T>(bg:ResourceImage<T>):AbstractBG<T>(bg) {
+class BGAAOcean<T>(bg:mu.nu.nullpo.gui.common.ResourceImage<T>):mu.nu.nullpo.gui.common.bg.AbstractBG<T>(bg) {
 	/*SeaA = 0
 For I = 0 To 29: Sea(I) = Rnd * 640: Next I*/
 	private val rasterX = MutableList(31) {Random.nextFloat()*640}
@@ -75,7 +73,7 @@ For I = 0 To 29: Sea(I) = Rnd * 640: Next I*/
 		waveH = 0f
 	}
 
-	override fun draw(render: AbstractRenderer) {
+	override fun draw(render:mu.nu.nullpo.gui.common.AbstractRenderer) {
 		rasterX.zip(waveX).forEachIndexed {i, (x, s) ->
 			if(i==0) {
 				//sky

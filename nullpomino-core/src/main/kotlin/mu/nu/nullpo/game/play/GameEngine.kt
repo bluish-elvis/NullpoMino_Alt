@@ -1311,7 +1311,7 @@ class GameEngine(
 		owner.replayProp.setProperty("$playerID.replay.randSeed", randSeed)
 		replayData.writeProperty(owner.replayProp, playerID, replayTimer)
 		statistics.writeProperty(owner.replayProp, playerID)
-		owner.replayProp.setProperty("$playerID.rule",Json.encodeToString(ruleOpt))
+		owner.replayProp.setProperty("$playerID.rule", Json.encodeToString(ruleOpt))
 		//ruleOpt.writeProperty(owner.replayProp, playerID)
 
 		if(playerID==0) {
@@ -1496,8 +1496,7 @@ class GameEngine(
 	fun render() {
 		// 最初の処理
 		if(!owner.receiver.doesGraphicsExist) return
-		owner.mode?.renderFirst(this)
-		owner.receiver.renderFirst(this)
+		owner.receiver.renderFirst(this) {owner.mode?.renderFirst(this)}
 
 		if(rainbowAnimate) Block.updateRainbowPhase(this)
 

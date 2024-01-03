@@ -29,13 +29,11 @@
  POSSIBILITY OF SUCH DAMAGE.
  */
 
-package mu.nu.nullpo.gui.common.bg
+package mu.nu.nullpo.gui.common.bg.dtet
 
-import mu.nu.nullpo.gui.common.AbstractRenderer
-import mu.nu.nullpo.gui.common.ResourceImage
 import kotlin.random.Random
 
-class DTET02Fall<T>(bg:ResourceImage<T>):AbstractBG<T>(bg) {
+class BGACFall<T>(bg:mu.nu.nullpo.gui.common.ResourceImage<T>):mu.nu.nullpo.gui.common.bg.AbstractBG<T>(bg) {
 	/*'（紫空）
 PSkD(0) = 0: PSkD(1) = 24: PSkD(2) = 72: PSkD(3) = 144
 PSkD(4) = 240: PSkD(5) = 336: PSkD(6) = 408: PSkD(7) = 456
@@ -67,7 +65,7 @@ PSkP = Rnd*/
 		py = Random.nextFloat()
 	}
 
-	override fun draw(render: AbstractRenderer) {
+	override fun draw(render:mu.nu.nullpo.gui.common.AbstractRenderer) {
 		dy.zip(dh).forEachIndexed {i, (d, second) ->
 			val r = ((i%2)+py*2).let {it+if(it<0) 2 else 0}%2
 			val s1 = second.first

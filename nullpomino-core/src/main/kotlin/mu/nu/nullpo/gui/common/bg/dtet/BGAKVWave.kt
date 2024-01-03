@@ -29,48 +29,45 @@
  POSSIBILITY OF SUCH DAMAGE.
  */
 
-package mu.nu.nullpo.gui.common.bg
+package mu.nu.nullpo.gui.common.bg.dtet
 
-import mu.nu.nullpo.gui.common.AbstractRenderer
-import mu.nu.nullpo.gui.common.ResourceImage
-import kotlin.random.Random
+import kotlin.math.sin
 
-class DTET08Mist<T>(bg:ResourceImage<T>):AbstractBG<T>(bg) {
-	/*'（スターダスト）
-For I = 0 To 59: StD(I) = Rnd * 152: Next I*/
-	private val py = MutableList(60) {Random.nextFloat()*152}
-	override fun update() {
-		py.forEachIndexed {i, _ ->
-			py[i] += (i*.1f-2.95f)*(.5f+speed)
-			if(py[i]<0) py[i] += 152f
-			if(py[i]>=152) py[i] -= 152f
+class BGAKVWave<T>(bg:mu.nu.nullpo.gui.common.ResourceImage<T>):mu.nu.nullpo.gui.common.bg.AbstractBG<T>(bg) {
+	//	val sc get() = ((1+sin(this.bg.rotation*PI/180)/3)*1024f/minOf(this.bg.width, this.bg.height)).toFloat()
+//	val cx get() = this.bg.width/2*sc
+//	val cy get() = this.bg.height/2*sc
+	private var t = 0f
+	override var tick:Int
+		get() = t.toInt()
+		set(value) {
+			t = value.toFloat()
 		}
+
+	override fun update() {
+		t += 1+speed
+//		bg.rotation = t*.04f
+//		bg.setCenterOfRotation(cx, cy)
+		while(t>=360/.04f) t -= 360
 	}
 
 	override fun reset() {
-		py.forEachIndexed {i, _ -> py[i] = Random.nextFloat()*152}
+		tick = 0
 	}
 
-	override fun draw(render: AbstractRenderer) {
-		py.forEachIndexed {i, it ->
-			val sy = (i%3)*160+it
-			img.draw(0f, i*8f, 0f, sy, 640f, sy+8)
+	override fun draw(render:mu.nu.nullpo.gui.common.AbstractRenderer) {
+		for(i in 0..59) {
+			val y = 30f+i*7+sin((t*1.7f+i*6)*RG)*28
+			img.draw(0f, i*8f, 0f, y, 640f, y+8)
 		}
 	}
 }
-
-/*Case 8 '（スターダスト）
+/*
 For I = 0 To 59
-StD(I) = StD(I) + (I * 0.1 - 2.95) * (1 + (TrM >= 2) * 2)
-If StD(I) < 0 Then StD(I) = StD(I) + 152
-If StD(I) >= 152 Then StD(I) = StD(I) - 152
 With Src
-.Left = 0: .Top = (I Mod 3) * 160 + StD(I): .Right = .Left + 640: .Bottom = .Top + 8
+.Left = 0: .Top = 30 + I * 7 + Sin((Spa + I * 6) * Rg) * 28: .Right = .Left + 640: .Bottom = .Top + 8
 End With
 If Not FS Then BBSf.BltFast 0, I * 8, BGSf, Src, DDBLTFAST_WAIT
 Next I
-
-'With Src
-'.Left = 0: .Top = 0: .Right = .Left + 640: .Bottom = .Top + 480
-'End With
-'If Not FS Then BBSf.BltFast 0, 0, BGSf, Src, DDBLTFAST_WAIT*/
+Spa = Spa + 1 + Lev * 0.03: If Spa >= 360 Then Spa = Spa - 360
+*/

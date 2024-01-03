@@ -36,6 +36,7 @@ import mu.nu.nullpo.game.play.GameManager
 import mu.nu.nullpo.gui.common.AbstractRenderer
 import mu.nu.nullpo.gui.common.BaseFont
 import mu.nu.nullpo.gui.common.bg.*
+import mu.nu.nullpo.gui.common.bg.dtet.*
 import zeroxfc.nullpo.custom.libs.Vector
 import mu.nu.nullpo.gui.slick.img.FontGrade
 import mu.nu.nullpo.gui.slick.img.FontMedal
@@ -52,6 +53,7 @@ import org.newdawn.slick.Image
 import org.newdawn.slick.geom.Polygon
 import kotlin.math.PI
 import kotlin.math.absoluteValue
+import kotlin.random.Random
 
 /** ゲームの event 処理と描画処理 (Slick版） */
 class RendererSlick(
@@ -93,6 +95,9 @@ class RendererSlick(
 	override fun printTTFSpecific(x:Float, y:Float, str:String, color:COLOR, scale:Float, alpha:Float) =
 		FontTTF.print(x, y, str, color, alpha, scale)
 
+	override fun drawStaffRoll(x:Number, y:Number, scr:Number, height:Number, alpha:Float) {
+		RenderStaffRoll.draw(x.toFloat(), y.toFloat(), scr.toFloat(), height.toFloat(), alpha)
+	}
 	override val doesGraphicsExist get() = graphics!=null
 
 	/* 勲章を描画 */
@@ -280,10 +285,6 @@ class RendererSlick(
 		val size = engine.blockSize
 		val width = engine.field.width//?: Field.DEFAULT_WIDTH
 		val height = engine.field.height//?: Field.DEFAULT_HEIGHT
-//		val oX = 0
-
-		RenderStaffRoll.draw(x+width/2f, y, 0f, height.toFloat(), .8f)
-
 
 		if(engine.frameColor>=0) {
 			val fi = resources.imgFrame[engine.frameColor].res
@@ -325,25 +326,31 @@ class RendererSlick(
 	}
 
 	val bgType:List<AbstractBG<Image>> by lazy {
-		resources.imgPlayBG.map {SpinBG(it)}
+		resources.imgPlayBG.map {i ->
+			SpinBG(i,when(Random.Default.nextInt(10)){
+			0->BGADNightClock(resources.imgPlayBGA.first {it.name.endsWith("_n")},false)
+			in 1..4->BGAHBeams(resources.imgPlayBGA.first {it.name.endsWith("_b")},false)
+			else->null
+		})
+		}
 	}
 
 	val bgaType:List<AbstractBG<Image>> by lazy {
 		resources.imgPlayBGA.map {
 			when {
-				it.name.endsWith("_o") -> DTET00Ocean(it)
-				it.name.endsWith("_c") -> DTET01CircleLoop(it)
-				it.name.endsWith("_f") -> DTET02Fall(it)
-				it.name.endsWith("_n") -> DTET03NightClock(it)
-				it.name.endsWith("_d") -> DTET04Deep(it)
-				it.name.endsWith("_k") -> DTET05KaleidSq(it)
-				it.name.endsWith("_t") -> DTET06Texture(it)
-				it.name.endsWith("_b") -> DTET07Beams(it)
-				it.name.endsWith("_m") -> DTET08Mist(it)
-				it.name.endsWith("_p") -> DTET09Prism(it)
-				it.name.endsWith("_x") -> DTET11ExTrans(it)
-				it.name.endsWith("_r") -> DTET12Rush(it)
-				else -> DTET10VWave(it)
+				it.name.endsWith("_o") -> BGAAOcean(it)
+				it.name.endsWith("_c") -> BGABCircleLoop(it)
+				it.name.endsWith("_f") -> BGACFall(it)
+				it.name.endsWith("_n") -> BGADNightClock(it)
+				it.name.endsWith("_d") -> BGAEDeep(it)
+				it.name.endsWith("_k") -> BGAFKaleidSq(it)
+				it.name.endsWith("_t") -> BGAGTexture(it)
+				it.name.endsWith("_b") -> BGAHBeams(it)
+				it.name.endsWith("_m") -> BGAIMist(it)
+				it.name.endsWith("_p") -> BGAJPrism(it)
+				it.name.endsWith("_x") -> BGALExTrans(it)
+				it.name.endsWith("_r") -> BGAMRush(it)
+				else -> BGAKVWave(it)
 			}
 		}
 	}

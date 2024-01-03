@@ -33,6 +33,7 @@ package mu.nu.nullpo.gui.slick
 import mu.nu.nullpo.game.component.BGMStatus
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
 import mu.nu.nullpo.game.play.GameManager
+import mu.nu.nullpo.gui.common.BaseStaffRoll
 import mu.nu.nullpo.gui.net.UpdateChecker
 import mu.nu.nullpo.gui.slick.BaseMenuConfigState.Column
 import mu.nu.nullpo.gui.slick.img.FontMedal
@@ -52,7 +53,7 @@ internal class StateTitle:BaseMenuChooseState() {
 	/** True when new version is already checked */
 	private var isNewVersionChecked = false
 	override val numChoice:Int get() = list.size
-	private var rollY = 0f
+	private var rollY = -480f
 
 	init {
 		minChoiceY = 20-list.size
@@ -89,9 +90,9 @@ internal class StateTitle:BaseMenuChooseState() {
 
 	override fun updateImpl(container:GameContainer, game:StateBasedGame, delta:Int) {
 		super.updateImpl(container, game, delta)
-		val mY = RenderStaffRoll.bufI.height+960
+		val mY = BaseStaffRoll.height
 		rollY += delta/32f
-		if(rollY>mY) rollY -= mY
+		if(rollY>mY) rollY -= mY+480
 	}
 
 	/* Draw the screen */
@@ -101,7 +102,7 @@ internal class StateTitle:BaseMenuChooseState() {
 		// Menu
 		FontNano.printFont(
 			0, 0, "NULLPOMINO VERSION ${GameManager.versionString}",
-			COLOR.ORANGE, 0.5f
+			COLOR.RAINBOW, 0.5f
 		)
 		FontNano.printFont(
 			0,
@@ -116,12 +117,9 @@ internal class StateTitle:BaseMenuChooseState() {
 
 		FontTTF.print(16, 432, NullpoMinoSlick.getUIText(list[cursor].uiText))
 
-		FontNano.printFont(300, 0, "$rollY")
-		FontNano.printFont(
-			300, 10,
-			"${960}+${RenderStaffRoll.bufI.height} = ${960+RenderStaffRoll.bufI.height}"
-		)
-		RenderStaffRoll.draw(600f-RenderStaffRoll.bufI.width, 0f, rollY-480, 480f, .8f)
+		FontNano.printFont(300, 8, "$rollY")
+		FontNano.printFont(300, 22, "${BaseStaffRoll.height}")
+		RenderStaffRoll.draw(500f-BaseStaffRoll.width, 0f, rollY, 480f, .8f)
 		super.renderImpl(container, game, g)
 
 		if(UpdateChecker.isNewVersionAvailable(GameManager.versionMajor, GameManager.versionMinor)) {
