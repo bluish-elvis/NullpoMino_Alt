@@ -72,19 +72,19 @@ data class ReplayData(
 
 	/** プロパティセットに保存
 	 * @param p プロパティセット
-	 * @param id 任意のID (Player IDなど）
-	 * @param maxFrame 保存する frame count (-1で全部保存）
+	 * @param _id 任意のID (Player IDなど）
+	 * @param _frames 保存する frame count (-1で全部保存）
 	 */
-	fun writeProperty(p:CustomProperties, id:Int, maxFrame:Int) {
-		this.id = id
-		val taken = inputDataArray.filter {it.key<=maxFrame}
+	fun writeProperty(p:CustomProperties, _id:Int, _frames:Int) {
+		id = _id
+		val taken = inputDataArray.filter {it.key<=_frames}
 		val max = taken.keys.lastOrNull() ?: 0
 		taken.forEach {(i, d) ->
-			p.setProperty("$id.r.$i", d)
+			p.setProperty("$_id.r.$i", d)
 		}
-//		p.setProperty("$id.r", Json.encodeToString(ReplayData(taken.toMutableMap(), id, max)))
-		this.maxFrame = max
-		p.setProperty("$id.r.max", max)
+//		p.setProperty("$_id.r", Json.encodeToString(ReplayData(taken.toMutableMap(), _id, max)))
+		maxFrame = max
+		p.setProperty("$_id.r.max", max)
 	}
 
 	/** プロパティセットから読み込み

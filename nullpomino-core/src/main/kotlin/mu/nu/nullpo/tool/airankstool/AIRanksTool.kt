@@ -161,9 +161,9 @@ class AIRanksTool:JFrame(), ActionListener {
 		// Loads Ranks AI property file, to populate the fields
 		val propRanksAI = CustomProperties()
 		try {
-			val `in` = FileInputStream(AIRanksConstants.RANKSAI_CONFIG_FILE)
-			propRanksAI.load(`in`)
-			`in`.close()
+			val fin = FileInputStream(AIRanksConstants.RANKSAI_CONFIG_FILE)
+			propRanksAI.load(fin)
+			fin.close()
 		} catch(e:IOException) {
 			System.err.println("load failed: ${AIRanksConstants.RANKSAI_CONFIG_FILE}")
 		}
@@ -434,16 +434,16 @@ class AIRanksTool:JFrame(), ActionListener {
 				var ranks:Ranks? = null
 
 				val fis:FileInputStream
-				val `in`:ObjectInputStream
+				val obj:ObjectInputStream
 
 				if(inputFile.trim {it<=' '}.isEmpty())
 					ranks = Ranks(4, 9)
 				else {
 					try {
 						fis = FileInputStream(AIRanksConstants.RANKSAI_DIR+inputFile)
-						`in` = ObjectInputStream(fis)
-						ranks = `in`.readObject() as Ranks
-						`in`.close()
+						obj = ObjectInputStream(fis)
+						ranks = obj.readObject() as Ranks
+						obj.close()
 					} catch(e1:FileNotFoundException) {
 						ranks = Ranks(4, 9)
 					} catch(e1:IOException) {

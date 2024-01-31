@@ -123,10 +123,10 @@ class NetServer {
 	}
 
 	/** Initialize
-	 * @param port The port to listen on
+	 * @param _port The _port to listen on
 	 */
-	private fun init(port:Int) {
-		this.port = port
+	private fun init(_port:Int) {
+		port = _port
 		fun loadProp(name:String) = CustomProperties().apply {loadXML(name, true)}
 		// Load player data file
 		propPlayerData = loadProp("config/setting/netserver_playerdata")
@@ -2722,9 +2722,9 @@ class NetServer {
 		private fun loadPresetList() {
 			propPresets = CustomProperties()
 			try {
-				val `in` = FileInputStream("config/etc/netserver_presets.cfg")
-				propPresets.load(`in`)
-				`in`.close()
+				val fin = FileInputStream("config/etc/netserver_presets.cfg")
+				propPresets.load(fin)
+				fin.close()
 			} catch(e:IOException) {
 				log.warn("Failed to load config file", e)
 			}
@@ -2778,10 +2778,10 @@ class NetServer {
 
 								log.debug("{RuleLoad} StyleID:$style RuleFile:${strTempArray[0]} SettingID:"+settingID)
 
-								val `in` = GZIPInputStream(FileInputStream(strTempArray[0]))
+								val fin = GZIPInputStream(FileInputStream(strTempArray[0]))
 								val prop = CustomProperties()
-								prop.load(`in`)
-								`in`.close()
+								prop.load(fin)
+								fin.close()
 
 								val rule = RuleOptions()
 								rule.readProperty(prop, 0)
@@ -3295,9 +3295,9 @@ class NetServer {
 			// Load server config file
 			propServer = CustomProperties()
 			try {
-				val `in` = GZIPInputStream(FileInputStream(servcfg))
-				propServer.load(`in`)
-				`in`.close()
+				val fin = GZIPInputStream(FileInputStream(servcfg))
+				propServer.load(fin)
+				fin.close()
 			} catch(e:IOException) {
 				log.warn("Failed to load config file", e)
 			}

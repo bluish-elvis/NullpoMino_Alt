@@ -262,12 +262,12 @@ class GrandM1:AbstractMode() {
 	}
 
 	/** Section Time更新処理
-	 * @param sectionNumber Section number
+	 * @param section Section number
 	 */
-	private fun stNewRecordCheck(sectionNumber:Int) {
+	private fun stNewRecordCheck(section:Int) {
 		if(!owner.replayMode&&
-			(sectionTime[sectionNumber]<bestSectionTime[sectionNumber]||bestSectionTime[sectionNumber]<0))
-			sectionIsNewRecord[sectionNumber] = true
+			(sectionTime[section]<bestSectionTime[section]||bestSectionTime[section]<0))
+			sectionIsNewRecord[section] = true
 	}
 
 	/* Called at settings screen */
@@ -284,7 +284,6 @@ class GrandM1:AbstractMode() {
 	}
 
 	override fun onSettingChanged(engine:GameEngine) {
-
 		engine.statistics.level = startLevel*100
 		setSpeed(engine)
 		owner.bgMan.bg = minOf(9, startLevel)

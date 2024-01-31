@@ -230,13 +230,13 @@ class GrandM2G:AbstractMode() {
 	}
 
 	/** Section Time更新処理
-	 * @param sectionNumber Section number
+	 * @param section Section number
 	 */
-	private fun stNewRecordCheck(sectionNumber:Int, goalType:Int) {
+	private fun stNewRecordCheck(section:Int, goalType:Int) {
 		if(!owner.replayMode&&
-			(sectionTime[sectionNumber]<bestSectionTime[sectionNumber][goalType]||bestSectionTime[sectionNumber][goalType]<0)
+			(sectionTime[section]<bestSectionTime[section][goalType]||bestSectionTime[section][goalType]<0)
 		) {
-			sectionIsNewRecord[sectionNumber] = true
+			sectionIsNewRecord[section] = true
 			sectionAnyNewRecord = true
 		}
 	}

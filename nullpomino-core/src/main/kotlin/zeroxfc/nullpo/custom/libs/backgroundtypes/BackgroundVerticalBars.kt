@@ -58,36 +58,36 @@ class BackgroundVerticalBars<T>(img:ResourceImage<T>, pulseFrames:Int, sliceSize
 		setup(pulseFrames, sliceSize, pulseBaseScale, pulseScaleVariance, reverse)
 	}
 
-	private fun setup(pulseFrames:Int, sliceSize:Int?, pulseBaseScale:Float?, pulseScaleVariance:Float?, reverse:Boolean) {
-		if(pulseBaseScale==null||pulseScaleVariance==null||sliceSize==null) {
+	private fun setup(pulseFrames:Int, sliceSize:Int?, baseScale:Float?, scaleVariance:Float?, _reverse:Boolean) {
+		if(baseScale==null||scaleVariance==null||sliceSize==null) {
 			chunks = List(AMT) {i ->
 				ImageChunk(
 					AnchorPoint.TM, listOf(640/AMT*i+640/AMT/2, 0), listOf(640/AMT*i, 0), listOf(640/AMT, 480), listOf(BASE_SCALE, 1f)
 				)
 			}
-			this.reverse = reverse
+			reverse = _reverse
 			pulsePhaseMax = pulseFrames
 			currentPulsePhase = pulsePhaseMax
 		} else {
-			this.pulseBaseScale = pulseBaseScale
-			this.pulseScaleVariance = pulseScaleVariance
+			pulseBaseScale = baseScale
+			pulseScaleVariance = scaleVariance
 			chunks = List(sliceSize) {i ->
 				ImageChunk(
 					AnchorPoint.TM, listOf(640/sliceSize*i+640/sliceSize/2, 0), listOf(640/sliceSize*i, 0), listOf(640/sliceSize, 480),
-					listOf(pulseBaseScale, 1f)
+					listOf(baseScale, 1f)
 				)
 			}
-			this.reverse = reverse
+			reverse = _reverse
 			pulsePhaseMax = pulseFrames
 			currentPulsePhase = pulsePhaseMax
 		}
 	}
 
-	fun modifyValues(pulseFrames:Int, pulseBaseScale:Float?, pulseScaleVariance:Float?, reverse:Boolean) {
-		this.reverse = reverse
+	fun modifyValues(pulseFrames:Int, baseScale:Float?, scaleVariance:Float?, _reverse:Boolean) {
+		reverse = _reverse
 		pulsePhaseMax = pulseFrames
-		if(pulseBaseScale!=null) this.pulseBaseScale = pulseBaseScale
-		if(pulseScaleVariance!=null) this.pulseScaleVariance = pulseScaleVariance
+		if(baseScale!=null) pulseBaseScale = baseScale
+		if(scaleVariance!=null) pulseScaleVariance = scaleVariance
 		if(currentPulsePhase>pulsePhaseMax) currentPulsePhase = pulsePhaseMax
 	}
 

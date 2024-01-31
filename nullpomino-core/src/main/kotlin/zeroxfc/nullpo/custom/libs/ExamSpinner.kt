@@ -80,7 +80,7 @@ class ExamSpinner {
 	private val close:Boolean
 	private val custom:Boolean
 	private val locations:IntArray = endXs.clone()
-	private var customHolder: ResourceHolderCustomAssetExtension? = null
+	private var customHolder:ResourceHolderCustomAssetExtension? = null
 	private var header:String? = null
 	private var subheading:String? = null
 	private var possibilities:List<String> = emptyList()
@@ -90,47 +90,42 @@ class ExamSpinner {
 	/**
 	 * Create a new promo exam graphic.
 	 *
-	 * @param gradeText       What grades to display
-	 * @param selectedOutcome 0 = pass, 1 = fail
-	 * @param close           Was it a close one?
+	 * @param gLabel       What grades to display
+	 * @param result 0 = pass, 1 = fail
+	 * @param _close           Was it a close one?
 	 */
-	constructor(gradeText:String?, selectedOutcome:Int, close:Boolean) {
-		val gText = gradeText ?: "UNDEFINED"
+	constructor(gLabel:String?, result:Int, _close:Boolean) {
+		val gText = gLabel ?: "UNDEFINED"
 		custom = false
 		customHolder = ResourceHolderCustomAssetExtension().apply {
 			loadImage("res/graphics/examResultText.png", "default")
 		}
 		log.debug("Non-custom ExamSpinner object created.")
-		this.gradeText = gText
-		this.selectedOutcome = selectedOutcome
-		this.close = close
+		gradeText = gText
+		selectedOutcome = result
+		close = _close
 	}
 	/**
 	 * Creates a custom spinner. Make sure to fill in all fields. Note: use lowercase "\n" for newlines.
 	 *
-	 * @param header          Heading text
-	 * @param subheading      Subheading text
-	 * @param gradeText       Grade Qualification text
-	 * @param possibilities   How many possibilities? (Should be length 2; positive in 0, negative in 1)
-	 * @param selectedOutcome 0 for first outcome, 1 for second.
-	 * @param close           Was it a close one?
+	 * @param hText          Heading text
+	 * @param subLabel      Subheading text
+	 * @param gLabel       Grade Qualification text
+	 * @param opt   How many possibilities? (Should be length 2; positive in 0, negative in 1)
+	 * @param result 0 for first outcome, 1 for second.
+	 * @param _close           Was it a close one?
 	 */
-	constructor(header:String?, subheading:String?, gradeText:String?, possibilities:List<String>?, selectedOutcome:Int,
-		close:Boolean) {
-		val head = header ?: "PROMOTION\nEXAM"
-		val subHead = subheading ?: "QUALIFY\nGRADE"
-		val gText = gradeText ?: "UNDEFINED"
-		val possible = possibilities?.let {
-			it.takeIf {it.size>=2}?.take(2)
-		} ?: listOf("PASS", "FAIL")
+	constructor(hText:String?, subLabel:String?, gLabel:String?, opt:List<String>?, result:Int, _close:Boolean) {
 		custom = true
 		log.debug("Custom ExamSpinner object created.")
-		this.header = head
-		this.subheading = subHead
-		this.gradeText = gText
-		this.possibilities = possible
-		this.selectedOutcome = selectedOutcome
-		this.close = close
+		header = hText ?: "PROMOTION\nEXAM"
+		subheading = subLabel ?: "QUALIFY\nGRADE"
+		gradeText = gLabel ?: "UNDEFINED"
+		possibilities = opt?.let {
+			it.takeIf {it.size>=2}?.take(2)
+		} ?: listOf("PASS", "FAIL")
+		selectedOutcome = result
+		close = _close
 	}
 	/**
 	 * Draws the spinner to the screen.

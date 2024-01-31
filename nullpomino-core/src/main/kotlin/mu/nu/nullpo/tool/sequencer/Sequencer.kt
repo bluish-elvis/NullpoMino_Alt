@@ -340,9 +340,9 @@ class Sequencer:JFrame(), ActionListener {
 		log.info("Loading replay file from $filename")
 		val prop = CustomProperties()
 
-		val `in` = GZIPInputStream(FileInputStream(filename))
-		prop.load(`in`)
-		`in`.close()
+		val fin = GZIPInputStream(FileInputStream(filename))
+		prop.load(fin)
+		fin.close()
 
 		return prop
 	}

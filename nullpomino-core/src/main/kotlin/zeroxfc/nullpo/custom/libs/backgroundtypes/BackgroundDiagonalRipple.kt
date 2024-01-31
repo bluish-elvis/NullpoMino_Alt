@@ -57,12 +57,12 @@ class BackgroundDiagonalRipple<T>(img:ResourceImage<T>, cellWidth:Int? = DEF_GRI
 		setup(cellWidth, cellHeight, pulseFrames, pulseBaseScale, pulseScaleVariance, reverse, reverseSlant)
 	}
 
-	fun modifyValues(pulseFrames:Int, pulseBaseScale:Float?, pulseScaleVariance:Float?, reverse:Boolean, reverseSlant:Boolean) {
-		this.reverse = reverse
-		this.reverseSlant = reverseSlant
+	fun modifyValues(pulseFrames:Int, baseScale:Float?, scaleVariance:Float?, _reverse:Boolean, _reverseSlant:Boolean) {
+		reverse = _reverse
+		reverseSlant = _reverseSlant
 		pulseFrame = pulseFrames
-		if(pulseBaseScale!=null) this.pulseBaseScale = pulseBaseScale
-		if(pulseScaleVariance!=null) this.pulseScaleVariance = pulseScaleVariance
+		if(baseScale!=null) pulseBaseScale = baseScale
+		if(scaleVariance!=null) pulseScaleVariance = scaleVariance
 		if(currentPulsePhase>pulseFrame) currentPulsePhase = pulseFrame
 	}
 
@@ -71,13 +71,13 @@ class BackgroundDiagonalRipple<T>(img:ResourceImage<T>, cellWidth:Int? = DEF_GRI
 		pulseScaleVariance = SCALE_VARIANCE
 	}
 
-	private fun setup(cellWidth:Int?, cellHeight:Int?, pulseFrames:Int, pulseBaseScale:Float?, pulseScaleVariance:Float?,
-		reverse:Boolean, reverseSlant:Boolean) {
-		this.reverse = reverse
-		this.reverseSlant = reverseSlant
+	private fun setup(cellWidth:Int?, cellHeight:Int?, pulseFrames:Int, baseScale:Float?, scaleVariance:Float?,
+		_reverse:Boolean, _reverseSlant:Boolean) {
+		reverse = _reverse
+		reverseSlant = _reverseSlant
 		pulseFrame = pulseFrames
 		currentPulsePhase = pulseFrame
-		if(pulseBaseScale==null||pulseScaleVariance==null||cellWidth==null||cellHeight==null) {
+		if(baseScale==null||scaleVariance==null||cellWidth==null||cellHeight==null) {
 			chunkGrid = List(DEF_GRID_HEIGHT) {y ->
 				List(DEF_GRID_WIDTH) {x ->
 					ImageChunk(
@@ -90,16 +90,16 @@ class BackgroundDiagonalRipple<T>(img:ResourceImage<T>, cellWidth:Int? = DEF_GRI
 				}
 			}
 		} else {
-			this.pulseBaseScale = pulseBaseScale
-			this.pulseScaleVariance = pulseScaleVariance
-			val w:Int = if(640%cellWidth!=0) 8 else 640/cellWidth
-			val h:Int = if(480%cellHeight!=0) 8 else 480/cellHeight
+			pulseBaseScale = baseScale
+			pulseScaleVariance = scaleVariance
+			val w = if(640%cellWidth!=0) 8 else 640/cellWidth
+			val h = if(480%cellHeight!=0) 8 else 480/cellHeight
 			chunkGrid = List(h) {y ->
 				List(w) {x ->
 					ImageChunk(
 						AnchorPoint.MM,
 						listOf(cellWidth*x+cellWidth/2, cellHeight*y+cellHeight/2),
-						listOf(cellWidth*x, cellHeight*y), listOf(cellWidth, cellHeight), listOf(pulseBaseScale, pulseBaseScale)
+						listOf(cellWidth*x, cellHeight*y), listOf(cellWidth, cellHeight), listOf(baseScale, baseScale)
 					)
 				}
 			}

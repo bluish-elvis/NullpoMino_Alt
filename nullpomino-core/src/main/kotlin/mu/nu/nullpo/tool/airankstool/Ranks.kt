@@ -72,13 +72,13 @@ class Ranks:java.io.Serializable {
 
 	fun completionPercentageIncrease():Boolean = 0==completion%(size/100)&&completion!=0
 
-	constructor(maxJump:Int, stackWidth:Int) {
-		this.maxJump = maxJump
-		base = 2*maxJump+1
+	constructor(_jumps:Int, _width:Int) {
+		maxJump = _jumps
+		base = 2*_jumps+1
 
-		this.stackWidth = stackWidth
+		stackWidth = _width
 
-		surfaceWidth = stackWidth-1
+		surfaceWidth = _width-1
 
 		size = base.toDouble().pow(surfaceWidth.toDouble()).toInt()
 		ranks = MutableList(size) {0}
@@ -90,8 +90,8 @@ class Ranks:java.io.Serializable {
 		ranks.fill(Integer.MAX_VALUE)
 	}
 
-	constructor(rankFrom:Ranks?) {
-		ranksFrom = rankFrom
+	constructor(_ranks:Ranks?) {
+		ranksFrom = _ranks
 		maxJump = ranksFrom!!.maxJump
 		base = 2*maxJump+1
 
@@ -106,8 +106,8 @@ class Ranks:java.io.Serializable {
 		rankMax = 0
 	}
 
-	fun setRanksFrom(ranksfrom:Ranks) {
-		ranksFrom = ranksfrom
+	fun setRanksFrom(_ranks:Ranks) {
+		ranksFrom = _ranks
 		error = 0
 		maxError = 0
 		completion = 0

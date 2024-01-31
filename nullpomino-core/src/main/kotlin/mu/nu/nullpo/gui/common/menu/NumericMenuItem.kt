@@ -33,16 +33,16 @@ package mu.nu.nullpo.gui.common.menu
 
 open class NumericMenuItem(
 	name:String,
-	color:Int,
-	state:Int = 50,
+	_color:Int,
+	_state:Int = 50,
 	private val minValue:Int = 0,
 	private val maxValue:Int = 100,
 	private val step:Int = 1,
 	private val arithmeticStyle:Int = ARITHSTYLE_MODULAR
 ):MenuItem(name) {
 	init {
-		this.color = color
-		this.state = state
+		color = _color
+		state = _state
 	}
 
 	override fun changeState(change:Int) {

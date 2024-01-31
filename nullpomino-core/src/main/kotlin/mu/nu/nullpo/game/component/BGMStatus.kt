@@ -55,7 +55,7 @@ class BGMStatus {
 
 	/** 音楽の定数 */
 	sealed class BGM(
-		val id:Int, idx:Int = 0, val hidden:Boolean = false, nums:Int = 1, ln:String = "",
+		val id:Int, _idx:Int = 0, val hidden:Boolean = false, _num:Int = 1, ln:String = "",
 		sn:List<String> = emptyList()
 	) {
 		constructor(id:Int, idx:Int, nums:Int, ln:String):this(id, idx, false, nums, ln)
@@ -64,15 +64,15 @@ class BGMStatus {
 			:this(id, idx, hidden, sn.size, ln, sn.toList())
 
 		//		val id:Int = BGM::class.java.declaredClasses.indexOfFirst {it==this::class.java}
-		val idx:Int = minOf(maxOf(0, idx), nums-1)
-		val nums = maxOf(1, nums, sn.size)
+		val idx:Int = minOf(maxOf(0, _idx), _num-1)
+		val nums = maxOf(1, _num, sn.size)
 
 		val name = this::class.simpleName ?: ""
 		val longName:String = ln.ifEmpty {name}
-		val subName:String = if(sn.isEmpty()) "" else sn[maxOf(minOf(this.idx, minOf(sn.size, nums)-1), 0)]
-		val drawName = "#$id-${this.idx} ${name.replace('_', ' ')}"
+		val subName:String = if(sn.isEmpty()) "" else sn[maxOf(minOf(idx, minOf(sn.size, _num)-1), 0)]
+		val drawName = "#$id-$idx ${name.replace('_', ' ')}"
 		val fullName = "$longName $subName"
-		//var filename:List<String> = List(maxOf(1, nums)) {""}
+		//var filename:List<String> = List(maxOf(1, _num)) {""}
 
 		override fun equals(other:Any?):Boolean =
 			super.equals(other)||if(other is BGM) id==other.id&&idx==other.idx else false
@@ -140,7 +140,7 @@ class BGMStatus {
 		class Finale(idx:Int = 0):BGM(15, idx, "Grand Finale", "Genuine", "Joker", "Further", hidden = true)
 		class Blitz(idx:Int = 0):BGM(16, idx, "Blitz", "3-min", "5-min", "3-min EXTREME", "5-min EXTREME", hidden = true)
 
-		//operator fun get(index: Int): BGM = if(this.idx)
+		//operator fun get(index: Int): BGM = if(this._idx)
 		companion object {
 			val all:List<List<BGM>>
 				get() = BGM::class.sealedSubclasses.map {bg ->

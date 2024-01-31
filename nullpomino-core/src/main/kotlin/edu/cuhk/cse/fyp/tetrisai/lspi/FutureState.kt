@@ -37,21 +37,21 @@ class FutureState:State() {
 	override val top = IntArray(COLS)
 
 	fun resetToCurrentState(s:State) {
-		val field = s.field
-		this.nextPiece = s.nextPiece
+		val _field = s.field
+		nextPiece = s.nextPiece
 		lost = s.lost
 		rowsCleared = s.rowsCleared
 		turnNumber = s.turnNumber
-		this.b2b = s.b2b
+		b2b = s.b2b
 		linesSent = s.linesSent
-		this.lastCleared = s.lastCleared
-		this.combo = s.combo
-		this.linesStack = s.linesStack
+		lastCleared = s.lastCleared
+		combo = s.combo
+		linesStack = s.linesStack
 		totalLinesSent = s.totalLinesSent
-		Arrays.fill(this.top, 0)
-		for(i in field.indices.reversed()) {
-			this.field[i] = field[i]?.clone()
-			for(j in top.indices) if(top[j]==0&&field[i]!![j]>0) top[j] = i+1
+		Arrays.fill(top, 0)
+		for(i in _field.indices.reversed()) {
+			field[i] = _field[i]?.clone()
+			for(j in top.indices) if(top[j]==0&&_field[i]!![j]>0) top[j] = i+1
 		}
 	}
 	// add lines stack to field

@@ -139,9 +139,9 @@ open class RanksAI:DummyAI(), Runnable {
 		threadRunning = false
 		val propRanksAI = CustomProperties()
 		try {
-			val `in` = FileInputStream(AIRanksConstants.RANKSAI_CONFIG_FILE)
-			propRanksAI.load(`in`)
-			`in`.close()
+			val fin = FileInputStream(AIRanksConstants.RANKSAI_CONFIG_FILE)
+			propRanksAI.load(fin)
+			fin.close()
 		} catch(_:IOException) {
 		}
 
@@ -156,16 +156,16 @@ open class RanksAI:DummyAI(), Runnable {
 			var inputFile = ""
 			if(file!=null&&file.trim {it<=' '}.isNotEmpty()) inputFile = AIRanksConstants.RANKSAI_DIR+currentRanksFile!!
 			val fis:FileInputStream
-			val `in`:ObjectInputStream
+			val obj:ObjectInputStream
 
 			if(inputFile.trim {it<=' '}.isEmpty())
 				ranks = Ranks(4, 9)
 			else
 				try {
 					fis = FileInputStream(inputFile)
-					`in` = ObjectInputStream(fis)
-					ranks = `in`.readObject() as Ranks
-					`in`.close()
+					obj = ObjectInputStream(fis)
+					ranks = obj.readObject() as Ranks
+					obj.close()
 				} catch(e:FileNotFoundException) {
 					ranks = Ranks(4, 9)
 				} catch(e:IOException) {

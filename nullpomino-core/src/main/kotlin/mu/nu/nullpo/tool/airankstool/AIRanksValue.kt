@@ -49,9 +49,9 @@ object AIRanksValue {
 		else
 			try {
 				val fis = FileInputStream(inputFile)
-				val `in` = ObjectInputStream(fis)
-				val ranks = `in`.readObject() as Ranks
-				`in`.close()
+				val obj = ObjectInputStream(fis)
+				val ranks = obj.readObject() as Ranks
+				obj.close()
 				val surface1 = listOf(0, 1, 1, -1, -1, 1, -3, -2)
 				val surface2 = listOf(0, 1, 1, -1, -1, 4, -4, 2)
 

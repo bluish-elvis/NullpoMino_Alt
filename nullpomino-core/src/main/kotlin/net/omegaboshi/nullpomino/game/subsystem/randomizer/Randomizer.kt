@@ -53,15 +53,15 @@ abstract class Randomizer {
 	 *
 	 * @param setPieces Array of enabled pieces.
 	 */
-	fun setState(setPieces:Collection<Int>, seed:Long = this.seed) {
-		this.seed = seed
-		r = Random(seed)
+	fun setState(setPieces:Collection<Int>, _seed:Long = seed) {
+		seed = _seed
+		r = Random(_seed)
 		pieces = setPieces.filter {i -> Shape.all.map {it.ordinal}.contains(i)}
 		init()
 	}
 	@JvmOverloads @JvmName("setStateBooleans")
-	fun setState(pieceEnable:List<Boolean>, seed:Long = this.seed) =
-		setState(Shape.all.map {it.ordinal}.filter {pieceEnable[it]}, seed)
+	fun setState(pieceEnable:List<Boolean>, _seed:Long = seed) =
+		setState(Shape.all.map {it.ordinal}.filter {pieceEnable[it]}, _seed)
 	@JvmOverloads @JvmName("setStateShape")
-	fun setState(pieceEnable:Collection<Shape>, seed:Long = this.seed) = setState(pieceEnable.map {it.ordinal}, seed)
+	fun setState(pieceEnable:Collection<Shape>, _seed:Long = seed) = setState(pieceEnable.map {it.ordinal}, _seed)
 }

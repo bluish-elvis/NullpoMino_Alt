@@ -270,9 +270,9 @@ class GrandM2:AbstractMode() {
 	 */
 	private fun setSpeed(engine:GameEngine) {
 		engine.speed.gravity = if(always20g||engine.statistics.time>=54000) -1
-		else tableGravityValue[(tableGravityChangeLevel.indexOfFirst {engine.statistics.level<it}).let {if(it<0) tableGravityChangeLevel.size-1 else it}]
+		else tableGravityValue[(tableGravityChangeLevel.indexOfFirst {engine.statistics.level<it}).let {if(it<0) tableGravityChangeLevel.lastIndex else it}]
 
-		val section = minOf(engine.statistics.level/100, tableARE.size-1)
+		val section = minOf(engine.statistics.level/100, tableARE.lastIndex)
 		engine.speed.das = tableDAS[section]
 
 		if(engine.statistics.time>=54000) {
@@ -312,10 +312,10 @@ class GrandM2:AbstractMode() {
 
 	/** ST medal check
 	 * @param engine GameEngine
-	 * @param sectionNumber Section number
+	 * @param section Section number
 	 */
-	private fun stMedalCheck(engine:GameEngine, sectionNumber:Int) {
-		val best = bestSectionTime[sectionNumber]
+	private fun stMedalCheck(engine:GameEngine, section:Int) {
+		val best = bestSectionTime[section]
 
 		if(sectionLastTime<best||best<=0) {
 			if(medalST<3) {
@@ -327,7 +327,7 @@ class GrandM2:AbstractMode() {
 			}
 			if(!owner.replayMode) {
 				decTemp++
-				sectionIsNewRecord[sectionNumber] = true
+				sectionIsNewRecord[section] = true
 			}
 		} else if(sectionLastTime<best+300&&medalST<2) {
 			engine.playSE("medal2")

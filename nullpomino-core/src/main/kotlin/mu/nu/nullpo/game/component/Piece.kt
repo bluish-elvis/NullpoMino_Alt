@@ -154,9 +154,9 @@ class Piece(@SerialName("id") private var shape:Int = 0) {
 		dataOffsetY = p.dataOffsetY.toMutableList()
 	}
 
-	/** すべてのBlock stateを[block]と同じに設定
+	/** すべてのBlock stateを[_blk]と同じに設定
 	 */
-	fun setBlock(block:Block) = this.block.forEach {it.replace(block)}
+	fun setBlock(_blk:Block) = block.forEach {it.replace(_blk)}
 
 	/** すべてのBlock colorを[color]に変更*/
 	fun setColor(color:Block.COLOR) = block.forEach {it.color = color}

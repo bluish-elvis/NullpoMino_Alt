@@ -58,37 +58,37 @@ class BackgroundHorizontalBars<T>(img:ResourceImage<T>, pulseFrames:Int, sliceSi
 		setup(pulseFrames, sliceSize, pulseBaseScale, pulseScaleVariance, reverse)
 	}
 
-	private fun setup(pulseFrames:Int, sliceSize:Int?, pulseBaseScale:Float?, pulseScaleVariance:Float?, reverse:Boolean) {
-		if(pulseBaseScale==null||pulseScaleVariance==null||sliceSize==null) {
+	private fun setup(pulseFrames:Int, sliceSize:Int?, baseScale:Float?, scaleVariance:Float?, _reverse:Boolean) {
+		if(baseScale==null||scaleVariance==null||sliceSize==null) {
 			chunks = Array(AMT) {i ->
 				ImageChunk(
 					AnchorPoint.ML, listOf(0, 480/AMT*i+480/AMT/2),
 					listOf(0, 480/AMT*i), listOf(640, 480/AMT), listOf(1f, BASE_SCALE)
 				)
 			}
-			this.reverse = reverse
+			reverse = _reverse
 			pulsePhaseMax = pulseFrames
 			currentPulsePhase = pulsePhaseMax
 		} else {
-			this.pulseBaseScale = pulseBaseScale
-			this.pulseScaleVariance = pulseScaleVariance
+			pulseBaseScale = baseScale
+			pulseScaleVariance = scaleVariance
 			chunks = Array(sliceSize) {i ->
 				ImageChunk(
 					AnchorPoint.ML, listOf(0, 480/sliceSize*i+480/sliceSize/2),
-					listOf(0, 480/sliceSize*i), listOf(640, 480/sliceSize), listOf(1f, pulseBaseScale)
+					listOf(0, 480/sliceSize*i), listOf(640, 480/sliceSize), listOf(1f, baseScale)
 				)
 			}
-			this.reverse = reverse
+			reverse = _reverse
 			pulsePhaseMax = pulseFrames
 			currentPulsePhase = pulsePhaseMax
 		}
 	}
 
-	fun modifyValues(pulseFrames:Int, pulseBaseScale:Float?, pulseScaleVariance:Float?, reverse:Boolean) {
-		this.reverse = reverse
+	fun modifyValues(pulseFrames:Int, baseScale:Float?, scaleVariance:Float?, _reverse:Boolean) {
+		reverse = _reverse
 		pulsePhaseMax = pulseFrames
-		if(pulseBaseScale!=null) this.pulseBaseScale = pulseBaseScale
-		if(pulseScaleVariance!=null) this.pulseScaleVariance = pulseScaleVariance
+		if(baseScale!=null) pulseBaseScale = baseScale
+		if(scaleVariance!=null) pulseScaleVariance = scaleVariance
 		if(currentPulsePhase>pulsePhaseMax) currentPulsePhase = pulsePhaseMax
 	}
 

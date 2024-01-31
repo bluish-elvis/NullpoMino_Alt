@@ -17,9 +17,9 @@ class TFrame:JFrame, KeyListener {
 	var slot = 0
 	var mode = MANUAL
 	//constructor
-	constructor(s:State) {
-		this.s = s
-		s.label = label
+	constructor(_s:State) {
+		s = _s
+		_s.label = label
 		isResizable = false
 		defaultCloseOperation = EXIT_ON_CLOSE // closes all windows when this is closed
 		title = "Tetris BKW"
@@ -32,12 +32,12 @@ class TFrame:JFrame, KeyListener {
 		isVisible = true
 	}
 	//constructor with title
-	constructor(s:State, title:String?) {
-		this.s = s
-		s.label = label
+	constructor(_s:State, _title:String?) {
+		s = _s
+		_s.label = label
 		isResizable = false
 		defaultCloseOperation = EXIT_ON_CLOSE // closes all windows when this is closed
-		setTitle(title)
+		title = _title
 		contentPane = label.draw
 		pack()
 		label.border = .05
@@ -47,10 +47,10 @@ class TFrame:JFrame, KeyListener {
 		isVisible = true
 	}
 	//switches which state is attached to this TFrame
-	fun bindState(s:State?) {
-		if(s!=null) s.label = null
-		this.s = s
-		s!!.label = label
+	fun bindState(_s:State?) {
+		if(_s!=null) _s.label = null
+		s = _s
+		_s?.label = label
 	}
 
 	override fun keyPressed(e:KeyEvent) {

@@ -76,14 +76,14 @@ class NetServerBan {
 	constructor()
 
 	/** Creates a new NetServerBan object representing a ban starting now.
-	 * @param addr the remote address this NetServerBan affects.
-	 * @param banLength an integer representing the length of the ban.
+	 * @param _addr the remote address this NetServerBan affects.
+	 * @param _leng an integer representing the length of the ban.
 	 */
 	@JvmOverloads
-	constructor(addr:String, banLength:Int = BANLENGTH_PERMANENT) {
-		this.addr = addr
+	constructor(_addr:String, _leng:Int = BANLENGTH_PERMANENT) {
+		addr = _addr
 		startDate = Calendar.getInstance(TimeZone.getTimeZone("GMT"))
-		this.banLength = banLength
+		banLength = _leng
 	}
 
 	/** Export startDate to String

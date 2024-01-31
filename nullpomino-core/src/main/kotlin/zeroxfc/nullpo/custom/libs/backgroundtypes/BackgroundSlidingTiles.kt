@@ -67,14 +67,14 @@ class BackgroundSlidingTiles(private val custom:ResourceImage<*>?, directionRand
 	private var height = 0
 	private var move = false
 
-	constructor(skin:Int, directionRandomizer:Random = Random.Default, color:Int = 0, size:Int = 1, darkness:Float = 0f):this(
+	constructor(_skin:Int, directionRandomizer:Random = Random, _color:Int = 0, _size:Int = 1, _darkness:Float = 0f):this(
 		null,
 		directionRandomizer
 	) {
-		this.skin = skin
-		this.color = COLOR.all[color]
-		this.size = size
-		this.darkness = darkness
+		skin = _skin
+		color = COLOR.all[_color]
+		size = _size
+		darkness = _darkness
 	}
 
 	init {
@@ -223,12 +223,12 @@ class BackgroundSlidingTiles(private val custom:ResourceImage<*>?, directionRand
 		}
 	}
 
-	private fun modifyValues(color:Int?, size:Int?, darkness:Float?) {
+	private fun modifyValues(_color:Int?, _size:Int?, _darkness:Float?) {
 		if(custom!=null) return
-		if(color!=null) this.color = COLOR.all[color]
-		if(size!=null) this.size = size
-		if(darkness!=null) this.darkness = darkness
-		if(color!=null||size!=null) reset()
+		if(_color!=null) color = COLOR.all[_color]
+		if(_size!=null) size = _size
+		if(_darkness!=null) darkness = _darkness
+		if(_color!=null||_size!=null) reset()
 	}
 
 	companion object {

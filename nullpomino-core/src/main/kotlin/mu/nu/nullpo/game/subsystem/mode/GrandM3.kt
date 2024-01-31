@@ -448,10 +448,10 @@ class GrandM3:AbstractMode() {
 
 	/** ST medal check
 	 * @param engine GameEngine
-	 * @param sectionNumber Section number
+	 * @param section Section number
 	 */
-	private fun stMedalCheck(engine:GameEngine, sectionNumber:Int) {
-		val best = bestSectionTime[goalType][sectionNumber]
+	private fun stMedalCheck(engine:GameEngine, section:Int) {
+		val best = bestSectionTime[goalType][section]
 
 		if(sectionLastTime<best) {
 			if(medalST<3) {
@@ -463,7 +463,7 @@ class GrandM3:AbstractMode() {
 			}
 			if(!owner.replayMode) {
 				decTemp++
-				sectionIsNewRecord[sectionNumber] = true
+				sectionIsNewRecord[section] = true
 			}
 		} else if(sectionLastTime<best+300&&medalST<2) {
 			engine.playSE("medal2")

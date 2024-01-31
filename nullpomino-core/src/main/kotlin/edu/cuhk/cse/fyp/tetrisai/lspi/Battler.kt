@@ -46,9 +46,9 @@ import mu.nu.nullpo.util.GeneralUtil as Util
 Make a new Simulator object, ready to go.
 @param mode Game mode Object
 @param rules Game rules Object
-@param ai,ai2 AI object to play (MAKE SURE IT SUPPORTS UNTHREADED !!! )
+@param _ai,_ai2 AI object to play (MAKE SURE IT SUPPORTS UNTHREADED !!! )
  */
-class Battler(mode:GameMode, rules:RuleOptions, ai:DummyAI, ai2:DummyAI) {
+class Battler(mode:GameMode, rules:RuleOptions, _ai:DummyAI, _ai2:DummyAI) {
 	// NOTE(oliver): For other GameModes, look inside src/mu/nu/nullpo/game/subsystem/mode
 
 	private val manager:GameManager = GameManager(mode = mode)
@@ -71,7 +71,7 @@ class Battler(mode:GameMode, rules:RuleOptions, ai:DummyAI, ai2:DummyAI) {
 				ruleOpt = rules
 				randomizer = Util.loadRandomizer(rules.strRandomizer)
 				wallkick = Util.loadWallkick(rules.strWallkick)
-				this.ai = if(i==0) ai else ai2
+				ai = if(i==0) _ai else _ai2
 				aiMoveDelay = 0
 				aiThinkDelay = 0
 				aiUseThread = false
@@ -144,7 +144,7 @@ class Battler(mode:GameMode, rules:RuleOptions, ai:DummyAI, ai2:DummyAI) {
 	 *
 	 * @param mode Game mode Object
 	 * @param rulePath path string to the rules file
-	 * @param ai,ai2 AI object to play (MAKE SURE IT SUPPORTS UNTHREADED !!! )
+	 * @param ai,_ai2 AI object to play (MAKE SURE IT SUPPORTS UNTHREADED !!! )
 	 */
 	constructor(mode:GameMode, rulePath:String, ai:DummyAI, ai2:DummyAI):this(mode, Util.loadRule(rulePath), ai, ai2)
 	/**
@@ -197,7 +197,7 @@ class Battler(mode:GameMode, rules:RuleOptions, ai:DummyAI, ai2:DummyAI) {
 			log.info("-------- Simulation %d of %d --------".format(i, count))
 			runSimulation()
 		}
-		//gameEngine.ai.shutdown(gameEngine, 0);
+		//gameEngine._ai.shutdown(gameEngine, 0);
 	}
 	/**
 	 * Performs multiple sequential simulations to completion (STATE == GAMEOVER),
@@ -231,9 +231,9 @@ class Battler(mode:GameMode, rules:RuleOptions, ai:DummyAI, ai2:DummyAI) {
 				log.info("Line per game:\t"+totalLines[j].toDouble()/(i+1))
 			}
 			/*			if (i % step == 0) {
-//				PyAI pyai = (PyAI) gameEngine.ai;
-//				pyai.invoke("sys.getsizeof(ai.qtable)");
-//				pyai.invoke("ai.saveQTable()");
+//				PyAI pyai = (PyAI) gameEngine._ai;
+//				pyai.invoke("sys.getsizeof(_ai.qtable)");
+//				pyai.invoke("_ai.saveQTable()");
 			}*/
 		}
 		log.info("-------- COMPLETE --------")
@@ -281,10 +281,10 @@ class Battler(mode:GameMode, rules:RuleOptions, ai:DummyAI, ai2:DummyAI) {
 			// NOTE(oliver): For other rules, look inside config/rule.
 			val rulePath = "config/rule/StandardAITraining.rul"
 
-			// NOTE(oliver): For other AIs, look inside src/mu/nu/nullpo/game/subsystem/ai, or src/dk/itu/ai
+			// NOTE(oliver): For other AIs, look inside src/mu/nu/nullpo/game/subsystem/_ai, or src/dk/itu/_ai
 			val ai:DummyAI = LSPIAI()
 			val ai2:DummyAI = BasicAI()
-			//net.tetrisconcept.poochy.nullpomino.ai.PoochyBot()
+			//net.tetrisconcept.poochy.nullpomino._ai.PoochyBot()
 
 			// Actual simulation.
 			val battler = Battler(mode, rulePath, ai, ai2)

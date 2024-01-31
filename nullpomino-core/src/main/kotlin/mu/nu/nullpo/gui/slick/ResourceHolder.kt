@@ -188,16 +188,16 @@ object ResourceHolder:mu.nu.nullpo.gui.common.ResourceHolder() {
 	}
 
 	/** 指定した numberのBGMをメモリ上に読み込み
-	 * @param bgm enum [mu.nu.nullpo.game.component.BGMStatus.BGM]
+	 * @param _m enum [mu.nu.nullpo.game.component.BGMStatus.BGM]
 	 * @param showErr 例外が発生したときにコンソールに表示する
 	 */
-	private fun loadBGM(bgm:BGM, showErr:Boolean = false) {
+	private fun loadBGM(_m:BGM, showErr:Boolean = false) {
 		if(!pCo.audio.bgm) return
-		val name = bgm.name
-		val n = bgm.longName
-		bgm.id
-		this.bgm[bgm.id].forEachIndexed {idx, (first) ->
-			val sub = bgm.subName
+		val name = _m.name
+		val n = _m.longName
+		_m.id
+		bgm[_m.id].forEachIndexed {idx, (first) ->
+			val sub = _m.subName
 			if(first==null) try {
 				val filename = pMu.getProperty("music.filename.$name.$idx", null)
 				if(filename.isNullOrEmpty()) {
@@ -207,7 +207,7 @@ object ResourceHolder:mu.nu.nullpo.gui.common.ResourceHolder() {
 
 				val streaming = pCo.audio.bgmStreaming
 				if(File(filename).canRead()) {
-					this.bgm[bgm.id][idx] = Music(filename, streaming) to pMu.getProperty("music.noloop.${bgm.name}.${bgm.idx}", false)
+					bgm[_m.id][idx] = Music(filename, streaming) to pMu.getProperty("music.noloop.${_m.name}.${_m.idx}", false)
 					//log.info("Loaded BGM $n:#$idx $sub")
 				}
 			} catch(e:Throwable) {

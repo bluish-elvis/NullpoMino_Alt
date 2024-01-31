@@ -37,17 +37,9 @@ import javax.swing.filechooser.FileFilter
 class SimpleFileFilter(
 	/** 拡張子 */
 	var extension:String = "",
-	desc:String = ""):FileFilter() {
 	/** 表示名 */
-	private var description:String = desc
+	var desc:String = ""):FileFilter() {
 
 	override fun accept(f:File):Boolean = if(f.isDirectory) true else f.name.endsWith(extension)
-
-	override fun getDescription():String = description
-
-	/** @param description セットする description
-	 */
-	fun setDescription(description:String) {
-		this.description = description
-	}
+	override fun getDescription():String = desc
 }

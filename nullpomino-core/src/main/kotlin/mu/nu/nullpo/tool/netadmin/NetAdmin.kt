@@ -145,34 +145,34 @@ class NetAdmin:JFrame(), ActionListener, NetMessageListener {
 	private fun init() {
 		// Load config file
 		try {
-			val `in` = FileInputStream("config/setting/netadmin.cfg")
-			propConfig.load(`in`)
-			`in`.close()
+			val fin = FileInputStream("config/setting/netadmin.cfg")
+			propConfig.load(fin)
+			fin.close()
 		} catch(_:IOException) {
 		}
 
 		// Load language files
 		try {
-			val `in` = FileInputStream("config/lang/netadmin_default.xml")
-			propLangDefault.loadFromXML(`in`)
-			`in`.close()
+			val fin = FileInputStream("config/lang/netadmin_default.xml")
+			propLangDefault.loadFromXML(fin)
+			fin.close()
 		} catch(e:IOException) {
 			log.error("Failed to load default UI language file", e)
 		}
 
 		try {
-			val `in` = FileInputStream("config/lang/netadmin_${Locale.getDefault().country}.xml")
-			propLang.loadFromXML(`in`)
-			`in`.close()
+			val fin = FileInputStream("config/lang/netadmin_${Locale.getDefault().country}.xml")
+			propLang.loadFromXML(fin)
+			fin.close()
 		} catch(_:IOException) {
 		}
 
 		// Set look&feel
 		try {
 			val propSwingConfig = CustomProperties()
-			val `in` = FileInputStream("config/setting/swing.cfg")
-			propSwingConfig.load(`in`)
-			`in`.close()
+			val fin = FileInputStream("config/setting/swing.cfg")
+			propSwingConfig.load(fin)
+			fin.close()
 
 			if(propSwingConfig.getProperty("option.usenativelookandfeel", true))
 				try {

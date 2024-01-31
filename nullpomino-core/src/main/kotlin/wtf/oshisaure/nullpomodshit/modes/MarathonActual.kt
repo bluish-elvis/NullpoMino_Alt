@@ -102,7 +102,7 @@ class MarathonActual:AbstractMode() {
 
 	override fun onSetting(engine:GameEngine):Boolean {
 		if(!engine.owner.replayMode) {
-			val change:Int = this.updateMenu(engine)
+			val change:Int = updateMenu(engine)
 			if(engine.ctrl.isPush(4)&&engine.statc[3]>=5) {
 				engine.playSE("decide")
 				return false
@@ -212,7 +212,7 @@ class MarathonActual:AbstractMode() {
 	}
 
 	override fun renderResult(engine:GameEngine) {
-		this.drawResultStats(engine, receiver, 0, COLOR.BLUE, Statistic.TIME, Statistic.PIECE, Statistic.PPM)
+		drawResultStats(engine, receiver, 0, COLOR.BLUE, Statistic.TIME, Statistic.PIECE, Statistic.PPM)
 		this.drawResultRank(engine, receiver, 12, COLOR.BLUE, rankingRank)
 	}
 

@@ -56,7 +56,7 @@ class RetroModern:AbstractMode() {
 	/** Amount of lines cleared (It will be reset when the level increases) */
 	private var norm = 0
 
-	private var lineSlot = IntArray(3)
+	private var lineSlot = IntArray(4)
 	private var lineCount = 0
 
 	private var special = false
@@ -105,7 +105,7 @@ class RetroModern:AbstractMode() {
 		norm = 0
 		special = false
 
-		lineSlot = IntArray(3)
+		lineSlot.fill(0)
 		lineCount = 0
 
 		rankingRank = -1
@@ -135,6 +135,8 @@ class RetroModern:AbstractMode() {
 		} else
 			loadSetting(engine, owner.replayProp)
 		if(startLevel>15) startLevel = 15
+		engine.statistics.level = startLevel
+		setSpeed(engine)
 		owner.bgMan.bg = levelBG[startLevel]
 		engine.frameColor = GameEngine.FRAME_SKIN_HEBO
 	}
@@ -171,9 +173,12 @@ class RetroModern:AbstractMode() {
 
 	/** Main routine for game setup screen */
 	override fun onSettingChanged(engine:GameEngine) {
+		super.onSettingChanged(engine)
+		engine.statistics.level = startLevel
+		totalNorma = MAX_LINES-startLevel*16
 		owner.bgMan.bg = levelBG[startLevel]
 		receiver.setBGSpd(owner, .5f+gameType*.4f, levelBG[startLevel])
-		super.onSettingChanged(engine)
+		setSpeed(engine)
 	}
 
 	private fun setBGM(lv:Int) {
@@ -208,7 +213,7 @@ class RetroModern:AbstractMode() {
 	}
 
 	override fun renderFirst(engine:GameEngine) {
-		if(engine.ending==2 && rollTime>ROLLTIMELIMIT-3600)receiver.drawStaffRoll(engine, (rollTime-ROLLTIMELIMIT+3600)/3600f)
+		if(engine.ending==2&&rollTime>ROLLTIMELIMIT-3600) receiver.drawStaffRoll(engine, (rollTime-ROLLTIMELIMIT+3600)/3600f)
 	}
 	/** Renders HUD (leaderboard or game statistics) */
 	override fun renderLast(engine:GameEngine) {
@@ -336,7 +341,7 @@ class RetroModern:AbstractMode() {
 			else engine.statistics.scoreSD++
 		}
 		if(li>0) {
-			lineSlot[lineCount] = if(li>4) 4 else li
+			lineSlot[minOf(lineSlot.lastIndex, lineCount)] = if(li>4) 4 else li
 			lineCount++
 
 			// Add lines
@@ -433,9 +438,10 @@ class RetroModern:AbstractMode() {
 
 	override fun onMove(engine:GameEngine):Boolean {
 		if(lineCount<lineSlot.count {it>0}) {
-			lineSlot[0] = if(lineCount>0) lineSlot.last {it>0} else 0
-			lineSlot[1] = 0
-			lineSlot[2] = 0
+			(if(lineCount>0) lineSlot.last {it>0} else 0).let {
+				lineSlot.fill(0)
+				lineSlot[0] = it
+			}
 		}
 		return super.onMove(engine)
 	}
@@ -583,29 +589,29 @@ class RetroModern:AbstractMode() {
 
 		private val tableSpd = listOf(
 			LevelData(
-				listOf(1), listOf(24, 15, 10, 6, 20, 5, 5, 4, 3, 3, 2, 2, 2, 2, 2, 1),
+				gravity = listOf(1), listOf(24, 15, 10, 6, 20, 5, 5, 4, 3, 3, 2, 2, 2, 2, 2, 1),
 				listOf(31, 28, 26, 26, 28, 26, 26, 26, 26, 26, 26, 26, 26, 25, 26, 26),
-				listOf(57), listOf(44, 39, 34, 30, 39, 29, 29, 29, 28, 28, 28, 28, 28, 28, 28, 24),
+				lineDelay = listOf(57), lockDelay = listOf(44, 39, 34, 30, 39, 29, 29, 29, 28, 28, 28, 28, 28, 28, 28, 24),
 			),
 			LevelData(
-				listOf(1), listOf(24, 15, 10, 4, 20, 3, 2, 2, 2, 2, 1, 1, 1, 1, 1, 1),
+				gravity = listOf(1), listOf(24, 15, 10, 4, 20, 3, 2, 2, 2, 2, 1, 1, 1, 1, 1, 1),
 				listOf(31, 28, 26, 26, 28, 26, 26, 26, 26, 26, 26, 26, 25, 24, 26, 25),
-				listOf(48), listOf(44, 39, 34, 30, 39, 29, 29, 29, 28, 28, 27, 26, 25, 24, 20, 22),
+				lineDelay = listOf(48), lockDelay = listOf(44, 39, 34, 30, 39, 29, 29, 29, 28, 28, 27, 26, 25, 24, 20, 22),
 			),
 			LevelData(
-				listOf(1), listOf(15, 10, +5, 3, 20, 2, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1),
+				gravity = listOf(1), listOf(15, 10, +5, 3, 20, 2, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1),
 				listOf(28, 28, 26, 26, 28, 26, 26, 26, 26, 26, 26, 25, 24, 23, 26, 24),
-				listOf(39), listOf(39, 34, 32, 30, 39, 28, 28, 27, 26, 25, 24, 24, 24, 22, 20, 20),
+				lineDelay = listOf(39), lockDelay = listOf(39, 34, 32, 30, 39, 28, 28, 27, 26, 25, 24, 24, 24, 22, 20, 20),
 			),
 			LevelData(
-				listOf(1), listOf(+1, +1, +1, 1, 20, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1),
+				gravity = listOf(1), listOf(+1, +1, +1, 1, 20, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1),
 				listOf(28, 28, 26, 26, 28, 26, 26, 26, 26, 26, 26, 25, 24, 23, 26, 24),
-				listOf(30), listOf(24, 24, 24, 30, 39, 24, 24, 24, 24, 24, 24, 24, 24, 20, 20, 19),
+				lineDelay = listOf(30), lockDelay = listOf(24, 24, 24, 30, 39, 24, 24, 24, 24, 24, 24, 24, 24, 20, 20, 19),
 			),
 			LevelData(
-				listOf(1, 1, 1, 2, +1, 1, 1, 2, 3, 4, 4, 4, 5, 4, 3, -1), listOf(1, 1, 1, 1, 20, 1),
+				gravity = listOf(1, 1, 1, 2, +1, 1, 1, 2, 3, 4, 4, 4, 5, 4, 3, -1), listOf(1, 1, 1, 1, 20, 1),
 				listOf(26, 25, 24, 24, 28, 25, 24, 24, 24, 24, 23, 22, 22, 21, 21, 20),
-				listOf(20), listOf(24, 24, 24, 30, 39, 24, 24, 25, 25, 25, 24, 23, 23, 23, 23, 25)
+				lineDelay = listOf(20), lockDelay = listOf(24, 24, 24, 30, 39, 24, 24, 25, 25, 25, 24, 23, 23, 23, 23, 25)
 			)
 		).map {(g, gd, are, _, lined, lock) ->
 			LevelData(g, gd, are, lined, lock, lock.map {minOf(15, it-12)})

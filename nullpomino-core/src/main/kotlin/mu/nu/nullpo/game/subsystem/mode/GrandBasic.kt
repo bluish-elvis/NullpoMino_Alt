@@ -217,7 +217,7 @@ class GrandBasic:AbstractMode() {
 	 */
 	private fun setSpeed(engine:GameEngine) {
 		engine.speed.gravity = if(always20g) -1
-		else tableGravityValue[tableGravityChangeLevel.indexOfFirst {it>=engine.statistics.level}
+		else tableGravityValue[tableGravityChangeLevel.indexOfFirst {engine.statistics.level<it}
 			.let {if(it<0) tableGravityChangeLevel.lastIndex else it}]
 	}
 
@@ -276,8 +276,8 @@ class GrandBasic:AbstractMode() {
 		engine.big = big
 
 		setSpeed(engine)
-		bgmLv = if(engine.statistics.level<500) 0 else 1
-		owner.musMan.bgm = if(engine.statistics.level<500) BGM.GrandA(0) else BGM.GrandA(1)
+		bgmLv = if(engine.statistics.level<300) 0 else 1
+		owner.musMan.bgm = if(engine.statistics.level<300) BGM.GrandA(0) else BGM.GrandA(1)
 	}
 
 	override fun renderFirst(engine:GameEngine) {
@@ -376,10 +376,7 @@ class GrandBasic:AbstractMode() {
 							)
 						}
 
-						var strSeparator = "-"
-						if(i==sectionsDone) strSeparator = "+"
-
-						val strSection = "%3d%s%4d %d".format(temp, strSeparator, sectionHanabi[i], sectionScore[i])
+						val strSection = "%3d%s%4d %d".format(temp, if(i==sectionsDone) "+" else "-", sectionHanabi[i], sectionScore[i])
 
 						receiver.drawScoreNum(engine, x, 3+i, strSection, sectionIsNewRecord[i])
 					}
@@ -433,7 +430,6 @@ class GrandBasic:AbstractMode() {
 		}
 
 		setSpeed(engine)
-
 		engine.ghost = alwaysGhost||engine.statistics.level<100
 
 		if(bgmLv==0&&engine.statistics.level>=280&&engine.ending==0) owner.musMan.fadeSW = true
@@ -709,15 +705,17 @@ class GrandBasic:AbstractMode() {
 		/** Gravity table (Gravity speed value) */
 		private val tableGravityValue =
 			listOf(
-				4, 5, 6, 8, 10, 12, 16, 32, 48, 64, 4, 5, 6, 8, 12, 32, 48, 80, 112, 128, 144, 16, 48, 80, 112, 144, 176,
-				192, 208, 224, 240, -1
+				4, 5, 6, 8, 10, 12, 16, 32, 48, 64,
+				4, 5, 6, 8, 12, 32, 48, 80, 112, 128, 144,
+				16, 48, 80, 112, 144, 176, 192, 208, 224, 240, -1
 			)
 
 		/** Gravity table (Gravity change level) */
 		private val tableGravityChangeLevel =
 			listOf(
-				8, 19, 35, 40, 50, 60, 70, 80, 90, 100, 108, 119, 125, 131, 139, 149, 146, 164, 174, 180, 200, 212, 221,
-				232, 244, 256, 267, 277, 287, 295, 300, 10000
+				8, 19, 35, 40, 50, 60, 70, 80, 90,
+				100, 108, 119, 125, 131, 139, 149, 146, 164, 174, 180,
+				200, 212, 221, 232, 244, 256, 267, 277, 287, 295, 300
 			)
 
 		/** 段位 pointのCombo bonus */

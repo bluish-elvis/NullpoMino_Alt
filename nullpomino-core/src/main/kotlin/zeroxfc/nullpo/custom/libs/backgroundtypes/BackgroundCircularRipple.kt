@@ -63,15 +63,15 @@ class BackgroundCircularRipple<T>(img:ResourceImage<T>, cellWidth:Int? = DEF_GRI
 		)
 	}
 
-	fun modifyValues(waveSpeed:Int?, pulseTimerFrames:Int, pulseCenterX:Int?, pulseCenterY:Int?, wavelength:Float?,
-		pulseBaseScale:Float?, pulseScaleVariance:Float?) {
-		pulseTimerMax = pulseTimerFrames
-		if(pulseBaseScale!=null) this.pulseBaseScale = pulseBaseScale
-		if(pulseScaleVariance!=null) this.pulseScaleVariance = pulseScaleVariance
-		if(wavelength!=null) this.wavelength = wavelength
+	fun modifyValues(_waveSpeed:Int?, timerFrames:Int, pulseCenterX:Int?, pulseCenterY:Int?, length:Float?,
+		baseScale:Float?, scaleVariance:Float?) {
+		pulseTimerMax = timerFrames
+		if(baseScale!=null) pulseBaseScale = baseScale
+		if(scaleVariance!=null) pulseScaleVariance = scaleVariance
+		if(length!=null) wavelength = length
 		if(pulseCenterX!=null) centerX = pulseCenterX
 		if(pulseCenterY!=null) centerY = pulseCenterY
-		if(waveSpeed!=null) this.waveSpeed = waveSpeed
+		if(_waveSpeed!=null) waveSpeed = _waveSpeed
 		if(currentPulseTimer>pulseTimerMax) currentPulseTimer = pulseTimerMax
 	}
 
@@ -80,13 +80,13 @@ class BackgroundCircularRipple<T>(img:ResourceImage<T>, cellWidth:Int? = DEF_GRI
 		pulseScaleVariance = SCALE_VARIANCE
 	}
 
-	private fun setup(cellWidth:Int?, cellHeight:Int?, pulseCenterX:Int?, pulseCenterY:Int?, waveLength:Float, waveSpeed:Int,
-		pulseFrames:Int, pulseBaseScale:Float?, pulseScaleVariance:Float?) {
+	private fun setup(cellWidth:Int?, cellHeight:Int?, pulseCenterX:Int?, pulseCenterY:Int?, waveLength:Float, speed:Int,
+		pulseFrames:Int, baseScale:Float?, scaleVariance:Float?) {
 		var wL = waveLength
-		var wS = waveSpeed
+		var wS = speed
 		pulseTimerMax = pulseFrames
 		currentPulseTimer = pulseTimerMax
-		if(pulseBaseScale==null||pulseScaleVariance==null||pulseCenterX==null||pulseCenterY==null||cellWidth==null||cellHeight==null) {
+		if(baseScale==null||scaleVariance==null||pulseCenterX==null||pulseCenterY==null||cellWidth==null||cellHeight==null) {
 			chunkGrid = List(DEF_GRID_HEIGHT) {y ->
 				List(DEF_GRID_WIDTH) {x ->
 					ImageChunk(
@@ -98,20 +98,20 @@ class BackgroundCircularRipple<T>(img:ResourceImage<T>, cellWidth:Int? = DEF_GRI
 		} else {
 			if(wL<=0) wL = DEF_WAVELENGTH
 			if(wS<=0) wS = DEF_WAVESPEED
-			this.pulseBaseScale = pulseBaseScale
-			this.pulseScaleVariance = pulseScaleVariance
-			this.wavelength = wL
+			pulseBaseScale = baseScale
+			pulseScaleVariance = scaleVariance
+			wavelength = wL
 			centerX = pulseCenterX
 			centerY = pulseCenterY
-			this.waveSpeed = wS
-			val w:Int = if(640%cellWidth!=0) 8 else 640/cellWidth
-			val h:Int = if(480%cellHeight!=0) 8 else 480/cellHeight
+			waveSpeed = wS
+			val w = if(640%cellWidth!=0) 8 else 640/cellWidth
+			val h = if(480%cellHeight!=0) 8 else 480/cellHeight
 			chunkGrid = List(h) {y ->
 				List(w) {x ->
 					ImageChunk(
 						AnchorPoint.MM,
 						listOf(cellWidth*x+cellWidth/2, cellHeight*y+cellHeight/2),
-						listOf(cellWidth*x, cellHeight*y), listOf(cellWidth, cellHeight), listOf(pulseBaseScale, pulseBaseScale)
+						listOf(cellWidth*x, cellHeight*y), listOf(cellWidth, cellHeight), listOf(baseScale, baseScale)
 					)
 				}
 			}

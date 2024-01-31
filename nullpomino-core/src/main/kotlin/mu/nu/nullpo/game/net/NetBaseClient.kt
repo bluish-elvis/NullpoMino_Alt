@@ -97,20 +97,20 @@ open class NetBaseClient:Thread {
 	}
 
 	/** Constructor
-	 * @param host Destination host
+	 * @param _host Destination host
 	 */
-	constructor(host:String):super("NET_$host") {
-		this.host = host
+	constructor(_host:String):super("NET_$_host") {
+		host = _host
 		port = DEFAULT_PORT
 	}
 
 	/** Constructor
-	 * @param host Destination host
-	 * @param port Destination port number
+	 * @param _host Destination host
+	 * @param _port Destination port number
 	 */
-	constructor(host:String, port:Int):super("NET_$host:$port") {
-		this.host = host
-		this.port = port
+	constructor(_host:String, _port:Int):super("NET_$_host:$_port") {
+		host = _host
+		port = _port
 	}
 
 	/* Processing of the thread */

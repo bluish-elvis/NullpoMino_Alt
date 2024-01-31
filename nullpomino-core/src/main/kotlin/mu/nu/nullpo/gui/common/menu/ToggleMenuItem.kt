@@ -31,12 +31,12 @@
 
 package mu.nu.nullpo.gui.common.menu
 
-class ToggleMenuItem @JvmOverloads constructor(name:String, color:Int, state:Int = 0, val drawStyle:Int = DRAWSTYLE_OX)
-	:MenuItem(name) {
+class ToggleMenuItem @JvmOverloads constructor(_name:String, _color:Int, _state:Int = 0, val drawStyle:Int = DRAWSTYLE_OX)
+	:MenuItem(_name) {
 	init {
-		this.name = name
-		this.color = color
-		this.state = state
+		name = _name
+		color = _color
+		state = _state
 	}
 
 	override fun changeState(change:Int) {

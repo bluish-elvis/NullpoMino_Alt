@@ -108,26 +108,26 @@ class NetPlayerClient:NetBaseClient {
 	constructor(host:String, port:Int):super(host, port)
 
 	/** Constructor
-	 * @param host 接続先ホスト
-	 * @param port 接続先ポート number
+	 * @param _host 接続先ホスト
+	 * @param _port 接続先ポート number
 	 * @param name PlayerのName
 	 */
-	constructor(host:String, port:Int, name:String):super() {
-		this.host = host
-		this.port = port
+	constructor(_host:String, _port:Int, name:String):super() {
+		host = _host
+		port = _port
 		playerName = name
 		playerTeam = ""
 	}
 
 	/** Constructor
-	 * @param host 接続先ホスト
-	 * @param port 接続先ポート number
+	 * @param _host 接続先ホスト
+	 * @param _port 接続先ポート number
 	 * @param name PlayerのName
 	 * @param team 所属するTeam name
 	 */
-	constructor(host:String, port:Int, name:String, team:String):super() {
-		this.host = host
-		this.port = port
+	constructor(_host:String, _port:Int, name:String, team:String):super() {
+		host = _host
+		port = _port
 		playerName = name
 		playerTeam = team
 	}

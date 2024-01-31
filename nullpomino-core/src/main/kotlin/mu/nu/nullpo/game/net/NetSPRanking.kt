@@ -71,19 +71,19 @@ class NetSPRanking:Serializable {
 	}
 
 	/** Constructor
-	 * @param modename Game Mode Name
-	 * @param rulename Rule Name
+	 * @param mode Game Mode Name
+	 * @param rule Rule Name
 	 * @param gtype Game Type ID
-	 * @param style Game Style ID
+	 * @param stype Game Style ID
 	 * @param rtype Ranking Type
 	 * @param max Max number of records
 	 */
-	constructor(modename:String, rulename:String, gtype:Int, style:Int, rtype:Int, max:Int) {
+	constructor(mode:String, rule:String, gtype:Int, stype:Int, rtype:Int, max:Int) {
 		reset()
-		strModeName = modename
-		strRuleName = rulename
+		strModeName = mode
+		strRuleName = rule
 		gameType = gtype
-		this.style = style
+		style = stype
 		rankingType = rtype
 		maxRecords = max
 	}

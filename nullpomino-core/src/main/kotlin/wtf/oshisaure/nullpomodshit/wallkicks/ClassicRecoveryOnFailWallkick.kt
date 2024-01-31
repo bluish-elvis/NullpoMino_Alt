@@ -61,23 +61,22 @@ class ClassicRecoveryOnFailWallkick:Wallkick {
 			if(!piece.checkCollision(x+1+check, y, rtNew, field)) temp = 1+check
 			if(temp!=0) WallkickResult(temp, 0, rtNew) else {
 				var blockCount = 0
-				var xi:Int
 				run {
-					var xi = 0
-					while(xi<10) {
-						xi = 0
-						while(xi<20) {
-							if(!this.isABlockOnTheField(xi, xi, field)) ++blockCount
-							++xi
+					var _xi = 0
+					while(_xi<10) {
+						_xi = 0
+						while(_xi<20) {
+							if(!this.isABlockOnTheField(_xi, _xi, field)) ++blockCount
+							++_xi
 						}
-						++xi
+						++_xi
 					}
 				}
 				piece.block = List(blockCount) {piece.block[0]}
 				piece.dataX.forEach {it.fill(0)}
 				piece.dataY.forEach {it.fill(0)}
 				blockCount = 0
-				xi = 0
+				var xi = 0
 				while(xi<field.width) {
 					for(yi in 0..<field.height) {
 						if(!isABlockOnTheField(xi, yi, field)) {

@@ -121,15 +121,15 @@ class RanksIterator(parent:JFrame, inputFile:String, private val outputFile:Stri
 			progressLabel.text = getUIText("Progress_Note_Load_File")
 
 			val fis:FileInputStream
-			val `in`:ObjectInputStream
+			val fin:ObjectInputStream
 			if(inputFile.trim {it<=' '}.isEmpty())
 				ranksFrom = Ranks(4, 9)
 			else
 				try {
 					fis = FileInputStream(AIRanksConstants.RANKSAI_DIR+inputFile)
-					`in` = ObjectInputStream(fis)
-					ranksFrom = `in`.readObject() as Ranks
-					`in`.close()
+					fin = ObjectInputStream(fis)
+					ranksFrom = fin.readObject() as Ranks
+					fin.close()
 				} catch(e:FileNotFoundException) {
 					ranksFrom = Ranks(4, 9)
 				} catch(e:IOException) {

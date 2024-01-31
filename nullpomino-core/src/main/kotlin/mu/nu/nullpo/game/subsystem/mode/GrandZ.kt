@@ -260,17 +260,17 @@ class GrandZ:AbstractMode() {
 
 	/** Checks ST medal
 	 * @param engine GameEngine
-	 * @param sectionNumber Section Number
+	 * @param section Section Number
 	 */
-	private fun stMedalCheck(engine:GameEngine, sectionNumber:Int) {
-		val best = bestSectionTime[gametype][sectionNumber]
+	private fun stMedalCheck(engine:GameEngine, section:Int) {
+		val best = bestSectionTime[gametype][section]
 
 		if(sectionLastTime<best) {
 			if(medalST<3) {
 				engine.playSE("medal3")
 				medalST = 3
 			}
-			if(!owner.replayMode) sectionIsNewRecord[sectionNumber] = true
+			if(!owner.replayMode) sectionIsNewRecord[section] = true
 		} else if(sectionLastTime<best+300&&medalST<2) {
 			engine.playSE("medal2")
 			medalST = 2

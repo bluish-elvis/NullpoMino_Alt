@@ -59,7 +59,7 @@ class LSPIAIGarbageLine:LSPIAI() {
 		holdpiece:Piece?, depth:Int
 	):Double {
 		var pts = 0.0
-		var oppNowState = this.oppNowState
+		var _oppNowState = oppNowState
 
 		// T-Spin flag
 		val tspin = (piece!!.type==Piece.Shape.T&&rtOld!=-1&&fld.isTwistSpot(x, y, piece.big))
@@ -93,9 +93,9 @@ class LSPIAIGarbageLine:LSPIAI() {
 				//thinkbestOppPosition(oppEngine, 1 - engine.playerID);
 				oppFld.addSingleHoleGarbage((Math.random()*width).toInt(), Block.COLOR.BLACK, 0, lineSent)
 			}
-			oppNowState = createState(oppFld, oppEngine)
-			val oppLineSent = oppNowState.calLinesSentResult(lines, tspin)
-			oppFutureState = createFutureState(oppNowState, oppFld, oppEngine, 0, 0, 0)
+			_oppNowState = createState(oppFld, oppEngine)
+			val oppLineSent = _oppNowState.calLinesSentResult(lines, tspin)
+			oppFutureState = createFutureState(_oppNowState, oppFld, oppEngine, 0, oppLineSent, 0)
 
 			// My future state
 			futureState = createFutureState(nowState, fld, engine, 0, lineSent, lines)
@@ -105,7 +105,7 @@ class LSPIAIGarbageLine:LSPIAI() {
 		}
 		val f:DoubleArray?
 		if(twoPlayerGame) {
-			f = player.twoPlayerBasisFunctions.getFutureArray(nowState, futureState, oppNowState, oppFutureState)
+			f = player.twoPlayerBasisFunctions.getFutureArray(nowState, futureState, _oppNowState, oppFutureState)
 			for(i in 0..<TwoPlayerBasisFunction.FEATURE_COUNT) {
 				pts += f[i]*player.twoPlayerBasisFunctions.weight[i]
 				//log.error(i + ":" + f[i]);

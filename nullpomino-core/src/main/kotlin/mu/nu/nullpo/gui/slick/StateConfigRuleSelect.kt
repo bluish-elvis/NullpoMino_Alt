@@ -106,9 +106,9 @@ internal class StateConfigRuleSelect:BaseMenuScrollState() {
 
 			val prop = CustomProperties()
 			try {
-				val `in` = GZIPInputStream(FileInputStream("config/rule/$element"))
-				prop.load(`in`)
-				`in`.close()
+				val fin = GZIPInputStream(FileInputStream("config/rule/$element"))
+				prop.load(fin)
+				fin.close()
 				entry.name = prop.getProperty("0.ruleOpt.strRuleName", "")
 				entry.style = prop.getProperty("0.ruleOpt.style", 0)
 			} catch(e:Exception) {

@@ -237,25 +237,25 @@ internal class NullpoMinoSlick:StateBasedGame("NullpoMino (Now Loading...)") {
 			loadSlickConfig()
 
 			try {
-				val `in` = FileInputStream("config/setting/music.xml")
-				propMusic.loadFromXML(`in`)
-				`in`.close()
+				val fin = FileInputStream("config/setting/music.xml")
+				propMusic.loadFromXML(fin)
+				fin.close()
 			} catch(_:IOException) {
 			}
 
 			// 言語ファイル読み込み
 			try {
-				val `in` = FileInputStream("config/lang/slick_default.xml")
-				propLangDefault.loadFromXML(`in`)
-				`in`.close()
+				val fin = FileInputStream("config/lang/slick_default.xml")
+				propLangDefault.loadFromXML(fin)
+				fin.close()
 			} catch(e:IOException) {
 				log.error("Couldn't load default UI language file", e)
 			}
 
 			try {
-				val `in` = FileInputStream("config/lang/slick_${Locale.getDefault().country}.xml")
-				propLang.loadFromXML(`in`)
-				`in`.close()
+				val fin = FileInputStream("config/lang/slick_${Locale.getDefault().country}.xml")
+				propLang.loadFromXML(fin)
+				fin.close()
 
 				val out = FileOutputStream("config/lang/slick_${Locale.getDefault().country}.xml")
 				propLang.storeToXML(out, "Slick language file - ${Locale.getDefault().displayCountry}")
@@ -660,9 +660,9 @@ internal class NullpoMinoSlick:StateBasedGame("NullpoMino (Now Loading...)") {
 			log.debug("startObserverClient called")
 
 			try {
-				val `in` = FileInputStream("config/setting/netobserver.xml")
-				propObserver.loadFromXML(`in`)
-				`in`.close()
+				val fin = FileInputStream("config/setting/netobserver.xml")
+				propObserver.loadFromXML(fin)
+				fin.close()
 			} catch(_:IOException) {
 			}
 

@@ -184,7 +184,7 @@ abstract class AbstractRenderer:EventReceiver() {
 
 	protected abstract fun drawBG(engine:GameEngine)
 	protected abstract fun drawFrameSpecific(x:Float, y:Float, engine:GameEngine)
-	private fun drawFrame(x:Float, y:Float, engine:GameEngine,inside:()->Unit) {
+	private fun drawFrame(x:Float, y:Float, engine:GameEngine, inside:()->Unit) {
 		// Upと下
 		val s = engine.blockSize
 		val fieldW = engine.field.width// ?: Field.DEFAULT_WIDTH
@@ -971,7 +971,7 @@ abstract class AbstractRenderer:EventReceiver() {
 			val offsetX = engine.fX
 			val offsetY = engine.fY
 
-			drawFrame(offsetX, offsetY, engine,inside)
+			drawFrame(offsetX, offsetY, engine, inside)
 			engine.statc.forEachIndexed {i, it ->
 				printFontSpecific(offsetX-20, offsetY+i*8, "%3d".format(it), BaseFont.FONT.NANO, COLOR.WHITE, .5f, .5f)
 			}
@@ -1001,9 +1001,7 @@ abstract class AbstractRenderer:EventReceiver() {
 			efxFG.forEachIndexed {i, it -> it.draw(i, this)}
 	}
 
-	open fun drawBlendAdd(unit:()->Unit) {
-		unit()
-	}
+	open fun drawBlendAdd(unit:()->Unit) = unit()
 
 	protected abstract fun printFontSpecific(x:Float, y:Float, str:String, font:BaseFont.FONT, color:COLOR, scale:Float, alpha:Float)
 	protected fun printFontSpecific(x:Number, y:Number, str:String, font:BaseFont.FONT, color:COLOR, scale:Float, alpha:Float) =

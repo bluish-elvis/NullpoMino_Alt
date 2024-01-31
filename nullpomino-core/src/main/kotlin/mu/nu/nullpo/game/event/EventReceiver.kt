@@ -91,7 +91,7 @@ open class EventReceiver {
 	/** @return X position of field */
 	val GameEngine.fX
 		get() = if(owner.menuOnly) 0f else (owner.mode?.let {m ->
-			this.frameX+fieldXOffset+if(nextDisplayType==2) NEW_FIELD_OFFSET_X_BSP[m.gameStyle.ordinal][displaySize+1].let {
+			frameX+fieldXOffset+if(nextDisplayType==2) NEW_FIELD_OFFSET_X_BSP[m.gameStyle.ordinal][displaySize+1].let {
 				it[minOf(it.lastIndex, playerID)]
 			}
 			else NEW_FIELD_OFFSET_X[m.gameStyle.ordinal][displaySize+1].let {
@@ -107,7 +107,7 @@ open class EventReceiver {
 	/** @return Y position of field*/
 	val GameEngine.fY
 		get() = if(owner.menuOnly) 0f else (owner.mode?.let {m ->
-			this.frameY+if(nextDisplayType==2) NEW_FIELD_OFFSET_Y_BSP[m.gameStyle.ordinal][displaySize+1].let {
+			frameY+if(nextDisplayType==2) NEW_FIELD_OFFSET_Y_BSP[m.gameStyle.ordinal][displaySize+1].let {
 				it[minOf(it.lastIndex, playerID)]
 			}
 			else NEW_FIELD_OFFSET_Y[m.gameStyle.ordinal][displaySize+1].let {it[minOf(it.lastIndex, playerID)]}+

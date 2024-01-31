@@ -60,22 +60,22 @@ class BackgroundInterlaceVertical<T>(img:ResourceImage<T>, columnWidth:Int = DEF
 		setup(columnWidth, pulseTimerFrames, pulseBaseScale, pulseScaleVariance, upOdd, reverse)
 	}
 
-	private fun setup(columnWidth:Int = DEFAULT_COLUMN_WIDTH, pulseTimerFrames:Int = DEFAULT_TIMER_MAX,
-		pulseBaseScale:Float = BASE_SCALE, pulseScaleVariance:Float = SCALE_VARIANCE, upOdd:Boolean = UP_ODD_DEFAULT,
-		reverse:Boolean = false) {
-		this.upOdd = !upOdd
+	private fun setup(width:Int = DEFAULT_COLUMN_WIDTH, pulseTimerFrames:Int = DEFAULT_TIMER_MAX,
+		pulseBaseScale:Float = BASE_SCALE, pulseScaleVariance:Float = SCALE_VARIANCE, _upOdd:Boolean = UP_ODD_DEFAULT,
+		_reverse:Boolean = false) {
+		upOdd = !_upOdd
 		pulseTimerMax = pulseTimerFrames
 		baseScale = pulseBaseScale
 		scaleVariance = pulseScaleVariance
 		pulseTimer = pulseTimerFrames
-		this.reverse = reverse
-		this.columnWidth = if(480%columnWidth!=0) DEFAULT_COLUMN_WIDTH else columnWidth
-		chunks = List(SCREEN_WIDTH/columnWidth) {i ->
-			val up = upOdd&&i%2==1
+		reverse = _reverse
+		columnWidth = if(480%width!=0) DEFAULT_COLUMN_WIDTH else width
+		chunks = List(SCREEN_WIDTH/width) {i ->
+			val up = _upOdd&&i%2==1
 			val anchorType = if(up) AnchorPoint.LL else AnchorPoint.TL
-			val anchorLocation = listOf(i*columnWidth, if(up) SCREEN_HEIGHT else 0)
-			val srcLocation = listOf(i*columnWidth, 0)
-			ImageChunk(anchorType, anchorLocation, srcLocation, listOf(columnWidth, 480), listOf(1f, baseScale))
+			val anchorLocation = listOf(i*width, if(up) SCREEN_HEIGHT else 0)
+			val srcLocation = listOf(i*width, 0)
+			ImageChunk(anchorType, anchorLocation, srcLocation, listOf(width, 480), listOf(1f, baseScale))
 		}
 	}
 	/**
@@ -97,8 +97,8 @@ class BackgroundInterlaceVertical<T>(img:ResourceImage<T>, columnWidth:Int = DEF
 		}
 	}
 
-	fun modifyValues(pulseFrames:Int, pulseBaseScale:Float, pulseScaleVariance:Float, upOdd:Boolean) {
-		this.upOdd = upOdd
+	fun modifyValues(pulseFrames:Int, pulseBaseScale:Float, pulseScaleVariance:Float, _upOdd:Boolean) {
+		upOdd = _upOdd
 		pulseTimerMax = pulseFrames
 		baseScale = pulseBaseScale
 		scaleVariance = pulseScaleVariance

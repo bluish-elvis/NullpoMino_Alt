@@ -60,22 +60,22 @@ class BackgroundInterlaceHorizontal<T>(img:ResourceImage<T>, rowHeight:Int = DEF
 		setup(rowHeight, pulseTimerFrames, pulseBaseScale, pulseScaleVariance, leftOdd, reverse)
 	}
 
-	private fun setup(rowHeight:Int = DEFAULT_ROW_HEIGHT, pulseTimerFrames:Int = DEFAULT_TIMER_MAX,
+	private fun setup(height:Int = DEFAULT_ROW_HEIGHT, pulseTimerFrames:Int = DEFAULT_TIMER_MAX,
 		pulseBaseScale:Float = BASE_SCALE, pulseScaleVariance:Float = SCALE_VARIANCE,
-		leftOdd:Boolean = LEFT_ODD_DEFAULT, reverse:Boolean = false) {
-		this.leftOdd = !leftOdd
+		_leftOdd:Boolean = LEFT_ODD_DEFAULT, _reverse:Boolean = false) {
+		leftOdd = !_leftOdd
 		pulseTimerMax = pulseTimerFrames
 		baseScale = pulseBaseScale
 		scaleVariance = pulseScaleVariance
 		pulseTimer = pulseTimerFrames
-		this.reverse = reverse
-		this.rowHeight = if(480%rowHeight!=0) DEFAULT_ROW_HEIGHT else rowHeight
-		chunks = List(SCREEN_HEIGHT/rowHeight) {i ->
-			val left = leftOdd&&i%2==1
+		reverse = _reverse
+		rowHeight = if(480%height!=0) DEFAULT_ROW_HEIGHT else height
+		chunks = List(SCREEN_HEIGHT/height) {i ->
+			val left = _leftOdd&&i%2==1
 			val anchorType = if(left) AnchorPoint.TR else AnchorPoint.TL
-			val anchorLocation = listOf(if(left) SCREEN_WIDTH else 0, i*rowHeight)
-			val srcLocation = listOf(0, i*rowHeight)
-			ImageChunk(anchorType, anchorLocation, srcLocation, listOf(640, rowHeight), listOf(baseScale, 1f))
+			val anchorLocation = listOf(if(left) SCREEN_WIDTH else 0, i*height)
+			val srcLocation = listOf(0, i*height)
+			ImageChunk(anchorType, anchorLocation, srcLocation, listOf(640, height), listOf(baseScale, 1f))
 		}
 	}
 	/**
@@ -95,8 +95,8 @@ class BackgroundInterlaceHorizontal<T>(img:ResourceImage<T>, rowHeight:Int = DEF
 		}
 	}
 
-	fun modifyValues(pulseFrames:Int, pulseBaseScale:Float, pulseScaleVariance:Float, leftOdd:Boolean) {
-		this.leftOdd = leftOdd
+	fun modifyValues(pulseFrames:Int, pulseBaseScale:Float, pulseScaleVariance:Float, _leftOdd:Boolean) {
+		leftOdd = _leftOdd
 		pulseTimerMax = pulseFrames
 		baseScale = pulseBaseScale
 		scaleVariance = pulseScaleVariance

@@ -90,17 +90,17 @@ open class State {
 		}
 	}
 
-	fun addLinesStack(linesSent:Int) {
-		linesStack += linesSent
+	fun addLinesStack(_sent:Int) {
+		linesStack += _sent
 	}
 
-	fun addLineSent(linesSent:Int) {
-		this.linesSent = linesSent
-		totalLinesSent += linesSent
+	fun addLineSent(_sent:Int) {
+		linesSent = _sent
+		totalLinesSent += _sent
 	}
 
-	fun addLineCleared(linesCleared:Int) {
-		rowsCleared += linesCleared
+	fun addLineCleared(_cleared:Int) {
+		rowsCleared += _cleared
 	}
 	// random shuffle bag
 	private fun shuffleBag() {
@@ -255,7 +255,7 @@ open class State {
 		for(c in 0..<pWidth[nextPiece][orient]) {
 			top[slot+c] = height+pTop[nextPiece][orient][c]
 		}
-		var rowsCleared = 0
+		var _rowsCleared = 0
 		//check for full rows - starting at the top
 		for(r in height+pHeight[nextPiece][orient]-1 downTo height) {
 			//check all columns in the row
@@ -268,8 +268,8 @@ open class State {
 			}
 			//if the row was full - remove it and slide above stuff down
 			if(full) {
+				_rowsCleared++
 				rowsCleared++
-				this.rowsCleared++
 				//for each column
 				for(c in 0..<COLS) {
 					//slide down all bricks
@@ -283,7 +283,7 @@ open class State {
 			}
 		}
 		var valid = true
-		calLinesSent(rowsCleared)
+		calLinesSent(_rowsCleared)
 		if(linesSent<linesStack) {
 			linesStack -= linesSent
 			valid = addLines()
@@ -297,54 +297,49 @@ open class State {
 		return valid
 	}
 
-	fun draw() {
-		label!!.clear()
-		label!!.setPenRadius()
+	fun draw() = label?.let {
+		it.clear()
+		it.setPenRadius()
 		//outline board
-		label!!.line(0.0, 0.0, 0.0, (ROWS+5).toDouble())
-		label!!.line(COLS.toDouble(), 0.0, COLS.toDouble(), (ROWS+5).toDouble())
-		label!!.line(0.0, 0.0, COLS.toDouble(), 0.0)
-		label!!.line(0.0, (ROWS-3).toDouble(), COLS.toDouble(), (ROWS-3).toDouble())
+		it.line(0.0, 0.0, 0.0, (ROWS+5).toDouble())
+		it.line(COLS.toDouble(), 0.0, COLS.toDouble(), (ROWS+5).toDouble())
+		it.line(0.0, 0.0, COLS.toDouble(), 0.0)
+		it.line(0.0, (ROWS-3).toDouble(), COLS.toDouble(), (ROWS-3).toDouble())
 
 		//show bricks
-		for(c in 0..<COLS) {
-			for(r in 0..<top[c]) {
-				if(field[r]!![c]!=0) {
-					drawBrick(c, r)
-				}
-			}
-		}
+		for(c in 0..<COLS) for(r in 0..<top[c]) if(field[r]!![c]!=0) drawBrick(c, r)
 		for(i in 0..<COLS) {
-			label!!.setPenColor(Color.red)
-			label!!.line(i.toDouble(), top[i].toDouble(), (i+1).toDouble(), top[i].toDouble())
-			label!!.setPenColor()
+			it.setPenColor(Color.red)
+			it.line(i.toDouble(), top[i].toDouble(), (i+1).toDouble(), top[i].toDouble())
+			it.setPenColor()
 		}
-		label!!.show()
+		it.show()
 	}
+
 	//constructor
 	init {
 		nextPiece = randomPiece()
 	}
 
 	private fun drawBrick(c:Int, r:Int) {
-		label!!.filledRectangleLL(c.toDouble(), r.toDouble(), 1.0, 1.0, brickCol)
-		label!!.rectangleLL(c.toDouble(), r.toDouble(), 1.0, 1.0)
+		label?.filledRectangleLL(c.toDouble(), r.toDouble(), 1.0, 1.0, brickCol)
+		label?.rectangleLL(c.toDouble(), r.toDouble(), 1.0, 1.0)
 	}
 
 	fun drawNext(slot:Int, orient:Int) {
-		for(i in 0..<pWidth[nextPiece][orient]) {
-			for(j in pBottom[nextPiece][orient][i]..<pTop[nextPiece][orient][i]) {
+		for(i in 0..<pWidth[nextPiece][orient])
+			for(j in pBottom[nextPiece][orient][i]..<pTop[nextPiece][orient][i])
 				drawBrick(i+slot, j+ROWS+1)
-			}
-		}
-		label!!.show()
+
+
+		label?.show()
 	}
 	//visualization
 	//clears the area where the next piece is shown (top)
 	fun clearNext() {
-		label!!.filledRectangleLL(0.0, ROWS+.9, COLS.toDouble(), 4.2, TLabel.DEFAULT_CLEAR_COLOR)
-		label!!.line(0.0, 0.0, 0.0, (ROWS+5).toDouble())
-		label!!.line(COLS.toDouble(), 0.0, COLS.toDouble(), (ROWS+5).toDouble())
+		label?.filledRectangleLL(0.0, ROWS+.9, COLS.toDouble(), 4.2, TLabel.DEFAULT_CLEAR_COLOR)
+		label?.line(0.0, 0.0, 0.0, (ROWS+5).toDouble())
+		label?.line(COLS.toDouble(), 0.0, COLS.toDouble(), (ROWS+5).toDouble())
 	}
 
 	companion object {

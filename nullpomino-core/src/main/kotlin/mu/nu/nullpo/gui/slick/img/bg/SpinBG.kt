@@ -38,9 +38,9 @@ import kotlin.math.absoluteValue
 import kotlin.math.sin
 
 class SpinBG(bgi:ResourceImageSlick, private val addBGFX:BaseBG<*>? = null):AbstractBG(bgi) {
-	val sc get() = ((1+sin(this.res.rotation*RG*2).absoluteValue/3)*640/minOf(this.res.width, this.res.height))
-	val cx get() = this.res.width/2*sc
-	val cy get() = this.res.height/2*sc
+	val sc get() = ((1+sin(res.rotation*RG*2).absoluteValue/3)*640/minOf(res.width, res.height))
+	val cx get() = res.width/2*sc
+	val cy get() = res.height/2*sc
 	var a = 0f
 	override var speed:Float = 1f
 	override var tick:Int
