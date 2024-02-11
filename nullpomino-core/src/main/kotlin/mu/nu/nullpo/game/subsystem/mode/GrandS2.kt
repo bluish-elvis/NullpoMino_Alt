@@ -315,7 +315,6 @@ class GrandS2:AbstractMode() {
 		return super.onSetting(engine)
 	}
 
-
 	/* Called at game start */
 	override fun startGame(engine:GameEngine) {
 		val lv = startLevel*100
@@ -347,7 +346,7 @@ class GrandS2:AbstractMode() {
 				if(!isShowBestSectionTime) {
 					// Rankings
 					val topY = if(receiver.nextDisplayType==2) 5 else 3
-						receiver.drawScoreFont(engine, 0, topY-1, "GRADE LV TIME", COLOR.RED)
+					receiver.drawScoreFont(engine, 0, topY-1, "GRADE LV TIME", COLOR.RED)
 
 					for(i in 0..<RANKING_MAX) {
 						receiver.drawScoreGrade(engine, 0, topY+i, "%02d".format(i+1), COLOR.YELLOW)
@@ -364,16 +363,13 @@ class GrandS2:AbstractMode() {
 					// Section Time
 					receiver.drawScoreFont(engine, 0, 2, "SECTION TIME", COLOR.RED)
 
-					var totalTime = 0
-					for(i in 0..<SECTION_MAX) {
-						val temp = i*100
-						val temp2 = (i+1)*100-1
-
-						val strSectionTime:String = "%4d-%4d %s".format(temp, temp2, bestSectionTime[i].toTimeStr)
-
-						receiver.drawScoreNum(engine, 0, 3+i, strSectionTime, sectionIsNewRecord[i])
-
-						totalTime += bestSectionTime[i]
+					val totalTime = (0..<SECTION_MAX).fold(0) {tt, i ->
+						val slv = i*100
+						receiver.drawScoreNum(
+							engine, 0, 3+i, "%4d-%4d %s".format(slv, slv+99, bestSectionTime[i].toTimeStr),
+							sectionIsNewRecord[i]
+						)
+						tt+bestSectionTime[i]
 					}
 
 					receiver.drawScoreFont(engine, 0, 17, "TOTAL", COLOR.RED)
@@ -418,9 +414,7 @@ class GrandS2:AbstractMode() {
 			if(regretDispFrame>0)
 				receiver.drawMenuFont(
 					engine, 2, 21, "REGRET", when {
-						regretDispFrame%4==0 -> COLOR.YELLOW
-						regretDispFrame%4==2 -> COLOR.RED
-						else -> COLOR.ORANGE
+						regretDispFrame%4==0 -> COLOR.YELLOW;regretDispFrame%4==2 -> COLOR.RED;else -> COLOR.ORANGE
 					}
 				)
 
@@ -436,23 +430,14 @@ class GrandS2:AbstractMode() {
 				val x2 = if(receiver.nextDisplayType==2) 9 else 12
 
 				receiver.drawScoreFont(engine, x, y, "SECTION TIME", COLOR.RED)
+				val section = engine.statistics.level/100
 
-				for(i in sectionTime.indices)
-					if(sectionTime[i]>0) {
-						val temp = i*100
-
-						val section = engine.statistics.level/100
-						var strSeparator = "-"
-						if(i==section&&engine.ending==0) strSeparator = "+"
-
-						val strSectionTime:String = "%4d%s%s".format(temp, strSeparator, sectionTime[i].toTimeStr)
-
-						receiver.drawScoreNum(
-							engine, x-1, y+1
-								+i, strSectionTime, sectionIsNewRecord[i]
-						)
-					}
-
+				sectionTime.forEachIndexed {i, it ->
+					if(it>0) receiver.drawScoreNum(
+						engine, x-1, y+1+i, "%4d%s%s".format(i*100, if(i==section&&engine.ending==0) "+" else "-", it.toTimeStr),
+						sectionIsNewRecord[i]
+					)
+				}
 				receiver.drawScoreFont(engine, x2, 17, "AVERAGE", COLOR.RED)
 				receiver.drawScoreNum(
 					engine, x2, 18, (engine.statistics.time/(sectionsDone+(engine.ending==0).toInt())).toTimeStr,

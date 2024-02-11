@@ -433,7 +433,6 @@ class ScoreAttackRun:AbstractMode() {
 		private val tableBGMChange = intArrayOf(25, 75, 160, 250, -1)
 		private val tableLevelChange =
 			intArrayOf(0, 5, 10, 15, 20, 25, 35, 45, 55, 65, 75, 90, 115, 130, 145, 160, 180, 200, 220, 250, -1)
-		private const val RANKING_MAX = 13
 
 		private enum class Gametype(label:String? = null) {
 			Regular, Spin, MaxSpeed, SpinMax("Spin MaxSpeed"), Mega, MegaMax("Mega MaxSpeed");

@@ -102,14 +102,14 @@ data class RuleOptions(
 	var harddropEnable:Boolean,
 	/** Hard drop即固定 */
 	var harddropLock:Boolean,
-	/** Hard drop連続使用不可 */
+	/** Hard dropの使いまわし不可 (trueならピースごとにHardDrop方向を入れ直す必要がある) */
 	var harddropLimit:Boolean,
 
 	/** Soft drop使用可否 */
 	var softdropEnable:Boolean,
 	/** Soft drop即固定 */
 	var softdropLock:Boolean,
-	/** Soft drop連続使用不可 */
+	/** Soft dropの使いまわし不可 (trueならピースごとにHardDrop方向を入れ直す必要がある) */
 	var softdropLimit:Boolean,
 	/** 接地状態でSoft dropすると即固定 (falseだと20Gのみ即固定) */
 	var softdropSurfaceLock:Boolean,
@@ -122,7 +122,7 @@ data class RuleOptions(
 
 	/** 先行回転 */
 	var spinInitial:Boolean,
-	/** 先行回転連続使用不可 */
+	/** 先行回転の使いまわし不可 (falseならボタンホールドでその方向に先行回転し続ける) */
 	var spinInitialLimit:Boolean,
 	/** Wallkick */
 	var spinWallkick:Boolean,

@@ -521,7 +521,7 @@ class Joker:MarathonModeBase() {
 					stock--
 					if(stock<=4) {
 						val destinationX:Int = receiver.scoreX(engine)
-						val destinationY:Int = receiver.scoreY(engine)+18*if(engine.displaySize==0) 16 else 32
+						val destinationY:Int = receiver.scoreY(engine,16)
 						val colors = arrayOf(COLOR.RED, COLOR.PURPLE)
 						warningText = FlyInOutText(
 							if(stock>=0) "WARNING: STOCK LOW!" else "STOCK DEPLETED!", destinationX, destinationY,
@@ -544,7 +544,7 @@ class Joker:MarathonModeBase() {
 					engine.playSE("medal")
 					++engine.owner.bgMan.bg
 					val destinationX:Int = receiver.scoreX(engine)
-					val destinationY:Int = receiver.scoreY(engine)+18*if(engine.displaySize==0) 16 else 32
+					val destinationY:Int = receiver.scoreY(engine,if(engine.displaySize==0) 18 else 36)
 					val colors = arrayOf(COLOR.PINK, COLOR.RED, COLOR.PURPLE)
 					warningText = FlyInOutText(
 						"WARNING: NON-QUADS", destinationX, destinationY, 9, 162, 9, colors, 1.0f,
@@ -559,7 +559,7 @@ class Joker:MarathonModeBase() {
 				if(engine.statistics.level==300) {
 					engine.playSE("endingstart")
 					val destinationX:Int = receiver.scoreX(engine)
-					val destinationY:Int = receiver.scoreY(engine)+18*if(engine.displaySize==0) 16 else 32
+					val destinationY:Int = receiver.scoreY(engine,if(engine.displaySize==0) 18 else 36)
 					val colors = arrayOf(COLOR.YELLOW, COLOR.ORANGE, COLOR.RED)
 					warningText = FlyInOutText(
 						"OUTSTANDING!", destinationX, destinationY, 15, 120, 15, colors, 1.0f,
@@ -587,8 +587,8 @@ class Joker:MarathonModeBase() {
 		receiver.drawMenuFont(engine, 0, 9, "%10s$$".format("%.2f".format(efficiency*100)))
 		if(engine.statistics.level>=300) {
 			receiver.drawMenuFont(engine, 0, 10, "GRADE", COLOR.BLUE)
-			val dX = 4+receiver.fieldX(engine)+3*16
-			val dY = 52+receiver.fieldY(engine)+(11.5*16).toInt()
+			val dX = 4+receiver.fieldX(engine,3)
+			val dY = 52+receiver.fieldY(engine,11.5f)
 			//customHolder.drawImage("grades", dX, dY, 64*efficiencyGrade, 0, 64, 48, 255, 255, 255, 255, 1.0f)
 		}
 		drawResultNetRank(engine, receiver, 10, COLOR.BLUE, netRankingRank[0])

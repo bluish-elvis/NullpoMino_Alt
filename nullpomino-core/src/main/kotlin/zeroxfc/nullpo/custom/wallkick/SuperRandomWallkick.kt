@@ -38,7 +38,7 @@
 package zeroxfc.nullpo.custom.wallkick
 
 import mu.nu.nullpo.game.component.Piece
-import mu.nu.nullpo.game.component.WallkickResult
+import mu.nu.nullpo.game.event.WallkickResult
 import mu.nu.nullpo.game.subsystem.wallkick.BaseStandardWallkick
 import kotlin.random.Random
 
@@ -47,7 +47,7 @@ class SuperRandomWallkick:BaseStandardWallkick() {
      * Wallkick
      */
 	override fun executeWallkick(x:Int, y:Int, rtDir:Int, rtOld:Int, rtNew:Int, allowUpward:Boolean, piece:Piece,
-		field:mu.nu.nullpo.game.component.Field, ctrl:mu.nu.nullpo.game.component.Controller?):WallkickResult? {
+		field:mu.nu.nullpo.game.component.Field, ctrl:mu.nu.nullpo.game.component.Controller?): WallkickResult? {
 		val kicktable = getKickTable(x, y, rtDir, rtOld, rtNew, allowUpward, piece, field, ctrl)
 			?: return null
 		var arr = List(kicktable[rtOld].size) {it}

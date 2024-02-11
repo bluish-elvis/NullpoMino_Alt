@@ -30,11 +30,8 @@
  */
 package mu.nu.nullpo.gui.slick.img
 
-import mu.nu.nullpo.gui.slick.NullpoMinoSlick
-import mu.nu.nullpo.gui.slick.ResourceHolder
-
 /** 普通の文字列の表示クラス */
 object FontGrade:mu.nu.nullpo.gui.common.BaseFontGrade() {
-	override val rainbowCount get() = NullpoMinoSlick.rainbow
-	override fun getImg(i:Int) = ResourceHolder.imgGrade[i]
+	override val rainbowCount get() = mu.nu.nullpo.gui.slick.NullpoMinoSlick.rainbow
+	override fun getImg(i:Int) = mu.nu.nullpo.gui.slick.ResourceHolder.imgGrade[i]
 }

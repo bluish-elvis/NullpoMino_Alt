@@ -31,10 +31,12 @@
 package mu.nu.nullpo.game.event
 
 import mu.nu.nullpo.game.component.Block
+import mu.nu.nullpo.game.component.Controller
 import mu.nu.nullpo.game.component.Piece
 import mu.nu.nullpo.game.component.SpeedParam.Companion.spdRank
 import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.game.play.GameManager
+import mu.nu.nullpo.gui.common.BaseFont
 import mu.nu.nullpo.gui.common.BaseFont.FONT
 import mu.nu.nullpo.gui.common.BaseStaffRoll
 import mu.nu.nullpo.gui.common.ConfigGlobal.VisualConf
@@ -87,7 +89,7 @@ open class EventReceiver {
 		get() = 0
 
 	/** @return X position of field */
-	fun fieldX(e:GameEngine) = e.fX
+	fun fieldX(e:GameEngine, pos:Number = 0) = e.fX+pos.toFloat()*BS
 	/** @return X position of field */
 	val GameEngine.fX
 		get() = if(owner.menuOnly) 0f else (owner.mode?.let {m ->
@@ -103,7 +105,7 @@ open class EventReceiver {
 	val GameEngine.fieldXOffset get() = maxOf(0, blockSize*(10-field.width)/2)
 
 	/** @return Y position of field*/
-	fun fieldY(e:GameEngine) = e.fY
+	fun fieldY(e:GameEngine, pos:Number = 0) = e.fY+pos.toFloat()*BS
 	/** @return Y position of field*/
 	val GameEngine.fY
 		get() = if(owner.menuOnly) 0f else (owner.mode?.let {m ->
@@ -115,7 +117,7 @@ open class EventReceiver {
 		}) ?: 0f
 
 	/** @return X position of score display area*/
-	fun scoreX(e:GameEngine) = e.sX
+	fun scoreX(e:GameEngine, pos:Int = 0) = e.sX+pos*BS
 	/** @return X position of score display area*/
 	val GameEngine.sX
 		get() = (if(owner.menuOnly) 0 else
@@ -128,7 +130,7 @@ open class EventReceiver {
 
 	/** @return Y position of score display area */
 //	@Deprecated("toExtend", ReplaceWith("e.sY"))
-	fun scoreY(e:GameEngine) = e.sY
+	fun scoreY(e:GameEngine, pos:Int = 0) = e.sY+pos*BS
 	/** @return Y position of score display area */
 	val GameEngine.sY
 		get() = if(owner.menuOnly) 0 else owner.mode?.let {m ->
@@ -330,8 +332,9 @@ open class EventReceiver {
 	open fun drawStaffRoll(x:Number, y:Number, scr:Number, height:Number, alpha:Float = 1f) {}
 	fun drawStaffRoll(engine:GameEngine, scr:Float, height:Number = if(!engine.owner.menuOnly) engine.fieldHeight*BS else 480f, alpha:Float = 1f) =
 		(if(!engine.owner.menuOnly) (engine.fX to engine.fY) else (320f to 0f)).let {
+			val _h = height.toFloat()
 			drawStaffRoll(
-				it.first, it.second, scr*(height.toFloat()+BaseStaffRoll.height)-height.toFloat(), height.toFloat(), alpha
+				it.first, it.second, scr*(_h+BaseStaffRoll.height)-_h, _h, alpha
 			)
 		}
 
@@ -879,7 +882,24 @@ open class EventReceiver {
 	open fun renderFieldEdit(engine:GameEngine) {}
 
 	/** It will be called if the player's input is being displayed. (For rendering)*/
-	open fun renderInput(engine:GameEngine) {}
+	open fun renderInput(engine:GameEngine) {
+		val pid = engine.playerID
+		val x = 170*(pid+1)-110
+		val y = 464
+		val col = getPlayerColor(pid)
+		val ctrl = engine.ctrl
+		drawDirectFont(x+0*16, y, "<", if(ctrl.isPress(Controller.BUTTON_LEFT)) col else COLOR.WHITE, 1f)
+		drawDirectFont(x+1*16, y, BaseFont.DOWN_S, if(ctrl.isPress(Controller.BUTTON_DOWN)) col else COLOR.WHITE)
+		drawDirectFont(x+2*16, y, BaseFont.UP_S, if(ctrl.isPress(Controller.BUTTON_UP)) col else COLOR.WHITE)
+		drawDirectFont(x+3*16, y, ">", if(ctrl.isPress(Controller.BUTTON_RIGHT)) col else COLOR.WHITE)
+		drawDirectFont(x+4*16, y, "A", if(ctrl.isPress(Controller.BUTTON_A)) col else COLOR.WHITE)
+		drawDirectFont(x+5*16, y, "B", if(ctrl.isPress(Controller.BUTTON_B)) col else COLOR.WHITE)
+		drawDirectFont(x+6*16, y, "C", if(ctrl.isPress(Controller.BUTTON_C)) col else COLOR.WHITE)
+		drawDirectFont(x+7*16, y, "D", if(ctrl.isPress(Controller.BUTTON_D)) col else COLOR.WHITE)
+		drawDirectFont(x+8*16, y, "E", if(ctrl.isPress(Controller.BUTTON_E)) col else COLOR.WHITE)
+		drawDirectFont(x+9*16, y, "F", if(ctrl.isPress(Controller.BUTTON_F)) col else COLOR.WHITE)
+		drawDirectNano(x, y, "%1dP:%04d".format(pid+1, engine.ctrl.buttonBit), col, 0.5f)
+	}
 
 	/** It will be called during the line clear. (For rendering)*/
 	open fun renderLineClear(engine:GameEngine) {}

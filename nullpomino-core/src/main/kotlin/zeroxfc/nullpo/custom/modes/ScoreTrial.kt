@@ -534,7 +534,7 @@ class ScoreTrial:MarathonModeBase() {
 			pts *= engine.statistics.level+1
 			if(ev.combo>=2) {
 				val destinationX:Int = receiver.scoreX(engine)
-				val destinationY:Int = receiver.scoreY(engine)+20*if(engine.displaySize==0) 16 else 32
+				val destinationY:Int = receiver.scoreY(engine,if(engine.displaySize==0) 20 else 40)
 				val colors = when {
 					ev.combo>10 -> arrayOf(COLOR.YELLOW, COLOR.ORANGE, COLOR.RED)
 					ev.combo>=8 -> arrayOf(COLOR.CYAN, COLOR.BLUE, COLOR.COBALT)
@@ -582,7 +582,7 @@ class ScoreTrial:MarathonModeBase() {
 				owner.bgMan.bg = 19
 				engine.playSE("endingstart")
 				val destinationX:Int = receiver.scoreX(engine)
-				val destinationY:Int = receiver.scoreY(engine)+18*if(engine.displaySize==0) 16 else 32
+				val destinationY:Int = receiver.scoreY(engine,if(engine.displaySize==0) 18 else 36)
 				congratulationsText = FlyInOutText(
 					"WELL DONE!", destinationX, destinationY, 30, 120, 30,
 					arrayOf(COLOR.YELLOW, COLOR.ORANGE, COLOR.RED), 1.0f,
@@ -613,7 +613,7 @@ class ScoreTrial:MarathonModeBase() {
 					shouldUseTimer = true
 					engine.playSE("endingstart")
 					val destinationX:Int = receiver.scoreX(engine)
-					val destinationY:Int = receiver.scoreY(engine)+18*if(engine.displaySize==0) 16 else 32
+					val destinationY:Int = receiver.scoreY(engine,if(engine.displaySize==0) 18 else 36)
 					congratulationsText = FlyInOutText(
 						"WELL DONE!", destinationX, destinationY, 30, 120, 30,
 						arrayOf(COLOR.YELLOW, COLOR.ORANGE, COLOR.RED), 1.0f,

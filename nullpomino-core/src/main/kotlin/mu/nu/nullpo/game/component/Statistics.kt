@@ -30,11 +30,12 @@
  */
 package mu.nu.nullpo.game.component
 
+import kotlinx.serialization.Serializable
 import mu.nu.nullpo.util.CustomProperties
-import java.io.Serializable
 
 /** Scoreなどの情報 */
-class Statistics:Serializable {
+@Serializable
+class Statistics {
 	/** Total score */
 	val score:Long get() = 0L+scoreLine+scoreHD+scoreSD+scoreBonus
 	/** Line clear score */
@@ -575,16 +576,9 @@ class Statistics:Serializable {
 	/** Export to String
 	 * @return String (Split by ;)
 	 */
-	fun exportString():String {
-		val array = exportStringArray()
-		val result = StringBuilder()
-		for(i in array.indices) {
-			if(i>0) result.append(";")
-			result.append(array[i])
-		}
-		return "$result"
-	}
+	fun exportString():String = exportStringArray().joinToString(";")
 
+	override fun toString():String = exportString()
 	companion object {
 		const val HISTORY_MAX = 100
 	}

@@ -7,6 +7,7 @@
  <entry key="MarathonPlus">幅広い難易度に対応したMARATHONモードです。指定レベルに到達すると…？</entry>
  <entry key="MarathonShuttle">高得点な消し方をするほどレベルアップしやすい、中級者向けのモードです。</entry>
  <entry key="MarathonExtreme">落下速度は最初から最速！その他の速度も徐々に加速する上級者向けモードです。</entry>
+ <entry key="MarathonDrill">せり上がり続ける邪魔ブロックを消して、掘り進んでいく特殊な耐久モードです。</entry>
  <entry key="SprintLine">規定ライン数を消し切る時間を測るモードです。</entry>
  <entry key="SprintScore">規定スコアを稼ぐまでの時間を測るモードです。</entry>
  <entry key="SprintDig">すべての邪魔ブロックを消しきるまでの時間を測るモードです。</entry>
@@ -43,7 +44,7 @@
  <entry key="Physician">フィールドに配置された宝石ブロックをすべて消していきます。</entry>
  <entry key="PhysicianVS">相手より先にすべての宝石ブロックを消す対戦モードです。</entry>
  <entry key="SPF">通常ブロックの塊を宝石ブロックで消すことで、相手にブロックを積み上げる対戦モードです。</entry>
- <entry key="(more...)">他のモードはこの中にあります。</entry>
+ <entry key="[more...]">他のモードはこの中にあります。</entry>
 
  <!--Folder descriptions.-->
  <!--Same rules apply as mode descriptions, but you'll need to add the "_" prefix.-->

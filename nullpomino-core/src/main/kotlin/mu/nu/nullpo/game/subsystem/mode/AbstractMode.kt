@@ -67,12 +67,9 @@ abstract class AbstractMode:GameMode {
 	/** Drawing and event handling EventReceiver */
 	protected val receiver:EventReceiver get() = owner.receiver
 
-	override val rankMap:rankMapType = emptyMap()
-	override val rankPersMap:rankMapType = emptyMap()
 
 	protected fun rankMapOf(list:List<Pair<String, MutableList<*>>>):rankMapType =
-		list.filterIsInstance<Pair<String, rankMapChild>>()
-			.toMap()
+		list.filterIsInstance<Pair<String, rankMapChild>>().toMap()
 
 	protected fun rankMapOf(vararg array:Pair<String, MutableList<*>>):rankMapType = rankMapOf(listOf(*array))
 
@@ -119,7 +116,7 @@ abstract class AbstractMode:GameMode {
 	protected fun loadSetting(prop:CustomProperties) = loadSetting(owner.engine.first(), prop)
 
 	override fun saveSetting(engine:GameEngine, prop:CustomProperties, ruleName:String, playerID:Int) {
-		menu.save(prop,engine,ruleName,  if(players<=1) -1 else playerID)
+		menu.save(prop, engine, ruleName, if(players<=1) -1 else playerID)
 		owner.saveModeConfig()
 	}
 
@@ -886,7 +883,7 @@ abstract class AbstractMode:GameMode {
 	 * @param engine GameEngine
 	 */
 	override fun renderInput(engine:GameEngine) {
-		val receiver = owner.receiver
+		/*val receiver = owner.receiver
 		val pid = engine.playerID
 		val x = 170*(pid+1)-110
 		val y = 464
@@ -902,7 +899,7 @@ abstract class AbstractMode:GameMode {
 		receiver.drawDirectFont(x+7*16, y, "D", if(ctrl.isPress(Controller.BUTTON_D)) col else COLOR.WHITE)
 		receiver.drawDirectFont(x+8*16, y, "E", if(ctrl.isPress(Controller.BUTTON_E)) col else COLOR.WHITE)
 		receiver.drawDirectFont(x+9*16, y, "F", if(ctrl.isPress(Controller.BUTTON_F)) col else COLOR.WHITE)
-		receiver.drawDirectNano(x, y, "%1dP:%04d".format(pid+1, engine.ctrl.buttonBit), col, 0.5f)
+		receiver.drawDirectNano(x, y, "%1dP:%04d".format(pid+1, engine.ctrl.buttonBit), col, 0.5f)*/
 	}
 	/** Total score */
 	enum class Statistic {

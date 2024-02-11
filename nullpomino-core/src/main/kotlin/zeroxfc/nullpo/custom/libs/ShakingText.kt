@@ -64,16 +64,16 @@ Generates a text shaker object with an auto-generated randomizer.
 	 */
 	private fun drawDirectText(receiver:EventReceiver, x:Int, y:Int, maxDevianceX:Int, maxDevianceY:Int, text:String,
 		color:EventReceiver.COLOR, scale:Float) {
-		val maxDevianceX = if(maxDevianceX<0) -maxDevianceX else maxDevianceX
-		val maxDevianceY = if(maxDevianceY<0) -maxDevianceY else maxDevianceY
-		val offset = 16.0*scale
-		for(i in text.indices) {
+		val mDX = if(maxDevianceX<0) -maxDevianceX else maxDevianceX
+		val mDY = if(maxDevianceY<0) -maxDevianceY else maxDevianceY
+		val offset = 16f*scale
+		text.forEachIndexed { i,it ->
 			val offsetUsed = (offset*i).toInt()
 			var xDiff = 0
 			var yDiff = 0
-			if(maxDevianceX>0) xDiff = textPositionRandomizer.nextInt(maxDevianceX*2+1)-maxDevianceX
-			if(maxDevianceY>0) yDiff = textPositionRandomizer.nextInt(maxDevianceY*2+1)-maxDevianceY
-			receiver.drawDirectFont(x+offsetUsed+xDiff, y+yDiff, text.substring(i, i+1), color, scale)
+			if(mDX>0) xDiff = textPositionRandomizer.nextInt(mDX*2+1)-mDX
+			if(mDY>0) yDiff = textPositionRandomizer.nextInt(mDY*2+1)-mDY
+			receiver.drawDirectFont(x+offsetUsed+xDiff, y+yDiff, "$it", color, scale)
 		}
 	}
 	/**

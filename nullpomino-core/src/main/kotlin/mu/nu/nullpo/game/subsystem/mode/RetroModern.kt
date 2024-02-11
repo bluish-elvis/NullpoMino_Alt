@@ -35,6 +35,7 @@ import mu.nu.nullpo.game.component.Controller
 import mu.nu.nullpo.game.component.LevelData
 import mu.nu.nullpo.game.component.Piece.Companion.createQueueFromIntStr
 import mu.nu.nullpo.game.component.SpeedParam
+import mu.nu.nullpo.game.event.EventReceiver
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
 import mu.nu.nullpo.game.event.ScoreEvent
 import mu.nu.nullpo.game.play.GameEngine
@@ -43,6 +44,7 @@ import mu.nu.nullpo.game.subsystem.mode.menu.DelegateMenuItem
 import mu.nu.nullpo.game.subsystem.mode.menu.LevelMenuItem
 import mu.nu.nullpo.game.subsystem.mode.menu.MenuList
 import mu.nu.nullpo.game.subsystem.mode.menu.StringsMenuItem
+import mu.nu.nullpo.gui.common.BaseFont
 import mu.nu.nullpo.util.CustomProperties
 import mu.nu.nullpo.util.GeneralUtil.toTimeStr
 
@@ -240,7 +242,16 @@ class RetroModern:AbstractMode() {
 			receiver.drawScoreNum(engine, 5, 3, "+$lastScore")
 			val scGet = scDisp<engine.statistics.score
 			receiver.drawScoreNum(engine, 0, 4, "$scDisp", scGet, 2f)
-			val num = lineSlot.fold(0) {s, it ->
+//			if(lineCount>=3)  5 else 1
+			receiver.drawScoreFont(engine, 0, 6, "Bonus\n${BaseFont.CURSOR}", COLOR.BLUE)
+			receiver.drawDirectFont(receiver.scoreX(engine,1)+lineSlot.fold(0f) {s, it ->
+				s+when {
+					it in 1..3 -> 10
+					it>=4 -> 32
+					else -> 0
+				}
+			}, receiver.scoreY(engine,7), BaseFont.DOWN_S, COLOR.BLUE)
+			receiver.drawScoreBadges(engine, 1, 7, 200, lineSlot.fold(0) {s, it ->
 				s+when {
 					it==1 -> 1
 					it==2 -> 10
@@ -248,9 +259,7 @@ class RetroModern:AbstractMode() {
 					it>=4 -> 100000
 					else -> 0
 				}
-			}
-//			if(lineCount>=3)  5 else 1
-			receiver.drawScoreBadges(engine, 2, 6, 200, num)
+			})
 
 			receiver.drawScoreFont(engine, 0, 10, "LINE", COLOR.BLUE)
 			receiver.drawScoreNum(engine, 0, 11, "%03d/%03d".format(engine.statistics.lines, totalNorma), scale = 2f)
@@ -397,8 +406,10 @@ class RetroModern:AbstractMode() {
 			engine.statistics.scoreBonus += pts1
 			receiver.addScore(engine, engine.fieldWidth/2, engine.lastLineY, pts1, COLOR.RAINBOW)
 		}
-		if(lineCount==3) {
-			if(lineSlot.distinct().size<=1) {
+
+		val slot = lineSlot.filter {it>0}
+		if(slot.size>=3) {
+			if(slot.distinct().size<=1) {
 				val y = lineSlot[0]
 				if(y==1) {
 					bonus(engine, 5)
@@ -418,21 +429,17 @@ class RetroModern:AbstractMode() {
 					)
 				}
 				lineCount = 0
-			} else if(lineSlot.distinct().size==2) {
+			} else if(slot.size>=4&&slot.distinct().size>=slot.size) {
+				engine.playSE("b2b_combo")
+				engine.playSE("combo")
+				bonus(engine, 13500)
+				lineCount = 0
+			} else if(slot.distinct().size==slot.size-1) {
 				engine.playSE("b2b_end")
 				lineCount = 1
 			}
 		}
-		if(lineCount==4) {
-			if(lineSlot.distinct().size==4) {
-				engine.playSE("b2b_combo")
-				engine.playSE("combo")
-				bonus(engine, 10000)
-			} else {
-				engine.playSE("b2b_end")
-			}
-			lineCount = 0
-		}
+
 		return false
 	}
 
@@ -507,14 +514,14 @@ class RetroModern:AbstractMode() {
 	override fun renderExcellent(engine:GameEngine) {
 		val col = COLOR.WHITE
 
-		receiver.drawMenuFont(engine, -2f, +9f, "YOU'VE REACHED", col)
-		receiver.drawMenuFont(engine, -.5f, 10f, "THE EDGE OF", col)
-		receiver.drawMenuFont(engine, -1f, 11f, "THIS JOURNEY", col)
+		receiver.drawMenuFont(engine, -2f, +11f, "YOU'VE REACHED", col)
+		receiver.drawMenuFont(engine, -.5f, 12f, "THE EDGE OF", col)
+		receiver.drawMenuFont(engine, -1f, 13f, "THIS JOURNEY", col)
 		if(special) {
-			receiver.drawMenuFont(engine, 0f, 13f, "C.C.W.ONLY", col)
-			receiver.drawMenuFont(engine, 2.5f, 14f, "BONUS", col)
-			receiver.drawMenuFont(
-				engine, .5f, 16f, "+ 10000000", when {
+			receiver.drawMenuFont(engine, 0f, 2f, "C.C.W.ONLY", col)
+			receiver.drawMenuFont(engine, 2.5f, 3f, "BONUS", col)
+			receiver.drawMenuNum(
+				engine, .5f, 4f, "+ 10000000", when {
 					engine.statc[0]%4==0 -> COLOR.YELLOW
 					engine.statc[0]%2==0 -> col
 					else -> COLOR.ORANGE
@@ -539,7 +546,13 @@ class RetroModern:AbstractMode() {
 
 		// Checks/Updates the ranking
 		if(!owner.replayMode&&!big&&engine.ai==null) {
-			updateRanking(engine.statistics.score, engine.statistics.level, engine.statistics.lines, engine.statistics.time, gameType)
+			updateRanking(
+				engine.statistics.score,
+				engine.statistics.level,
+				engine.statistics.lines,
+				engine.statistics.time,
+				gameType
+			)
 
 			if(rankingRank!=-1) return true
 		}
@@ -572,8 +585,8 @@ class RetroModern:AbstractMode() {
 	private fun checkRanking(sc:Long, lv:Int, li:Int, time:Int, type:Int):Int {
 		for(i in 0..<RANKING_MAX)
 			if(sc>rankingScore[type][i]) return i
-			else if(sc==rankingScore[type][i]&&lv>rankingLines[type][i]) return i
-			else if(sc==rankingScore[type][i]&&lv==rankingLines[type][i]&&li>rankingLines[type][i]) return i
+			else if(sc==rankingScore[type][i]&&lv>rankingLevel[type][i]) return i
+			else if(sc==rankingScore[type][i]&&lv==rankingLevel[type][i]&&li>rankingLines[type][i]) return i
 			else if(sc==rankingScore[type][i]&&li==rankingLines[type][i]&&time<rankingTime[type][i]) return i
 
 		return -1

@@ -333,44 +333,72 @@ abstract class AbstractRenderer:EventReceiver() {
 		}
 		if(showSpeed) {
 			//下Meter 残りlockdelayとARE
-			val tmpX = lX+s/2f
-			val tmpY = bY+s/2f
-			val mW = fW-8f
+			val smX = lX//+s/2f
+			val smY = bY+s/2f+1
+			val mW = fW+0f//-s/2f
 			val mH = maxOf(2f, s/4f)
-			fillRectSpecific(tmpX, tmpY, mW, mH, 0)
+			val smY1 = bY+s/2f-mH
+			val smY2 = smY1+mH/2
+
+			val moveLimit = engine.ruleOpt.lockResetMoveLimit
+			val spinLimit = if(engine.ruleOpt.lockResetLimitShareCount) moveLimit else engine.ruleOpt.lockResetSpinLimit
+			val moveCount = if(engine.ruleOpt.lockResetLimitShareCount)
+				engine.extendedMoveCount+engine.extendedSpinCount else engine.extendedMoveCount
+			val spinCount = if(engine.ruleOpt.lockResetLimitShareCount) moveCount else engine.extendedSpinCount
+
+			moveLimit.let {l ->
+				if(l>0) repeat(l) {
+					fillRectSpecific(smX+(mW+1)*it/l, smY1, mW/l-1, mH/2, 0)
+				}
+			}
+			spinLimit.let {l ->
+				if(l>0) repeat(l) {
+					fillRectSpecific(smX+(mW+1)*it/l, smY2, mW/l-1, mH/2, 0)
+				}
+			}
+
+
+			fillRectSpecific(smX, smY, mW, mH, 0)
 			when(engine.stat) {
-				GameEngine.Status.MOVE -> if(engine.lockDelay>0) {
-					val value = maxOf(0f, mW-engine.lockDelayNow*mW/engine.lockDelay)
-					fillRectSpecific(
-						tmpX+(mW-value)/2f, tmpY, value, mH,
-						if(engine.lockDelayNow>0) 0xFFFF00 else 0x00FF00
-					)
-				} else {
-					fillRectSpecific(tmpX, tmpY, mW, mH, 0xFF0000)
+				GameEngine.Status.MOVE -> {
+					if(engine.lockDelay>0) {
+						val value = maxOf(0f, mW-engine.lockDelayNow*mW/engine.lockDelay)
+						fillRectSpecific(smX+(mW-value)/2f, smY, value, mH, if(engine.lockDelayNow>0) 0xFFFF00 else 0x00FF00)
+					} else fillRectSpecific(smX, smY, mW, mH, 0xFF0000)
+					moveLimit.let {l ->
+						if(l>0) repeat(moveLimit-moveCount) {
+							fillRectSpecific(smX+(mW+1)*it/l, smY1, mW/l-1, mH/2, 0x00FF80)
+						}
+					}
+					spinLimit.let {l ->
+						if(l>0) repeat(moveLimit-spinCount) {
+							fillRectSpecific(smX+(mW+1)*it/l, smY2, mW/l-1, mH/2, 0x0080FF)
+						}
+					}
 				}
 				GameEngine.Status.LOCKFLASH -> {
-					fillRectSpecific(tmpX, tmpY, mW, mH, 0xFFFFFF)
+					fillRectSpecific(smX, smY, mW, mH, 0xFFFFFF)
 					if(engine.ruleOpt.lockFlash>0) {
 						val value = engine.statc[0]*mW/engine.ruleOpt.lockFlash
-						fillRectSpecific(tmpX+(mW-value)/2f, tmpY, value, mH, 0x808080)
+						fillRectSpecific(smX+(mW-value)/2f, smY, value, mH, 0x808080)
 					}
 				}
 				GameEngine.Status.LINECLEAR -> if(engine.lineDelay>0) {
 					val value = mW-engine.statc[0]*mW/engine.lineDelay
-					fillRectSpecific(tmpX+(mW-value)/2f, tmpY, value, mH, 0x00FFFF)
+					fillRectSpecific(smX+(mW-value)/2f, smY, value, mH, 0x00FFFF)
 				}
 				GameEngine.Status.ARE -> if(engine.statc[1]>0) {
 					fillRectSpecific(
-						tmpX, tmpY, mW, mH,
+						smX, smY, mW, mH,
 						if(engine.ruleOpt.areCancelMove||engine.ruleOpt.areCancelSpin||engine.ruleOpt.areCancelHold) 0xFF8000 else 0xFFFF00
 					)
 					val value = maxOf(0f, mW-engine.statc[0]*mW/engine.statc[1])
-					fillRectSpecific(tmpX+(mW-value)/2f, tmpY, value, mH, 0)
+					fillRectSpecific(smX+(mW-value)/2f, smY, value, mH, 0)
 				}
 				else -> {
 				}
 			}
-			val zy = fieldH+1
+			val zy = fieldH+1.1f
 			val spd = engine.speed
 //			engine.playerID
 			val g = spd.gravity
@@ -380,15 +408,12 @@ abstract class AbstractRenderer:EventReceiver() {
 
 			for(i in 0..1) {
 				val show = if(i==0) "ARE" to spd.are else "LINE" to spd.areLine
-
 				drawMenuNum(engine, 6+i*3, zy, String.format(if(i==0) "%2d/" else "%2d", show.second))
 				drawMenuNano(engine, 5+i*2.5f, zy+.5f, show.first, COLOR.WHITE, .5f)
 			}
 			for(i in 0..2) {
 				val show = when(i) {
-					0 -> "LINE" to spd.lineDelay
-					1 -> "LOCK" to spd.lockDelay
-					else -> "DAS" to spd.das
+					0 -> "LINE" to spd.lineDelay; 1 -> "LOCK" to spd.lockDelay;else -> "DAS" to spd.das
 				}
 				drawMenuNum(engine, 8-i*3, zy+1, String.format(if(i==1) "%2d+" else "%2d", show.second))
 				drawMenuNano(engine, 6.5f-i*3, zy+1f, show.first, COLOR.WHITE, .5f)
@@ -915,8 +940,8 @@ abstract class AbstractRenderer:EventReceiver() {
 		if(engine.owner.players<=1) {
 			drawMenuFont(engine, 0f, cY/3f, "EXCELLENT!", COLOR.RAINBOW, 1f)
 			engine.owner.mode?.name?.let {
-				drawMenuNano(engine, -30f, cY/2f-.25f, it, COLOR.RAINBOW, .5f)
-				drawMenuNano(engine, -30f, cY/2f+.25f, "MODE COMPLETED", COLOR.RAINBOW, .5f)
+				drawMenuNano(engine, -30f, cY/3f+1, it, COLOR.RAINBOW, .5f)
+				drawMenuNano(engine, -30f, cY/3f+1.5f, "MODE COMPLETED", COLOR.RAINBOW, .5f)
 			}
 		} else drawMenuFont(engine, -3f, cY/2f, "You WIN!", COLOR.ORANGE, 1f)
 	}
@@ -956,10 +981,16 @@ abstract class AbstractRenderer:EventReceiver() {
 
 	/* fieldエディット画面の描画処理 */
 	override fun renderFieldEdit(engine:GameEngine) {
-		val x = engine.fX+engine.mapEditX*engine.blockSize
-		val y = engine.fY+engine.mapEditY*engine.blockSize
+		val bs = engine.blockSize
+		val x = engine.fX+engine.mapEditX*bs
+		val y = engine.fY+engine.mapEditY*bs
 		val bright = if(engine.mapEditFrames%6>=3) -.5f else -.2f
 		drawBlock(x, y, engine.mapEditColor, engine.skin, false, bright, 1f, 1f)
+		val z = (engine.mapEditFrames/4)%8
+		resources.imgCursor.draw(
+			x-bs/2, y-bs/2, x-bs/2+32, y-bs/2+32,
+			32f*(z%4), 32f*(z/4), 32f*(1+(z%4)), 32f*(1+z/4)
+		)
 	}
 	/* 各 frame 最初の描画処理 */
 	override fun renderFirst(engine:GameEngine, inside:()->Unit) {
@@ -1162,11 +1193,16 @@ abstract class AbstractRenderer:EventReceiver() {
 		}
 	}
 
-	protected abstract fun drawBadgesSpecific(x:Float, y:Float, type:Int, scale:Float)
-	protected abstract fun drawFieldSpecific(
-		x:Float, y:Float, width:Int, viewHeight:Int, blksize:Int, scale:Float,
-		outlineType:Int
-	)
+	protected open fun drawBadgesSpecific(x:Float, y:Float, type:Int, scale:Float){
+		val b = FontBadge(type)
+		resources.imgBadges.draw(
+			x, y, x+b.w*scale, y+b.h*scale,
+			b.sx.toFloat(), b.sy.toFloat(), (b.sx+b.w).toFloat(), (b.sy+b.h).toFloat()
+		)
+	}
+	protected open fun drawFieldSpecific(
+		x:Float, y:Float, width:Int, viewHeight:Int, blksize:Int, scale:Float, outlineType:Int
+	){}
 
 	override fun drawSpeedMeter(x:Float, y:Float, sp:Float, len:Float) {
 		val s = if(sp<0) 1f else sp

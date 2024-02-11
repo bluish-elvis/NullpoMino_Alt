@@ -45,13 +45,13 @@ import mu.nu.nullpo.game.component.Block
 import mu.nu.nullpo.game.component.Controller
 import mu.nu.nullpo.game.component.Field
 import mu.nu.nullpo.game.component.Piece
-import mu.nu.nullpo.game.component.WallkickResult
+import mu.nu.nullpo.game.event.WallkickResult
 import mu.nu.nullpo.game.subsystem.wallkick.Wallkick
 
 class DestroyerWallkick:Wallkick {
 	override fun executeWallkick(
 		x:Int, y:Int, rtDir:Int, rtOld:Int, rtNew:Int, allowUpward:Boolean, piece:Piece, field:Field, ctrl:Controller?
-	):WallkickResult {
+	): WallkickResult {
 		val kick = movePieceInBounds(piece, x, y, rtNew, field)
 		destroyBlocksKick(piece, x, y, rtNew, field)
 		return kick
@@ -86,7 +86,7 @@ class DestroyerWallkick:Wallkick {
 		}
 	}
 
-	private fun movePieceInBounds(piece:Piece, x:Int, y:Int, rt:Int, fld:Field):WallkickResult {
+	private fun movePieceInBounds(piece:Piece, x:Int, y:Int, rt:Int, fld:Field): WallkickResult {
 		return if(piece.big) {
 			movePieceInBoundsBig(piece, x, y, rt, fld)
 		} else {
@@ -106,7 +106,7 @@ class DestroyerWallkick:Wallkick {
 		}
 	}
 
-	private fun movePieceInBoundsBig(piece:Piece, x:Int, y:Int, rt:Int, fld:Field):WallkickResult {
+	private fun movePieceInBoundsBig(piece:Piece, x:Int, y:Int, rt:Int, fld:Field): WallkickResult {
 		var kickX = 0
 		var kickY = 0
 		var kickDir = checkInBoundsKickBig(piece, x, y, rt, fld)

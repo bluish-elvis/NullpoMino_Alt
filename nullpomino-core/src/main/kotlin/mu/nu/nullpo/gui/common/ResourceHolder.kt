@@ -239,7 +239,7 @@ abstract class ResourceHolder {
 		"hold", "initialhold", "holdfail", "move", "movefail",
 		"rotate", "wallkick", "initialrotate", "rotfail",
 		"harddrop", "softdrop", "step", "lock",
-		"erase", "linefall", "linefall0", "linefall1", "cheer", "twist", "twister",
+		"erase", "split", "linefall", "linefall0", "linefall1", "cheer", "twist", "twister",
 		"combo", "combo_pow", "b2b_start", "b2b_combo", "b2b_end",
 
 		"danger", "dead", "dead_last", "shutter",

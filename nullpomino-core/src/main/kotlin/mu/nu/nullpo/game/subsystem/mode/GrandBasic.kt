@@ -217,8 +217,7 @@ class GrandBasic:AbstractMode() {
 	 */
 	private fun setSpeed(engine:GameEngine) {
 		engine.speed.gravity = if(always20g) -1
-		else tableGravityValue[tableGravityChangeLevel.indexOfFirst {engine.statistics.level<it}
-			.let {if(it<0) tableGravityChangeLevel.lastIndex else it}]
+		else tableGravityValue.lastOrNull {engine.statistics.level>=it.first}?.second ?: -1
 	}
 
 	/** Best section time update check routine
@@ -705,17 +704,10 @@ class GrandBasic:AbstractMode() {
 		/** Gravity table (Gravity speed value) */
 		private val tableGravityValue =
 			listOf(
-				4, 5, 6, 8, 10, 12, 16, 32, 48, 64,
-				4, 5, 6, 8, 12, 32, 48, 80, 112, 128, 144,
-				16, 48, 80, 112, 144, 176, 192, 208, 224, 240, -1
-			)
-
-		/** Gravity table (Gravity change level) */
-		private val tableGravityChangeLevel =
-			listOf(
-				8, 19, 35, 40, 50, 60, 70, 80, 90,
-				100, 108, 119, 125, 131, 139, 149, 146, 164, 174, 180,
-				200, 212, 221, 232, 244, 256, 267, 277, 287, 295, 300
+				0 to 4, 8 to 5, 19 to 6, 35 to 8, 40 to 10, 50 to 12, 60 to 16, 70 to 32, 80 to 48, 90 to 64,
+				100 to 4, 108 to 5, 119 to 6, 125 to 8, 131 to 12, 139 to 32, 149 to 48, 156 to 80, 164 to 112, 174 to 128, 180 to 144,
+				200 to 16, 212 to 48, 221 to 80, 232 to 112, 244 to 144, 256 to 176, 267 to 192, 277 to 208, 287 to 224, 295 to 240,
+				300 to -1
 			)
 
 		/** 段位 pointのCombo bonus */

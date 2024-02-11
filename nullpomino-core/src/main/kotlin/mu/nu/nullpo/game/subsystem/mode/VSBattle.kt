@@ -607,7 +607,7 @@ class VSBattle:AbstractMode() {
 			receiver.drawScoreSpeed(engine, 0, 12, score[0]/50, 5f)
 			receiver.drawScoreSpeed(engine, 5, 12, score[1]/50, 5f)
 			val x = receiver.fieldX(engine)
-			val y = receiver.fieldY(engine)+22*EventReceiver.BS+1
+			val y = receiver.fieldY(engine,22)+1
 
 
 			garbageEntries[pid].forEachIndexed {i, (lines, playerID, time) ->

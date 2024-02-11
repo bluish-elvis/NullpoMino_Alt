@@ -44,7 +44,7 @@ package wtf.oshisaure.nullpomodshit.wallkicks
 import mu.nu.nullpo.game.component.Controller
 import mu.nu.nullpo.game.component.Field
 import mu.nu.nullpo.game.component.Piece
-import mu.nu.nullpo.game.component.WallkickResult
+import mu.nu.nullpo.game.event.WallkickResult
 import mu.nu.nullpo.game.subsystem.wallkick.Wallkick
 import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger
@@ -52,7 +52,7 @@ import org.apache.logging.log4j.Logger
 class ClassicRecoveryOnFailWallkick:Wallkick {
 	override fun executeWallkick(
 		x:Int, y:Int, rtDir:Int, rtOld:Int, rtNew:Int, allowUpward:Boolean, piece:Piece, field:Field, ctrl:Controller?
-	):WallkickResult? {
+	): WallkickResult? {
 		var check = 0
 		if(piece.big) check = 1
 		return if(piece.id!=0&&(checkCollisionKick(piece, x, y, rtNew, field)||piece.id==8||piece.id==10)) {

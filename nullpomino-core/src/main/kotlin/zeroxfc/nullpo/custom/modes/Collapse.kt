@@ -905,7 +905,7 @@ class Collapse:AbstractMode() {
 //			receiver.drawScoreFont(engine, playerID, 0, 19, "($fieldX, $fieldY)");
 			if(localState==LOCALSTATE_INGAME) {
 				val fx = receiver.fieldX(engine)+4
-				val fy = receiver.fieldY(engine)+52+17*16f
+				val fy = receiver.fieldY(engine,17)+52
 				nextBlocks.forEachIndexed {i, it ->
 					receiver.drawBlock(fx+i*16f, fy, it)
 				}

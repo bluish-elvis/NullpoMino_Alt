@@ -42,8 +42,8 @@ import mu.nu.nullpo.game.event.EventReceiver
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
 import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.gui.slick.img.ext.RendererExtension
-import zeroxfc.nullpo.custom.libs.backgroundtypes.ResourceHolderCustomAssetExtension
 import org.apache.logging.log4j.LogManager
+import zeroxfc.nullpo.custom.libs.backgroundtypes.ResourceHolderCustomAssetExtension
 
 class ExamSpinner {
 	companion object {
@@ -387,38 +387,42 @@ class ExamSpinner {
 	 */
 	fun update(engine:GameEngine) {
 		lifeTime++
-		if(lifeTime==60&&!close) {
-			engine.playSE("linefall0")
-			engine.playSE(if(selectedOutcome==0) "excellent" else "regret")
-		} else if(lifeTime==spinDuration+120&&close) {
-			engine.playSE("linefall0")
-			engine.playSE(if(selectedOutcome==0) "excellent" else "regret")
-		}
-		if(close&&lifeTime<=spinDuration) {
-			val j = lifeTime.toDouble()/spinDuration.toDouble()
-			// StringBuilder sb = new StringBuilder();
-			// sb.append("[");
-			for(i in locations.indices) {
-				val res = Interpolation.smoothStep(
-					endXs[i].toDouble(), startXs[i].toDouble(), j, 64.0
-				)
-				// sb.append(res).append(", ");
-				locations[i] = res.toInt()
+		if(close) when {
+			lifeTime==spinDuration+12 -> engine.playSE("shutter")
+			lifeTime==spinDuration+120 -> {
+				engine.playSE("linefall0")
+				engine.playSE(if(selectedOutcome==0) "excellent" else "regret")
 			}
-			// sb.append("]");
-			// log.debug(lifeTime + ": (LOC) " + Arrays.toString(locations) + ", " + j);
-			// log.debug(lifeTime + ": (RAW) " + sb.toString());
-			for(i in locations.indices) {
-				if(MathHelper.almostEqual((locations[i]%320).toDouble(), 80.0, 24.0)) {
-					if(!clickedBefore) {
-						clickedBefore = true
-						engine.playSE("change")
-					}
-					break
+			lifeTime<=spinDuration -> {
+				val j = lifeTime.toDouble()/spinDuration.toDouble()
+				// StringBuilder sb = new StringBuilder();
+				// sb.append("[");
+				for(i in locations.indices) {
+					val res = Interpolation.smoothStep(
+						endXs[i].toDouble(), startXs[i].toDouble(), j, 64.0
+					)
+					// sb.append(res).append(", ");
+					locations[i] = res.toInt()
 				}
-				if(i==locations.size-1) clickedBefore = false
+				// sb.append("]");
+				// log.debug(lifeTime + ": (LOC) " + Arrays.toString(locations) + ", " + j);
+				// log.debug(lifeTime + ": (RAW) " + sb.toString());
+				for(i in locations.indices) {
+					if(MathHelper.almostEqual((locations[i]%320).toDouble(), 80.0, 24.0)) {
+						if(!clickedBefore) {
+							clickedBefore = true
+							engine.playSE("change")
+						}
+						break
+					}
+					if(i==locations.size-1) clickedBefore = false
+				}
 			}
+		} else if(lifeTime==60) {
+			engine.playSE("linefall0")
+			engine.playSE(if(selectedOutcome==0) "excellent" else "regret")
 		}
+
 	}
 
 }

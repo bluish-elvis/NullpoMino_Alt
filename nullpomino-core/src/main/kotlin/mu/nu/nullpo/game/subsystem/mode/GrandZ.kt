@@ -367,7 +367,7 @@ class GrandZ:AbstractMode() {
 	}
 
 	override fun renderFirst(engine:GameEngine) {
-		if(engine.ending==2) if(engine.ending==2)receiver.drawStaffRoll(engine, rollTime*1f/ROLLTIMELIMIT)
+		if(engine.ending==2) receiver.drawStaffRoll(engine, rollTime*1f/ROLLTIMELIMIT)
 	}
 	/** Renders HUD (leaderboard or game statistics) */
 	override fun renderLast(engine:GameEngine) {
@@ -402,19 +402,13 @@ class GrandZ:AbstractMode() {
 					// Best section time records
 					receiver.drawScoreFont(engine, 0, 2, "SECTION TIME", COLOR.RED)
 
-					var totalTime = 0
-					for(i in 0..<SECTION_MAX) {
-						val temp = minOf(i*100, 999)
-						val temp2 = minOf((i+1)*100-1, 999)
-
-						val strSectionTime:String = String.format(
-							"%3d-%3d %s %3d", temp, temp2,
-							bestSectionTime[gametype][i].toTimeStr, bestSectionLine[gametype][i]
-						)
-
-						receiver.drawScoreNum(engine, 0, 3+i, strSectionTime, sectionIsNewRecord[i])
-
-						totalTime += bestSectionTime[gametype][i]
+					val totalTime =
+					(0..<SECTION_MAX).fold(0) {tt,i->
+						val slv = minOf(i*100, 999)
+						receiver.drawScoreNum(engine, 0, 3+i, "%3d-%3d %s %3d".format(
+							slv, slv+99, bestSectionTime[gametype][i].toTimeStr, bestSectionLine[gametype][i]
+						), sectionIsNewRecord[i])
+						tt+bestSectionTime[gametype][i]
 					}
 
 					receiver.drawScoreFont(engine, 0, 14, "TOTAL", COLOR.RED)
@@ -479,21 +473,14 @@ class GrandZ:AbstractMode() {
 				val x2 = if(receiver.nextDisplayType==2) 9 else 12
 
 				receiver.drawScoreFont(engine, x, 2, "SECTION TIME", COLOR.RED)
-
-				for(i in sectionTime.indices)
-					if(sectionTime[i]>0) {
-						var temp = i*100
-						if(temp>999) temp = 999
-
-						val section = engine.statistics.level/100
-						var strSeparator = "-"
-						if(i==section&&engine.ending==0) strSeparator = "+"
-
-						val strSectionTime:String = "%3d%s%s".format(temp, strSeparator, sectionTime[i].toTimeStr)
-
-						receiver.drawScoreNum(engine, x, 3+i, strSectionTime, sectionIsNewRecord[i])
-					}
-
+				val section = engine.statistics.level/100
+				sectionTime.forEachIndexed {i, it ->
+					if(it>0) receiver.drawScoreNum(
+						engine, x, 3+i, "%3d%s%s".format(
+							minOf(i*100, 999), if(i==section&&engine.ending==0) "+" else "-", it.toTimeStr
+						), sectionIsNewRecord[i]
+					)
+				}
 				receiver.drawScoreFont(engine, x2, 17, "AVERAGE", COLOR.RED)
 				receiver.drawScoreNum(engine, x2, 18, (engine.statistics.time/(sectionsDone+1)).toTimeStr, 2f)
 			}

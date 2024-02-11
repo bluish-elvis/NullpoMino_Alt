@@ -244,7 +244,6 @@ class MarathonActual:AbstractMode() {
 	}
 
 	companion object {
-		private const val RANKING_MAX = 10
 		private const val MARATHON_LENGTH = 42195
 		private const val BGM_CHANGE_AT = 8439
 		private val TABLE_BGM_CHANGE = intArrayOf(BGM_CHANGE_AT, BGM_CHANGE_AT*2, BGM_CHANGE_AT*3, BGM_CHANGE_AT*4, -1)

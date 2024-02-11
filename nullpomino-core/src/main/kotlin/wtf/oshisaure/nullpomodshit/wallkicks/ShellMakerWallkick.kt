@@ -45,12 +45,12 @@ import mu.nu.nullpo.game.component.Block
 import mu.nu.nullpo.game.component.Controller
 import mu.nu.nullpo.game.component.Field
 import mu.nu.nullpo.game.component.Piece
-import mu.nu.nullpo.game.component.WallkickResult
+import mu.nu.nullpo.game.event.WallkickResult
 import mu.nu.nullpo.game.subsystem.wallkick.Wallkick
 
 class ShellMakerWallkick:Wallkick {
 	override fun executeWallkick(x:Int, y:Int, rtDir:Int, rtOld:Int, rtNew:Int, allowUpward:Boolean, piece:Piece, field:Field,
-		ctrl:Controller?):WallkickResult? {
+		ctrl:Controller?): WallkickResult? {
 		if(checkCollisionKick(piece, x, y, rtNew, field)) {
 			val mino = Piece(7).apply {
 				setBlock(piece.block[0])

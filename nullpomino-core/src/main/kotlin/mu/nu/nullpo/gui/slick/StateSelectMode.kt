@@ -110,14 +110,10 @@ internal class StateSelectMode:BaseMenuScrollState() {
 	 * @param str Mode name
 	 * @return Description
 	 */
-	private fun getModeDesc(str:String):String {
-		var str2 = str.replace(' ', '_')
-		str2 = str2.replace('(', 'l')
-		str2 = str2.replace(')', 'r')
-
-		return NullpoMinoSlick.propModeDesc.getProperty(str2)
-			?: NullpoMinoSlick.propDefaultModeDesc.getProperty(str2, str2) ?: str2
-	}
+	private fun getModeDesc(str:String):String =
+		str.replace(' ', '_').replace('(', 'l').replace(')', 'r').let {str2 ->
+			NullpoMinoSlick.propModeDesc.getProperty(str2) ?: NullpoMinoSlick.propDefaultModeDesc.getProperty(str2, str2) ?: str2
+		}
 
 	private fun convModeName(str:String, sw:Boolean):String {
 		val mm = modeManager

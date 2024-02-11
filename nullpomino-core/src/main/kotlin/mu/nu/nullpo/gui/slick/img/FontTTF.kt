@@ -32,13 +32,11 @@
 package mu.nu.nullpo.gui.slick.img
 
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
-import mu.nu.nullpo.gui.slick.ResourceHolder
 import org.newdawn.slick.Color
 
 object FontTTF:mu.nu.nullpo.gui.common.BaseFontTTF {
 	override fun print(x:Float, y:Float, str:String, color:COLOR, alpha:Float, size:Float) {
-		ResourceHolder.ttfFont?.let {
-
+		mu.nu.nullpo.gui.slick.ResourceHolder.ttfFont?.let {
 			it.drawString(
 				x, y, str, when(color) {
 					COLOR.BLUE -> Color(0, 0, 255)

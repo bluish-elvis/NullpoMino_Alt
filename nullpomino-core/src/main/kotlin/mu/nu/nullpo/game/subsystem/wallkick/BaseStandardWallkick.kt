@@ -34,7 +34,7 @@ package mu.nu.nullpo.game.subsystem.wallkick
 import mu.nu.nullpo.game.component.Controller
 import mu.nu.nullpo.game.component.Field
 import mu.nu.nullpo.game.component.Piece
-import mu.nu.nullpo.game.component.WallkickResult
+import mu.nu.nullpo.game.event.WallkickResult
 
 /** Base class for all Standard (SRS) wallkicks */
 open class BaseStandardWallkick:Wallkick {
@@ -59,7 +59,7 @@ open class BaseStandardWallkick:Wallkick {
 	/* Wallkick */
 	override fun executeWallkick(x:Int, y:Int, rtDir:Int, rtOld:Int, rtNew:Int, allowUpward:Boolean,
 		piece:Piece,
-		field:Field, ctrl:Controller?):WallkickResult? {
+		field:Field, ctrl:Controller?): WallkickResult? {
 		getKickTable(x, y, rtDir, rtOld, rtNew, allowUpward, piece, field, ctrl)?.let {
 			for(i in it[rtOld].indices) {
 				var x2 = it[rtOld][i][0]

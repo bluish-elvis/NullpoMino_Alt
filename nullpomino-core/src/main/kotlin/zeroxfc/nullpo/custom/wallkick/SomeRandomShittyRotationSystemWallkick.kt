@@ -40,7 +40,7 @@ package zeroxfc.nullpo.custom.wallkick
 import mu.nu.nullpo.game.component.Controller
 import mu.nu.nullpo.game.component.Field
 import mu.nu.nullpo.game.component.Piece
-import mu.nu.nullpo.game.component.WallkickResult
+import mu.nu.nullpo.game.event.WallkickResult
 import mu.nu.nullpo.game.subsystem.wallkick.Wallkick
 import kotlin.math.pow
 
@@ -48,7 +48,7 @@ class SomeRandomShittyRotationSystemWallkick:Wallkick {
 	// So basically, it's a symmetric spiral checker.
 	// The bigger the field width, the more checks it performs.
 	override fun executeWallkick(x:Int, y:Int, rtDir:Int, rtOld:Int, rtNew:Int, allowUpward:Boolean,
-		piece:Piece, field:Field, ctrl:Controller?):WallkickResult? {
+		piece:Piece, field:Field, ctrl:Controller?): WallkickResult? {
 		var x2 = 0
 		var y2 = 0
 		var offsetRadius = field.width+1

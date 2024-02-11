@@ -288,11 +288,8 @@ class RendererSlick(
 
 		if(engine.frameColor>=0) {
 			val fi = resources.imgFrame[engine.frameColor].res
-
-			val lX = x
-			val rX = lX+width*size
-			val tY = y
-			val bY = tY+height*size
+			val rX = x+width*size
+			val bY = y+height*size
 
 			g.color = Color.white
 			//top edge
@@ -300,25 +297,23 @@ class RendererSlick(
 			fi.getSubImage(16, 0, 16, 32).also {
 				it.setCenterOfRotation(0f, 0f)
 				it.rotation = -90f
-				it.draw(lX-size, tY, size.toFloat(), rX-lX+size*2f)
+				it.draw(x-size, y, size.toFloat(), rX-x+size*2f)
 			}
 			//bottom edge
 			fi.getSubImage(48, 96, 16, 32).also {
 				it.setCenterOfRotation(0f, 0f)
 				it.rotation = -90f
-				it.draw(lX-size, bY+size, size.toFloat(), rX-lX+size*2f)
+				it.draw(x-size, bY+size, size.toFloat(), rX-x+size*2f)
 			}
 			//left edge
 			g.texture(
-				Polygon(floatArrayOf(lX-size, tY-size, lX, tY, lX, bY, lX-size, bY+size)),
-				fi.getSubImage(16, 0, 16, 32),
-				1f, 1f, true
+				Polygon(floatArrayOf(x-size, y-size, x, y, x, bY, x-size, bY+size)),
+				fi.getSubImage(16, 0, 16, 32), 1f, 1f, true
 			)
 			//right edge
 			g.texture(
-				Polygon(floatArrayOf(rX+size, tY-size, rX, tY, rX, bY, rX+size, bY+size)),
-				fi.getSubImage(16, 96, 16, 32),
-				1f, 1f, true
+				Polygon(floatArrayOf(rX+size, y-size, rX, y, rX, bY, rX+size, bY+size)),
+				fi.getSubImage(16, 96, 16, 32), 1f, 1f, true
 			)
 		} else if(engine.frameColor==FRAME_SKIN_GRADE) {
 			val fi = resources.imgFrameOld[3]

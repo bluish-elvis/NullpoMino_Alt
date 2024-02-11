@@ -45,15 +45,15 @@ interface BaseFont {
 		const val SQUARE_S = "\u0087"
 		const val DIA_L = "\u0088"
 		const val DIA_S = "\u0089"
-		const val UP_L = "\u0090"
-		const val UP_S = "\u0091"
-		const val HYPHEN = "\u0092"
-		const val DOWN_L = "\u0093"
-		const val DOWN_S = "\u0094"
+		const val UP_L = "\u008A"
+		const val UP_S = "\u008B"
+		const val HYPHEN = "\u008C"
+		const val DOWN_L = "\u008D"
+		const val DOWN_S = "\u008E"
 		/** Back-quote at end*/
-		const val DQ_END = "\u0095"
-		const val NAME_REV = "\u0096"
-		const val NAME_END = "\u0097"
+		const val DQ_END = "\u008F"
+		const val NAME_REV = "\u0090"
+		const val NAME_END = "\u0091"
 	}
 	/** Font cint constants */
 	enum class FONT(val w:Int, val h:Int = 16) {

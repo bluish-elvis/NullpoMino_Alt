@@ -40,7 +40,7 @@ package zeroxfc.nullpo.custom.wallkick
 import mu.nu.nullpo.game.component.Controller
 import mu.nu.nullpo.game.component.Field
 import mu.nu.nullpo.game.component.Piece
-import mu.nu.nullpo.game.component.WallkickResult
+import mu.nu.nullpo.game.event.WallkickResult
 import mu.nu.nullpo.game.subsystem.wallkick.Wallkick
 
 class FallingDownWallkick:Wallkick {
@@ -59,7 +59,7 @@ class FallingDownWallkick:Wallkick {
 	 * @return WallkickResult object, or null if you don't want a kick
 	 */
 	override fun executeWallkick(x:Int, y:Int, rtDir:Int, rtOld:Int, rtNew:Int, allowUpward:Boolean, piece:Piece,
-		field:Field, ctrl:Controller?):WallkickResult? {
+		field:Field, ctrl:Controller?): WallkickResult? {
 		val multiplier = if(piece.big) 2 else 1
 		val convRtOld:Int = (rtOld+2)%4
 		val convRtNew:Int = (rtNew+2)%4

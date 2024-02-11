@@ -401,9 +401,9 @@ class GrandSStealth:AbstractMode() {
 						if(rankingGrade[i]>=0&&rankingGrade[i]<tableGradeName.size)
 							receiver.drawScoreFont(
 								engine, 3, topY+i, tableGradeName[rankingGrade[i]],
-								if(rankingRollClear[i]==1) COLOR.GREEN
-								else if(rankingRollClear[i]==2) COLOR.ORANGE
-								else COLOR.WHITE
+								when {
+									rankingRollClear[i]==1 -> COLOR.GREEN;rankingRollClear[i]==2 -> COLOR.ORANGE;else -> COLOR.WHITE
+								}
 							)
 						receiver.drawScoreNum(engine, 5, topY+i, "%03d".format(rankingLevel[i]), i==rankingRank)
 						receiver.drawScoreNum(engine, 8, topY+i, rankingTime[i].toTimeStr, i==rankingRank)
@@ -414,16 +414,12 @@ class GrandSStealth:AbstractMode() {
 					// Best section time records
 					receiver.drawScoreFont(engine, 0, 2, "SECTION TIME", COLOR.PURPLE)
 
-					var totalTime = 0
-					for(i in 0..<SECTION_MAX) {
-						val temp = minOf(i*100, 999)
-						val temp2 = minOf((i+1)*100-1, 999)
-
-						val strSectionTime:String = "%3d-%3d %s".format(temp, temp2, bestSectionTime[i].toTimeStr)
-
-						receiver.drawScoreNum(engine, 0, 3+i, strSectionTime, sectionIsNewRecord[i])
-
-						totalTime += bestSectionTime[i]
+					val totalTime = (0..<SECTION_MAX).fold(0) {tt, i ->
+						val slv = minOf(i*100, 999)
+						receiver.drawScoreNum(
+							engine, 0, 3+i, "%3d-%3d %s".format(slv, slv+99, bestSectionTime[i].toTimeStr), sectionIsNewRecord[i]
+						)
+						tt+bestSectionTime[i]
 					}
 					receiver.drawScoreFont(engine, 0, 17, "TOTAL", COLOR.PURPLE)
 					receiver.drawScoreNum(engine, 0, 18, totalTime.toTimeStr, 2f)
@@ -468,20 +464,14 @@ class GrandSStealth:AbstractMode() {
 
 				receiver.drawScoreFont(engine, x, 2, "SECTION TIME", COLOR.PURPLE)
 
-				for(i in sectionTime.indices)
-					if(sectionTime[i]>0) {
-						var temp = i*100
-						if(temp>999) temp = 999
-
-						val section = engine.statistics.level/100
-						val strSeparator =
-							if(i==section&&engine.ending==0) BaseFont.CURSOR
-							else " "
-						val strSectionTime:String = "%3d%s%s".format(temp, strSeparator, sectionTime[i].toTimeStr)
-
-						receiver.drawScoreNum(engine, x, 3+i, strSectionTime, sectionIsNewRecord[i])
-					}
-
+				val section = engine.statistics.level/100
+				sectionTime.forEachIndexed {i, it ->
+					if(it>0) receiver.drawScoreNum(
+						engine, x, 3+i, "%3d%s%s".format(
+							minOf(i*100, 999), if(i==section&&engine.ending==0) "+" else "-", it.toTimeStr
+						), sectionIsNewRecord[i]
+					)
+				}
 				receiver.drawScoreFont(engine, x2, 17, "AVERAGE", COLOR.PURPLE)
 				receiver.drawScoreNum(engine, x2, 18, (engine.statistics.time/(sectionsDone+1)).toTimeStr, 2f)
 			}

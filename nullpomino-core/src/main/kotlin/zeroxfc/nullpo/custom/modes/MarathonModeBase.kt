@@ -399,37 +399,19 @@ open class MarathonModeBase:NetDummyMode() {
 	override fun netIsNetRankingViewOK(engine:GameEngine):Boolean = startLevel==0&&!big&&engine.ai==null
 
 	companion object {
-		/**
-		 * Current version
-		 */
+		/** Current version */
 		const val CURRENT_VERSION = 2
-		/**
-		 * Fall velocity table (numerators)
-		 */
+		/** Fall velocity table (numerators) */
 		@JvmField val tableGravity = intArrayOf(1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 465, 731, 1280, 1707, -1, -1, -1)
-		/**
-		 * Fall velocity table (denominators)
-		 */
+		/** Fall velocity table (denominators) */
 		@JvmField val tableDenominator = intArrayOf(63, 50, 39, 30, 22, 16, 12, 8, 6, 4, 3, 2, 1, 256, 256, 256, 256, 256, 256, 256)
-		/**
-		 * Line counts when BGM changes occur
-		 */
+		/** Line counts when BGM changes occur */
 		@JvmField val tableBGMChange = intArrayOf(50, 100, 150, 200, -1)
-		/**
-		 * Line counts when game ending occurs
-		 */
+		/** Line counts when game ending occurs */
 		@JvmField val tableGameClearLines = intArrayOf(150, 200, -1)
-		/**
-		 * Number of entries in rankings
-		 */
-		const val RANKING_MAX = 13
-		/**
-		 * Number of ranking types
-		 */
+		/** Number of ranking types */
 		const val RANKING_TYPE = 3
-		/**
-		 * Number of game types
-		 */
+		/** Number of game types */
 		const val GAMETYPE_MAX = 3
 	}
 }

@@ -40,7 +40,7 @@ package zeroxfc.nullpo.custom.wallkick
 import mu.nu.nullpo.game.component.Controller
 import mu.nu.nullpo.game.component.Field
 import mu.nu.nullpo.game.component.Piece
-import mu.nu.nullpo.game.component.WallkickResult
+import mu.nu.nullpo.game.event.WallkickResult
 import mu.nu.nullpo.game.subsystem.wallkick.Wallkick
 
 class ClassicLenientWallkick:Wallkick {
@@ -59,7 +59,7 @@ class ClassicLenientWallkick:Wallkick {
 	 * @return WallkickResult object, or null if you don't want a kick
 	 */
 	override fun executeWallkick(x:Int, y:Int, rtDir:Int, rtOld:Int, rtNew:Int, allowUpward:Boolean, piece:Piece, field:Field,
-		ctrl:Controller?):WallkickResult? {
+		ctrl:Controller?): WallkickResult? {
 		var x2:Int
 		var y2:Int
 		val wallkick = if(piece.type==Piece.Shape.I) I_WALLKICK else BASE_WALLKICK

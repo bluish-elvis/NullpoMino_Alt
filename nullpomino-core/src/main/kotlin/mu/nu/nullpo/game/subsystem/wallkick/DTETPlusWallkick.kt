@@ -33,13 +33,13 @@ package mu.nu.nullpo.game.subsystem.wallkick
 import mu.nu.nullpo.game.component.Controller
 import mu.nu.nullpo.game.component.Field
 import mu.nu.nullpo.game.component.Piece
-import mu.nu.nullpo.game.component.WallkickResult
+import mu.nu.nullpo.game.event.WallkickResult
 
 /** DTETPlus Wallkick - An extension of the ClassicPlusWallkick */
 class DTETPlusWallkick:DTETWallkick() {
 	/* Wallkick main method */
 	override fun executeWallkick(x:Int, y:Int, rtDir:Int, rtOld:Int, rtNew:Int, allowUpward:Boolean,
-		piece:Piece, field:Field, ctrl:Controller?):WallkickResult? {
+		piece:Piece, field:Field, ctrl:Controller?): WallkickResult? {
 		var x2:Int
 		var y2:Int
 

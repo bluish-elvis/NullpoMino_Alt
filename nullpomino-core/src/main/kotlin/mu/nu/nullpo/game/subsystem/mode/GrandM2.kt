@@ -416,19 +416,19 @@ class GrandM2:AbstractMode() {
 			if(!owner.replayMode&&startLevel==0&&!big&&!always20g&&engine.ai==null)
 				if(!isShowBestSectionTime) {
 					// Rankings
-
 					receiver.drawScoreFont(engine, 0, 2, "GRADE TIME LEVEL", COLOR.BLUE)
 
 					for(i in 0..<RANKING_MAX) {
-						var gcolor = COLOR.WHITE
-						if(rankingRollClear[i]==1||rankingRollClear[i]==3) gcolor = COLOR.GREEN
-						if(rankingRollClear[i]==2||rankingRollClear[i]==4) gcolor = COLOR.ORANGE
-
 						receiver.drawScoreGrade(
 							engine, 0, 3+i, "%2d".format(i+1), if(rankingRank==i) COLOR.RAINBOW else COLOR.YELLOW
 						)
 						if(rankingGrade[i]>=0&&rankingGrade[i]<tableGradeName.size)
-							receiver.drawScoreGrade(engine, 2, 3+i, tableGradeName[rankingGrade[i]], gcolor)
+							receiver.drawScoreGrade(
+								engine, 2, 3+i, tableGradeName[rankingGrade[i]],
+								if(rankingRollClear[i]==1||rankingRollClear[i]==3) COLOR.GREEN
+								else if(rankingRollClear[i]==2||rankingRollClear[i]==4) COLOR.ORANGE
+								else COLOR.WHITE
+							)
 						receiver.drawScoreNum(engine, 5, 3+i, rankingTime[i].toTimeStr, i==rankingRank)
 						receiver.drawScoreNum(engine, 12, 3+i, "%03d".format(rankingLevel[i]), i==rankingRank)
 					}
@@ -438,19 +438,12 @@ class GrandM2:AbstractMode() {
 					// Section Time
 					receiver.drawScoreFont(engine, 0, 2, "SECTION TIME QUADS", COLOR.BLUE)
 
-					var totalTime = 0
-					for(i in 0..<SECTION_MAX) {
-						val temp = minOf(i*100, 999)
-						val temp2 = minOf((i+1)*100-1, 999)
-
-						val strSectionTime:String = String.format(
-							"%3d-%3d %s %d", temp, temp2, bestSectionTime[i].toTimeStr,
-							bestSectionQuads[i]
+					val totalTime = (0..<SECTION_MAX).fold(0) {tt, i ->
+						val slv = minOf(i*100, 999)
+						receiver.drawScoreNum(
+							engine, 0, 3+i, "%3d-%3d %s %d".format(slv, slv+99, bestSectionTime[i].toTimeStr, bestSectionQuads[i]), sectionIsNewRecord[i]
 						)
-
-						receiver.drawScoreNum(engine, 0, 3+i, strSectionTime, sectionIsNewRecord[i])
-
-						totalTime += bestSectionTime[i]
+						tt+bestSectionTime[i]
 					}
 
 					receiver.drawScoreFont(engine, 0, 14, "TOTAL", COLOR.BLUE)
@@ -475,26 +468,19 @@ class GrandM2:AbstractMode() {
 				receiver.drawScoreSpeed(engine, 0, 3, (gradePoint-gradeDecay*1f/tableGradeDecayRate[gradeInternal])/100f, 5f)
 				receiver.drawScoreNum(
 					engine, 0, 4, "%02.1f%%".format(gradePoint-gradeDecay*1f/tableGradeDecayRate[gradeInternal]),
-					if(g20) COLOR.YELLOW
-					else if(mRollQuads&&mRollSTime) COLOR.CYAN else COLOR.BLUE
+					if(g20) COLOR.YELLOW else if(mRollQuads&&mRollSTime) COLOR.CYAN else COLOR.BLUE
 				)
 			}
 			if(gradeInternal>=0&&gradeInternal<tableDetailGradeName.size)
-				receiver.drawScoreGrade(
-					engine, 3, 3, tableDetailGradeName[gradeInternal], gradeFlash>0&&gradeFlash%4==0||g20
-				)
+				receiver.drawScoreGrade(engine, 3, 2, tableDetailGradeName[gradeInternal], gradeFlash>0&&gradeFlash%4==0||g20)
 
 			// Score
-			receiver.drawScoreFont(
-				engine, 0, 6, "Score", if(g20&&mRollQuads) COLOR.CYAN else COLOR.BLUE
-			)
+			receiver.drawScoreFont(engine, 0, 6, "Score", if(g20&&mRollQuads) COLOR.CYAN else COLOR.BLUE)
 			receiver.drawScoreNum(engine, 5, 6, "+$lastScore", g20)
 			receiver.drawScoreNum(engine, 0, 7, "$scDisp", g20, 2f)
 
 			// level
-			receiver.drawScoreFont(
-				engine, 0, 9, "Level", if(g20&&mRollSTime&&mRollQuads) COLOR.CYAN else COLOR.BLUE
-			)
+			receiver.drawScoreFont(engine, 0, 9, "Level", if(g20&&mRollSTime&&mRollQuads) COLOR.CYAN else COLOR.BLUE)
 			receiver.drawScoreNum(engine, 1, 10, "%3d".format(maxOf(engine.statistics.level, 0)), g20)
 			receiver.drawScoreSpeed(engine, 0, 11, if(g20) 1f else engine.speed.rank, 4f)
 			receiver.drawScoreNum(engine, 1, 12, "%3d".format(nextSecLv), g20)
@@ -502,9 +488,7 @@ class GrandM2:AbstractMode() {
 			// Time
 			receiver.drawScoreFont(engine, 0, 14, "Time", if(g20&&mRollSTime) COLOR.CYAN else COLOR.BLUE)
 			if(engine.ending!=2||rollTime/20%2==0)
-				receiver.drawScoreNum(
-					engine, 0, 15, engine.statistics.time.toTimeStr, g20&&mRollSTime, 2f
-				)
+				receiver.drawScoreNum(engine, 0, 15, engine.statistics.time.toTimeStr, g20&&mRollSTime, 2f)
 
 			// Roll 残り time
 			if(engine.gameActive&&engine.ending==2) {
@@ -526,37 +510,24 @@ class GrandM2:AbstractMode() {
 			if(showST&&sectionTime.isNotEmpty()) {
 				val x = receiver.nextDisplayType==2
 				receiver.drawScoreFont(engine, if(x) 8 else 10, 2, "SECTION TIME", COLOR.BLUE)
-
 				val section = engine.statistics.level/100
-				for(i in sectionTime.indices)
-					if(sectionTime[i]>0) {
-						var strSeparator = "-"
-						if(i==section&&engine.ending==0) strSeparator = "+"
-
-						val color:COLOR =
-							if(sectionQuads[i]>=(if(i<5) 2 else 1)&&sectionTime[i]<mRollTime(i))
-								if(sectionIsNewRecord[i]) COLOR.CYAN else COLOR.GREEN
-							else if(sectionIsNewRecord[i]) COLOR.RED else COLOR.WHITE
-
-						val strSectionTime = StringBuilder()
-						for(l in 0..<i)
-							strSectionTime.append("\n")
-						strSectionTime.append(
-							String.format(
-								"%3d%s%s %d\n",
-								if(i<10) i*100 else 999, strSeparator, sectionTime[i].toTimeStr, sectionQuads[i]
-							)
+				sectionTime.forEachIndexed {i, it ->
+					if(it>0) {
+						receiver.drawScoreNum(
+							engine, if(x) 9 else 10, 3+i, "%3d%s%s %d".format(
+								if(i<10) i*100 else 999, if(i==section&&engine.ending==0) "+" else "-", it.toTimeStr, sectionQuads[i]
+							), when {
+								sectionQuads[i]>=(if(i<5) 2 else 1)&&sectionTime[i]<mRollTime(i) -> if(sectionIsNewRecord[i]) COLOR.CYAN else COLOR.GREEN
+								sectionIsNewRecord[i] -> COLOR.RED; else -> COLOR.WHITE
+							}, if(x) .75f else 1f
 						)
-						receiver.drawScoreNum(engine, if(x) 9 else 10, 3, "$strSectionTime", color, if(x) .75f else 1f)
 					}
+				}
 
 				receiver.drawScoreFont(engine, if(x) 8 else 12, if(x) 11 else 14, "AVERAGE", COLOR.BLUE)
 				receiver.drawScoreNum(
-					engine,
-					if(x) 8 else 12,
-					if(x) 12 else 15,
-					(engine.statistics.time/(sectionsDone+(engine.ending==0).toInt())).toTimeStr,
-					2f
+					engine, if(x) 8 else 12, if(x) 12 else 15,
+					(engine.statistics.time/(sectionsDone+(engine.ending==0).toInt())).toTimeStr, 2f
 				)
 			}
 		}

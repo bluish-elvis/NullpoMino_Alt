@@ -625,16 +625,13 @@ class GrandM3:AbstractMode() {
 					// Section Time
 					receiver.drawScoreFont(engine, 0, 2, "SECTION TIME", COLOR.BLUE)
 
-					var totalTime = 0
-					for(i in 0..<tableSectionMax[goalType]) {
-						val temp = minOf(i*100, tableGoalLevel[goalType])
-						val temp2 = minOf((i+1)*100-1, tableGoalLevel[goalType])
-
-						val strSectionTime:String = "%4d-%4d/%s".format(temp, temp2, bestSectionTime[goalType][i].toTimeStr)
-
-						receiver.drawScoreNum(engine, 0, 3+i, strSectionTime, sectionIsNewRecord[i]&&!isAnyExam)
-
-						totalTime += bestSectionTime[goalType][i]
+					val totalTime = (0..<tableSectionMax[goalType]).fold(0) {_, i ->
+						val slv = minOf(i*100, tableGoalLevel[goalType])
+						receiver.drawScoreNum(
+							engine, 0, 3+i, "%4d-%4d/%s".format(slv, slv+99, bestSectionTime[goalType][i].toTimeStr),
+							sectionIsNewRecord[i]&&!isAnyExam
+						)
+						bestSectionTime[goalType][i]
 					}
 
 					receiver.drawScoreFont(engine, 13, 2, "TOTAL", COLOR.BLUE)
@@ -657,12 +654,11 @@ class GrandM3:AbstractMode() {
 				receiver.drawScoreNano(engine, 0, 1, "QUALIFY", COLOR.ORANGE)
 				receiver.drawScoreGrade(engine, 6, 1, getGradeName(promotionalExam))
 			}
+			val headCol = if(g20) COLOR.YELLOW else COLOR.BLUE
 			if(gradeDisp) {
-				receiver.drawScoreFont(engine, 0, 2, "GRADE", if(g20) COLOR.YELLOW else COLOR.BLUE)
+				receiver.drawScoreFont(engine, 0, 2, "GRADE", headCol)
 				// 段位
-				receiver.drawScoreGrade(
-					engine, 0, 3, getGradeName(grade), gradeFlash>0&&gradeFlash%4==0, 2f
-				)
+				receiver.drawScoreGrade(engine, 0, 3, getGradeName(grade), gradeFlash>0&&gradeFlash%4==0, 2f)
 				if(goalType==0) {
 					val index = minOf(tableGradeDecayRate.size-1, gradeBasicInternal)
 					receiver.drawScoreGrade(engine, 3, 3, getGradeName(index), gradeFlash>0&&gradeFlash%4==0)
@@ -680,17 +676,16 @@ class GrandM3:AbstractMode() {
 			}
 
 			// Score
-			receiver.drawScoreFont(engine, 0, 5, "Score", if(g20) COLOR.YELLOW else COLOR.BLUE)
+			receiver.drawScoreFont(engine, 0, 5, "Score", headCol)
 			receiver.drawScoreNum(engine, 5, 5, "+$lastScore")
 			receiver.drawScoreNum(engine, 0, 6, "$scDisp", 2f)
 
 			// level
-			receiver.drawScoreFont(engine, 0, 9, "Level", if(g20) COLOR.YELLOW else COLOR.BLUE)
+			receiver.drawScoreFont(engine, 0, 9, "Level", headCol)
 
 			receiver.drawScoreNum(engine, 1, 10, "%3d".format(maxOf(engine.statistics.level, 0)))
 			receiver.drawScoreSpeed(
-				engine, 0, 11, if(g20) 40 else floor(ln(engine.speed.gravity.toDouble())).toInt()*4,
-				4
+				engine, 0, 11, if(g20) 40 else floor(ln(engine.speed.gravity.toDouble())).toInt()*4, 4
 			)
 			if(coolCount>0) {
 				receiver.drawScoreFont(engine, 4, 11, "+")
@@ -699,16 +694,13 @@ class GrandM3:AbstractMode() {
 			receiver.drawScoreNum(engine, 1, 12, "%3d".format(nextSecLv))
 
 			// Time
-			receiver.drawScoreFont(
-				engine, 0, 14, "Time", if(g20) COLOR.YELLOW else COLOR.BLUE
-			)
+			receiver.drawScoreFont(engine, 0, 14, "Time", headCol)
 			if(engine.ending!=2||rollTime/10%2==0)
 				receiver.drawScoreNum(engine, 0, 15, engine.statistics.time.toTimeStr, 2f)
 
 			// Roll 残り time
 			if(engine.gameActive&&engine.ending==2) {
-				var time = ROLLTIMELIMIT-rollTime
-				if(time<0) time = 0
+				val time = maxOf(ROLLTIMELIMIT-rollTime,0)
 				receiver.drawScoreFont(engine, 0, 17, "ROLL TIME", COLOR.CYAN)
 				receiver.drawScoreNum(engine, 0, 18, time.toTimeStr, time>0&&time<10*60, 2f)
 			}
@@ -717,18 +709,14 @@ class GrandM3:AbstractMode() {
 			// REGRET表示
 				receiver.drawMenuFont(
 					engine, 2, 21, "REGRET", when {
-						regretDispFrame%4==0 -> COLOR.YELLOW
-						regretDispFrame%4==2 -> COLOR.RED
-						else -> COLOR.ORANGE
+						regretDispFrame%4==0 -> COLOR.YELLOW; regretDispFrame%4==2 -> COLOR.RED; else -> COLOR.ORANGE
 					}
 				)
 			else if(coolDispFrame>0)
 			// COOL表示
 				receiver.drawMenuFont(
 					engine, 2, 21, "COOL!!", when {
-						coolDispFrame%4==0 -> COLOR.BLUE
-						coolDispFrame%2==0 -> COLOR.GREEN
-						else -> COLOR.CYAN
+						coolDispFrame%4==0 -> COLOR.BLUE;coolDispFrame%2==0 -> COLOR.GREEN;else -> COLOR.CYAN
 					}
 				)
 
@@ -744,33 +732,19 @@ class GrandM3:AbstractMode() {
 				receiver.drawScoreFont(engine, if(x) 8 else 10, 2, "SECTION TIME", COLOR.BLUE)
 
 				val section = engine.statistics.level/100
-				for(i in sectionTime.indices)
-					if(sectionTime[i][0]>0) {
-						val temp = minOf(i*100, tableGoalLevel[goalType])
-						val strSeparator = if(i==section&&engine.ending==0) "+" else "-"
-						val color = when {
-							regretSection[i] -> if(sectionIsNewRecord[i]) COLOR.ORANGE else COLOR.RED
-							coolSection[i] -> if(sectionIsNewRecord[i]) COLOR.CYAN else COLOR.GREEN
-							else -> COLOR.WHITE
-						}
-						val strSectionTime = StringBuilder()
-						for(l in 0..<i)
-							strSectionTime.append("\n")
-						strSectionTime.append(
-							String.format(
-								"%3d%s%s %02.2f", temp,
-								strSeparator, sectionTime[i][0].toTimeStr, sectionTime[i][1]/60f
-							)
-						)
-
-						receiver.drawScoreNum(engine, if(x) 9 else 10, 3, "$strSectionTime", color, if(x) .75f else 1f)
-					}
-
+				sectionTime.forEachIndexed {i, it ->
+					if(it[0]>0) receiver.drawScoreNum(engine, if(x) 9 else 10, 3, "%3d%s%s %02.2f".format(
+						minOf(i*100, tableGoalLevel[goalType]),
+						if(i==section&&engine.ending==0) "+" else "-", sectionTime[i][0].toTimeStr, sectionTime[i][1]/60f
+					), when {
+						regretSection[i] -> if(sectionIsNewRecord[i]) COLOR.ORANGE else COLOR.RED
+						coolSection[i] -> if(sectionIsNewRecord[i]) COLOR.CYAN else COLOR.GREEN
+						else -> COLOR.WHITE
+					}, if(x) .75f else 1f)
+				}
 				receiver.drawScoreFont(engine, if(x) 8 else 12, if(x) 11 else 14, "AVERAGE", COLOR.BLUE)
 				receiver.drawScoreNum(
-					engine,
-					if(x) 8 else 12,
-					if(x) 12 else 15,
+					engine, if(x) 8 else 12, if(x) 12 else 15,
 					(engine.statistics.time/(sectionsDone+(engine.ending==0).toInt())).toTimeStr,
 					2f
 				)

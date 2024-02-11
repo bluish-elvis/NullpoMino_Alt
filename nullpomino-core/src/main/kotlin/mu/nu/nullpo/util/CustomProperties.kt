@@ -30,6 +30,9 @@
  */
 package mu.nu.nullpo.util
 
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
+import mu.nu.nullpo.game.event.Rankable
 import org.apache.logging.log4j.LogManager
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
@@ -133,7 +136,8 @@ class CustomProperties(name:String = ""):Properties() {
 	/** プロパティを設定
 	 * @return 指定された[key]に設定されていた値。それがない場合は null
 	 */
-	inline fun <reified T> setProperty(key:String, value:T):T? = setProperty(key, "$value") as? T
+	inline fun <reified T> setProperty(key:String, value:T):T? = setProperty(key,
+		if(value is Rankable) Json.encodeToString(value) else  "$value") as? T
 	/** プロパティを設定
 	 * @return 指定された[key]に対応する値 (見つからなかったら[def]）
 	 */
@@ -147,6 +151,7 @@ class CustomProperties(name:String = ""):Properties() {
 			is Double -> getProperty(key, def)
 			is Char -> getProperty(key, def)
 			is Boolean -> getProperty(key, def)
+			is Rankable -> Json.decodeFromString<T>(getProperty(key))
 			is List<*> -> if(def is MutableList<*>) getPropertiesMutable(key, def) else getProperties(key, def)
 			else -> getProperty(key, "$def")
 		} as? T ?: def

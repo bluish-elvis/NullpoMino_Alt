@@ -594,8 +594,8 @@ class SubscriberChallenge:NetDummyMode() {
 		/** Number of entries in rankings  */
 		const val RANKING_MAX = 10
 		/** Number of ranking types  */
-		const val RANKING_TYPE = 3
+		private const val RANKING_TYPE = 3
 		/** Number of game types  */
-		const val GAMETYPE_MAX = 3
+		private const val GAMETYPE_MAX = 3
 	}
 }

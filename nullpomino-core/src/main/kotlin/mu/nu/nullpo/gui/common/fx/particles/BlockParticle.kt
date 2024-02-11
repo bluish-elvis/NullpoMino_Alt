@@ -101,14 +101,14 @@ class BlockParticle(block:Block?, x:Float, y:Float, velocity:Vector, accelerate:
 						val xU = x-width/2f+((width%2==0).toInt()*.5f)
 						val spd = abs(maxVelocity*.2f)
 						BlockParticle(
-							Block(b), receiver.fieldX(engine)+x*bs, receiver.fieldY(engine)+y*bs,
+							Block(b), receiver.fieldX(engine,x), receiver.fieldY(engine,y),
 							Vector((1f/3f*xU)*1.35f*spd, (-5f+cy+abs(xU)/width)*1.5f*spd), Vector(0f, .72f*spd),
 							Type.TGM, bs, isFlashing
 						)
 					}
 					Type.DTET -> {
 						BlockParticle(
-							Block(b), receiver.fieldX(engine)+x*bs, receiver.fieldY(engine)+y*bs,
+							Block(b), receiver.fieldX(engine,x), receiver.fieldY(engine,y),
 							Vector((x-width/2f)*5f/row.size, cy*2).apply {magnitude = maxVelocity*(.5f+rand.nextFloat()/2)},
 							Vector((.04f+rand.nextFloat()*.21f)*(1-rand.nextInt(2)*2), rand.nextFloat()*.2f-.09f),
 							type,

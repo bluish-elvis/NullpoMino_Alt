@@ -63,17 +63,17 @@
 <!--Hold-->
 <entry key="Hold_HoldEnable">ホールド有効</entry>
 <entry key="Hold_HoldInitial">先行ホールド</entry>
-<entry key="Hold_HoldInitialLimit">先行ホールド連続使用不可</entry>
+<entry key="Hold_HoldInitialLimit">先行ホールド入力を使い回さない(ピースごとに押し直させる)</entry>
 <entry key="Hold_HoldResetDirection">ホールド時にピースの向きを元に戻す</entry>
 <entry key="Hold_HoldLimit">使用できる回数(-1:無制限)</entry>
 
 <!--Drop-->
 <entry key="Drop_HardDropEnable">ハードドロップ有効</entry>
 <entry key="Drop_HardDropLock">ハードドロップで即固定</entry>
-<entry key="Drop_HardDropLimit">ハードドロップ連続使用不可</entry>
+<entry key="Drop_HardDropLimit">ハードドロップ入力を使い回さない(ピースごとに押し直させる)</entry>
 <entry key="Drop_SoftDropEnable">ソフトドロップ有効</entry>
 <entry key="Drop_SoftDropLock">ソフトドロップで即固定</entry>
-<entry key="Drop_SoftDropLimit">ソフトドロップ連続使用不可</entry>
+<entry key="Drop_SoftDropLimit">ソフトドロップ入力を使い回さない(ピースごとに押し直させる)</entry>
 <entry key="Drop_SoftDropSurfaceLock">ソフトドロップを接地状態で使用すると即固定</entry>
 <entry key="Drop_SoftDropSpeed">ソフトドロップ速度(1.0 = 1.0G or 1倍)</entry>
 <entry key="Drop_SoftDropMultiplyNativeSpeed">ソフトドロップ速度を通常速度に対する倍率にする</entry>
@@ -81,7 +81,7 @@
 
 <!--Rotate-->
 <entry key="Rotate_RotateInitial">先行回転</entry>
-<entry key="Rotate_RotateInitialLimit">先行回転連続使用不可</entry>
+<entry key="Rotate_RotateInitialLimit">先行回転入力を使い回さない(ピースごとに押し直させる)</entry>
 <entry key="Rotate_RotateWallkick">壁蹴り</entry>
 <entry key="Rotate_RotateInitialWallkick">先行回転でも壁蹴りする</entry>
 <entry key="Rotate_RotateMaxUpwardWallkick">上方向へ壁蹴りできる回数(-1:無制限)</entry>

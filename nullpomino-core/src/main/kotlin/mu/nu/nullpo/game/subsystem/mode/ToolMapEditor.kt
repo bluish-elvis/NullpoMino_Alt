@@ -32,10 +32,10 @@ package mu.nu.nullpo.game.subsystem.mode
 
 import mu.nu.nullpo.game.component.BGMStatus
 import mu.nu.nullpo.game.component.Block
-import mu.nu.nullpo.game.component.Block.COLOR
+import mu.nu.nullpo.game.component.Block.COLOR as BCOLOR
 import mu.nu.nullpo.game.component.Controller
 import mu.nu.nullpo.game.component.Field
-import mu.nu.nullpo.game.event.EventReceiver
+import mu.nu.nullpo.game.event.EventReceiver.COLOR as ECOLOR
 import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.game.play.GameManager
 import mu.nu.nullpo.gui.common.BaseFont
@@ -121,10 +121,10 @@ class ToolMapEditor:AbstractMode() {
 		for(i in field.hiddenHeight*-1..<field.height)
 			for(j in 0..<field.width) {
 				val col = field.getBlockColor(j, i)
-				if(col==COLOR.BLACK||col==COLOR.WHITE) {
-					var color:COLOR
+				if(col==BCOLOR.BLACK||col==BCOLOR.WHITE) {
+					var color:BCOLOR
 					do
-						color = COLOR.colors()[rand.nextInt(COLOR.COLOR_NUM)]
+						color = BCOLOR.colors()[rand.nextInt(BCOLOR.COLOR_NUM)]
 					while(color==field.getBlockColor(j-1, i)||color==field.getBlockColor(j+1, i)||
 						color==field.getBlockColor(j, i-1)||color==field.getBlockColor(j, i-1))
 					field.setBlockColor(j, i, color)
@@ -214,39 +214,40 @@ class ToolMapEditor:AbstractMode() {
 
 	/* Setting screen drawing */
 	override fun renderSetting(engine:GameEngine) {
-		receiver.drawMenuFont(engine, 0, 1, "FIELD EDIT", EventReceiver.COLOR.COBALT)
+		receiver.drawMenuFont(engine, 0, 1, "FIELD EDIT", ECOLOR.COBALT)
 		if(menuCursor in 0..2)
-			receiver.drawMenuFont(engine, 0, 2+menuCursor, BaseFont.CURSOR, EventReceiver.COLOR.RED)
+			receiver.drawMenuFont(engine, 0, 2+menuCursor, BaseFont.CURSOR, ECOLOR.RED)
 		receiver.drawMenuFont(engine, 1, 2, "[EDIT]", menuCursor==0)
 		receiver.drawMenuFont(engine, 1, 3, "[WHITE->?]", menuCursor==1)
 		receiver.drawMenuFont(engine, 1, 4, "[CLEAR]", menuCursor==2)
 
-		receiver.drawMenuFont(engine, 0, 6, "MAP DATA", EventReceiver.COLOR.COBALT)
+		receiver.drawMenuFont(engine, 0, 6, "MAP DATA", ECOLOR.COBALT)
 		if(listFields!!.size>0)
 			receiver.drawMenuNum(engine, 0, 7, "$nowMapID"+"/"+(listFields!!.size-1), menuCursor in 3..5)
 		else
 			receiver.drawMenuFont(engine, 0, 7, "NO MAPS", menuCursor in 3..5)
 		if(menuCursor in 3..5)
-			receiver.drawMenuFont(engine, 0, 8+menuCursor-3, BaseFont.CURSOR, EventReceiver.COLOR.RED)
+			receiver.drawMenuFont(engine, 0, 8+menuCursor-3, BaseFont.CURSOR, ECOLOR.RED)
 		receiver.drawMenuFont(engine, 1, 8, "[SAVE]", menuCursor==3)
 		receiver.drawMenuFont(engine, 1, 9, "[LOAD]", menuCursor==4)
 		receiver.drawMenuFont(engine, 1, 10, "[DELETE]", menuCursor==5)
 
-		receiver.drawMenuFont(engine, 0, 12, "MAP FILE", EventReceiver.COLOR.COBALT)
+		receiver.drawMenuFont(engine, 0, 12, "MAP FILE", ECOLOR.COBALT)
 		receiver.drawMenuNum(engine, 0, 13, "$nowMapSetID/99", menuCursor in 6..7)
 		if(menuCursor in 6..7)
-			receiver.drawMenuFont(engine, 0, 14+menuCursor-6, BaseFont.CURSOR, EventReceiver.COLOR.RED)
+			receiver.drawMenuFont(engine, 0, 14+menuCursor-6, BaseFont.CURSOR, ECOLOR.RED)
 		receiver.drawMenuFont(engine, 1, 14, "[WRITE]", menuCursor==6)
 		receiver.drawMenuFont(engine, 1, 15, "[READ]", menuCursor==7)
 
-		receiver.drawMenuFont(engine, 0, 19, "EXIT-> D+E", EventReceiver.COLOR.ORANGE)
+		receiver.drawMenuFont(engine, 0, 19, "EXIT-> D+E", ECOLOR.ORANGE)
 	}
 
 	/* fieldEdit screen */
 	override fun renderFieldEdit(engine:GameEngine) {
-		receiver.drawScoreFont(engine, 0, 2, "X POS", EventReceiver.COLOR.BLUE)
-		receiver.drawScoreNum(engine, 0, 3, ""+engine.mapEditX)
-		receiver.drawScoreFont(engine, 0, 4, "Y POS", EventReceiver.COLOR.BLUE)
-		receiver.drawScoreNum(engine, 0, 5, ""+engine.mapEditY)
+		receiver.drawScoreFont(engine, 0, 2, "Position", ECOLOR.BLUE)
+		receiver.drawScoreFont(engine, 0, 3, "X:", ECOLOR.BLUE)
+		receiver.drawScoreNum(engine, 2, 3, ""+engine.mapEditX)
+		receiver.drawScoreFont(engine, 0, 4, "Y:", ECOLOR.BLUE)
+		receiver.drawScoreNum(engine, 2, 4, ""+engine.mapEditY)
 	}
 }

@@ -83,7 +83,15 @@ class GrandS1:AbstractMode() {
 	/** AC medal 状態 */
 	private var medalAC = 0
 	/** ST medal 状態 */
-	private var medalST = 0
+	private val medalST
+		get() = medalsST.indexOfFirst {it>0}.let {
+			when(it) {
+				in 0..2 -> 3-it
+				else -> 0
+			}
+		}
+
+	private var medalsST = mutableListOf(0, 0, 0)
 	/** SK medal 状態 */
 	private var medalSK = 0
 	/** RE medal 状態 */
@@ -166,7 +174,7 @@ class GrandS1:AbstractMode() {
 		sectionsDone = 0
 		sectionLastTime = 0
 		medalAC = 0
-		medalST = 0
+		medalsST.fill(0)
 		medalSK = 0
 		medalRE = 0
 		medalRO = 0
@@ -225,26 +233,21 @@ class GrandS1:AbstractMode() {
 		val best = bestSectionTime[section]
 
 		if(sectionLastTime<best||best<=0) {
-			if(medalST<3) {
-				engine.playSE("medal3")
-				if(medalST<1) decTemp += 3
-				if(medalST<2) decTemp += 6
-				medalST = 3
-				decTemp += 6
-			}
+			engine.playSE("medal3")
+			medalsST[0]++
+			decTemp += 15
 			if(!owner.replayMode) {
 				decTemp++
 				sectionIsNewRecord[section] = true
 			}
-		} else if(sectionLastTime<best+300&&medalST<2) {
+		} else if(sectionLastTime<best+300) {
 			engine.playSE("medal2")
-			if(medalST<1) decTemp += 3
-			medalST = 2
-			decTemp += 6
-		} else if(sectionLastTime<best+600&&medalST<1) {
+			medalsST[1]++
+			decTemp += 9
+		} else if(sectionLastTime<best+600) {
 			engine.playSE("medal1")
-			medalST = 1
-			decTemp += 3// 12
+			medalsST[2]++
+			decTemp += 3
 		}
 	}
 
@@ -293,9 +296,7 @@ class GrandS1:AbstractMode() {
 		val lv = startLevel*100
 		engine.statistics.level = lv
 
-		nextSecLv = engine.statistics.level+100
-		if(engine.statistics.level<0) nextSecLv = 100
-		if(engine.statistics.level>=900) nextSecLv = 999
+		nextSecLv = maxOf(100,minOf(engine.statistics.level+100,999))
 
 		owner.bgMan.bg = engine.statistics.level/100
 
@@ -336,16 +337,12 @@ class GrandS1:AbstractMode() {
 					// Section Time
 					receiver.drawScoreFont(engine, 0, 2, "SECTION TIME", COLOR.BLUE)
 
-					var totalTime = 0
-					for(i in 0..<SECTION_MAX) {
-						val temp = minOf(i*100, 999)
-						val temp2 = minOf((i+1)*100-1, 999)
-
-						val strSectionTime:String = "%3d-%3d %s".format(temp, temp2, bestSectionTime[i].toTimeStr)
-
-						receiver.drawScoreNum(engine, 0, 3+i, strSectionTime, sectionIsNewRecord[i])
-
-						totalTime += bestSectionTime[i]
+					val totalTime = (0..<SECTION_MAX).fold(0) {tt, i ->
+						val slv = minOf(i*100, 999)
+						receiver.drawScoreNum(
+							engine, 0, 3+i, "%3d-%3d %s".format(slv, slv+99, bestSectionTime[i].toTimeStr), sectionIsNewRecord[i]
+						)
+						tt+bestSectionTime[i]
 					}
 
 					receiver.drawScoreFont(engine, 0, 14, "TOTAL", COLOR.BLUE)
@@ -407,20 +404,14 @@ class GrandS1:AbstractMode() {
 
 				receiver.drawScoreFont(engine, x, 2, "SECTION TIME", COLOR.BLUE)
 
-				for(i in sectionTime.indices)
-					if(sectionTime[i]>0) {
-						var temp = i*100
-						if(temp>999) temp = 999
-
-						val section = engine.statistics.level/100
-						var strSeparator = "-"
-						if(i==section&&engine.ending==0) strSeparator = "+"
-
-						val strSectionTime:String = "%3d%s%s".format(temp, strSeparator, sectionTime[i].toTimeStr)
-
-						receiver.drawScoreNum(engine, x, 3+i, strSectionTime, sectionIsNewRecord[i])
-					}
-
+				val section = engine.statistics.level/100
+				sectionTime.forEachIndexed {i, it ->
+					if(it>0) receiver.drawScoreNum(
+						engine, x, 3+i, "%3d%s%s".format(
+							minOf(i*100, 999), if(i==section&&engine.ending==0) "+" else "-", it.toTimeStr
+						), sectionIsNewRecord[i]
+					)
+				}
 				receiver.drawScoreFont(engine, x2, 14, "AVERAGE", engine.statistics.time%3!=0)
 				receiver.drawScoreNum(
 					engine, x2, 15, (engine.statistics.time/(sectionsDone+(engine.ending==0).toInt())).toTimeStr,
@@ -435,7 +426,7 @@ class GrandS1:AbstractMode() {
 	override fun onMove(engine:GameEngine):Boolean {
 		// 新規ピース出現時
 		if(engine.ending==0&&engine.statc[0]==0&&!engine.holdDisable&&!lvupFlag)
-			// Level up
+		// Level up
 			levelUp(engine, (engine.statistics.level<nextSecLv-1).toInt())
 
 		if(engine.ending==0&&engine.statc[0]>0&&(version>=2||!engine.holdDisable)) lvupFlag = false

@@ -63,17 +63,17 @@
  <!--Hold-->
  <entry key="Hold_HoldEnable">Enable hold</entry>
  <entry key="Hold_HoldInitial">Initial hold</entry>
- <entry key="Hold_HoldInitialLimit">Can't use initial hold again..<release the button</entry>
+ <entry key="Hold_HoldInitialLimit">Can't use initial hold until release the button</entry>
  <entry key="Hold_HoldResetDirection">Reset direction</entry>
  <entry key="Hold_HoldLimit"># of times (-1:Unlimited)</entry>
 
  <!--Drop-->
  <entry key="Drop_HardDropEnable">Enable hard drop</entry>
  <entry key="Drop_HardDropLock">Instant lock by hard drop</entry>
- <entry key="Drop_HardDropLimit">Can't use hard drop again..<release the button</entry>
+ <entry key="Drop_HardDropLimit">Can't use hard drop again until release the key</entry>
  <entry key="Drop_SoftDropEnable">Enable soft drop</entry>
  <entry key="Drop_SoftDropLock">Instant lock by soft drop</entry>
- <entry key="Drop_SoftDropLimit">Can't use soft drop again..<release the button</entry>
+ <entry key="Drop_SoftDropLimit">Can't use soft drop again until release the key</entry>
  <entry key="Drop_SoftDropSurfaceLock">Instant lock by soft drop on surface</entry>
  <entry key="Drop_SoftDropSpeed">Soft drop speed (1.0=1G or x1)</entry>
  <entry key="Drop_SoftDropMultiplyNativeSpeed">Multiply soft drop speed by native speed</entry>
@@ -81,10 +81,10 @@
 
  <!--Rotate-->
  <entry key="Rotate_RotateInitial">Initial Rotate</entry>
- <entry key="Rotate_RotateInitialLimit">Can't use initial rotate again..<release the button</entry>
+ <entry key="Rotate_RotateInitialLimit">Can't use initial rotate again until release the button</entry>
  <entry key="Rotate_RotateWallkick">Enable wallkick</entry>
  <entry key="Rotate_RotateInitialWallkick">Enable wallkick on initial rotate</entry>
- <entry key="Rotate_RotateMaxUpwardWallkick"># of floorkicks allowed (-1:Unlimited)</entry>
+ <entry key="Rotate_RotateMaxUpwardWallkick"># of Floor-kicks allowed (-1:Unlimited)</entry>
  <entry key="Rotate_RotateButtonDefaultRight">Press A to rotate right</entry>
  <entry key="Rotate_RotateButtonAllowReverse">Allow reverse rotate (B button)</entry>
  <entry key="Rotate_RotateButtonAllowDouble">Allow double rotate (E button)</entry>

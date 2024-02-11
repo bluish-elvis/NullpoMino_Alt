@@ -33,7 +33,7 @@ package mu.nu.nullpo.game.subsystem.wallkick
 import mu.nu.nullpo.game.component.Controller
 import mu.nu.nullpo.game.component.Field
 import mu.nu.nullpo.game.component.Piece
-import mu.nu.nullpo.game.component.WallkickResult
+import mu.nu.nullpo.game.event.WallkickResult
 
 /** Wallkick system interface */
 interface Wallkick {
@@ -52,5 +52,5 @@ interface Wallkick {
 	 * @return WallkickResult object, or null if you don't want a kick
 	 */
 	fun executeWallkick(x:Int, y:Int, rtDir:Int, rtOld:Int, rtNew:Int, allowUpward:Boolean, piece:Piece,
-		field:Field, ctrl:Controller?):WallkickResult?
+		field:Field, ctrl:Controller?): WallkickResult?
 }

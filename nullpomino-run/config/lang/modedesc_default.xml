@@ -43,7 +43,7 @@
  <entry key="Physician">Clear gem blocks by lining up blocks of the same color.</entry>
  <entry key="PhysicianVS">Clear all gem blocks before your opponent.</entry>
  <entry key="SPF_VS-BATTLE_lBETAr">Use gems to clear blocks of the same color.</entry>
- <entry key="[MORE...]">You can access more game modes from here.</entry>
+ <entry key="[more...]">You can access more game modes from here.</entry>
 
  <!--Folder descriptions.-->
  <!--Same rules apply as mode descriptions, but you'll need to add the "_" prefix.-->

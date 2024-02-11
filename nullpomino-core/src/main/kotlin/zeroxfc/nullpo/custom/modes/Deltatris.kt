@@ -315,11 +315,10 @@ class Deltatris:MarathonModeBase() {
 			}
 			receiver.drawScoreFont(engine, 0, 4, "Score", COLOR.BLUE)
 			receiver.drawScoreNum(engine, 5, 4, "+$lastScore")
-			val scget = scDisp<engine.statistics.score
-			receiver.drawScoreNum(engine, 0, 5, "$scDisp", scget, 2f)
+			receiver.drawScoreNum(engine, 0, 5, "$scDisp", scDisp<engine.statistics.score, 2f)
 
 			val rix = receiver.scoreX(engine)
-			val riy = receiver.scoreY(engine)+13*16
+			val riy = receiver.scoreY(engine, 13)
 			GameTextUtilities.drawDirectTextAlign(
 				receiver, rix, riy, GameTextUtilities.ALIGN_TOP_LEFT, "%.2f".format(multiplier)+"X",
 				if(engine.stat===GameEngine.Status.MOVE&&engine.statc[0]>engine.speed.lockDelay*3) COLOR.RED else if(mScale>1) COLOR.ORANGE else COLOR.WHITE,
@@ -334,17 +333,13 @@ class Deltatris:MarathonModeBase() {
 			if(engine.playerProp.isLoggedIn||engine.playerName.isNotEmpty()) {
 				receiver.drawScoreFont(engine, 8, 17, "PLAYER", COLOR.BLUE)
 				receiver.drawScoreFont(
-					engine, 8, 18, if(owner.replayMode) engine.playerName else engine.playerProp.nameDisplay,
-					COLOR.WHITE,
-					2f
+					engine, 8, 18, if(owner.replayMode) engine.playerName else engine.playerProp.nameDisplay, COLOR.WHITE, 2f
 				)
 			}
 			receiver.drawScoreSpeed(
 				engine, 0, 18, when {
 					engine.statistics.totalPieceLocked<PIECES_MAX[difficulty] -> minOf(
-						1.0,
-						engine.statistics.totalPieceLocked/PIECES_MAX[difficulty]
-							.toDouble()
+						1.0, engine.statistics.totalPieceLocked/PIECES_MAX[difficulty].toDouble()
 					).toFloat()
 					engine.statistics.time/12%2==0 -> 1f
 					else -> 0f
@@ -353,15 +348,8 @@ class Deltatris:MarathonModeBase() {
 			)
 			if(engine.statistics.totalPieceLocked>=PIECES_MAX[difficulty]) {
 				stext.drawScoreText(
-					receiver,
-					engine,
-					0,
-					20,
-					4,
-					2,
-					"MAXIMUM VELOCITY",
-					if(engine.statistics.time/3%3==0) COLOR.ORANGE else COLOR.YELLOW,
-					1.25f
+					receiver, engine, 0, 20, 4, 2, "MAXIMUM VELOCITY",
+					if(engine.statistics.time/3%3==0) COLOR.ORANGE else COLOR.YELLOW, 1.25f
 				)
 			}
 		}
@@ -502,8 +490,8 @@ class Deltatris:MarathonModeBase() {
      */
 	override fun afterHardDropFall(engine:GameEngine, fall:Int) {
 		engine.statistics.scoreHD += (fall*2*multiplier).toInt()
-		val baseX = 16*engine.nowPieceX+4+receiver.fieldX(engine)
-		val baseY = 16*engine.nowPieceY+52+receiver.fieldY(engine)
+		val baseX = 4+receiver.fieldX(engine,engine.nowPieceX)
+		val baseY = 52+receiver.fieldY(engine,engine.nowPieceY)
 		engine.nowPieceObject?.let {cPiece ->
 			for(i in 1..fall) {
 				pCoordList.add(intArrayOf(engine.nowPieceX, engine.nowPieceY-i))

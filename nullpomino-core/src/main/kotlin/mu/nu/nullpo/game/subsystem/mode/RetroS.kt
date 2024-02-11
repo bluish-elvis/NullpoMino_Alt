@@ -68,7 +68,7 @@ class RetroS:AbstractMode() {
 	/** PowerOn Pattern on/off */
 	private var powerOn:Boolean by DelegateMenuItem(itemPower)
 
-	override val menu = MenuList("retromania")
+	override val menu = MenuList("retromania",itemMode,itemPower,itemLevel,itemBig)
 	/** Version of this mode */
 	private var version = 0
 
@@ -207,7 +207,7 @@ class RetroS:AbstractMode() {
 			// Leaderboard
 			if(!owner.replayMode&&!big&&startLevel==0&&engine.ai==null) {
 				val topY = if(receiver.nextDisplayType==2) 6 else 4
-				receiver.drawScoreFont(engine, 3, topY-1, "SCORE LINE LV TIME", COLOR.BLUE)
+				receiver.drawScoreFont(engine, 0, topY-1, "SCORE LINE LV TIME", COLOR.BLUE)
 
 				for(i in 0..<RANKING_MAX) {
 					receiver.drawScoreGrade(engine, 0, topY+i, "${i+1}", COLOR.YELLOW)

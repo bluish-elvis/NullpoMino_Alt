@@ -44,14 +44,14 @@ package wtf.oshisaure.nullpomodshit.wallkicks
 import mu.nu.nullpo.game.component.Controller
 import mu.nu.nullpo.game.component.Field
 import mu.nu.nullpo.game.component.Piece
-import mu.nu.nullpo.game.component.WallkickResult
+import mu.nu.nullpo.game.event.WallkickResult
 import mu.nu.nullpo.game.subsystem.wallkick.Wallkick
 
 class ClassicOSpinWallkick:Wallkick {
 	var trySeq = intArrayOf(4, 0, 1, 5, 3, 6, 2)
 	override fun executeWallkick(
 		x:Int, y:Int, rtDir:Int, rtOld:Int, rtNew:Int, allowUpward:Boolean, piece:Piece, field:Field, ctrl:Controller?
-	):WallkickResult? {
+	): WallkickResult? {
 		var check = 0
 		if(piece.big) check = 1
 		if(checkCollisionKick(piece, x, y, rtNew, field)||piece.id==8||piece.id==10) {

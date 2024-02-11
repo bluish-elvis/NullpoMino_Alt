@@ -1027,7 +1027,7 @@ class GameEngine(
 		}
 	}
 
-	/** ソフト・Hard drop・先行ホールド・先行rotationの使用制限解除 */
+	/** ソフト・Hard drop・先行ホールド・同方向への先行rotationの使用制限解除 */
 	private fun checkDropContinuousUse() {
 		if(gameActive) {
 			if(!ctrl.isPress(down)||!ruleOpt.softdropLimit) softdropContinuousUse = false
@@ -1195,10 +1195,10 @@ class GameEngine(
 		ctrl.let {
 			if(ruleOpt.spinInitial&&!initialSpinContinuousUse) {
 				var dir = 0
-				if(it.isPress(Controller.BUTTON_A)||it.isPress(Controller.BUTTON_C))
-					dir = -1
+				if(it.isPress(Controller.BUTTON_A)||it.isPress(Controller.BUTTON_C)) dir = -1
 				else if(it.isPress(Controller.BUTTON_B)) dir = 1
 				else if(it.isPress(Controller.BUTTON_E)) dir = 2
+				if (dir!=0)spun = false
 				initialSpinDirection = dir
 			}
 
@@ -1505,64 +1505,64 @@ class GameEngine(
 			Status.NOTHING -> {
 			}
 			Status.SETTING -> {
-				owner.mode?.renderSetting(this)
 				owner.receiver.renderSetting(this)
+				owner.mode?.renderSetting(this)
 			}
 			Status.PROFILE -> {
-				owner.mode?.renderProfile(this)
 				owner.receiver.renderProfile(this)
+				owner.mode?.renderProfile(this)
 			}
 			Status.READY -> {
-				owner.mode?.renderReady(this)
 				owner.receiver.renderReady(this)
+				owner.mode?.renderReady(this)
 			}
 			Status.MOVE -> {
-				owner.mode?.renderMove(this)
 				owner.receiver.renderMove(this)
+				owner.mode?.renderMove(this)
 			}
 			Status.LOCKFLASH -> {
-				owner.mode?.renderLockFlash(this)
 				owner.receiver.renderLockFlash(this)
+				owner.mode?.renderLockFlash(this)
 			}
 			Status.LINECLEAR -> {
-				owner.mode?.renderLineClear(this)
 				owner.receiver.renderLineClear(this)
+				owner.mode?.renderLineClear(this)
 			}
 			Status.ARE -> {
-				owner.mode?.renderARE(this)
 				owner.receiver.renderARE(this)
+				owner.mode?.renderARE(this)
 			}
 			Status.ENDINGSTART -> {
-				owner.mode?.renderEndingStart(this)
 				owner.receiver.renderEndingStart(this)
+				owner.mode?.renderEndingStart(this)
 			}
 			Status.CUSTOM -> {
-				owner.mode?.renderCustom(this)
 				owner.receiver.renderCustom(this)
+				owner.mode?.renderCustom(this)
 			}
 			Status.EXCELLENT -> {
-				owner.mode?.renderExcellent(this)
 				owner.receiver.renderExcellent(this)
+				owner.mode?.renderExcellent(this)
 			}
 			Status.GAMEOVER -> {
-				owner.mode?.renderGameOver(this)
 				owner.receiver.renderGameOver(this)
+				owner.mode?.renderGameOver(this)
 			}
 			Status.RESULT -> {
-				owner.mode?.renderResult(this)
 				owner.receiver.renderResult(this)
+				owner.mode?.renderResult(this)
 			}
 			Status.FIELDEDIT -> {
-				owner.mode?.renderFieldEdit(this)
 				owner.receiver.renderFieldEdit(this)
+				owner.mode?.renderFieldEdit(this)
 			}
 			Status.INTERRUPTITEM -> {
 			}
 		}
 
 		if(owner.showInput) {
-			owner.mode?.renderInput(this)
 			owner.receiver.renderInput(this)
+			owner.mode?.renderInput(this)
 		}
 		ai?.also {
 			if(gameActive&&aiShowState) it.renderState(this, playerID)
@@ -1890,7 +1890,7 @@ class GameEngine(
 					initialSpinLastDirection = initialSpinDirection
 					initialSpinContinuousUse = true
 					if(nowPieceSpinFailCount>0) nowPieceSpinFailCount--
-					else playSE("initialrotate")
+					else if(spin!=0) playSE("initialrotate")
 				} else if(statc[0]>0||ruleOpt.moveFirstFrame) {
 					if(itemRollRollEnable&&replayTimer%itemRollRollInterval==0) spin = 1 // Roll Roll
 

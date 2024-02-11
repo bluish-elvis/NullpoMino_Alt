@@ -63,7 +63,7 @@ class FieldScatter @JvmOverloads constructor(engine:GameEngine, fieldBlockLocati
 			if(blk.cint>0) {
 				blocks.add(
 					BlockPhysics(
-						receiver.fieldX(engine)+4+x*16f, receiver.fieldY(engine)+52+y*16f,
+						receiver.fieldX(engine,x)+4, receiver.fieldY(engine,y)+52,
 						Vector(rdm.nextFloat(8f), rdm.nextFloat((PI*2).toFloat()), true),
 						-1, 1, 1, AnchorPoint.TL, blk
 					)

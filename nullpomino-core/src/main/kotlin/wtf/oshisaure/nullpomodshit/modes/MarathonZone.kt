@@ -699,8 +699,6 @@ class MarathonZone:NetDummyMode() {
 		/** Line counts when game ending occurs  */
 		private val tableGameClearLines = intArrayOf(15*24, 20*24, -1)
 		private const val MAX_ZONE_TIME = 1200 // 20 seconds
-		/** Number of entries in rankings  */
-		private const val RANKING_MAX = 13
 		/** Number of game types  */
 		private const val GAMETYPE_MAX = 3
 		/** Number of ranking types  */

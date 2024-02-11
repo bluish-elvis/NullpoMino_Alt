@@ -40,7 +40,7 @@ package zeroxfc.nullpo.custom.wallkick
 import mu.nu.nullpo.game.component.Controller
 import mu.nu.nullpo.game.component.Field
 import mu.nu.nullpo.game.component.Piece
-import mu.nu.nullpo.game.component.WallkickResult
+import mu.nu.nullpo.game.event.WallkickResult
 import mu.nu.nullpo.game.subsystem.wallkick.Wallkick
 
 class TetrisEXWallkick:Wallkick {
@@ -48,7 +48,7 @@ class TetrisEXWallkick:Wallkick {
 	private var maxDASCharge = 0
 	private var dasDirection = 1
 	override fun executeWallkick(x:Int, y:Int, rtDir:Int, rtOld:Int, rtNew:Int, allowUpward:Boolean,
-		piece:Piece, field:Field, ctrl:Controller?):WallkickResult? {
+		piece:Piece, field:Field, ctrl:Controller?): WallkickResult? {
 		/*
          * Note about the selection of wallkicks:
          *
