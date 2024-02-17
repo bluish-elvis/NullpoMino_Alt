@@ -35,9 +35,8 @@ import mu.nu.nullpo.game.play.GameEngine.Companion.FRAME_SKIN_GRADE
 import mu.nu.nullpo.game.play.GameManager
 import mu.nu.nullpo.gui.common.AbstractRenderer
 import mu.nu.nullpo.gui.common.BaseFont
-import mu.nu.nullpo.gui.common.bg.*
+import mu.nu.nullpo.gui.common.bg.AbstractBG
 import mu.nu.nullpo.gui.common.bg.dtet.*
-import zeroxfc.nullpo.custom.libs.Vector
 import mu.nu.nullpo.gui.slick.img.FontGrade
 import mu.nu.nullpo.gui.slick.img.FontMedal
 import mu.nu.nullpo.gui.slick.img.FontNano
@@ -51,6 +50,7 @@ import org.newdawn.slick.Color
 import org.newdawn.slick.Graphics
 import org.newdawn.slick.Image
 import org.newdawn.slick.geom.Polygon
+import zeroxfc.nullpo.custom.libs.Vector
 import kotlin.math.PI
 import kotlin.math.absoluteValue
 import kotlin.random.Random
@@ -64,11 +64,9 @@ class RendererSlick(
 	override val resources = ResourceHolder
 
 	/* TTF使用可能 */
-	override val isTTFSupport:Boolean
-		get() = resources.ttfFont!=null
+	override val isTTFSupport get() = resources.ttfFont!=null
 
-	override val skinMax:Int
-		get() = resources.imgBigBlockList.size
+	override val skinMax get() = resources.imgBigBlockList.size
 
 	/** Constructor */
 	init {
@@ -98,6 +96,7 @@ class RendererSlick(
 	override fun drawStaffRoll(x:Number, y:Number, scr:Number, height:Number, alpha:Float) {
 		RenderStaffRoll.draw(x.toFloat(), y.toFloat(), scr.toFloat(), height.toFloat(), alpha)
 	}
+
 	override val doesGraphicsExist get() = graphics!=null
 
 	/* 勲章を描画 */
@@ -139,7 +138,7 @@ class RendererSlick(
 
 	override fun drawBlockSpecific(x:Float, y:Float, sx:Int, sy:Int, sk:Int, size:Float, darkness:Float, alpha:Float) {
 		val g = graphics ?: return
-		val img:Image = when {
+		val img = when {
 			size*2<=BS -> resources.imgSmallBlockList[sk]
 			size>=BS*2 -> resources.imgBigBlockList[sk]
 			else -> resources.imgNormalBlockList[sk]
@@ -322,11 +321,13 @@ class RendererSlick(
 
 	val bgType:List<AbstractBG<Image>> by lazy {
 		resources.imgPlayBG.map {i ->
-			SpinBG(i,when(Random.Default.nextInt(10)){
-			0->BGADNightClock(resources.imgPlayBGA.first {it.name.endsWith("_n")},false)
-			in 1..4->BGAHBeams(resources.imgPlayBGA.first {it.name.endsWith("_b")},false)
-			else->null
-		})
+			SpinBG(
+				i, when(Random.Default.nextInt(10)) {
+					0 -> BGADNightClock(resources.imgPlayBGA.first {it.name.endsWith("_n")}, false)
+					in 1..4 -> BGAHBeams(resources.imgPlayBGA.first {it.name.endsWith("_b")}, false)
+					else -> null
+				}
+			)
 		}
 	}
 

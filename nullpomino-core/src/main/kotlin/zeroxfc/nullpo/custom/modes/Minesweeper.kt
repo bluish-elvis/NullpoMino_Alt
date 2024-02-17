@@ -69,7 +69,7 @@ class Minesweeper:AbstractMode() {
 	private var timeLimit = 0
 	private var currentLimit = 0
 	private var numberOfCover = 0
-	override val name:String get() = "MineSweeper"
+	override val name get() = "MineSweeper"
 
 	override fun playerInit(engine:GameEngine) {
 		//SoundLoader.loadSoundset(SoundLoader.LOADTYPE_MINESWEEPER)

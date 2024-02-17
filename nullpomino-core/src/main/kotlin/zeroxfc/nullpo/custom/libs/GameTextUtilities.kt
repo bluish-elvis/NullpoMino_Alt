@@ -179,18 +179,18 @@ object GameTextUtilities {
 	 * @param color     Color of string
 	 * @param scale     Scale of string
 	 */
-	fun drawDirectTextAlign(receiver:EventReceiver, x:Int, y:Int, alignment:Int, str:String, color:COLOR = COLOR.WHITE, scale:Float = 1f) {
-		val offsetX:Int = when(alignment) {
-			ALIGN_TOP_MIDDLE, ALIGN_MIDDLE_MIDDLE, ALIGN_BOTTOM_MIDDLE -> (8*str.length*scale).toInt()
-			ALIGN_TOP_RIGHT, ALIGN_MIDDLE_RIGHT, ALIGN_BOTTOM_RIGHT -> (16*str.length*scale).toInt()
-			else -> 0
+	fun drawDirectTextAlign(receiver:EventReceiver, x:Number, y:Number, alignment:Int, str:String, color:COLOR = COLOR.WHITE, scale:Float = 1f) {
+		val offsetX = when(alignment) {
+			ALIGN_TOP_MIDDLE, ALIGN_MIDDLE_MIDDLE, ALIGN_BOTTOM_MIDDLE -> 8*str.length*scale
+			ALIGN_TOP_RIGHT, ALIGN_MIDDLE_RIGHT, ALIGN_BOTTOM_RIGHT -> 16*str.length*scale
+			else -> 0f
 		}
-		val offsetY:Int = when(alignment) {
-			ALIGN_MIDDLE_LEFT, ALIGN_MIDDLE_MIDDLE, ALIGN_MIDDLE_RIGHT -> (8*scale).toInt()
-			ALIGN_BOTTOM_LEFT, ALIGN_BOTTOM_MIDDLE, ALIGN_BOTTOM_RIGHT -> (16*scale).toInt()
-			else -> 0
+		val offsetY = when(alignment) {
+			ALIGN_MIDDLE_LEFT, ALIGN_MIDDLE_MIDDLE, ALIGN_MIDDLE_RIGHT -> 8*scale
+			ALIGN_BOTTOM_LEFT, ALIGN_BOTTOM_MIDDLE, ALIGN_BOTTOM_RIGHT -> 16*scale
+			else -> 0f
 		}
-		receiver.drawDirectFont(x-offsetX, y-offsetY, str, color, scale)
+		receiver.drawDirectFont(x.toFloat()-offsetX, y.toFloat()-offsetY, str, color, scale)
 	}
 	/**
 	 * Draws an aligned string using `drawScoreFont`.
@@ -204,19 +204,19 @@ object GameTextUtilities {
 	 * @param color     Color of string
 	 * @param scale     Scale of string
 	 */
-	fun drawScoreTextAlign(receiver:EventReceiver, engine:GameEngine, x:Int, y:Int, alignment:Int, str:String, color:COLOR = COLOR.WHITE,
+	fun drawScoreTextAlign(receiver:EventReceiver, engine:GameEngine, x:Number, y:Number, alignment:Int, str:String, color:COLOR = COLOR.WHITE,
 		scale:Float = 1f) {
-		val offsetX:Int = when(alignment) {
-			ALIGN_TOP_MIDDLE, ALIGN_MIDDLE_MIDDLE, ALIGN_BOTTOM_MIDDLE -> str.length/2
-			ALIGN_TOP_RIGHT, ALIGN_MIDDLE_RIGHT, ALIGN_BOTTOM_RIGHT -> str.length
-			else -> 0
+		val offsetX = when(alignment) {
+			ALIGN_TOP_MIDDLE, ALIGN_MIDDLE_MIDDLE, ALIGN_BOTTOM_MIDDLE -> str.length/2f
+			ALIGN_TOP_RIGHT, ALIGN_MIDDLE_RIGHT, ALIGN_BOTTOM_RIGHT -> str.length.toFloat()
+			else -> 0f
 		}
-		val offsetY:Int = when(alignment) {
-			ALIGN_MIDDLE_LEFT, ALIGN_MIDDLE_MIDDLE, ALIGN_MIDDLE_RIGHT -> (scale/2).toInt()
-			ALIGN_BOTTOM_LEFT, ALIGN_BOTTOM_MIDDLE, ALIGN_BOTTOM_RIGHT -> (scale*1).toInt()
-			else -> 0
+		val offsetY = when(alignment) {
+			ALIGN_MIDDLE_LEFT, ALIGN_MIDDLE_MIDDLE, ALIGN_MIDDLE_RIGHT -> scale/2f
+			ALIGN_BOTTOM_LEFT, ALIGN_BOTTOM_MIDDLE, ALIGN_BOTTOM_RIGHT -> scale
+			else -> 0f
 		}
-		receiver.drawScoreFont(engine, x-offsetX, y-offsetY, str, color, scale)
+		receiver.drawScoreFont(engine, x.toFloat()-offsetX, y.toFloat()-offsetY, str, color, scale)
 	}
 	/**
 	 * Draws an aligned string using `drawMenuFont`.

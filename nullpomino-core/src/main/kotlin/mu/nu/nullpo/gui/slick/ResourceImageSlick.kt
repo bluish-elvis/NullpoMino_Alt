@@ -51,8 +51,8 @@ class ResourceImageSlick(override val name:String, private val antiAlias:Boolean
 
 	override var res = Image(1, 1)
 
-	override val width get() = res.width ?: 0
-	override val height get() = res.height ?: 0
+	override val width get() = res.width
+	override val height get() = res.height
 	val textureWidth get() = res.textureWidth
 	val textureHeight get() = res.textureHeight
 
@@ -73,7 +73,7 @@ class ResourceImageSlick(override val name:String, private val antiAlias:Boolean
 
 	override fun draw(x:Float, y:Float, x2:Float, y2:Float, srcX:Float, srcY:Float, srcX2:Float, srcY2:Float,
 		alpha:Float, color:Triple<Float, Float, Float>) =
-		res.draw(x, y, x2, y2, srcX, srcY, srcX2, srcY2, Color(color.first, color.second, color.third, alpha))?:Unit
+		res.draw(x, y, x2, y2, srcX, srcY, srcX2, srcY2, Color(color.first, color.second, color.third, alpha))
 
 	/*
 		fun draw(x:Float, y:Float) = res.draw(x, y)

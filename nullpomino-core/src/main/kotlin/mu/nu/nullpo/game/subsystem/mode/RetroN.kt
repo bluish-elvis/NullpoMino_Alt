@@ -106,7 +106,7 @@ class RetroN:AbstractMode() {
 	override val name = "Retro Classic .N"
 
 	override val gameIntensity = -1
-	override val rankMap
+	override val propRank
 		get() = rankMapOf(
 			rankingScore.mapIndexed {a, x -> "$a.score" to x}+
 				rankingLines.mapIndexed {a, x -> "$a.lines" to x}+
@@ -532,9 +532,6 @@ class RetroN:AbstractMode() {
 
 		/** Speed type name */
 		private val SPEED_NAME = SpeedLevel.entries.map {it.showName}
-
-		/** Number of ranking records */
-		private const val RANKING_MAX = 13
 
 		/** Number of ranking types */
 		private val RANKING_TYPE = GAMETYPE_MAX*SpeedLevel.entries.size

@@ -30,9 +30,13 @@
  */
 package mu.nu.nullpo.game.subsystem.mode
 
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.serializer
 import mu.nu.nullpo.game.component.BGMStatus.BGM
 import mu.nu.nullpo.game.component.Controller
+import mu.nu.nullpo.game.component.Statistics
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
+import mu.nu.nullpo.game.event.Leaderboard
 import mu.nu.nullpo.game.event.ScoreEvent
 import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.game.subsystem.mode.menu.BooleanMenuItem
@@ -134,15 +138,22 @@ class GrandBasic:AbstractMode() {
 	/** Your place on leaderboard (-1: out of rank) */
 	private var rankingRank = 0
 
+	override val RANKING_MAX = 20
+
 	/** Score records */
-	private val rankingScore = MutableList(RANKING_MAX) {0L}
-	private val rankingHanabi = MutableList(RANKING_MAX) {0}
+	@Serializable
+	data class ScoreData(val hanabi:Int, val st:Statistics, val clear:Int):Comparable<ScoreData> {
+		constructor():this(0, Statistics(), 0)
 
-	/** Level records */
-	private val rankingLevel = MutableList(RANKING_MAX) {0}
+		val score get() = st.score
+		val level get() = st.level
+		val time get() = st.time.let {if(it<0) Int.MAX_VALUE else it}
+		override operator fun compareTo(other:ScoreData):Int =
+			compareValuesBy(this, other, {it.hanabi}, {it.score}, {-it.time}, {it.level})
 
-	/** Time records */
-	private val rankingTime = MutableList(RANKING_MAX) {-1}
+	}
+
+	override val ranking = Leaderboard(RANKING_MAX, serializer<List<ScoreData>>())
 
 	private val bestSectionScore = MutableList(RANKING_MAX) {0L}
 	private val bestSectionHanabi = MutableList(RANKING_MAX) {0}
@@ -153,9 +164,8 @@ class GrandBasic:AbstractMode() {
 	/** Returns the name of this mode */
 	override val name = "Grand Festival"
 
-	override val rankMap
+	override val propRank
 		get() = rankMapOf(
-			"score" to rankingScore, "level" to rankingLevel, "time" to rankingTime, "hanabi" to rankingHanabi,
 			"section.score" to bestSectionScore, "section.hanabi" to bestSectionHanabi, "section.time" to bestSectionTime
 		)
 	/** This function will be called when the game enters the main game
@@ -183,10 +193,7 @@ class GrandBasic:AbstractMode() {
 		sectionsDone = 0
 
 		rankingRank = -1
-		rankingScore.fill(0)
-		rankingHanabi.fill(0)
-		rankingLevel.fill(0)
-		rankingTime.fill(-1)
+		ranking.fill(ScoreData())
 		bestSectionHanabi.fill(0)
 		bestSectionScore.fill(0)
 		bestSectionTime.fill(DEFAULT_SECTION_TIME)
@@ -298,11 +305,11 @@ class GrandBasic:AbstractMode() {
 					// Score Leaderboard
 					receiver.drawScoreFont(engine, 0, 2, "HANABI SCORE TIME", COLOR.BLUE)
 
-					for(i in 0..<RANKING_MAX) {
+					ranking.forEachIndexed {i, (fw, st, _) ->
 						receiver.drawScoreGrade(engine, 0, 3+i, "%2d".format(i+1), COLOR.YELLOW)
-						receiver.drawScoreNum(engine, 2, 3+i, "${rankingHanabi[i]}", i==rankingRank)
-						receiver.drawScoreNum(engine, 6, 3+i, "${rankingScore[i]}", i==rankingRank)
-						receiver.drawScoreNum(engine, 12, 3+i, rankingTime[i].toTimeStr, i==rankingRank)
+						receiver.drawScoreNum(engine, 2, 3+i, "$fw", i==rankingRank)
+						receiver.drawScoreNum(engine, 6, 3+i, "${st.score}", i==rankingRank)
+						receiver.drawScoreNum(engine, 12, 3+i, st.time.toTimeStr, i==rankingRank)
 					}
 
 					receiver.drawScoreFont(engine, 0, 24, "F:VIEW SECTION SCORE", COLOR.GREEN)
@@ -641,50 +648,16 @@ class GrandBasic:AbstractMode() {
 		return false
 	}
 
-	/** This function will be called when the replay data is going to be
-	 * saved */
+	/** This function will be called when the replay data is going to be saved */
 	override fun saveReplay(engine:GameEngine, prop:CustomProperties):Boolean {
 		if(!owner.replayMode&&startLevel==0&&!always20g&&!big&&engine.ai==null) {
 			owner.statsProp.setProperty("decoration", decoration)
-			updateRanking(engine.statistics.score, hanabi, engine.statistics.level, engine.statistics.time)
+			rankingRank = ranking.add(ScoreData(hanabi, engine.statistics, engine.ending))
 			if(sectionAnyNewRecord) updateBestSectionTime()
 
 			if(rankingRank!=-1||sectionAnyNewRecord) return true
 		}
 		return false
-	}
-
-	/** Update the ranking */
-	private fun updateRanking(sc:Long, fw:Int, lv:Int, time:Int) {
-		rankingRank = checkRanking(sc, fw, lv, time)
-
-		if(rankingRank!=-1) {
-			for(i in RANKING_MAX-1 downTo rankingRank+1) {
-				rankingScore[i] = rankingScore[i-1]
-				rankingHanabi[i] = rankingHanabi[i-1]
-				rankingLevel[i] = rankingLevel[i-1]
-				rankingTime[i] = rankingTime[i-1]
-			}
-
-			rankingHanabi[rankingRank] = fw
-			rankingScore[rankingRank] = sc
-			rankingLevel[rankingRank] = lv
-			rankingTime[rankingRank] = time
-		}
-	}
-
-	/** This function will check the ranking and returns which place you are.
-	 * (-1: Out of rank) */
-	private fun checkRanking(sc:Long, fw:Int, lv:Int, time:Int):Int {
-		for(i in 0..<RANKING_MAX)
-			when {
-				sc>rankingScore[i] -> return i
-				fw>rankingHanabi[i] -> return i
-				lv>rankingLevel[i] -> return i
-				time<rankingTime[i] -> return i
-			}
-
-		return -1
 	}
 
 	/** Updates best section time records */
@@ -715,9 +688,6 @@ class GrandBasic:AbstractMode() {
 
 		/** Ending time limit */
 		private const val ROLLTIMELIMIT = 3265
-
-		/** Number of hiscore records */
-		private const val RANKING_MAX = 20
 
 		/** Secret grade names */
 		private val tableSecretGradeName = listOf(

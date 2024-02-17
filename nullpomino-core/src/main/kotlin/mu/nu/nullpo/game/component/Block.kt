@@ -113,27 +113,27 @@ import mu.nu.nullpo.util.GeneralUtil.toAlphaNum
 	/** このBlockが空白かどうか判定
 	 * @return このBlockが空白だったらtrue
 	 */
-	val isEmpty:Boolean get() = color==null
+	val isEmpty get() = color==null
 
 	/** このBlockが宝石Blockかどうか判定
 	 * @return このBlockが宝石Blockだったらtrue
 	 */
-	val isGemBlock:Boolean get() = type===TYPE.GEM
+	val isGemBlock get() = type===TYPE.GEM
 
 	/** Checks to see if `this` is a gold square block
 	 * @return `true` if the block is a gold square block
 	 */
-	val isGoldSquareBlock:Boolean get() = type===TYPE.SQUARE_GOLD
+	val isGoldSquareBlock get() = type===TYPE.SQUARE_GOLD
 
 	/** Checks to see if `this` is a silver square block
 	 * @return `true` if the block is a silver square block
 	 */
-	val isSilverSquareBlock:Boolean get() = type===TYPE.SQUARE_SILVER
+	val isSilverSquareBlock get() = type===TYPE.SQUARE_SILVER
 
 	/** Checks to see if `this` is a normal block (gray to purple)
 	 * @return `true` if the block is a normal block
 	 */
-	val isNormalBlock:Boolean get() = type===TYPE.BLOCK
+	val isNormalBlock get() = type===TYPE.BLOCK
 
 	/** 設定をReset to defaults */
 	fun reset(del:Boolean = false) {

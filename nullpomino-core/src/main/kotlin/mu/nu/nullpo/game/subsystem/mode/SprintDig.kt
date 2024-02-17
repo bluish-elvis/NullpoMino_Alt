@@ -101,7 +101,7 @@ class SprintDig:NetDummyMode() {
 	/** Rankings' piece counts */
 	private val rankingPiece:List<MutableList<Int>> = List(GOALTYPE_MAX) {MutableList(RANKING_MAX) {0}}
 
-	override val rankMap
+	override val propRank
 		get() = rankMapOf(rankingTime.mapIndexed {i, a -> "$i.time" to a}+
 			rankingLines.mapIndexed {i, a -> "$i.lines" to a}+
 			rankingPiece.mapIndexed {i, a -> "$i.piece" to a})
@@ -486,9 +486,6 @@ class SprintDig:NetDummyMode() {
 
 		/** Current version */
 		private const val CURRENT_VERSION = 1
-
-		/** Number of entries in rankings */
-		private const val RANKING_MAX = 13
 
 		/** Number of goal type */
 		private const val GOALTYPE_MAX = 3

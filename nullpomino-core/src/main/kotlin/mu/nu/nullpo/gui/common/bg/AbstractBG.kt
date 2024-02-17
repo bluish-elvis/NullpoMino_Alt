@@ -31,6 +31,9 @@
 
 package mu.nu.nullpo.gui.common.bg
 
+import org.apache.logging.log4j.LogManager
+import org.apache.logging.log4j.Logger
+
 abstract class AbstractBG<T:Any?>(val img:mu.nu.nullpo.gui.common.ResourceImage<T>) {
 	open val res:T get() = img.res
 	/** Speed Multiplier: Recommended .5f-1f-2f*/
@@ -47,10 +50,10 @@ abstract class AbstractBG<T:Any?>(val img:mu.nu.nullpo.gui.common.ResourceImage<
 	open fun drawLite() =
 		img.draw(0, 0, 640, 480, 0, 0, img.width, img.height)
 
-	protected val logger = org.apache.log4j.Logger.getLogger(AbstractBG::class.java)
+	protected val log:Logger = LogManager.getLogger()
 
 	init {
-		logger.debug("${this::class.java.name} created: ${img.name}")
+		log.debug("${this::class.java.name} created: ${img.name}")
 //		img.load()
 	}
 

@@ -1,5 +1,5 @@
 /*
- Copyright (c) 2022-2024, NullNoname
+ Copyright (c) 2024, NullNoname
  All rights reserved.
 
  Converted to Kotlin and modified by Venom_Nhelv as bluish-elvis
@@ -29,53 +29,32 @@
  POSSIBILITY OF SUCH DAMAGE.
  */
 
-package mu.nu.nullpo.gui.slick.img.bg
+package mu.nu.nullpo.game.event
 
-import mu.nu.nullpo.gui.common.AbstractRenderer
-import mu.nu.nullpo.gui.common.bg.AbstractBG as BaseBG
-import mu.nu.nullpo.gui.slick.ResourceImageSlick
-import kotlin.math.absoluteValue
-import kotlin.math.sin
+import kotlinx.serialization.Serializable
+import mu.nu.nullpo.game.component.Statistics
 
-class SpinBG(bgi:ResourceImageSlick, private val addBGFX:BaseBG<*>? = null):AbstractBG(bgi) {
-	val sc get() = ((1+sin(res.rotation*RG*2).absoluteValue/3)*640/minOf(res.width, res.height))
-	val cx get() = res.width/2*sc
-	val cy get() = res.height/2*sc
-	var a = 0f
-	override var speed:Float = 1f
-	override var tick:Int
-		get() = a.toInt()
-		set(value) {
-			a = value.toFloat()
-		}
+interface Rankable:Comparable<Rankable> {
 
-	override fun update() {
-		val fact = speed*.1f
-		a += fact
-		a %= 360f
-		res.setCenterOfRotation(cx, cy)
-		addBGFX?.update()
+	@Serializable data class ScoreRow(val st:Statistics = Statistics()):Comparable<ScoreRow> {
+		val sc get() = st.score
+		val lv get() = st.level
+		val li get() = st.lines
+		val ti get() = st.time.let {if(it<0) Int.MAX_VALUE else it}
+		override operator fun compareTo(other:ScoreRow):Int =
+			compareValuesBy(this, other, {it.sc}, {it.lv}, {it.li}, {-it.ti})
 	}
 
-	override fun reset() {
-		a = 0f
-		log.debug("SpinBG reset")
-		addBGFX?.reset()
-	}
+	@Serializable data class GrandRow(val grade:Int, val st:Statistics, val clear:Int, val medals:Medals):Comparable<GrandRow> {
+		constructor():this(0, Statistics(), 0, Medals())
 
-	override fun draw(render:AbstractRenderer) {
-		render.drawBlackBG()
-		res.rotation = a
-		res.draw(320f-cx, 240f-cy, sc)
-		/*render.drawFont(0, 0, "${res.width}x${res.height} $sc", BaseFont.FONT.NANO, scale = .5f)
-		render.drawFont(
-			0,
-			8,
-			"${640f/minOf(this.res.width, this.res.height)} x ${sin(PI+this.res.rotation*RG*4)}",
-			BaseFont.FONT.NANO,
-			scale = .5f
-		)*/
-		addBGFX?.draw(render)
+		val level get() = st.level
+		val time get() = st.time.let {if(it<0) Int.MAX_VALUE else it}
+		override operator fun compareTo(other:GrandRow):Int =
+			compareValuesBy(this, other, {it.grade}, {it.level}, {it.clear}, {-it.time})
+
+		@Suppress("PropertyName") @Serializable
+		data class Medals(var ST:MutableList<Int> = MutableList(3) {0}, var SK:Int = 0, var AC:Int = 0, var CO:Int = 0, var RE:Int = 0, var RO:Int = 0)
 	}
 
 }

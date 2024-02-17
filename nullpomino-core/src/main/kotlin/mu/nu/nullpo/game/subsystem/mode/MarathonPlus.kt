@@ -118,7 +118,7 @@ class MarathonPlus:NetDummyMode() {
 	private val rankingLines = List(RANKING_TYPE) {MutableList(RANKING_MAX) {0}}
 	private val rankingTime = List(RANKING_TYPE) {MutableList(RANKING_MAX) {-1}}
 
-	override val rankMap
+	override val propRank
 		get() = rankMapOf(rankingScore.mapIndexed {a, x -> "$a.score" to x}+
 			rankingLives.mapIndexed {a, x -> "$a.lives" to x}+
 			rankingLines.mapIndexed {a, x -> "$a.lines" to x}+
@@ -885,8 +885,6 @@ class MarathonPlus:NetDummyMode() {
 
 		private val TURBO_MAX = minOf(tableSpeed.size, tableDenominator.size)
 
-		/** Number of entries in rankings */
-		private const val RANKING_MAX = 13
 
 		/** Number of ranking types */
 		private val RANKING_TYPE = GAMETYPE_MAX*TURBO_MAX*2

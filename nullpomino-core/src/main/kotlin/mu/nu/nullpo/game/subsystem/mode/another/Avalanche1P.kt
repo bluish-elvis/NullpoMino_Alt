@@ -68,7 +68,7 @@ class Avalanche1P:Avalanche1PDummyMode() {
 
 	/** Sprint target score */
 	private var sprintTarget = 0
-	override val rankMap
+	override val propRank
 		get() = rankMapOf(rankingScore.flatMapIndexed {a, x ->
 			x.flatMapIndexed {b, y -> y.mapIndexed {c, z -> "$a.$b.$c.score" to z}}
 
@@ -497,9 +497,6 @@ class Avalanche1P:Avalanche1PDummyMode() {
 		/** Enabled piece types */
 		private val CHAIN_POWERS_FEVERTYPE =
 			listOf(4, 12, 24, 32, 48, 96, 160, 240, 320, 400, 500, 600, 700, 800, 900, 999)
-
-		/** Number of ranking records */
-		private const val RANKING_MAX = 13
 
 		/** Number of ranking types */
 		private const val RANKING_TYPE = 7

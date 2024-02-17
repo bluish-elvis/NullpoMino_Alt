@@ -112,7 +112,7 @@ class SprintLine:NetDummyMode() {
 	override val name = "Lines SprintRace"
 	override val gameIntensity = 2
 	/* Initialization for each player */
-	override val rankMap
+	override val propRank
 		get() = rankMapOf(rankingTime.mapIndexed {i, a -> "$i.time" to a}+
 			rankingPiece.mapIndexed {i, a -> "$i.piece" to a})
 
@@ -395,9 +395,6 @@ Ready&Go screen disappears) */
 		/* ----- Main variables ----- */
 		/** Logger */
 		internal val log = LogManager.getLogger()
-
-		/** Number of entries in rankings */
-		private const val RANKING_MAX = 13
 
 		/** Target line count type */
 		private const val GOALTYPE_MAX = 3

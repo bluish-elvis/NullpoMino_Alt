@@ -83,11 +83,11 @@ open class MarathonModeBase:NetDummyMode() {
 	private val rankingLines = List(RANKING_TYPE) {MutableList(RANKING_MAX) {0}}
 	/** Rankings' times */
 	private val rankingTime = List(RANKING_TYPE) {MutableList(RANKING_MAX) {-1}}
-	override val rankMap
+	override val propRank
 		get() = rankMapOf(rankingScore.mapIndexed {a, x -> "$a.score" to x}+
 			rankingLines.mapIndexed {a, x -> "$a.lines" to x}+
 			rankingTime.mapIndexed {a, x -> "$a.time" to x})
-	override val rankPersMap:rankMapType get() = emptyMap()
+	override val propPB:rankMapType get() = emptyMap()
 
 	override val name:String
 		get() = "marathonBase"

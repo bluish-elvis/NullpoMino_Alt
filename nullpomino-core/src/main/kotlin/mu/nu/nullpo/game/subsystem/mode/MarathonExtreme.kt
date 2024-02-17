@@ -79,7 +79,7 @@ class MarathonExtreme:NetDummyMode() {
 	/** Rankings' times */
 	private val rankingTime = List(RANKING_TYPE) {MutableList(RANKING_MAX) {-1}}
 
-	override val rankMap
+	override val propRank
 		get() = rankMapOf(
 			rankingScore.mapIndexed {a, x -> "$a.score" to x}+
 				rankingLines.mapIndexed {a, x -> "$a.lines" to x}+
@@ -532,9 +532,6 @@ class MarathonExtreme:NetDummyMode() {
 			BGM.Rush(0), BGM.Generic(6), BGM.Generic(7), BGM.Rush(1), BGM.Generic(8),
 			BGM.Generic(9), BGM.Rush(2), BGM.Rush(3)
 		)
-
-		/** Number of entries in rankings */
-		private const val RANKING_MAX = 13
 
 		/** Number of ranking types */
 		private const val RANKING_TYPE = 2

@@ -80,6 +80,9 @@ class SprintUltra:NetDummyMode() {
 	/** Version */
 	private var version = 0
 
+	/** Number of entries in rankings */
+	override val RANKING_MAX = 5
+
 	/** Current round's ranking position */
 	private val rankingRank = MutableList(RANKTYPE_MAX) {-1}
 
@@ -93,7 +96,7 @@ class SprintUltra:NetDummyMode() {
 	private val rankingLines = List(RANKTYPE_MAX) {List(GOALTYPE_MAX) {MutableList(RANKING_MAX) {0}}}
 
 	private var rankingShow = 0
-	override val rankMap
+	override val propRank
 		get() = rankMapOf(rankingScore.flatMapIndexed {a, x -> x.mapIndexed {b, y -> "$a.$b.score" to y}}+
 			rankingPower.flatMapIndexed {a, x -> x.mapIndexed {b, y -> "$a.$b.power" to y}}+
 			rankingLines.flatMapIndexed {a, x -> x.mapIndexed {b, y -> "$a.$b.lines" to y}})
@@ -556,8 +559,6 @@ class SprintUltra:NetDummyMode() {
 		/** Current version */
 		private const val CURRENT_VERSION = 1
 
-		/** Number of entries in rankings */
-		private const val RANKING_MAX = 5
 
 		/** Minutes counts when game ending occurs */
 		private val tableLength = listOf(3, 5)

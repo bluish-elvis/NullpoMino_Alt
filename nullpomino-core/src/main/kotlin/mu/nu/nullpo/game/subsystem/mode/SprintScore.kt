@@ -92,7 +92,7 @@ class SprintScore:NetDummyMode() {
 
 	/** Rankings' score/line */
 	private val rankingSPL = List(GOALTYPE_MAX) {MutableList(RANKING_MAX) {0.0}}
-	override val rankMap
+	override val propRank
 		get() = rankMapOf(
 			rankingTime.mapIndexed {a, x -> "$a.time" to x}+
 				rankingSPL.mapIndexed {a, x -> "$a.spl" to x}+
@@ -612,9 +612,6 @@ Ready&Go screen disappears) */
 		/* ----- Main constants ----- */
 		/** Current version */
 		private const val CURRENT_VERSION = 1
-
-		/** Number of entries in rankings */
-		private const val RANKING_MAX = 13
 
 		/** Goal score constants */
 		private val GOAL_SCORE_TABLE = listOf(10000, 25000, 30000, 50000)

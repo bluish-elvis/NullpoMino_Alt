@@ -33,6 +33,7 @@ package mu.nu.nullpo.game.subsystem.mode
 import mu.nu.nullpo.game.component.BGMStatus.BGM
 import mu.nu.nullpo.game.component.Controller
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
+import mu.nu.nullpo.game.event.Rankable
 import mu.nu.nullpo.game.event.ScoreEvent
 import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.game.subsystem.mode.menu.BooleanMenuItem
@@ -145,9 +146,6 @@ class GrandM3:AbstractMode() {
 	private val sectionAvgTime
 		get() = sectionTime.filter {it[0]>0}.map {it[0]}.average().toFloat()
 
-	/** 直前のSection Time */
-	private var sectionLastTime = 0
-
 	/** 消えRoll started flag */
 	private var mRollFlag = false
 
@@ -157,17 +155,13 @@ class GrandM3:AbstractMode() {
 	/** Roll 中に稼いだ point (合計) */
 	private var rollPointsTotal = 0f
 
-	/** AC medal 状態 */
-	private var medalAC = 0
-
-	/** ST medal 状態 */
-	private var medalST = 0
-
-	/** SK medal 状態 */
-	private var medalSK = 0
-
-	/** CO medal 状態 */
-	private var medalCO = 0
+	/** medal 状態 */
+	private val medals = Rankable.GrandRow.Medals(MutableList(3){0})
+	private var medalAC get() = medals.AC; set(v) {;medals.AC = v}
+	private var medalsST get() = medals.ST; set(v) {;medals.ST = v}
+	private val medalST get() = medalsST.indexOfFirst {it>0}.let {;if(it>=0) medalsST.size-it else 0;}
+	private var medalSK get() = medals.SK; set(v) {;medals.SK = v}
+	private var medalCO get() = medals.CO; set(v) {;medals.CO = v}
 
 	/** Section Time記録表示中ならtrue */
 	private var isShowBestSectionTime = false
@@ -250,7 +244,7 @@ class GrandM3:AbstractMode() {
 	/** 段位履歴 (昇格・降格試験用) */
 	private val gradeHistory = List(RANKING_TYPE) {MutableList(GRADE_HISTORY_SIZE) {0}}
 
-	override val rankMap
+	override val propRank
 		get() = rankMapOf(
 			rankingGrade.mapIndexed {a, x -> "$a.grade" to x}+
 				rankingLevel.mapIndexed {a, x -> "$a.level" to x}+
@@ -295,8 +289,7 @@ class GrandM3:AbstractMode() {
 	override val gameIntensity = 1
 	/** @return 何らかの試験中ならtrue
 	 */
-	private val isAnyExam:Boolean
-		get() = promotionFlag||demotionFlag
+	private val isAnyExam get() = promotionFlag||demotionFlag
 
 	/* Initialization */
 	override fun playerInit(engine:GameEngine) {
@@ -329,13 +322,12 @@ class GrandM3:AbstractMode() {
 		regretSection.fill(false)
 		coolSection.fill(false)
 		sectionsDone = 0
-		sectionLastTime = 0
 		mRollFlag = false
 		rollPoints = 0f
 		rollPointsTotal = 0f
 		medalCO = 0
 		medalSK = 0
-		medalST = 0
+		medalsST.fill(0)
 		medalAC = 0
 
 		demotionPoints.fill(0)
@@ -450,32 +442,31 @@ class GrandM3:AbstractMode() {
 	 * @param engine GameEngine
 	 * @param section Section number
 	 */
-	private fun stMedalCheck(engine:GameEngine, section:Int) {
+	private fun stMedalCheck(engine:GameEngine, section:Int, sectionLastTime:Int) {
 		val best = bestSectionTime[goalType][section]
 
-		if(sectionLastTime<best) {
-			if(medalST<3) {
-				engine.playSE("medal3")
-				if(medalST<1) decTemp += 3
-				if(medalST<2) decTemp += 6
-				medalST = 3
-				decTemp += 6
-			}
+		if(sectionLastTime<best||best<=0) {
+			engine.playSE("medal3")
+			if(medalST<1) decTemp += 3
+			if(medalST<2) decTemp += 6
+			decTemp += 6
+			medalsST[0]++
 			if(!owner.replayMode) {
 				decTemp++
 				sectionIsNewRecord[section] = true
 			}
-		} else if(sectionLastTime<best+300&&medalST<2) {
+		} else if(sectionLastTime<best+300) {
 			engine.playSE("medal2")
 			if(medalST<1) decTemp += 3
-			medalST = 2
+			medalsST[1]++
 			decTemp += 6
-		} else if(sectionLastTime<best+600&&medalST<1) {
+		} else if(sectionLastTime<best+600) {
 			engine.playSE("medal1")
-			medalST = 1
-			decTemp += 3// 12
+			medalsST[2]++
+			decTemp += 3
 		}
 	}
+
 
 	/** COOLの check
 	 * @param engine GameEngine
@@ -506,7 +497,7 @@ class GrandM3:AbstractMode() {
 	 * @param engine GameEngine
 	 * @param levelb Line clear前の level
 	 */
-	private fun checkRegret(engine:GameEngine, levelb:Int) {
+	private fun checkRegret(engine:GameEngine, levelb:Int,sectionLastTime:Int) {
 		if(goalType!=0) return
 		val section = levelb/100
 		if(sectionLastTime>tableTimeRegret[section]) {
@@ -1005,15 +996,10 @@ class GrandM3:AbstractMode() {
 
 				lastGradeTime = engine.statistics.time
 
-				// Section Timeを記録
-				sectionLastTime = sectionTime[levelb/100][0]
 				sectionsDone++
-
-				// ST medal
-				stMedalCheck(engine, levelb/100)
-
-				// REGRET判定
-				checkRegret(engine, levelb)
+				// ST medal/REGRET
+				stMedalCheck(engine, levelb/100, sectionTime[levelb/100][0])
+				checkRegret(engine, levelb, sectionTime[levelb/100][0])
 
 				// 条件を全て満たしているなら消えRoll 発動
 				if(when(goalType) {
@@ -1029,15 +1015,10 @@ class GrandM3:AbstractMode() {
 						nextSecLv==s*100&&engine.statistics.level>=s*100&&engine.statistics.time>lv500Qualify*mul
 					}?.first else null
 				if(engine.statistics.level>=nextSecLv) {
-					// Section Timeを記録
-					sectionLastTime = sectionTime[levelb/100][0]
 					sectionsDone++
-
-					// ST medal
-					stMedalCheck(engine, levelb/100)
-
-					// REGRET判定
-					checkRegret(engine, levelb)
+					// ST medal/REGRET
+					stMedalCheck(engine, levelb/100, sectionTime[levelb/100][0])
+					checkRegret(engine, levelb, sectionTime[levelb/100][0])
 
 					if(torikan==5||goalType==1&&(torikan==15||nextSecLv==999||nextSecLv==2000)) {
 						// level500,1500とりカン
@@ -1418,7 +1399,7 @@ class GrandM3:AbstractMode() {
 			passFrame--
 			return true
 		}
-
+		engine.statistics.time=lastGradeTime
 		engine.allowTextRenderByReceiver = true
 
 		owner.musMan.fadeSW = false
@@ -1685,9 +1666,6 @@ class GrandM3:AbstractMode() {
 
 		/** LV999 roll time */
 		private const val ROLLTIMELIMIT = 3238
-
-		/** Number of entries in rankings */
-		private const val RANKING_MAX = 13
 
 		/** 段位履歴のサイズ */
 		private const val GRADE_HISTORY_SIZE = 7

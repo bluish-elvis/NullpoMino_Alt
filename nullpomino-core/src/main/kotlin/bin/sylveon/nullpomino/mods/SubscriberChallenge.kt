@@ -102,7 +102,7 @@ class SubscriberChallenge:NetDummyMode() {
 	/** Rankings' times  */
 	private val rankingTime = List(RANKING_TYPE) {MutableList(RANKING_MAX) {-1}}
 
-	override val rankMap
+	override val propRank
 		get() = rankMapOf(rankingScore.mapIndexed {a, x -> "$a.score" to x}+
 			rankingLines.mapIndexed {a, x -> "$a.lines" to x}+
 			rankingTime.mapIndexed {a, x -> "$a.time" to x})
@@ -591,8 +591,7 @@ class SubscriberChallenge:NetDummyMode() {
 		val tableBGMChange = listOf(50, 100, 150, 200, -1)
 		/** Line counts when game ending occurs  */
 		val tableGameClearLines = listOf(150, 200, -1)
-		/** Number of entries in rankings  */
-		const val RANKING_MAX = 10
+
 		/** Number of ranking types  */
 		private const val RANKING_TYPE = 3
 		/** Number of game types  */

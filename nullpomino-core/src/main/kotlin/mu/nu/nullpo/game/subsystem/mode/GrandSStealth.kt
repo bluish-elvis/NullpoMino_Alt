@@ -140,7 +140,7 @@ class GrandSStealth:AbstractMode() {
 	/** Returns the name of this mode */
 	override val name = "Grand Phantom"
 	override val gameIntensity = 3
-	override val rankMap
+	override val propRank
 		get() = rankMapOf(
 			"grade" to rankingGrade, "level" to rankingLevel, "time" to rankingTime, "rollClear" to rankingRollClear,
 			"section.time" to bestSectionTime
@@ -914,9 +914,6 @@ class GrandSStealth:AbstractMode() {
 
 		/** Ending time limit */
 		private const val ROLLTIMELIMIT = 1982
-
-		/** Number of hiscore records */
-		private const val RANKING_MAX = 13
 
 		/** Level 300 time limit */
 		private const val LV300TORIKAN = 8880

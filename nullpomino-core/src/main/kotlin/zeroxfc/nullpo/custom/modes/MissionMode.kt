@@ -80,15 +80,15 @@ class MissionMode:MarathonModeBase() {
 	private val rankingScorePlayer = List(GAMETYPE_MAX) {MutableList(RANKING_MAX) {0L}}
 	private val rankingTimePlayer = List(GAMETYPE_MAX) {MutableList(RANKING_MAX) {-1}}
 	private var rankingRankPlayer = 0
-	override val rankMap = rankMapOf(rankingScore.mapIndexed {a, x -> "$a.score" to x}
+	override val propRank = rankMapOf(rankingScore.mapIndexed {a, x -> "$a.score" to x}
 		+rankingTime.mapIndexed {a, x -> "$a.time" to x})
 
-	override val rankPersMap = rankMapOf(rankingScorePlayer.mapIndexed {a, x -> "$a.score" to x}
+	override val propPB = rankMapOf(rankingScorePlayer.mapIndexed {a, x -> "$a.score" to x}
 		+rankingTimePlayer.mapIndexed {a, x -> "$a.time" to x})
 
 	/** Game type */
 	override val itemMode = StringsMenuItem("goalType", "COURSE", COLOR.BLUE, 0,
-		tableGameClearMissions.map{if(it<0) "ENDLESS" else "$it STAGEs"})
+		tableGameClearMissions.map {if(it<0) "ENDLESS" else "$it STAGEs"})
 	override val menu = MenuList("missionrush", itemMode, itemLevel, itemBig)
 	override val name:String
 		get() = "Mission Rush"
@@ -359,14 +359,9 @@ class MissionMode:MarathonModeBase() {
 		return 0
 	}
 
-	override fun afterSoftDropFall(engine:GameEngine, fall:Int) {
-	}
+	override fun afterSoftDropFall(engine:GameEngine, fall:Int) {}
+	override fun afterHardDropFall(engine:GameEngine, fall:Int) {}
 
-	override fun onFirst(engine:GameEngine) {
-	}
-
-	override fun afterHardDropFall(engine:GameEngine, fall:Int) {
-	}
 	// ------------------------------------------------------------------------------------------
 	// Ranking/Setting Saving/Loading
 	// ------------------------------------------------------------------------------------------

@@ -181,67 +181,67 @@ object Interpolation {
 	/**
 	 * Smooth curve interpolation of two `float` values.
 	 *
-	 * @param x          Start point
-	 * @param y          End point
+	 * @param s          Start point
+	 * @param e          End point
 	 * @param denominator Step ease scale (denominator > 2 where smaller = closer to linear)
 	 * @param interpVal   Proportion of point travelled (0 = start, 1 = end)
 	 * @return Interpolated value as `Float`
 	 */
-	fun smoothStep(x:Float, y:Float, interpVal:Float, denominator:Float = 6f):Float {
+	fun smoothStep(s:Float, e:Float, interpVal:Float, denominator:Float = 6f):Float {
 		val den = maxOf(1f, denominator)
-		val diff = y-x
+		val diff = e-s
 		val p1 = diff*(1f/den)
 		val p2 = diff-p1
 
-		// log.debug(Arrays.toString(new double[] { x, x + p1, x + p2, y }));
+		// log.debug(Arrays.toString(new double[] { s, s + p1, s + p2, e }));
 		// log.debug(Arrays.toString(new double[] { p1, p2}));
 		// log.debug(lerpVal);
-		return bezier1DInterp(floatArrayOf(x, x+p1, x+p2, y), interpVal)
+		return bezier1DInterp(floatArrayOf(s, s+p1, s+p2, e), interpVal)
 	}
 	/**
 	 * Smooth curve interpolation of two `double` values.
 	 *
-	 * @param x          Start point
-	 * @param y          End point
+	 * @param s          Start point
+	 * @param e          End point
 	 * @param denominator Step ease scale (denominator > 2 where smaller = closer to linear)
 	 * @param interpVal   Proportion of point travelled (0 = start, 1 = end)
 	 * @return Interpolated value as `double`
 	 */
-	fun smoothStep(x:Double, y:Double, interpVal:Double, denominator:Double = 6.0):Double {
+	fun smoothStep(s:Double, e:Double, interpVal:Double, denominator:Double = 6.0):Double {
 		val den = maxOf(1.0, denominator)
-		val diff = y-x
+		val diff = e-s
 		val p1 = diff*(1.0/den)
 		val p2 = diff-p1
 
-		// log.debug(Arrays.toString(new double[] { x, x + p1, x + p2, y }));
+		// log.debug(Arrays.toString(new double[] { s, s + p1, s + p2, e }));
 		// log.debug(Arrays.toString(new double[] { p1, p2}));
 		// log.debug(lerpVal);
-		return bezier1DInterp(doubleArrayOf(x, x+p1, x+p2, y), interpVal)
+		return bezier1DInterp(doubleArrayOf(s, s+p1, s+p2, e), interpVal)
 	}
 	/**
 	 * Sine interpolation of two `float` values.
 	 *
-	 * @param x        Start point
-	 * @param y        End point
+	 * @param s        Start point
+	 * @param e        End point
 	 * @param interpVal Proportion of point travelled (0 = start, 1 = end)
 	 * @return Interpolated value as `float`
 	 */
-	fun sineStep(x:Float, y:Float, interpVal:Float):Float {
+	fun sineStep(s:Float, e:Float, interpVal:Float):Float {
 		val ofs = (PI/2f).toFloat()
 		val t = (sin(-1f*ofs+interpVal*ofs*2)+1f)/2f
-		return (1f-t)*x+y*t
+		return (1f-t)*s+e*t
 	}
 	/**
 	 * Sine interpolation of two `double` values.
 	 *
-	 * @param x        Start point
-	 * @param y        End point
+	 * @param s        Start point
+	 * @param e        End point
 	 * @param interpVal Proportion of point travelled (0 = start, 1 = end)
 	 * @return Interpolated value as `double`
 	 */
-	fun sineStep(x:Double, y:Double, interpVal:Double):Double {
+	fun sineStep(s:Double, e:Double, interpVal:Double):Double {
 		val ofs = PI/2.0
 		val t = (sin(-1.0*ofs+interpVal*ofs*2)+1.0)/2.0
-		return (1.0-t)*x+y*t
+		return (1.0-t)*s+e*t
 	}
 }

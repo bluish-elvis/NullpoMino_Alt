@@ -37,7 +37,7 @@ open class PlayerSkeleton {
 	protected var fs2:FutureState = FutureState()
 	protected val formatter = DecimalFormat("#00")
 	protected var future:DoubleArray = DoubleArray(BasisFunction.FUTURE_COUNT)
-	protected var past:DoubleArray = DoubleArray(BasisFunction.FUTURE_COUNT)
+	protected var past = DoubleArray(BasisFunction.FUTURE_COUNT)
 	open var basisFunctions = BasisFunction()
 		protected set
 	open var twoPlayerBasisFunctions = TwoPlayerBasisFunction()

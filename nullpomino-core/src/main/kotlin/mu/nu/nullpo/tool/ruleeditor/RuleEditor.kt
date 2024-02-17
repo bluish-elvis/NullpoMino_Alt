@@ -31,7 +31,7 @@
 package mu.nu.nullpo.tool.ruleeditor
 
 import kotlinx.serialization.encodeToString
-import kotlinx.serialization.json.Json
+import mu.nu.nullpo.util.GeneralUtil.Json
 import mu.nu.nullpo.game.component.Block
 import mu.nu.nullpo.game.component.Piece
 import mu.nu.nullpo.game.component.RuleOptions

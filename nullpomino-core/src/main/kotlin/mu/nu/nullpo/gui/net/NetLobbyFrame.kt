@@ -30,7 +30,7 @@
  */
 package mu.nu.nullpo.gui.net
 
-import kotlinx.serialization.json.Json
+import mu.nu.nullpo.util.GeneralUtil.Json
 import mu.nu.nullpo.game.component.RuleOptions
 import mu.nu.nullpo.game.net.NetBaseClient
 import mu.nu.nullpo.game.net.NetMessageListener
@@ -101,7 +101,7 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 	var ruleOptLock:RuleOptions? = null
 
 	/** Map list */
-	val mapList:LinkedList<String> = LinkedList()
+	val mapList = LinkedList<String>()
 
 	/** Event listeners */
 	private var listeners:LinkedList<NetLobbyListener>? = LinkedList()

@@ -39,12 +39,35 @@ package zeroxfc.nullpo.custom.modes.objects.minesweeper
 
 import kotlin.random.Random
 
-class GameGrid @JvmOverloads constructor(val length:Int = 10, val height:Int = 10, minePercent:Float = 0.1f,
-	randSeed:Long = 0) {
-	val squares:Int get() = length*height
+class GameGrid @JvmOverloads constructor(val length:Int = 10, val height:Int = 10, minePercent:Float = 0.1f, randSeed:Long = 0) {
+	private val squares:Int get() = length*height
 	val mines:Int = (minePercent/100f*squares).toInt()
-	private val randomizer:Random = Random(randSeed)
-	var contents:Array<Array<GridSpace>> = Array(height) {Array(length) {GridSpace(false)}}
+	private val randomizer = Random(randSeed)
+	private var contents = List(height) {List(length) {GridSpace(false)}}
+
+	class GridSpace(var isMine:Boolean, var state:State = State.NONE) {
+
+		var surroundingMines = 0
+		var uncovered
+			get() = state==State.UNCOVER
+			set(value) {
+				state = if(value) State.UNCOVER else State.NONE
+			}
+		var flagged
+			get() = state==State.FLAG
+			set(value) {
+				state = if(value) State.FLAG else State.NONE
+			}
+		var question
+			get() = state==State.QUESTION
+			set(value) {
+				state = if(value) State.QUESTION else State.NONE
+			}
+
+		enum class State {
+			NONE, UNCOVER, FLAG, QUESTION
+		}
+	}
 
 	fun generateMines(excludeX:Int, excludeY:Int) {
 		var i = 0

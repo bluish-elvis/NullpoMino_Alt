@@ -44,7 +44,7 @@ abstract class BaseMenuConfigState:BaseMenuChooseState() {
 	abstract val columns:List<Pair<String, List<Column?>>>
 	val allLine get() = columns.flatMap {it.second}
 	/** Max cursor value */
-	override val numChoice:Int get() = allLine.size
+	override val numChoice get() = allLine.size
 
 	class Column(val show:()->String, val onChange:(change:Int)->Unit, val uiText:String = "", val rainbow:()->Int? = {null})
 	/* Draw the screen */

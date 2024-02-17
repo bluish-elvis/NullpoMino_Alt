@@ -80,7 +80,7 @@ class Marathon:NetDummyMode() {
 	/** Rankings' times */
 	private val rankingTime = List(RANKING_TYPE) {MutableList(RANKING_MAX) {-1}}
 
-	override val rankMap
+	override val propRank
 		get() = rankMapOf(rankingScore.mapIndexed {a, x -> "$a.score" to x}+
 			rankingLines.mapIndexed {a, x -> "$a.lines" to x}+
 			rankingTime.mapIndexed {a, x -> "$a.time" to x})
@@ -475,9 +475,6 @@ class Marathon:NetDummyMode() {
 
 		/** Line counts when game ending occurs */
 		private val tableGameClearLines = listOf(150, 200, 500, 999, -1)
-
-		/** Number of entries in rankings */
-		private const val RANKING_MAX = 13
 
 		/** Number of ranking types */
 		private val RANKING_TYPE = tableGameClearLines.size

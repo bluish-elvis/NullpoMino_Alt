@@ -163,9 +163,6 @@ open class PoochyBot:DummyAI(), Runnable {
 		}
 	}
 
-	/* Called after every frame */
-	override fun onLast(engine:GameEngine, playerID:Int) {}
-
 	/* Set button input states */
 	override fun setControl(engine:GameEngine, playerID:Int, ctrl:Controller):Int {
 		if(engine.nowPieceObject!=null&&engine.stat===GameEngine.Status.MOVE&&delay>=engine.aiMoveDelay&&engine.statc[0]>0&&(!engine.aiUseThread||threadRunning&&!thinking&&thinkComplete)) {

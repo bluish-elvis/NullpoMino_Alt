@@ -37,11 +37,11 @@ import mu.nu.nullpo.util.GeneralUtil.toInt
 data class ScoreEvent(val piece:Piece? = null, val lines:Int = 0, val b2b:Int = -1,
 	val combo:Int = -1, val twistType:Twister? = null, val split:Boolean = false) {
 	/** True if Twister */
-	val twist:Boolean get() = twistType!=null
+	val twist get() = twistType!=null
 	/** True if Twister Mini */
-	val twistMini:Boolean get() = twistType?.mini==true
+	val twistMini get() = twistType?.mini==true
 	/** EZ Twister */
-	val twistEZ:Boolean get() = twistType?.ez==true
+	val twistEZ get() = twistType?.ez==true
 
 	override fun equals(other:Any?):Boolean {
 		if(this===other) return true

@@ -86,12 +86,12 @@ class Deltatris:MarathonModeBase() {
 	// help me I forgot how to make modes
 	// Initialization
 	override val menu:MenuList = MenuList("deltatris", itemMode, itemBig)
-	override val rankMap
+	override val propRank
 		get() = rankMapOf(rankingScore.mapIndexed {a, x -> "$a.score" to x}+
 			rankingLines.mapIndexed {a, x -> "$a.lines" to x}+
 			rankingTime.mapIndexed {a, x -> "$a.time" to x})
 
-	override val rankPersMap
+	override val propPB
 		get() = rankMapOf(rankingScorePlayer.mapIndexed {a, x -> "$a.score" to x}+
 			rankingLinesPlayer.mapIndexed {a, x -> "$a.lines" to x}+
 			rankingTimePlayer.mapIndexed {a, x -> "$a.time" to x})

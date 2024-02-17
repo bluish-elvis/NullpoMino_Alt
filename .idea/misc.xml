@@ -9,7 +9,6 @@
         <option value="$PROJECT_DIR$/nullpomino-run/pom.xml" />
       </list>
     </option>
-    <option name="workspaceImportForciblyTurnedOn" value="true" />
   </component>
   <component name="ProjectRootManager" version="2" languageLevel="JDK_21" project-jdk-name="liberica-21" project-jdk-type="JavaSDK">
     <output url="file://$PROJECT_DIR$/target" />

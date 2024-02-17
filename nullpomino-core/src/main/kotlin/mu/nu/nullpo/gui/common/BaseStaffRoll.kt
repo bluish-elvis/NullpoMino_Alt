@@ -44,12 +44,13 @@ import kotlin.math.floor
 abstract class BaseStaffRoll {
 
 	enum class LineType {
-		Plane, Header,
+		Plane, Header
 	}
 
+	abstract val font:ResourceImage<*>
 	abstract val img:ResourceImage<*>
 
-	/** @param scr scroll amount
+	/** @param scr scroll amount pixels
 	 * @param dh draw height*/
 	fun draw(x:Float, y:Float, scr:Float, dh:Float, alpha:Float = 1f) {
 		fun cmp(c:Char) = when(c) {
@@ -58,27 +59,38 @@ abstract class BaseStaffRoll {
 			'/', 'I' -> .25f
 			else -> 0f
 		}
-		strList.drop(maxOf(0, floor(scr/lh).toInt())).take(1+ceil(maxOf(0f, minOf(dh, dh+scr))/lh).toInt()).let {list ->
-			list.forEachIndexed {l, (type, str) ->
-				str.fold(x+width/2f-(str.length-str.sumOf {cmp(it).toDouble()}.toFloat())*.5f*fw) {cx, it ->
-					val fontColor = when(type) {
-						LineType.Header -> if(it.isUpperCase()) BLUE else GREEN
-						LineType.Plane -> if(it.isUpperCase()) ORANGE else WHITE
-					}
-					val chr = it.uppercaseChar().code
-					val sx = BW*((chr-32)%32)
-					val sy = BH*((chr-32)/32+fontColor.ordinal*3)
-					val dx = cx-fw*cmp(it)/2
-					val dy = y+l*lh-if(scr<0) scr else scr%lh
-					img.draw(
-						dx, maxOf(y, dy), cx+fw, maxOf(y, minOf(y+dh, dy+fh)),
-						sx.toFloat(), if(dy<y) sy+minOf(14f, (y-dy)/scale) else sy.toFloat(), sx+BW.toFloat(),
-						if(dy+fh>y+dh) sy+14f-minOf(14f, (dy+fh-y-dh)/scale) else sy+14f, alpha
-					)
-					cx+fw-fw*cmp(it)/2
+
+		fun drawFont(str:String, x:Float, type:LineType, y:Float, dh:Float, alpha:Float) =
+			str.fold(x+width/2f-(str.length-str.sumOf {cmp(it).toDouble()}.toFloat())*.5f*fw) {cx, it ->
+				val fontColor = when(type) {
+					LineType.Header -> if(it.isUpperCase()) BLUE else GREEN
+					LineType.Plane -> if(it.isUpperCase()) ORANGE else WHITE
 				}
+				val chr = it.uppercaseChar().code
+				val sx = BW*((chr-32)%32)
+				val sy = BH*((chr-32)/32+fontColor.ordinal*3)
+				val dx = cx-fw*cmp(it)/2
+				font.draw(
+					dx, y, cx+fw, maxOf(y, minOf(y+dh, y+fh)),
+					sx.toFloat(), sy.toFloat(), sx+BW.toFloat(),
+					if(fh>dh) sy+14f-minOf(14f, (y+fh-y-dh)/scale) else sy+14f, alpha
+				)
+				cx+fw-fw*cmp(it)/2
 			}
+
+		strList.drop(maxOf(0, floor(scr/lh).toInt()))
+			.take(
+				1+ceil(maxOf(0f, minOf(dh, dh+scr))/lh).toInt()
+			).forEachIndexed {l, (type, str) ->
+				drawFont(str, x, type, y+l*lh-if(scr<0) scr else scr%lh, dh, alpha)
+			}
+		val ih = width/img.aspectRatio
+		val eY = maxOf(dh/2-ih/2, height+dh/4f-scr)
+		if(eY-fh<dh) {
+			drawFont("FORKED FROM NULLPOMINO", x, LineType.Header, y+eY-fh, dh, alpha)
+			img.draw(x, y+eY, x+width, y+eY+ih, alpha)
 		}
+
 	}
 
 	companion object {
@@ -91,9 +103,12 @@ abstract class BaseStaffRoll {
 		private const val fw = BW*scale
 		private const val fh = BH*scale
 		private const val lh = fh+2
-		private val strList by lazy {
-			try {
-				this::class.java.getResource("/staff.lst")?.path?.let {t ->
+		fun load() {
+			log.debug("load Staffroll list file")
+			strList = try {
+				this::class.java.getResource("/staff.lst")?.also {
+					log.debug("load Staffroll list: {}", it)
+				}?.path?.let {t ->
 					FileInputStream(t).bufferedReader().use {it.readLines()}
 				}?.map {s -> s.trim {it<=' '}}?.filterNot {it.startsWith('#')||it.startsWith("//")} // Commment-line. Ignore it.
 					?.map {(if(it.startsWith(':')) LineType.Header else LineType.Plane) to it} ?: emptyList()
@@ -102,6 +117,12 @@ abstract class BaseStaffRoll {
 				emptyList()
 			}
 		}
+
+		private var strList = emptyList<Pair<LineType, String>>()
 		val height get() = (strList.size*lh)
+
+		init {
+			load()
+		}
 	}
 }

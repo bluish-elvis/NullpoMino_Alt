@@ -259,9 +259,9 @@ object ResourceHolder:mu.nu.nullpo.gui.common.ResourceHolder() {
 	/** BGM再生中かどうか
 	 * @return 再生中ならtrue
 	 */
-	internal val bgmIsPlaying:Boolean get() = bgmPlaying!=null&&(bgm[bgmint.first][bgmint.second].first?.playing() ?: false)
+	internal val bgmIsPlaying get() = bgmPlaying!=null&&(bgm[bgmint.first][bgmint.second].first?.playing() ?: false)
 
-	internal val bgmIsLooping:Boolean get() = bgmPlaying!=null&&bgm[bgmint.first][bgmint.second].second
+	internal val bgmIsLooping get() = bgmPlaying!=null&&bgm[bgmint.first][bgmint.second].second
 
 	/** BGMを停止 */
 	internal fun bgmStop() {

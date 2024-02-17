@@ -459,7 +459,7 @@ abstract class AbstractRenderer:EventReceiver() {
 				}
 			drawPiece(
 				x+bx*blkSize, y+by*blkSize+ys, p, scale*if(engine.big) 2 else 1, -.25f,
-				ow = if(engine.statc[0]%2==0||engine.holdDisable) 2f else 0f
+				ow = if(engine.statc[0]%2==0||engine.holdDisable) if(edgeBold) 2f else 1f else 0f
 			)
 			if(engine.nowPieceSteps<10) drawDirectNano(
 				x+(bx+p.spinCX-.1f)*blkSize, y+by*blkSize+ys,
@@ -481,14 +481,12 @@ abstract class AbstractRenderer:EventReceiver() {
 	 * @param engine GameEngineのインスタンス
 	 */
 	protected fun drawField(x:Float, y:Float, engine:GameEngine, size:Int, scale:Float = 1f) {
-		var blkSize = engine.blockSize
-		var zoom = scale
-		if(size==-1) {
-			blkSize /= 2
-			zoom /= 2
-		} else if(size==1) {
-			blkSize *= 2
-			zoom *= 2
+		val (blkSize, zoom) = (engine.blockSize to scale).let {
+			when {
+				size<=-1 -> it.first/2 to it.second/2
+				size>=1 -> it.first*2 to it.second*2
+				else -> it
+			}
 		}
 
 		val field = engine.field
@@ -515,7 +513,7 @@ abstract class AbstractRenderer:EventReceiver() {
 
 						if(it.getAttribute(Block.ATTRIBUTE.OUTLINE)&&!it.getAttribute(Block.ATTRIBUTE.BONE)) {
 							val ls = blkSize-1
-							val w = if(edgeBold) 2f else 1f
+							val w = if(edgeBold) 3f else 2f
 							when(outlineType) {
 								GameEngine.BLOCK_OUTLINE_NORMAL -> {
 									if(field.getBlockEmpty(j, i-1)) drawLineSpecific(x2, y2, x2+ls, y2, w = w)
@@ -1193,16 +1191,18 @@ abstract class AbstractRenderer:EventReceiver() {
 		}
 	}
 
-	protected open fun drawBadgesSpecific(x:Float, y:Float, type:Int, scale:Float){
+	protected open fun drawBadgesSpecific(x:Float, y:Float, type:Int, scale:Float) {
 		val b = FontBadge(type)
 		resources.imgBadges.draw(
 			x, y, x+b.w*scale, y+b.h*scale,
 			b.sx.toFloat(), b.sy.toFloat(), (b.sx+b.w).toFloat(), (b.sy+b.h).toFloat()
 		)
 	}
+
 	protected open fun drawFieldSpecific(
 		x:Float, y:Float, width:Int, viewHeight:Int, blksize:Int, scale:Float, outlineType:Int
-	){}
+	) {
+	}
 
 	override fun drawSpeedMeter(x:Float, y:Float, sp:Float, len:Float) {
 		val s = if(sp<0) 1f else sp

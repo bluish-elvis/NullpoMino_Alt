@@ -115,12 +115,12 @@ import kotlin.random.Random
 	var lineColorsCleared = emptyList<Int>()
 
 	/** List of last rows cleared in most recent horizontal line clear. */
-	var lastLinesCleared:List<List<Block?>> = emptyList(); private set
+	var lastLinesCleared = emptyList<List<Block?>>(); private set
 	var lastLinesY = emptySet<Set<Int>>(); private set
-	val lastLinesHeight:List<Int> get() = lastLinesY.map {it.size}
+	val lastLinesHeight get() = lastLinesY.map {it.size}
 
-	val lastLinesTop:Int get() = lastLinesY.flatten().minOrNull() ?: height
-	val lastLinesBottom:Int get() = lastLinesY.flatten().maxOrNull() ?: -hiddenHeight
+	val lastLinesTop get() = lastLinesY.flatten().minOrNull() ?: height
+	val lastLinesBottom get() = lastLinesY.flatten().maxOrNull() ?: -hiddenHeight
 
 	var lastLinesSplited = false; private set
 
@@ -138,18 +138,17 @@ import kotlin.random.Random
 	/** 消えるLinescountを数える
 	 * @return Linescount
 	 */
-	val lines:Int get() = (-hiddenHeight..<heightWithoutHurryupFloor).count {getLineFlag(it)}
+	val lines get() = (-hiddenHeight..<heightWithoutHurryupFloor).count {getLineFlag(it)}
 
 	/** All clearだったらtrue
 	 * @return All clearだったらtrue
 	 */
-	val isEmpty:Boolean
-		get() = howManyBlocks==0
+	val isEmpty get() = howManyBlocks==0
 
 	/** field内に何個のBlockがあるか調べる
 	 * @return field内にあるBlockのcount
 	 */
-	val howManyBlocks:Int
+	val howManyBlocks
 		get() = (-hiddenHeight..<heightWithoutHurryupFloor)
 			.filter {!getLineFlag(it)}
 			.sumOf {getRow(it).count {b -> b?.isEmpty==false}}
@@ -157,7 +156,7 @@ import kotlin.random.Random
 	/** 左から何個のBlockが並んでいるか調べる
 	 * @return 左から並んでいるBlockの総count
 	 */
-	val howManyBlocksFromLeft:Int
+	val howManyBlocksFromLeft
 		get() = (-hiddenHeight..<heightWithoutHurryupFloor)
 			.filter {!getLineFlag(it)}
 			.sumOf {getRow(it).takeWhile {b -> b?.isEmpty==false}.size}
@@ -195,7 +194,8 @@ import kotlin.random.Random
 				.count {getBlockEmpty(j, it)}
 		}
 
-	val danger:Boolean get() = (howManyBlocks+howManyLidAboveHoles)*5/(width*heightWithoutHurryupFloor)>=4
+	val danger get() = (howManyBlocks+howManyLidAboveHoles)*4/(width*heightWithoutHurryupFloor)>=3
+	val safety get() = (howManyBlocks+howManyLidAboveHoles)*20/(width*heightWithoutHurryupFloor)>=7
 
 	/** field内の隙間のcountを調べる
 	 * @return field内の隙間のcount

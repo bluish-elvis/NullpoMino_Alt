@@ -98,7 +98,7 @@ class RetroA:AbstractMode() {
 	/** Level records */
 	private val rankingLevel = List(RANKING_TYPE) {MutableList(RANKING_MAX) {0}}
 
-	override val rankMap
+	override val propRank
 		get() = rankMapOf(
 			rankingScore.mapIndexed {a, x -> "$a.score" to x}+
 				rankingLines.mapIndexed {a, x -> "$a.lines" to x}+
@@ -426,9 +426,6 @@ class RetroA:AbstractMode() {
 		private enum class GAMETYPE {
 			RACE200, ENDLESS, PRESSURE;
 		}
-
-		/** Number of ranking records */
-		private const val RANKING_MAX = 13
 
 		/** Number of ranking types */
 		private val RANKING_TYPE:Int = GAMETYPE.entries.size

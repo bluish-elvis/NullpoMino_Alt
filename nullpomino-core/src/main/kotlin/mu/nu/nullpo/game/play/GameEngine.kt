@@ -31,7 +31,6 @@
 package mu.nu.nullpo.game.play
 
 import kotlinx.serialization.encodeToString
-import kotlinx.serialization.json.Json
 import mu.nu.nullpo.game.component.BGMStatus.BGM
 import mu.nu.nullpo.game.component.Block
 import mu.nu.nullpo.game.component.Controller
@@ -57,6 +56,7 @@ import mu.nu.nullpo.gui.common.ConfigGlobal.AIConf
 import mu.nu.nullpo.gui.common.ConfigGlobal.TuneConf
 import mu.nu.nullpo.gui.common.fx.PopupCombo.CHAIN
 import mu.nu.nullpo.util.GeneralUtil
+import mu.nu.nullpo.util.GeneralUtil.Json
 import mu.nu.nullpo.util.GeneralUtil.toInt
 import net.omegaboshi.nullpomino.game.subsystem.randomizer.MemorylessRandomizer
 import net.omegaboshi.nullpomino.game.subsystem.randomizer.Randomizer
@@ -86,7 +86,7 @@ class GameEngine(
 	var ctrl = Controller(); private set
 	/** Statistics: Various game statistics
 	 * such as score, number of lines, etc */
-	val statistics = Statistics()
+	val statistics = Statistics().apply {rule = ruleOpt.strRuleName}
 	/** SpeedParam: Parameters of game speed
 	 * (Gravity, ARE, Line clear delay, etc.) */
 	val speed = SpeedParam()
@@ -297,8 +297,8 @@ class GameEngine(
 
 	/** Most recent scoring event type */
 	var lastEvent:ScoreEvent? = null
-	val lastEventShape:Piece.Shape? get() = lastEvent?.piece?.type
-	val lastEventPiece:Int get() = lastEvent?.piece?.id ?: 0
+	val lastEventShape get() = lastEvent?.piece?.type
+	val lastEventPiece get() = lastEvent?.piece?.id ?: 0
 
 	var lastLinesY = emptySet<Set<Int>>()
 
@@ -307,11 +307,11 @@ class GameEngine(
 	/** Last Twister */
 	var twistType:Twister? = null; private set
 	/** True if Twister */
-	val twist:Boolean get() = twistType!=null
+	val twist get() = twistType!=null
 	/** True if Twister Mini */
-	val twistMini:Boolean get() = twistType?.mini==true
+	val twistMini get() = twistType?.mini==true
 	/** EZ Twister */
-	val twistEZ:Boolean get() = twistType?.ez==true
+	val twistEZ get() = twistType?.ez==true
 
 	/** True if last erasing line is B2B */
 	val b2b get() = b2bCount>0
@@ -417,6 +417,9 @@ class GameEngine(
 	/** Number of Revives */
 	var lives = 0
 
+	/** 150個以上Blockがあるとtrue, 70個まで減らすとfalseになる */
+	var recoveryFlag = false
+
 	/** Ghost piece flag */
 	var ghost = false
 
@@ -502,15 +505,15 @@ class GameEngine(
 			itemEnable = if(value) Block.ITEM.COLOR else null
 		}
 	/** Color-block counter */
-	var itemColorCount = 0; private set
+	private var itemColorCount = 0//; private set
 
 	/** Gameplay-interruptable inum */
 	var interruptItemNumber:Block.ITEM? = null
 
 	/** Post-status of interruptable inum */
-	var interruptItemPreviousStat:Status = Status.MOVE; private set
+	private var interruptItemPreviousStat:Status = Status.MOVE//; private set
 	/** Backup field for Mirror/Exchange */
-	var interruptItemBackupField:Field = Field(); private set
+	private var interruptItemBackupField:Field = Field()//; private set
 
 	/**Overwriting Rule settings(should not change from gamemode)*/
 	var owTune = TuneConf()
@@ -641,24 +644,24 @@ class GameEngine(
 	internal var playerName = ""
 
 	/** Current AREの値を取得 (ルール設定も考慮）*/
-	val are:Int
+	val are
 		get() = if(speed.are<ruleOpt.minARE&&ruleOpt.minARE>=0) ruleOpt.minARE
 		else if(speed.are>ruleOpt.maxARE&&ruleOpt.maxARE>=0) ruleOpt.maxARE else speed.are
 	/** Current ARE after line clearの値を取得 (ルール設定も考慮）*/
-	val areLine:Int
+	val areLine
 		get() = if(speed.areLine<ruleOpt.minARELine&&ruleOpt.minARELine>=0) ruleOpt.minARELine
 		else if(speed.areLine>ruleOpt.maxARELine&&ruleOpt.maxARELine>=0) ruleOpt.maxARELine else speed.areLine
 	/** Current Line clear timeの値を取得 (ルール設定も考慮）*/
-	val lineDelay:Int
+	val lineDelay
 		get() = if(speed.lineDelay<ruleOpt.minLineDelay&&ruleOpt.minLineDelay>=0) ruleOpt.minLineDelay
 		else if(speed.lineDelay>ruleOpt.maxLineDelay&&ruleOpt.maxLineDelay>=0) ruleOpt.maxLineDelay else speed.lineDelay
 	/** Current 固定 timeの値を取得 (ルール設定も考慮）*/
-	val lockDelay:Int
+	val lockDelay
 		get() = if(speed.lockDelay<ruleOpt.minLockDelay&&ruleOpt.minLockDelay>=0) ruleOpt.minLockDelay
 		else if(speed.lockDelay>ruleOpt.maxLockDelay&&ruleOpt.maxLockDelay>=0) ruleOpt.maxLockDelay else speed.lockDelay
 
 	/** Current DASの値を取得 (ルール設定も考慮）*/
-	val das:Int
+	val das
 		get() = if(speed.das<owMinDAS&&owMinDAS>=0) owMinDAS
 		else if(speed.das>owMaxDAS&&owMaxDAS>=0) owMaxDAS
 		else if(speed.das<ruleOpt.minDAS&&ruleOpt.minDAS>=0) ruleOpt.minDAS
@@ -667,41 +670,39 @@ class GameEngine(
 	/** Current SoftDropの形式を取得 (ルール設定も考慮）
 	 * @return false:固定値 true:倍率
 	 */
-	val sdMul:Boolean get() = if(owSDSpd<0) ruleOpt.softdropMultiplyNativeSpeed else owSDSpd>=SDS_FIXED.size
+	val sdMul get() = if(owSDSpd<0) ruleOpt.softdropMultiplyNativeSpeed else owSDSpd>=SDS_FIXED.size
 
 	/** Current SoftDrop速度を取得 (ルール設定も考慮）*/
-	val softDropSpd:Float
-		get() {
-			return when {
-				owSDSpd<0 -> ruleOpt.softdropSpeed
-				else -> (if(owSDSpd<SDS_FIXED.size) SDS_FIXED[owSDSpd] else owSDSpd-SDS_FIXED.size+5f)
-			}*(if(sdMul||speed.denominator<=0) speed.gravity else speed.denominator).toFloat()
-		}
+	val softDropSpd
+		get() = when {
+			owSDSpd<0 -> ruleOpt.softdropSpeed
+			else -> (if(owSDSpd<SDS_FIXED.size) SDS_FIXED[owSDSpd] else owSDSpd-SDS_FIXED.size+5f)
+		}*(if(sdMul||speed.denominator<=0) speed.gravity else speed.denominator).toFloat()
 
 	/** Controller.BUTTON_UP if controls are normal,
 	 * Controller.BUTTON_DOWN if up/down are reversed
 	 */
-	val up:Int get() = if(owReverseUpDown) Controller.BUTTON_DOWN else Controller.BUTTON_UP
+	val up get() = if(owReverseUpDown) Controller.BUTTON_DOWN else Controller.BUTTON_UP
 	/** Controller.BUTTON_DOWN if controls are normal,
 	 * Controller.BUTTON_UP if up/down are reversed
 	 */
-	val down:Int get() = if(owReverseUpDown) Controller.BUTTON_UP else Controller.BUTTON_DOWN
+	val down get() = if(owReverseUpDown) Controller.BUTTON_UP else Controller.BUTTON_DOWN
 
 	/** @return Current 横移動速度を取得*/
-	val dasDelay:Int get() = if(owARR>=0) owARR else ruleOpt.dasARR
+	val dasDelay get() = if(owARR>=0) owARR else ruleOpt.dasARR
 	/** 現在使用中のBlockスキン numberを取得*/
-	val skin:Int get() = if(owSkin>=0) owSkin else ruleOpt.skin
+	val skin get() = if(owSkin>=0) owSkin else ruleOpt.skin
 
 	/** @return A buttonを押したときに左rotationするならfalse, 右rotationするならtrue*/
-	val spinDirection:Boolean get() = if(owSpinDir>=0) owSpinDir!=0 else ruleOpt.spinToRight
+	val spinDirection get() = if(owSpinDir>=0) owSpinDir!=0 else ruleOpt.spinToRight
 
 	/** Is diagonal movement enabled?*/
-	val isDiagonalMoveEnabled:Boolean; get() = if(owMoveDiagonal>=0) owMoveDiagonal==1 else ruleOpt.moveDiagonal
+	val isDiagonalMoveEnabled get() = if(owMoveDiagonal>=0) owMoveDiagonal==1 else ruleOpt.moveDiagonal
 
 	/** 横移動 input のDirectionを取得
 	 * @return -1:左 0:なし 1:右
 	 */
-	val moveDirection:Int
+	val moveDirection
 		get() =
 			if(ruleOpt.moveLeftAndRightAllow&&ctrl.isPress(Controller.BUTTON_LEFT)&&ctrl.isPress(Controller.BUTTON_RIGHT)) {
 				when {
@@ -714,28 +715,28 @@ class GameEngine(
 			} else if(ctrl.isPress(Controller.BUTTON_LEFT)) -1 else if(ctrl.isPress(Controller.BUTTON_RIGHT)) 1 else 0
 
 	/** @return 移動 count制限を超過したらtrue*/
-	val isMoveCountExceed:Boolean
+	val isMoveCountExceed
 		get() = if(ruleOpt.lockResetLimitShareCount) {
 			extendedMoveCount+extendedSpinCount>=ruleOpt.lockResetMoveLimit&&ruleOpt.lockResetMoveLimit>=0
 		} else ruleOpt.lockResetMoveLimit in 0..extendedMoveCount
 
 	/** @return 回転 count制限を超過したらtrue*/
-	val isSpinCountExceed:Boolean
+	val isSpinCountExceed
 		get() = if(ruleOpt.lockResetLimitShareCount) {
 			extendedMoveCount+extendedSpinCount>=ruleOpt.lockResetMoveLimit&&ruleOpt.lockResetMoveLimit>=0
 		} else ruleOpt.lockResetSpinLimit in 0..extendedSpinCount
 
 	/** @return ホールド可能ならtrue */
-	val isHoldOK:Boolean
+	val isHoldOK
 		get() = (ruleOpt.holdEnable&&!holdDisable&&(holdUsedCount<ruleOpt.holdLimit||ruleOpt.holdLimit<0)
 			&&!initialHoldContinuousUse)
 
-	val canARECancelMove:Boolean get() = if(owDelayCancel>=0) (owDelayCancel and 1)>0 else ruleOpt.areCancelMove
-	val canLineCancelMove:Boolean get() = if(owDelayCancel>=0) (owDelayCancel and 2)>0 else ruleOpt.lineCancelMove
-	val canARECancelSpin:Boolean get() = if(owDelayCancel>=0) (owDelayCancel and 4)>0 else ruleOpt.areCancelSpin
-	val canLineCancelSpin:Boolean get() = if(owDelayCancel>=0) (owDelayCancel and 8)>0 else ruleOpt.lineCancelSpin
-	val canARECancelHold:Boolean get() = if(owDelayCancel>=0) (owDelayCancel and 16)>0 else ruleOpt.areCancelHold
-	val canLineCancelHold:Boolean get() = if(owDelayCancel>=0) (owDelayCancel and 32)>0 else ruleOpt.lineCancelMove
+	val canARECancelMove get() = if(owDelayCancel>=0) (owDelayCancel and 1)>0 else ruleOpt.areCancelMove
+	val canLineCancelMove get() = if(owDelayCancel>=0) (owDelayCancel and 2)>0 else ruleOpt.lineCancelMove
+	val canARECancelSpin get() = if(owDelayCancel>=0) (owDelayCancel and 4)>0 else ruleOpt.areCancelSpin
+	val canLineCancelSpin get() = if(owDelayCancel>=0) (owDelayCancel and 8)>0 else ruleOpt.lineCancelSpin
+	val canARECancelHold get() = if(owDelayCancel>=0) (owDelayCancel and 16)>0 else ruleOpt.areCancelHold
+	val canLineCancelHold get() = if(owDelayCancel>=0) (owDelayCancel and 32)>0 else ruleOpt.lineCancelMove
 
 	/** READY前のInitialization */
 	fun init() {
@@ -917,6 +918,7 @@ class GameEngine(
 		readyDone = false
 
 		lives = 0
+		recoveryFlag = false
 
 		ghost = true
 
@@ -968,8 +970,11 @@ class GameEngine(
 		owner.mode?.let {
 			it.playerInit(this)
 			if(owner.replayMode) it.loadReplay(this, owner.replayProp)
-			else it.loadRanking(owner.recordProp)
-			if(playerProp.isLoggedIn) it.loadRankingPlayer(playerProp)
+			else {
+				it.loadRanking(owner.recordProp)
+				it.ranking.load(owner.recorder(ruleOpt.strRuleName)+".lb")
+				if(playerProp.isLoggedIn) it.loadRankingPlayer(playerProp)
+			}
 		}
 		playerName = if(owner.replayMode) owner.replayProp.getProperty("$playerID.playerName", "") else ""
 		owner.receiver.playerInit(this)
@@ -1198,7 +1203,7 @@ class GameEngine(
 				if(it.isPress(Controller.BUTTON_A)||it.isPress(Controller.BUTTON_C)) dir = -1
 				else if(it.isPress(Controller.BUTTON_B)) dir = 1
 				else if(it.isPress(Controller.BUTTON_E)) dir = 2
-				if (dir!=0)spun = false
+				if(dir!=0) spun = false
 				initialSpinDirection = dir
 			}
 
@@ -1309,6 +1314,7 @@ class GameEngine(
 		owner.replayProp.setProperty("version.core.dev", versionIsDevBuild)
 
 		owner.replayProp.setProperty("$playerID.replay.randSeed", randSeed)
+		statistics.rule = ruleOpt.strRuleName
 		replayData.writeProperty(owner.replayProp, playerID, replayTimer)
 		statistics.writeProperty(owner.replayProp, playerID)
 		owner.replayProp.setProperty("$playerID.rule", Json.encodeToString(ruleOpt))
@@ -1351,6 +1357,7 @@ class GameEngine(
 			owner.saveModeConfig()
 			if(it.saveReplay(this, owner.replayProp)) {
 				it.saveRanking()
+				it.ranking.save()
 				owner.recordProp.save()
 				if(playerProp.isLoggedIn) {
 					it.saveRankingPlayer(playerProp)
@@ -2648,7 +2655,13 @@ class GameEngine(
 
 		owner.receiver.onARE(this)
 		if(statc[0]==0)
-			if(field.danger) loopSE("danger") else stopSE("danger")
+			if(field.danger) {
+				loopSE("danger")
+				recoveryFlag = true
+			} else {
+				stopSE("danger")
+				if(field.safety) recoveryFlag = false
+			}
 
 		statc[0]++
 

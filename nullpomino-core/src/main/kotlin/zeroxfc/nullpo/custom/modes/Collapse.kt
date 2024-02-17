@@ -84,11 +84,11 @@ class Collapse:AbstractMode() {
 	private val rankingScorePlayer = List(MAX_DIFFICULTIES) {MutableList(MAX_RANKING) {0L}}
 	private val rankingLevelPlayer = List(MAX_DIFFICULTIES) {MutableList(MAX_RANKING) {0}}
 	private var rankingRankPlayer = 0
-	override val rankMap
+	override val propRank
 		get() = rankMapOf(rankingScore.mapIndexed {a, x -> "$a.score" to x}+
 			rankingLevel.mapIndexed {a, x -> "$a.level" to x})
 
-	override val rankPersMap
+	override val propPB
 		get() = rankMapOf(rankingScorePlayer.mapIndexed {a, x -> "$a.score" to x}+
 			rankingLevelPlayer.mapIndexed {a, x -> "$a.level" to x})
 
@@ -548,7 +548,7 @@ class Collapse:AbstractMode() {
 		return true
 	}
 
-	private val nextFull:Boolean get() = nextBlocks.size>=FIELD_WIDTH
+	private val nextFull get() = nextBlocks.size>=FIELD_WIDTH
 	private val nextEmpty:Int
 		get() = if(nextFull) -1 else nextBlocks.size
 
@@ -787,8 +787,7 @@ class Collapse:AbstractMode() {
 		return true
 	}
 
-	private fun setNewLowerScore(engine:GameEngine) {
-	}
+	private fun setNewLowerScore(engine:GameEngine) {}
 
 	override fun onLast(engine:GameEngine) {
 		super.onLast(engine)
@@ -798,9 +797,8 @@ class Collapse:AbstractMode() {
 		}
 		if(engine.stat===GameEngine.Status.SETTING||engine.stat===GameEngine.Status.RESULT&&!owner.replayMode||engine.stat===GameEngine.Status.CUSTOM) {
 			// Show rank
-			if(engine.ctrl.isPush(
-					Controller.BUTTON_F
-				)&&engine.playerProp.isLoggedIn&&engine.stat!==GameEngine.Status.CUSTOM
+			if(engine.ctrl.isPush(Controller.BUTTON_F)&&
+				engine.playerProp.isLoggedIn&&engine.stat!==GameEngine.Status.CUSTOM
 			) {
 				showPlayerStats = !showPlayerStats
 				engine.playSE("change")

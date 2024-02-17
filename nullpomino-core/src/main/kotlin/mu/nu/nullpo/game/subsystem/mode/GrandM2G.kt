@@ -139,7 +139,7 @@ class GrandM2G:AbstractMode() {
 	/* Mode name */
 	override val name = "Grand Mountain"
 	override val gameIntensity = 1
-	override val rankMap
+	override val propRank
 		get() = rankMapOf(rankingLevel.mapIndexed {a, x -> "$a.lines" to x}+
 			rankingTime.mapIndexed {a, x -> "$a.time" to x}+
 			bestSectionTime.mapIndexed {a, x -> "$a.section.time" to x})
@@ -858,9 +858,6 @@ class GrandM2G:AbstractMode() {
 
 		/** LV999 roll time */
 		private const val ROLLTIMELIMIT = 2024
-
-		/** Number of entries in rankings */
-		private const val RANKING_MAX = 13
 
 		/** Number of sections */
 		private const val SECTION_MAX = 10

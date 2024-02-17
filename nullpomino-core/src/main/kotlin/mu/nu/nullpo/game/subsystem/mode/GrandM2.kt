@@ -33,6 +33,7 @@ package mu.nu.nullpo.game.subsystem.mode
 import mu.nu.nullpo.game.component.BGMStatus.BGM
 import mu.nu.nullpo.game.component.Controller
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
+import mu.nu.nullpo.game.event.Rankable
 import mu.nu.nullpo.game.event.ScoreEvent
 import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.game.subsystem.mode.menu.BooleanMenuItem
@@ -101,9 +102,6 @@ class GrandM2:AbstractMode() {
 	private val sectionAvgTime
 		get() = sectionTime.filter {it>0}.average().toFloat()
 
-	/** 直前のSection Time */
-	private var sectionLastTime = 0
-
 	/** Section 内で4-line clearした count */
 	private var sectionQuads = MutableList(SECTION_MAX) {0}
 
@@ -120,18 +118,22 @@ class GrandM2:AbstractMode() {
 	private var mRollLines = 0
 
 	/** medal 状態 */
-	private var medalAC = 0
-	private var medalST = 0
-	private var medalSK = 0
-	private var medalRE = 0
-	private var medalRO = 0
-	private var medalCO = 0
+	private val medals = Rankable.GrandRow.Medals()
+	private var medalAC get() = medals.AC; set(v) {;medals.AC = v}
+	private var medalsST get() = medals.ST; set(v) {;medals.ST = v}
+	private val medalST get() = medalsST.indexOfFirst {it>0}.let {;if(it>=0) medalsST.size-it else 0;}
+	private var medalSK get() = medals.SK; set(v) {;medals.SK = v}
+	private var medalRE get() = medals.RE; set(v) {;medals.RE = v}
+	private var medalRO get() = medals.RO; set(v) {;medals.RO = v}
+	private var medalCO get() = medals.CO; set(v) {;medals.CO = v}
 
 	/** 150個以上Blockがあるとtrue, 70個まで減らすとfalseになる */
 	private var recoveryFlag = false
 
 	/** rotationした合計 count (Maximum4個ずつ増える) */
 	private var spinCount = 0
+	/** rotationした合計 count (大セクションごとの合計rotation count to 大セクションごとのPiece配置数) */
+	private var sectionSpins = MutableList(SECTION_MAX) {0 to 0}
 
 	/** Section Time記録表示中ならtrue */
 	private var isShowBestSectionTime = false
@@ -191,7 +193,7 @@ class GrandM2:AbstractMode() {
 
 	/* Initialization */
 	override val menu = MenuList("grademania2", itemGhost, itemAlert, itemST, itemLevel, item20g, itemBig)
-	override val rankMap
+	override val propRank
 		get() = rankMapOf(
 			"grade" to rankingGrade, "level" to rankingLevel, "time" to rankingTime, "clear" to rankingRollClear,
 			"section.time" to bestSectionTime, "section.quads" to bestSectionQuads
@@ -217,14 +219,14 @@ class GrandM2:AbstractMode() {
 		sectionTime.fill(0)
 		sectionIsNewRecord.fill(false)
 		sectionsDone = 0
-		sectionLastTime = 0
 		sectionQuads.fill(0)
+		sectionSpins.clear()
 		mRollSTime = true
 		mRollQuads = true
 		mRollFlag = false
 		mRollLines = 0
 		medalAC = 0
-		medalST = 0
+		medalsST.clear()
 		medalSK = 0
 		medalRE = 0
 		medalRO = 0
@@ -314,42 +316,52 @@ class GrandM2:AbstractMode() {
 	 * @param engine GameEngine
 	 * @param section Section number
 	 */
-	private fun stMedalCheck(engine:GameEngine, section:Int) {
+	private fun stMedalCheck(engine:GameEngine, section:Int, sectionLastTime:Int) {
 		val best = bestSectionTime[section]
 
 		if(sectionLastTime<best||best<=0) {
-			if(medalST<3) {
-				engine.playSE("medal3")
-				if(medalST<1) decTemp += 3
-				if(medalST<2) decTemp += 6
-				medalST = 3
-				decTemp += 6
-			}
+			engine.playSE("medal3")
+			if(medalST<1) decTemp += 3
+			if(medalST<2) decTemp += 6
+			decTemp += 6
+			medalsST[0]++
 			if(!owner.replayMode) {
 				decTemp++
 				sectionIsNewRecord[section] = true
 			}
-		} else if(sectionLastTime<best+300&&medalST<2) {
+		} else if(sectionLastTime<best+300) {
 			engine.playSE("medal2")
 			if(medalST<1) decTemp += 3
-			medalST = 2
+			medalsST[1]++
 			decTemp += 6
-		} else if(sectionLastTime<best+600&&medalST<1) {
+		} else if(sectionLastTime<best+600) {
 			engine.playSE("medal1")
-			medalST = 1
-			decTemp += 3// 12
+			medalsST[2]++
+			decTemp += 3
 		}
 	}
 
-	/** RO medal check
-	 * @param engine Engine
-	 */
-	private fun roMedalCheck(engine:GameEngine) {
-		val spinAverage = spinCount.toFloat()/engine.statistics.totalPieceLocked.toFloat()
-
-		if(spinAverage>=1.2f&&medalRO<3) {
-			engine.playSE("medal${++medalRO}")
-			decTemp += 6
+	/** RO medal check */
+	private fun roMedalCheck(engine:GameEngine, nextSecLv:Int) {
+		val e = spinCount to engine.statistics.totalPieceLocked-sectionSpins.sumOf {it.second}
+		sectionSpins.add(e)
+		spinCount = 0
+		val spinAverage = e.first.toFloat()/e.second
+		val lv = when {
+			nextSecLv<=300 -> 1
+			nextSecLv<=700 -> 2
+			else -> 3
+		}
+		if(spinAverage>=1.2f) {
+			engine.playSE("medal$lv")
+			(medalRO-lv).let {
+				if(it>0) {
+					if(it>1) decTemp += 3
+					if(it>2) decTemp += 6
+					decTemp += 3
+				}
+			}
+			medalRO = lv
 		}
 	}
 
@@ -441,7 +453,11 @@ class GrandM2:AbstractMode() {
 					val totalTime = (0..<SECTION_MAX).fold(0) {tt, i ->
 						val slv = minOf(i*100, 999)
 						receiver.drawScoreNum(
-							engine, 0, 3+i, "%3d-%3d %s %d".format(slv, slv+99, bestSectionTime[i].toTimeStr, bestSectionQuads[i]), sectionIsNewRecord[i]
+							engine,
+							0,
+							3+i,
+							"%3d-%3d %s %d".format(slv, slv+99, bestSectionTime[i].toTimeStr, bestSectionQuads[i]),
+							sectionIsNewRecord[i]
 						)
 						tt+bestSectionTime[i]
 					}
@@ -735,16 +751,15 @@ class GrandM2:AbstractMode() {
 				lastGradeTime = engine.statistics.time
 
 				// Section Timeを記録
-				sectionLastTime = sectionTime[levelb/100]
 				sectionsDone++
 
 				// 消えRoll check
 				mRollFlag = mRollCheck(levelb)
 				// ST medal
-				stMedalCheck(engine, levelb/100)
+				stMedalCheck(engine, levelb/100, sectionTime[levelb/100])
 
 				// RO medal
-				roMedalCheck(engine)
+				roMedalCheck(engine, nextSecLv)
 
 				// 段位M
 				if(mRollFlag) {
@@ -763,17 +778,16 @@ class GrandM2:AbstractMode() {
 				engine.playSE("levelup")
 
 				// Section Timeを記録
-				sectionLastTime = sectionTime[levelb/100]
 				sectionsDone++
 
 				// 消えRoll check
 				mRollFlag = mRollCheck(levelb)
 				if(mRollFlag) engine.playSE("cool")
 				// ST medal
-				stMedalCheck(engine, levelb/100)
+				stMedalCheck(engine, levelb/100, sectionTime[levelb/100])
 
 				// RO medal
-				if(nextSecLv==300||nextSecLv==700) roMedalCheck(engine)
+				if(nextSecLv==300||nextSecLv==700) roMedalCheck(engine, nextSecLv)
 
 				// Update level for next section
 				nextSecLv += 100
@@ -808,11 +822,10 @@ class GrandM2:AbstractMode() {
 		if(engine.statistics.time>=54000) setSpeed(engine)
 
 		// Section Time増加
-		if(engine.timerActive&&engine.ending==0) {
-			val section = engine.statistics.level/100
-
-			if(section>=0&&section<sectionTime.size) sectionTime[section] = engine.statistics.time-sectionTime.take(section).sum()
-		}
+		if(engine.timerActive&&engine.ending==0)
+			(engine.statistics.level/100).let {section ->
+				if(section>=0&&section<sectionTime.size) sectionTime[section] = engine.statistics.time-sectionTime.take(section).sum()
+			}
 
 		// Ending
 		if(engine.gameActive&&engine.ending==2) {
@@ -980,6 +993,7 @@ class GrandM2:AbstractMode() {
 		owner.musMan.bgm = if(engine.ending>0)
 			if(rollClear<=1) BGM.Result(2) else BGM.Result(3)
 		else BGM.Result(0)
+		engine.statistics.time=lastGradeTime
 		// ページ切り替え
 		if(engine.ctrl.isMenuRepeatKey(Controller.BUTTON_UP)) {
 			engine.statc[1]--
@@ -1010,9 +1024,9 @@ class GrandM2:AbstractMode() {
 		// Update rankings
 		if(!owner.replayMode&&startLevel==0&&!always20g&&!big&&engine.ai==null) {
 			updateRanking(grade, engine.statistics.level, lastGradeTime, rollClear)
-			if(medalST==3) updateBestSectionTime()
+			if(medalsST[0]>0) updateBestSectionTime()
 
-			if(rankingRank!=-1||medalST==3) return true
+			if(rankingRank!=-1||medalsST[0]>0) return true
 		}
 		return false
 	}
@@ -1160,9 +1174,6 @@ class GrandM2:AbstractMode() {
 
 		/** 消えRoll に必要なLV999到達時のTime */
 		private const val M_ROLL_TIME_REQUIRE = 37440
-
-		/** Number of entries in rankings */
-		private const val RANKING_MAX = 13
 
 		/** Number of sections */
 		private const val SECTION_MAX = 10

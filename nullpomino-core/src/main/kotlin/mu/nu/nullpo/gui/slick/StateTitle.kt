@@ -52,7 +52,7 @@ import org.newdawn.slick.state.transition.HorizontalSplitTransition
 internal class StateTitle:BaseMenuChooseState() {
 	/** True when new version is already checked */
 	private var isNewVersionChecked = false
-	override val numChoice:Int get() = list.size
+	override val numChoice get() = list.size
 	private var rollY = -480f
 
 	init {
@@ -60,7 +60,7 @@ internal class StateTitle:BaseMenuChooseState() {
 	}
 
 	/* Fetch this state's ID */
-	override fun getID():Int = ID
+	override fun getID() = ID
 
 	/* State initialization */
 	override fun init(container:GameContainer, game:StateBasedGame) {}
@@ -72,7 +72,7 @@ internal class StateTitle:BaseMenuChooseState() {
 		NullpoMinoSlick.startObserverClient()
 		// Call GC
 		System.gc()
-
+		BaseStaffRoll.load()
 		// Update title bar
 		if(container is AppGameContainer) {
 			container.setTitle("NullpoMino version${GameManager.versionString}")
@@ -91,8 +91,8 @@ internal class StateTitle:BaseMenuChooseState() {
 	override fun updateImpl(container:GameContainer, game:StateBasedGame, delta:Int) {
 		super.updateImpl(container, game, delta)
 		val mY = BaseStaffRoll.height
-		rollY += delta/32f
-		if(rollY>mY) rollY -= mY+480
+		rollY += delta/15f
+		if(rollY>mY+150) rollY -= mY+480+150
 	}
 
 	/* Draw the screen */
@@ -105,11 +105,9 @@ internal class StateTitle:BaseMenuChooseState() {
 			COLOR.RAINBOW, 0.5f
 		)
 		FontNano.printFont(
-			0,
-			8,
+			0, 8,
 			"${container.width}*${container.height} SCR:${container.screenWidth}*${container.screenHeight} GFX:${game.container.width}*${game.container.height}",
-			COLOR.WHITE,
-			0.5f
+			COLOR.WHITE, 0.5f
 		)
 
 		FontMedal.printFont(600, 432, "ALT", 2)

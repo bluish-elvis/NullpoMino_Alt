@@ -31,6 +31,8 @@
 package mu.nu.nullpo.game.subsystem.mode
 
 import mu.nu.nullpo.game.component.Block
+import mu.nu.nullpo.game.event.Leaderboard
+import mu.nu.nullpo.game.event.Rankable
 import mu.nu.nullpo.game.event.ScoreEvent
 import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.game.play.GameManager
@@ -68,11 +70,12 @@ interface GameMode {
 	 * get()= [AbstractMode.rankMapOf] (List<String to Score>)
 	 * @sample Marathon.rankMapOf
 	 */
-	val rankMap:rankMapType
+	val propRank:rankMapType
 	/** Used by [loadRankingPlayer], [saveRankingPlayer]
 	 * get()= [AbstractMode.rankMapOf] (List<String to Score>)
-	 * @sample zeroxfc.nullpo.custom.modes.MissionMode.rankPersMap  */
-	val rankPersMap:rankMapType
+	 * @sample zeroxfc.nullpo.custom.modes.MissionMode.propPB  */
+	val propPB:rankMapType
+	val ranking:Leaderboard<*>
 
 	/** Initialization of game mode. Executed before the game screen appears.
 	 * @param manager GameManager that owns this mode

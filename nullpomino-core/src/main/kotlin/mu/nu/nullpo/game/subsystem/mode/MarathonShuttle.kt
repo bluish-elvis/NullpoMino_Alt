@@ -111,7 +111,7 @@ class MarathonShuttle:NetDummyMode() {
 	/** Rankings' times */
 	private val rankingTime = List(RANKING_TYPE) {MutableList(RANKING_MAX) {-1}}
 
-	override val rankMap
+	override val propRank
 		get() = rankMapOf(rankingScore.mapIndexed {a, x -> "$a.score" to x}+
 			rankingLines.mapIndexed {a, x -> "$a.lines" to x}+
 			rankingTime.mapIndexed {a, x -> "$a.time" to x})
@@ -675,9 +675,6 @@ class MarathonShuttle:NetDummyMode() {
 
 		/** Combo goal table */
 		private val COMBO_GOAL_TABLE = listOf(0, 0, 1, 1, 2, 2, 3, 3, 4, 4, 4, 5)
-
-		/** Number of entries in rankings */
-		private const val RANKING_MAX = 13
 
 		/** Number of ranking types */
 		private const val RANKING_TYPE = 5

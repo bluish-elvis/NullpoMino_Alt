@@ -98,12 +98,12 @@ class ColorPower:MarathonModeBase() {
 	/** Rankings' times */
 	private val rankingTimePlayer = List(2) {List(RANKING_TYPE) {MutableList(RANKING_MAX) {-1}}}
 
-	override val rankMap
+	override val propRank
 		get() = rankMapOf(rankingScore.flatMapIndexed {a, x -> x.mapIndexed {b, y -> "$a.$b.score" to y}}+
 			rankingLines.flatMapIndexed {a, x -> x.mapIndexed {b, y -> "$a.$b.lines" to y}}+
 			rankingTime.flatMapIndexed {a, x -> x.mapIndexed {b, y -> "$a.$b.time" to y}})
 
-	override val rankPersMap
+	override val propPB
 		get() = rankMapOf(rankingScorePlayer.flatMapIndexed {a, x -> x.mapIndexed {b, y -> "$a.$b.score" to y}}+
 			rankingLinesPlayer.flatMapIndexed {a, x -> x.mapIndexed {b, y -> "$a.$b.lines" to y}}+
 			rankingTimePlayer.flatMapIndexed {a, x -> x.mapIndexed {b, y -> "$a.$b.time" to y}})

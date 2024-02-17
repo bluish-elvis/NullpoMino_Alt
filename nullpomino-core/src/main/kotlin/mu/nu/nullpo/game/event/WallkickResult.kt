@@ -43,7 +43,7 @@ data class WallkickResult(
 	/** 上DirectionへのWallkickかどうか判定
 	 * @return 上DirectionへのWallkickのとき (offsetY < 0のとき）にtrue
 	 */
-	val isUpward:Boolean get() = offsetY<0
+	val isUpward get() = offsetY<0
 
 	/** Copy constructor
 	 * @param w Copy source

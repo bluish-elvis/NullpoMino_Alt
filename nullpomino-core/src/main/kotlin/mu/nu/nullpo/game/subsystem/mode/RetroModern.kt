@@ -88,7 +88,7 @@ class RetroModern:AbstractMode() {
 	private val rankingLines:List<MutableList<Int>> = List(GAMETYPE_MAX) {MutableList(RANKING_MAX) {0}}
 	private val rankingTime:List<MutableList<Int>> = List(GAMETYPE_MAX) {MutableList(RANKING_MAX) {0}}
 
-	override val rankMap
+	override val propRank
 		get() = rankMapOf(
 			rankingScore.mapIndexed {a, x -> "$a.score" to x}+
 				rankingLines.mapIndexed {a, x -> "$a.lines" to x}+
@@ -656,9 +656,6 @@ class RetroModern:AbstractMode() {
 
 		/** Number of game type */
 		private const val GAMETYPE_MAX = 5
-
-		/** Number of ranking records */
-		private const val RANKING_MAX = 13
 
 		/** LV17 roll time */
 		private const val ROLLTIMELIMIT = 12000

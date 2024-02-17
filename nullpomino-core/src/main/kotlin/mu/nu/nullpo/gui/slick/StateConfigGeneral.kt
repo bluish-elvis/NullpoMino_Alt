@@ -297,7 +297,7 @@ internal class StateConfigGeneral:BaseMenuConfigState() {
 		return true
 	}
 
-	override val columns:List<Pair<String, List<Column>>> = listOf(
+	override val columns = listOf(
 		"APPEARANCE" to listOf(
 			Column({"Sound Effects:"+se.getOX}, {se = !se}, "ConfigGeneral_SE"),
 			Column({"BGM:"+bgm.getOX}, {bgm = !bgm}, "ConfigGeneral_BGM"),

@@ -518,9 +518,6 @@ class SprintCombo:NetDummyMode() {
 		/** Current version */
 		private const val CURRENT_VERSION = 1
 
-		/** Number of ranking records */
-		private const val RANKING_MAX = 13
-
 		/** Number of ranking types */
 		private const val GAMETYPE_MAX = 3
 

@@ -61,7 +61,7 @@ class Physician:AbstractMode() {
 
 	/** Rankings' times */
 	private val rankingTime = MutableList(RANKING_MAX) {-1}
-	override val rankMap
+	override val propRank
 		get() = rankMapOf("score" to rankingScore, "time" to rankingTime)
 	/** Number of initial gem blocks */
 	private var hoverBlocks = 0
@@ -383,9 +383,6 @@ class Physician:AbstractMode() {
 		/** Hovering block colors */
 		private val HOVER_BLOCK_COLORS = BLOCK_COLORS.map {it to Block.TYPE.GEM}
 		private val BASE_SPEEDS = listOf(10, 20, 25)
-
-		/** Number of ranking records */
-		private const val RANKING_MAX = 13
 
 		/** Names of speed settings */
 		private val SPEED_NAME = listOf("LOW", "MED", "HI")

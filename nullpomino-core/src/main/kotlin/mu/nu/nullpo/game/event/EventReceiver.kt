@@ -81,12 +81,10 @@ open class EventReceiver {
 	protected val bigSideNext get() = nextDisplayType>1
 
 	/** @return True if you can use TTF font routines */
-	open val isTTFSupport:Boolean
-		get() = false
+	open val isTTFSupport get() = false
 
 	/** Get Number of Block Skins */
-	open val skinMax:Int
-		get() = 0
+	open val skinMax get() = 0
 
 	/** @return X position of field */
 	fun fieldX(e:GameEngine, pos:Number = 0) = e.fX+pos.toFloat()*BS
@@ -334,7 +332,7 @@ open class EventReceiver {
 		(if(!engine.owner.menuOnly) (engine.fX to engine.fY) else (320f to 0f)).let {
 			val _h = height.toFloat()
 			drawStaffRoll(
-				it.first, it.second, scr*(_h+BaseStaffRoll.height)-_h, _h, alpha
+				it.first, it.second, scr*(_h+BaseStaffRoll.height+256)-_h, _h, alpha
 			)
 		}
 

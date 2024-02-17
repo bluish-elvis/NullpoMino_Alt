@@ -31,7 +31,7 @@
 package mu.nu.nullpo.util
 
 import kotlinx.serialization.encodeToString
-import kotlinx.serialization.json.Json
+import mu.nu.nullpo.util.GeneralUtil.Json
 import mu.nu.nullpo.game.event.Rankable
 import org.apache.logging.log4j.LogManager
 import java.io.ByteArrayInputStream

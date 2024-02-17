@@ -216,7 +216,7 @@ class GrandPuzzle:AbstractMode() {
 	/** Rankings' all clear flag */
 	private val rankingAllClear = List(RANKING_TYPE) {MutableList(RANKING_MAX) {0}}
 
-	override val rankMap
+	override val propRank
 		get() = rankMapOf(rankingStage.mapIndexed {a, x -> "$a.stage" to x}+
 			rankingRate.mapIndexed {a, x -> "$a.rate" to x}+
 			rankingAllClear.mapIndexed {a, x -> "$a.clear" to x}+
@@ -1412,7 +1412,5 @@ class GrandPuzzle:AbstractMode() {
 		/** Number of ranking typesのcount */
 		private const val RANKING_TYPE = 2
 
-		/** Number of entries in rankings */
-		private const val RANKING_MAX = 13
 	}
 }

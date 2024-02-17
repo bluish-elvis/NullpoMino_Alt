@@ -107,7 +107,7 @@ class MarathonDrill:NetDummyMode() {
 	/** Rankings' depth */
 	private val rankingDepth = List(GOALTYPE_MAX) {MutableList(RANKING_MAX) {0}}
 
-	override val rankMap
+	override val propRank
 		get() = rankMapOf(rankingScore.mapIndexed {a, x -> "$a.stage" to x}+rankingLines.mapIndexed {a, x -> "$a.lines" to x}+rankingDepth.mapIndexed {a, x -> "$a.depth" to x}/*+
 				rankingTime.mapIndexed {a, x -> "$a.time" to x}*/
 		)
@@ -602,9 +602,6 @@ class MarathonDrill:NetDummyMode() {
 
 		/** Number of goal type */
 		private const val GOALTYPE_MAX = 2
-
-		/** Number of entries in rankings */
-		private const val RANKING_MAX = 13
 
 		/** Number of garbage lines for each level */
 		private const val LEVEL_GARBAGE_LINES = 10

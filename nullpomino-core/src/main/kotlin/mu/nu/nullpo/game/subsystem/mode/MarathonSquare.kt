@@ -79,7 +79,7 @@ class MarathonSquare:AbstractMode() {
 	override val name = "SQUARE"
 	override val gameIntensity:Int = -1
 
-	override val rankMap
+	override val propRank
 		get() = rankMapOf(rankingScore.mapIndexed {a, x -> "$a.score" to x}+
 			rankingSquares.mapIndexed {a, x -> "$a.squares" to x}+
 			rankingTime.mapIndexed {a, x -> "$a.time" to x})
@@ -571,9 +571,6 @@ class MarathonSquare:AbstractMode() {
 	companion object {
 		/** Current version */
 		private const val CURRENT_VERSION = 1
-
-		/** Number of ranking records */
-		private const val RANKING_MAX = 13
 
 		/** Number of ranking types */
 		private const val RANKING_TYPE = 3

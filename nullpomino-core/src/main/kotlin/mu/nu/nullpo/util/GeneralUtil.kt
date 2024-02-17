@@ -30,21 +30,30 @@
  */
 package mu.nu.nullpo.util
 
+import kotlinx.serialization.ExperimentalSerializationApi
+import kotlinx.serialization.InternalSerializationApi
+import kotlinx.serialization.KSerializer
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.modules.PolymorphicModuleBuilder
+import kotlinx.serialization.modules.SerializersModule
 import mu.nu.nullpo.game.component.RuleOptions
+import mu.nu.nullpo.game.event.Leaderboard
+import mu.nu.nullpo.game.event.Rankable
 import mu.nu.nullpo.game.subsystem.ai.AIPlayer
 import mu.nu.nullpo.game.subsystem.wallkick.Wallkick
 import mu.nu.nullpo.tool.ruleeditor.RuleEditor
 import net.omegaboshi.nullpomino.game.subsystem.randomizer.MemorylessRandomizer
 import net.omegaboshi.nullpomino.game.subsystem.randomizer.Randomizer
 import org.apache.logging.log4j.LogManager
+import java.io.File
 import java.io.FileInputStream
+import java.io.FileOutputStream
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.TimeZone
 import java.util.zip.GZIPInputStream
-import java.util.zip.ZipException
+import java.util.zip.GZIPOutputStream
 
 /** Generic static utils */
 object GeneralUtil {
@@ -319,4 +328,21 @@ object GeneralUtil {
 	/** Returns a list containing all elements that are not `null`.*/
 	fun <T:Any> Array<T?>.filterNotNullIndexed():List<IndexedValue<T>> =
 		this.mapIndexedNotNull {i, it -> it?.let {IndexedValue(i, it)}}
+
+	@OptIn(ExperimentalSerializationApi::class)
+	val Json = Json {
+		coerceInputValues = true
+		encodeDefaults = false
+		explicitNulls = false
+		ignoreUnknownKeys = true
+		decodeEnumsCaseInsensitive = true
+		/*	serializersModule = SerializersModule {
+					polymorphic(Any::class) {
+						PolymorphicModuleBuilder.subclass((Rankable.ScoreRow)::class)
+					}
+				}*/
+	}
+
+//	fun <T> listSerializer(serializerForT:KSerializer<T>):KSerializer<List<T>> = listOf(serializerForT).serializer()
+
 }

@@ -32,7 +32,7 @@ package mu.nu.nullpo.gui.slick
 
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
-import kotlinx.serialization.json.Json
+import mu.nu.nullpo.util.GeneralUtil.Json
 import mu.nu.nullpo.game.component.RuleOptions
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
 import mu.nu.nullpo.game.play.GameManager

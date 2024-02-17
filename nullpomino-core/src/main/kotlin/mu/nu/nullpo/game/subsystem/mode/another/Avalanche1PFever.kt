@@ -114,7 +114,7 @@ class Avalanche1PFever:Avalanche1PDummyMode() {
 	/** ??? */
 	private var xyzzy = 0
 
-	override val rankMap
+	override val propRank
 		get() = rankMapOf(rankingScore.flatMapIndexed {a, x ->
 			x.mapIndexed {b, y -> "$a.$b.score" to y}
 		}
@@ -614,9 +614,6 @@ class Avalanche1PFever:Avalanche1PDummyMode() {
 
 		/** Names of chain display settings */
 		private val CHAIN_DISPLAY_NAMES = listOf("OFF", "YELLOW", "SIZE")
-
-		/** Number of ranking records */
-		private const val RANKING_MAX = 13
 
 		/** Time limit */
 		private const val TIME_LIMIT = 3600

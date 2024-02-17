@@ -147,7 +147,7 @@ class GrandZ:AbstractMode() {
 	private val bestSectionTime = List(RANKING_TYPE) {MutableList(SECTION_MAX) {DEFAULT_SECTION_TIME}}
 	private val bestSectionLine = List(RANKING_TYPE) {MutableList(SECTION_MAX) {0}}
 
-	override val rankMap
+	override val propRank
 		get() = rankMapOf(
 			rankingGrade.mapIndexed {a, x -> "$a.lines" to x}+
 				rankingLevel.mapIndexed {a, x -> "$a.level" to x}+
@@ -941,8 +941,6 @@ class GrandZ:AbstractMode() {
 		/** Ending time limit */
 		private const val ROLLTIMELIMIT = 12000
 
-		/** Number of ranking records */
-		private const val RANKING_MAX = 13
 		/** Number of ranking types */
 		private const val RANKING_TYPE = 3
 

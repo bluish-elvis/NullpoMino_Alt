@@ -33,6 +33,7 @@ package mu.nu.nullpo.game.subsystem.mode
 import mu.nu.nullpo.game.component.BGMStatus.BGM
 import mu.nu.nullpo.game.component.Controller
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
+import mu.nu.nullpo.game.event.Rankable
 import mu.nu.nullpo.game.event.ScoreEvent
 import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.game.subsystem.mode.menu.BooleanMenuItem
@@ -80,30 +81,21 @@ class GrandS1:AbstractMode() {
 	/** 直前のSection Time */
 	private var sectionLastTime = 0
 
-	/** AC medal 状態 */
-	private var medalAC = 0
-	/** ST medal 状態 */
-	private val medalST
-		get() = medalsST.indexOfFirst {it>0}.let {
-			when(it) {
-				in 0..2 -> 3-it
-				else -> 0
-			}
-		}
-
-	private var medalsST = mutableListOf(0, 0, 0)
-	/** SK medal 状態 */
-	private var medalSK = 0
-	/** RE medal 状態 */
-	private var medalRE = 0
-	/** RO medal 状態 */
-	private var medalRO = 0
-	/** CO medal 状態 */
-	private var medalCO = 0
+	/** medal 状態 */
+	private val medals = Rankable.GrandRow.Medals()
+	private var medalAC get() = medals.AC; set(v) {;medals.AC = v}
+	private var medalsST get() = medals.ST; set(v) {;medals.ST = v}
+	private val medalST get() = medalsST.indexOfFirst {it>0}.let {;if(it>=0) medalsST.size-it else 0;}
+	private var medalSK get() = medals.SK; set(v) {;medals.SK = v}
+	private var medalRE get() = medals.RE; set(v) {;medals.RE = v}
+	private var medalRO get() = medals.RO; set(v) {;medals.RO = v}
+	private var medalCO get() = medals.CO; set(v) {;medals.CO = v}
 	/** 150個以上Blockがあるとtrue, 70個まで減らすとfalseになる */
 	private var recoveryFlag = false
 	/** spinした合計 count (Maximum4個ずつ増える) */
 	private var spinCount = 0
+	/** rotationした合計 count (大セクションごとの合計rotation count to 大セクションごとのPiece配置数) */
+	private var sectionSpins = MutableList(SECTION_MAX) {0 to 0}
 	/** Section Time記録表示中ならtrue */
 	private var isShowBestSectionTime = false
 
@@ -150,7 +142,7 @@ class GrandS1:AbstractMode() {
 	/* Initialization */
 	override val menu = MenuList("speedmania1", itemLevel, itemQualify, itemAlert, itemST, itemBig)
 
-	override val rankMap
+	override val propRank
 		get() = rankMapOf(
 			"grade" to rankingGrade,
 			"level" to rankingLevel,
@@ -181,6 +173,7 @@ class GrandS1:AbstractMode() {
 		medalCO = 0
 		recoveryFlag = false
 		spinCount = 0
+		sectionSpins.clear()
 
 		rankingRank = -1
 		rankingGrade.fill(0)
@@ -234,16 +227,19 @@ class GrandS1:AbstractMode() {
 
 		if(sectionLastTime<best||best<=0) {
 			engine.playSE("medal3")
+			if(medalST<1) decTemp += 3
+			if(medalST<2) decTemp += 6
+			decTemp += 6
 			medalsST[0]++
-			decTemp += 15
 			if(!owner.replayMode) {
 				decTemp++
 				sectionIsNewRecord[section] = true
 			}
 		} else if(sectionLastTime<best+300) {
 			engine.playSE("medal2")
+			if(medalST<1) decTemp += 3
 			medalsST[1]++
-			decTemp += 9
+			decTemp += 6
 		} else if(sectionLastTime<best+600) {
 			engine.playSE("medal1")
 			medalsST[2]++
@@ -255,11 +251,25 @@ class GrandS1:AbstractMode() {
 	 * @param engine Engine
 	 */
 	private fun roMedalCheck(engine:GameEngine) {
-		val spinAverage = spinCount.toFloat()/engine.statistics.totalPieceLocked.toFloat()
-
-		if(spinAverage>=1.2f&&medalRO<3) {
-			engine.playSE("medal${++medalRO}")
-			decTemp += 6
+		val e = spinCount to engine.statistics.totalPieceLocked-sectionSpins.sumOf {it.second}
+		sectionSpins.add(e)
+		spinCount = 0
+		val spinAverage = e.first.toFloat()/e.second
+		val lv = when {
+			nextSecLv<=300 -> 1
+			nextSecLv<=700 -> 2
+			else -> 3
+		}
+		if(spinAverage>=1.2f) {
+			engine.playSE("medal$lv")
+			(medalRO-lv).let {
+				if(it>0) {
+					if(it>1) decTemp += 3
+					if(it>2) decTemp += 6
+					decTemp += 3
+				}
+			}
+			medalRO = lv
 		}
 	}
 
@@ -419,6 +429,7 @@ class GrandS1:AbstractMode() {
 					2f
 				)
 			}
+
 		}
 	}
 
@@ -842,8 +853,6 @@ class GrandS1:AbstractMode() {
 
 		/** LV999 roll time */
 		private const val ROLLTIMELIMIT = 1982
-		/** Number of entries in rankings */
-		private const val RANKING_MAX = 13
 		/** Number of sections */
 		private const val SECTION_MAX = 10
 		/** Default section time */

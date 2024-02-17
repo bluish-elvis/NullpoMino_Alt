@@ -31,7 +31,7 @@
 package mu.nu.nullpo.gui.slick
 
 import kotlinx.serialization.encodeToString
-import kotlinx.serialization.json.Json
+import mu.nu.nullpo.util.GeneralUtil.Json
 import mu.nu.nullpo.game.play.GameManager
 import mu.nu.nullpo.gui.common.ConfigGlobal
 import mu.nu.nullpo.gui.common.GameKeyDummy.Companion.MAX_PLAYERS

@@ -73,7 +73,7 @@ class MarathonActual:AbstractMode() {
 		get() = List(minOf(rankingPieces.size, rankingTime.size)) {rankingPieces[it]*60f/rankingTime[it]}
 	private val rankingPieces = MutableList(RANKING_MAX) {0}
 	private val rankingTime = MutableList(RANKING_MAX) {-1}
-	override val rankMap
+	override val propRank
 		get() = rankMapOf("pieces" to rankingPieces, "time" to rankingTime)
 	private var totalLength = 0
 	override val name:String = "Actual Marathon"

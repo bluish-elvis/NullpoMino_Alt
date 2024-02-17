@@ -37,7 +37,7 @@ import mu.nu.nullpo.util.CustomProperties
 @Serializable
 class Statistics {
 	/** Total score */
-	val score:Long get() = 0L+scoreLine+scoreHD+scoreSD+scoreBonus
+	val score get() = 0L+scoreLine+scoreHD+scoreSD+scoreBonus
 	/** Line clear score */
 	var scoreLine = 0
 	/** Soft drop score */
@@ -172,7 +172,7 @@ class Statistics {
 
 	/** Roll cleared flag (0=Not Reached 1=Reached 2=Fully Survived) */
 	var rollClear = 0
-		set(it) {
+	/*	set(it) {
 			if(field==it||!(0..2).contains(it)) return
 			when(it) {
 				1 -> rollReached++
@@ -190,9 +190,11 @@ class Statistics {
 	/** Roll Reached Count */
 	var rollReached = 0
 	/** Roll Survived Count */
-	var rollSurvived = 0
+	var rollSurvived = 0*/
 
 	var pieces = List(Piece.PIECE_COUNT) {0}
+
+	var rule = ""
 
 	var randSeed:Long = 0L
 	/** Constructor */
@@ -317,7 +319,7 @@ class Statistics {
 			gameRate = b.gameRate
 			maxChain = b.maxChain
 			rollClear = b.rollClear
-			rollclearHistory = b.rollclearHistory
+//			rollclearHistory = b.rollclearHistory
 			garbageLines = b.garbageLines
 			finesse = b.finesse
 			maxFinesseCombo = b.maxFinesseCombo

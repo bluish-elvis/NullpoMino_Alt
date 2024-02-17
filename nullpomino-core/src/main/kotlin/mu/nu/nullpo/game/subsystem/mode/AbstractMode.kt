@@ -30,6 +30,7 @@
  */
 package mu.nu.nullpo.game.subsystem.mode
 
+import kotlinx.serialization.serializer
 import mu.nu.nullpo.game.component.BGMStatus.BGM
 import mu.nu.nullpo.game.component.Block
 import mu.nu.nullpo.game.component.Controller
@@ -38,6 +39,7 @@ import mu.nu.nullpo.game.component.SpeedParam
 import mu.nu.nullpo.game.event.EventReceiver
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
 import mu.nu.nullpo.game.event.EventReceiver.Companion.getScaleF
+import mu.nu.nullpo.game.event.Leaderboard
 import mu.nu.nullpo.game.event.ScoreEvent
 import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.game.play.GameManager
@@ -58,20 +60,24 @@ import kotlin.math.ln1p
 
 /** Dummy implementation of game mode. Used as a base of most game modes. */
 abstract class AbstractMode:GameMode {
-	final override val id:String
-		get() = this::class.simpleName ?: "noName"
+	final override val id get() = this::class.simpleName ?: "noName"
 
 	/** GameManager that owns this mode */
 	protected var owner = GameManager()
 
 	/** Drawing and event handling EventReceiver */
-	protected val receiver:EventReceiver get() = owner.receiver
+	protected val receiver get() = owner.receiver
 
+	override val propRank:rankMapType get() = emptyMap()
+	override val propPB:rankMapType get() = emptyMap()
 
 	protected fun rankMapOf(list:List<Pair<String, MutableList<*>>>):rankMapType =
 		list.filterIsInstance<Pair<String, rankMapChild>>().toMap()
 
 	protected fun rankMapOf(vararg array:Pair<String, MutableList<*>>):rankMapType = rankMapOf(listOf(*array))
+
+	open val RANKING_MAX = 13
+	override val ranking:Leaderboard<*> = Leaderboard(this.RANKING_MAX, serializer<List<Int>>())
 
 	protected var menuColor = COLOR.WHITE
 	/*abstract */override val menu = MenuList(id)
@@ -86,7 +92,7 @@ abstract class AbstractMode:GameMode {
 			menu.menuY = x
 		}
 	/** Name of mode in properties file */
-	protected open val propName:String = ""
+	protected open val propName = ""
 	/** Position of cursor in menu */
 	protected var menuCursor
 		get() = menu.menuCursor
@@ -96,7 +102,7 @@ abstract class AbstractMode:GameMode {
 	/** Number of frames spent in menu */
 	protected var menuTime = 0
 	override val name = this::class.simpleName ?: "No Name"
-	override val players:Int = 1
+	override val players = 1
 	override val gameStyle = GameStyle.TETROMINO
 	override val gameIntensity = 0
 	override val isOnlineMode = false
@@ -126,7 +132,7 @@ abstract class AbstractMode:GameMode {
 	/** Read rankings from [prop]
 	 * This should be called from Only [GameEngine] */
 	override fun loadRanking(prop:CustomProperties) {
-		if(rankMap.isNotEmpty()) rankMap.forEach {(key, value) ->
+		if(propRank.isNotEmpty()) propRank.forEach {(key, value) ->
 			value.forEachIndexed {i, n ->
 				value[i] = prop.getProperty("${key}.$i", n)
 			}
@@ -134,7 +140,7 @@ abstract class AbstractMode:GameMode {
 	}
 
 	override fun saveRanking() {
-		if(rankMap.isNotEmpty()) rankMap.forEach {(key, value) ->
+		if(propRank.isNotEmpty()) propRank.forEach {(key, value) ->
 			value.forEachIndexed {i, rec ->
 				owner.recordProp.setProperty("$key.$i", rec)
 			}
@@ -142,7 +148,7 @@ abstract class AbstractMode:GameMode {
 	}
 
 	override fun loadRankingPlayer(prof:ProfileProperties) {
-		if(rankPersMap.isNotEmpty()&&prof.isLoggedIn) rankPersMap.forEach {(key, value) ->
+		if(propPB.isNotEmpty()&&prof.isLoggedIn) propPB.forEach {(key, value) ->
 			value.forEachIndexed {i, n ->
 				value[i] = prof.propProfile.getProperty("$id.${key}.$i", n)
 			}
@@ -150,7 +156,7 @@ abstract class AbstractMode:GameMode {
 	}
 
 	override fun saveRankingPlayer(prof:ProfileProperties) {
-		if(rankPersMap.isNotEmpty()&&prof.isLoggedIn) rankPersMap.forEach {(key, value) ->
+		if(propPB.isNotEmpty()&&prof.isLoggedIn) propPB.forEach {(key, value) ->
 			value.forEachIndexed {i, v ->
 				prof.propProfile.setProperty("$id.${key}.$i", v)
 			}
@@ -526,7 +532,7 @@ abstract class AbstractMode:GameMode {
 
 	protected fun drawMenuCompact(engine:GameEngine, receiver:EventReceiver, vararg value:Pair<String, Any>) {
 		for((label, second) in value) {
-			val str:String = second.let {
+			val str = second.let {
 				when(it) {
 					is String -> it
 					is Boolean -> if(label.length<6) it.getONorOFF(false)

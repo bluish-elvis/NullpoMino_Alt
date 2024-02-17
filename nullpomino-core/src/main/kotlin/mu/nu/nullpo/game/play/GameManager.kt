@@ -62,10 +62,10 @@ class GameManager(
 	val statsFile get() = "scores/stats"
 
 	/** Properties for Ranking/Records game mode */
-	var recordProp = CustomProperties(recorder())
+	var recordProp = CustomProperties(recorder()+".rec")
 
 	fun recorder(ruleName:String? = null):String =
-		"scores/${ruleName?.let {"$it/"} ?: ""}${mode?.id ?: ""}.rec"
+		"scores/"+(ruleName?.let {"$it/"} ?: "")+(mode?.id ?: "")
 	//fun recorder():String = "scores/${mode?.name ?: "mode"}.rec"
 
 	/** Properties for replay file */
@@ -91,20 +91,16 @@ class GameManager(
 	var showInput = false
 
 	/** @return Number of players*/
-	val players:Int
-		get() = engine.size
+	val players get() = engine.size
 	/** @return true if the game should quit in any GameEngine object*/
-	val quitFlag:Boolean
-		get() = engine.any {it.quitFlag}
+	val quitFlag get() = engine.any {it.quitFlag}
 	/** @return true if there is an active GameEngine*/
-	val isGameActive:Boolean
-		get() = engine.any {it.gameActive}
+	val isGameActive get() = engine.any {it.gameActive}
 	/** @return Player ID of last survivor.
 	 * -2 in single player game.
 	 * -1 in draw game.
 	 */
-	val winner:Int
-		get() = if(players<2) -2 else engine.indexOfLast {it.stat!=GameEngine.Status.GAMEOVER}
+	val winner get() = if(players<2) -2 else engine.indexOfLast {it.stat!=GameEngine.Status.GAMEOVER}
 
 	init {
 		log.debug("GameManager constructor called")
@@ -120,7 +116,7 @@ class GameManager(
 		replayRerecord = false
 		menuOnly = false
 
-		bgMan.fadeEnabled=receiver.heavyEffect>0
+		bgMan.fadeEnabled = receiver.heavyEffect>0
 		receiver.modeInit(this)
 		val players = mode?.let {
 			modeConfig.load(cfgMode)
@@ -132,8 +128,7 @@ class GameManager(
 			engine.add(GameEngine(this, i))
 	}
 
-	/** Save properties to "config/setting/mode.cfg"
-	 */
+	/** Save properties to "config/setting/mode.cfg"*/
 	fun saveModeConfig() = modeConfig.save(cfgMode)
 
 	/** Reset the game */
@@ -195,22 +190,19 @@ class GameManager(
 		/** Get minor version (For compatibility with old replays)
 		 * @return Minor version
 		 */
-		val versionMinorOld:Float
-			get() = versionMinor.toFloat()
+		val versionMinorOld get() = versionMinor.toFloat()
 		/** Get version information as String
 		 * @return Version information
 		 */
-		val versionString:String
-			get() = "$versionMajor.$versionMinor${if(isDevBuild) "DEV" else ""}"
+		val versionString get() = "$versionMajor.$versionMinor${if(isDevBuild) "DEV" else ""}"
 		/** Get build type as string
 		 * @return Build type as String
 		 */
-		val buildTypeString:String
-			get() = if(isDevBuild) "Development" else "Release"
+		val buildTypeString get() = if(isDevBuild) "Development" else "Release"
 		/** Get build type name
 		 * @param type Build type (false:Release true:Development)
 		 * @return Build type as String
 		 */
-		fun getBuildTypeString(type:Boolean):String = if(type) "Development" else "Release"
+		fun getBuildTypeString(type:Boolean) = if(type) "Development" else "Release"
 	}
 }

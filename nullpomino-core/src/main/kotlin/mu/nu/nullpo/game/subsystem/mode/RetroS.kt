@@ -98,7 +98,7 @@ class RetroS:AbstractMode() {
 	override val name = "Retro Mania .S"
 
 	override val gameIntensity:Int = -1
-	override val rankMap
+	override val propRank
 		get() = rankMapOf(
 			rankingScore.mapIndexed {a, x -> "$a.score" to x}+
 				rankingLines.mapIndexed {a, x -> "$a.lines" to x}+
@@ -435,9 +435,6 @@ class RetroS:AbstractMode() {
 
 		/** Number of game type */
 		private val GAMETYPE_MAX = tableDenominator.size
-
-		/** Number of ranking records */
-		private const val RANKING_MAX = 13
 
 		/** Number of ranking types */
 		private const val RANKING_TYPE = 4

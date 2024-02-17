@@ -128,7 +128,7 @@ class GrandRoads:NetDummyMode() {
 			Course.XTREME, Course.HELL, Course.HIDE, Course.VOID -> 3
 			else -> 0
 		}
-	override val rankMap
+	override val propRank
 		get() = rankMapOf(
 			rankingLines.mapIndexed {a, x -> "$a.lines" to x}+
 				rankingLives.mapIndexed {a, x -> "$a.lives" to x}+
@@ -913,7 +913,5 @@ class GrandRoads:NetDummyMode() {
 		/** Ending time limit */
 		private const val ROLLTIMELIMIT = 3238
 
-		/** Number of ranking records */
-		private const val RANKING_MAX = 13
 	}
 }

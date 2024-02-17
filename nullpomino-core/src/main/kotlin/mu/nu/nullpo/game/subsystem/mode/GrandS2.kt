@@ -169,7 +169,7 @@ class GrandS2:AbstractMode() {
 	/* Initialization */
 	override val menu = MenuList("speedmania2", itemLevel, itemQualify, itemAlert, itemST, itemBig)
 
-	override val rankMap
+	override val propRank
 		get() = rankMapOf(
 			"grade" to rankingGrade, "level" to rankingLevel, "time" to rankingTime, "rollClear" to rankingRollClear,
 			"section.time" to bestSectionTime
@@ -928,15 +928,11 @@ class GrandS2:AbstractMode() {
 			listOf("1", "S1", "S2", "S3", "S4", "S5", "S6", "S7", "S8", "S9", "S10", "S11", "S12", "S13")
 
 		/** 裏段位のName */
-
 		private val tableSecretGradeName =
 			listOf("S1", "S2", "S3", "S4", "S5", "S6", "S7", "S8", "S9", "M1", "M2", "M3", "M4", "M5", "M6", "M7", "M8", "M9", "GM")
 
 		/** LV999 roll time */
 		private const val ROLLTIMELIMIT = 3238
-
-		/** Number of entries in rankings */
-		private const val RANKING_MAX = 13
 
 		/** Number of sections */
 		private const val SECTION_MAX = 13

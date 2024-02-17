@@ -55,8 +55,6 @@ import zeroxfc.nullpo.custom.libs.ProfileProperties
 
 class RollTraining:MarathonModeBase() {
 	companion object {
-		/** Number of entries in rankings*/
-		const val RANKING_MAX = 13
 		/** Number of ranking types*/
 		const val RANKING_TYPE = 8
 		/** Number of game types*/
@@ -133,12 +131,12 @@ class RollTraining:MarathonModeBase() {
 	override val name:String = "ROLL TRAINING"
 	override val menu = MenuList("rolltraining", itemMode, itemHide, itemGoal, itemLevel)
 	//     * Initialization
-	override val rankMap
+	override val propRank
 		get() = rankMapOf(rankingGrade.mapIndexed {a, x -> "$a.grade" to x}+
 			rankingLines.mapIndexed {a, x -> "$a.lines" to x}+
 			rankingTime.mapIndexed {a, x -> "$a.time" to x})
 
-	override val rankPersMap
+	override val propPB
 		get() = rankMapOf(rankingGradePlayer.mapIndexed {a, x -> "$a.grade" to x}+
 			rankingLinesPlayer.mapIndexed {a, x -> "$a.lines" to x}+
 			rankingTimePlayer.mapIndexed {a, x -> "$a.time" to x})

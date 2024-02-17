@@ -75,7 +75,7 @@ class ScoreAttackRun:AbstractMode() {
 	private var maxchain = 0
 	private var maxmult:Int = 0
 	private var scgettime = 0
-	override val rankMap
+	override val propRank
 		get() = rankMapOf(rankingScore.mapIndexed {a, x -> "$a.score" to x}+
 			rankingLevel.mapIndexed {a, x -> "$a.level" to x}+
 			rankingQuads.mapIndexed {a, x -> "$a.quads" to x})

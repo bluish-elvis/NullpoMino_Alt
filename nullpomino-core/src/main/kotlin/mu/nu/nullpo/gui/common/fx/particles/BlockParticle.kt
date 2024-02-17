@@ -84,7 +84,7 @@ class BlockParticle(block:Block?, x:Float, y:Float, velocity:Vector, accelerate:
 	}
 	/**
 	 * Creates a new collection of particles.
-	 * [type] : Type.DTET | Type.TGM
+	 * @param type Type.DTET | Type.TGM
 	 */
 	class Mapper(engine:GameEngine, receiver:EventReceiver, blocks:Map<Int, Map<Int, Block>>, type:Type,
 		isFlashing:Boolean, maxVelocity:Float = 4f, rand:Random = Random.Default) {

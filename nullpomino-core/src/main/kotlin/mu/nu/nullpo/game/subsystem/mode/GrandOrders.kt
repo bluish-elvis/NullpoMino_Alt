@@ -130,7 +130,7 @@ class GrandOrders:NetDummyMode() {
 			Mission.XTREME, Mission.HELL, Mission.Dark, Mission.VOID -> 3
 			else -> 0
 		}*/
-	override val rankMap
+	override val propRank
 		get() = rankMapOf(
 			rankingLines.mapIndexed {a, x -> "$a.lines" to x}+
 				rankingLives.mapIndexed {a, x -> "$a.lives" to x}+
@@ -1183,8 +1183,6 @@ class GrandOrders:NetDummyMode() {
 		/** Ending time limit */
 		private const val ROLLTIMELIMIT = 3238
 
-		/** Number of ranking records */
-		private const val RANKING_MAX = 13
 	}
 }
 

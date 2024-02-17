@@ -65,6 +65,7 @@ interface ResourceImage<T:Any?> {
 	val width:Int
 	val height:Int
 
+	val aspectRatio get()= width.toFloat()/height.toFloat()
 	class ResourceImageStr(override val name:String):ResourceImage<String> {
 		override var res:String = "graphics/$name.png"
 		override fun draw(x:Float, y:Float, x2:Float, y2:Float, srcX:Float, srcY:Float, srcX2:Float, srcY2:Float, alpha:Float, color:Triple<Float, Float, Float>) {

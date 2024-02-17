@@ -30,10 +30,14 @@
  */
 package mu.nu.nullpo.game.subsystem.mode
 
+import kotlinx.serialization.serializer
 import mu.nu.nullpo.game.component.BGMStatus.BGM
 import mu.nu.nullpo.game.component.Block
 import mu.nu.nullpo.game.component.Controller
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
+import mu.nu.nullpo.game.event.Leaderboard
+import mu.nu.nullpo.game.event.Rankable
+import mu.nu.nullpo.game.event.Rankable.GrandRow.Medals
 import mu.nu.nullpo.game.event.ScoreEvent
 import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.game.subsystem.mode.menu.BooleanMenuItem
@@ -97,7 +101,7 @@ class GrandM1:AbstractMode() {
 	private val sectionIsNewRecord = MutableList(SECTION_MAX) {false}
 
 	/** どこかのSection で新記録を出すとtrue */
-	private val sectionAnyNewRecord:Boolean get() = sectionIsNewRecord.any {true}
+	private val sectionAnyNewRecord get() = sectionIsNewRecord.any {true}
 
 	/** Cleared Section count */
 	private var sectionsDone = 0
@@ -139,6 +143,7 @@ class GrandM1:AbstractMode() {
 	/** Current round's ranking position */
 	private var rankingRank = 0
 
+	override val ranking = Leaderboard(RANKING_MAX, serializer<List<Rankable.GrandRow>>())
 	/** Rankings' 段位 */
 	private val rankingGrade = MutableList(RANKING_MAX) {0}
 
@@ -148,7 +153,16 @@ class GrandM1:AbstractMode() {
 	/** Rankings' times */
 	private val rankingTime = MutableList(RANKING_MAX) {-1}
 
-	private var medalAC = 0
+	/** medal 状態 */
+	private val medals = Medals(MutableList(3) {0}, 0, 0, 0, 0, 0)
+	private var medalAC get() = medals.AC; set(v) {;medals.AC = v}
+	private var medalsST get() = medals.ST; set(v) {;medals.ST = v}
+	private val medalST get() = medalsST.indexOfFirst {it>0}.let {;if(it>=0) medalsST.size-it else 0;}
+	private var medalSK get() = medals.SK; set(v) {;medals.SK = v}
+	private var medalRE get() = medals.RE; set(v) {;medals.RE = v}
+	/*private var medalRO get() = medals.RO; set(v) {;medals.RO = v}
+	private var medalCO get() = medals.CO; set(v) {;medals.CO = v}*/
+
 	private var decoration = 0
 	private var decTemp = 0
 
@@ -158,7 +172,7 @@ class GrandM1:AbstractMode() {
 
 	/* Initialization */
 	override val menu = MenuList("grademania1", itemGhost, itemAlert, itemST, itemLevel, item20g, itemBig)
-	override val rankMap
+	override val propRank
 		get() = rankMapOf(
 			"grade" to rankingGrade, "level" to rankingLevel, "time" to rankingTime, "section.time" to bestSectionTime
 		)
@@ -261,13 +275,33 @@ class GrandM1:AbstractMode() {
 		}
 	}
 
-	/** Section Time更新処理
+	/** ST medal check
+	 * @param engine GameEngine
 	 * @param section Section number
 	 */
-	private fun stNewRecordCheck(section:Int) {
-		if(!owner.replayMode&&
-			(sectionTime[section]<bestSectionTime[section]||bestSectionTime[section]<0))
-			sectionIsNewRecord[section] = true
+	private fun stMedalCheck(engine:GameEngine, section:Int, sectionLastTime:Int = sectionTime[section]) {
+		val best = bestSectionTime[section]
+
+		if(sectionLastTime<best||best<=0) {
+			engine.playSE("medal3")
+			if(medalST<1) decTemp += 3
+			if(medalST<2) decTemp += 6
+			decTemp += 6
+			medalsST[0]++
+			if(!owner.replayMode) {
+				decTemp++
+				sectionIsNewRecord[section] = true
+			}
+		} else if(sectionLastTime<best+300) {
+			engine.playSE("medal2")
+			if(medalST<1) decTemp += 3
+			medalsST[1]++
+			decTemp += 6
+		} else if(sectionLastTime<best+600) {
+			engine.playSE("medal1")
+			medalsST[2]++
+			decTemp += 3
+		}
 	}
 
 	/* Called at settings screen */
@@ -337,23 +371,25 @@ class GrandM1:AbstractMode() {
 					// Rankings
 					receiver.drawScoreFont(engine, 0, 2, "GRADE TIME LEVEL", COLOR.BLUE)
 
-					for(i in 0..<RANKING_MAX) {
+					ranking.forEachIndexed {i, it ->
 						receiver.drawScoreGrade(
 							engine, 0, 3+i, "%2d".format(i+1), if(rankingRank==i) COLOR.RAINBOW else COLOR.YELLOW
 						)
 						var gc = if(i==rankingRank)
 							if(engine.playerID%2==0) COLOR.YELLOW else COLOR.ORANGE
 						else COLOR.WHITE
-						if(rankingGrade[i]>=18) {
+						val gr = it.grade
+
+						if(gr>=18) {
 							var gmP = 0
 							for(l in 1..<tablePier21GradeTime.size)
 								if(rankingTime[i]<tablePier21GradeTime[l]) gmP = l
 							gc = tablePier21GradeColor[gmP]
 						}
-						if(rankingGrade[i]>=0&&rankingGrade[i]<tableGradeName.size)
-							receiver.drawScoreGrade(engine, 2, 3+i, tableGradeName[rankingGrade[i]], gc)
-						receiver.drawScoreNum(engine, 5, 3+i, rankingTime[i].toTimeStr, i==rankingRank)
-						receiver.drawScoreNum(engine, 12, 3+i, "%03d".format(rankingLevel[i]), i==rankingRank)
+						if(gr>=0&&gr<tableGradeName.size)
+							receiver.drawScoreGrade(engine, 2, 3+i, tableGradeName[gr], gc)
+						receiver.drawScoreNum(engine, 5, 3+i, it.time.toTimeStr, i==rankingRank)
+						receiver.drawScoreNum(engine, 12, 3+i, "%03d".format(it.level), i==rankingRank)
 					}
 
 					receiver.drawScoreFont(engine, 0, 17, "F:VIEW SECTION TIME", COLOR.GREEN)
@@ -560,7 +596,7 @@ class GrandM1:AbstractMode() {
 				lastGradeTime = engine.statistics.time
 
 				sectionsDone++
-				stNewRecordCheck(sectionsDone-1)
+				stMedalCheck(engine,sectionsDone-1)
 
 				if(engine.statistics.time<=GM_999_TIME_REQUIRE&&engine.statistics.score>=tableGradeScore[17]
 					&&gm300&&gm500
@@ -597,7 +633,7 @@ class GrandM1:AbstractMode() {
 				engine.playSE("levelup")
 
 				sectionsDone++
-				stNewRecordCheck(sectionsDone-1)
+				stMedalCheck(engine,sectionsDone-1)
 
 				if(bgmLv==0&&nextSecLv==500) {
 					bgmLv++
@@ -740,7 +776,7 @@ class GrandM1:AbstractMode() {
 			2 -> BGM.Result(3)
 			else -> BGM.Result(2)
 		}
-
+		engine.statistics.time = lastGradeTime
 		// ページ切り替え
 		if(engine.ctrl.isMenuRepeatKey(Controller.BUTTON_UP)) {
 			engine.statc[1]--
@@ -771,6 +807,8 @@ class GrandM1:AbstractMode() {
 		// Update rankings
 		if(!owner.replayMode&&startLevel==0&&!always20g&&!big&&engine.ai==null) {
 			updateRanking(grade, engine.statistics.level, lastGradeTime)
+			rankingRank =
+				ranking.add(Rankable.GrandRow(grade, engine.statistics.apply {time = lastGradeTime}, engine.ending, medals.copy()))
 			if(sectionAnyNewRecord) updateBestSectionTime()
 
 			if(rankingRank!=-1||sectionAnyNewRecord) return true
@@ -895,8 +933,6 @@ class GrandM1:AbstractMode() {
 			COLOR.GREEN
 		)
 		/** LV999 roll time */
-		/** Number of entries in rankings */
-		private const val RANKING_MAX = 13
 
 		/** Number of sections */
 		private const val SECTION_MAX = 10
