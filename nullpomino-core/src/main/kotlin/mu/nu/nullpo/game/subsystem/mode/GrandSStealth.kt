@@ -42,11 +42,7 @@ import mu.nu.nullpo.util.CustomProperties
 import mu.nu.nullpo.util.GeneralUtil.toTimeStr
 
 /** PHANTOM MANIA mode (Original from NullpoUE build 121909 by Zircean) */
-class GrandSStealth:AbstractMode() {
-	/** Next section level */
-	private var nextSecLv = 0
-	/** Level up flag (Set to true when the level increases) */
-	private var lvupFlag = false
+class GrandSStealth:AbstractGrand() {
 
 	/** Current grade */
 	private var grade = 0
@@ -68,40 +64,10 @@ class GrandSStealth:AbstractMode() {
 	/** Current BGM */
 	private var bgmLv = 0
 
-	/** Section Time */
-	private val sectionTime = MutableList(SECTION_MAX) {0}
-	/** This will be true if the player achieves
-	 * new section time record in specific section */
-	private val sectionIsNewRecord = MutableList(SECTION_MAX) {false}
-	/** Amount of sections completed */
-	private var sectionsDone = 0
-	/** Average section time */
-	private val sectionAvgTime
-		get() = sectionTime.filter {it>0}.average().toFloat()
-	/** Current section time */
-	private var sectionLastTime = 0
 	/** Number of 4-Line clears in current section */
 	private var sectionQuads = 0
 	/** Set to true by default, set to false when sectionQuads is below 2 */
 	private var gmQuads = false
-
-	/** AC medal (0:None, 1:Bronze, 2:Silver, 3:Gold) */
-	private var medalAC = 0
-	/** ST medal */
-	private var medalST = 0
-	/** SK medal */
-	private var medalSK = 0
-	/** RE medal */
-	private var medalRE = 0
-	/** RO medal */
-	private var medalRO = 0
-	/** CO medal */
-	private var medalCO = 0
-
-	/** Used by RE medal */
-	private var recoveryFlag = false
-	/** Total spins */
-	private var spinCount = 0
 
 	/** false:Leaderboard, true:Section time record
 	 * (Push F in settings screen to flip it) */
@@ -149,8 +115,6 @@ class GrandSStealth:AbstractMode() {
 	 * the main game screen. */
 	override fun playerInit(engine:GameEngine) {
 		super.playerInit(engine)
-		nextSecLv = 0
-		lvupFlag = true
 		grade = 0
 		gradeFlash = 0
 		comboValue = 0
@@ -159,19 +123,9 @@ class GrandSStealth:AbstractMode() {
 		rollClear = 0
 		rollStarted = false
 		bgmLv = 0
-		sectionTime.fill(0)
-		sectionIsNewRecord.fill(false)
-		sectionLastTime = 0
 		sectionQuads = 0
 		gmQuads = true
-		medalAC = 0
-		medalST = 0
-		medalSK = 0
-		medalRE = 0
-		medalRO = 0
-		medalCO = 0
-		recoveryFlag = false
-		spinCount = 0
+		medals.reset()
 		isShowBestSectionTime = false
 		startLevel = 0
 		secAlert = false
@@ -277,32 +231,8 @@ class GrandSStealth:AbstractMode() {
 	 * @param engine GameEngine
 	 * @param section Section Number
 	 */
-	private fun stMedalCheck(engine:GameEngine, section:Int) {
-		val best = bestSectionTime[section]
-
-		if(sectionLastTime<best||best<=0) {
-			if(medalST<3) {
-				engine.playSE("medal3")
-				medalST = 3
-			}
-			if(!owner.replayMode) sectionIsNewRecord[section] = true
-		} else if(sectionLastTime<best+300&&medalST<2) {
-			engine.playSE("medal2")
-			medalST = 2
-		} else if(sectionLastTime<best+600&&medalST<1) {
-			engine.playSE("medal1")
-			medalST = 1
-		}
-	}
-
-	/** Checks RO medal */
-	private fun roMedalCheck(engine:GameEngine) {
-		val spinAverage = spinCount.toFloat()/engine.statistics.totalPieceLocked.toFloat()
-
-		if(spinAverage>=1.2f&&medalRO<3) {
-			engine.playSE("medal${++medalRO}")
-		}
-	}
+	private fun stMedalCheck(engine:GameEngine, section:Int) =
+		stMedalCheck(engine, section, sectionTime[section], bestSectionTime[section])
 
 	/** Main routine for game setup screen */
 	override fun onSetting(engine:GameEngine):Boolean {
@@ -364,10 +294,7 @@ class GrandSStealth:AbstractMode() {
 	 * Ready&Go screen disappears) */
 	override fun startGame(engine:GameEngine) {
 		engine.statistics.level = startLevel*100
-
-		nextSecLv = engine.statistics.level+100
-		if(engine.statistics.level<0) nextSecLv = 100
-		if(engine.statistics.level>=900) nextSecLv = 999
+		nextSecLv = maxOf(100, minOf(startLevel*100+100, 999))
 
 		owner.bgMan.bg = engine.statistics.level/100
 
@@ -588,6 +515,7 @@ class GrandSStealth:AbstractMode() {
 			}
 
 			val levelb = engine.statistics.level
+			val section = levelb/100
 			engine.statistics.level += li
 			levelUp(engine)
 
@@ -600,11 +528,8 @@ class GrandSStealth:AbstractMode() {
 				engine.ending = 2
 				rollClear = 1
 
-				sectionLastTime = sectionTime[levelb/100]
-
 				stMedalCheck(engine, levelb/100)
-
-				roMedalCheck(engine)
+				roMedalCheck(engine, 999)
 
 				if(engine.statistics.totalQuadruple>=31&&gmQuads&&sectionQuads>=1) {
 					grade = 6
@@ -612,7 +537,6 @@ class GrandSStealth:AbstractMode() {
 				}
 			} else if(nextSecLv==300&&engine.statistics.level>=300&&engine.statistics.time>LV300TORIKAN) {
 				if(engine.timerActive) sectionsDone++
-
 
 				engine.playSE("endingstart")
 				engine.statistics.level = 300
@@ -625,9 +549,7 @@ class GrandSStealth:AbstractMode() {
 					owner.musMan.bgm = tableBGM[bgmLv]
 				}
 
-				sectionLastTime = sectionTime[levelb/100]
-
-				stMedalCheck(engine, levelb/100)
+				stMedalCheck(engine, section)
 			} else if(nextSecLv==500&&engine.statistics.level>=500&&engine.statistics.time>LV500TORIKAN) {
 				if(engine.timerActive) sectionsDone++
 
@@ -643,9 +565,7 @@ class GrandSStealth:AbstractMode() {
 					owner.musMan.bgm = tableBGM[bgmLv]
 				}
 
-				sectionLastTime = sectionTime[levelb/100]
-
-				stMedalCheck(engine, levelb/100)
+				stMedalCheck(engine, section)
 			} else if(nextSecLv==800&&engine.statistics.level>=800&&engine.statistics.time>LV800TORIKAN) {
 				if(engine.timerActive) sectionsDone++
 
@@ -661,9 +581,7 @@ class GrandSStealth:AbstractMode() {
 					owner.musMan.bgm = tableBGM[bgmLv]
 				}
 
-				sectionLastTime = sectionTime[levelb/100]
-
-				stMedalCheck(engine, levelb/100)
+				stMedalCheck(engine, section)
 			} else if(engine.statistics.level>=nextSecLv) {
 				owner.bgMan.nextBg = nextSecLv/100
 
@@ -677,15 +595,12 @@ class GrandSStealth:AbstractMode() {
 
 				sectionsDone++
 
-				sectionLastTime = sectionTime[levelb/100]
 
 				if(sectionQuads<2) gmQuads = false
-
 				sectionQuads = 0
+				stMedalCheck(engine, section)
 
-				stMedalCheck(engine, levelb/100)
-
-				if(nextSecLv==300||nextSecLv==700) roMedalCheck(engine)
+				if(nextSecLv==300||nextSecLv==700) roMedalCheck(engine, nextSecLv)
 
 				if(startLevel==0)
 					for(i in 0..<tableGradeLevel.size-1)
@@ -697,6 +612,7 @@ class GrandSStealth:AbstractMode() {
 				nextSecLv += 100
 				if(nextSecLv>999) nextSecLv = 999
 			} else if(engine.statistics.level==nextSecLv-1&&secAlert) engine.playSE("levelstop")
+
 
 			lastScore = ((((levelb+li)/4+engine.softdropFall+if(engine.manualLock) 1 else 0)*li*comboValue
 				*if(engine.field.isEmpty) 4 else 1)
@@ -923,9 +839,6 @@ class GrandSStealth:AbstractMode() {
 
 		/** Level 800 time limit */
 		private const val LV800TORIKAN = 19380
-
-		/** Number of sections */
-		private const val SECTION_MAX = 10
 
 		/** Default section time */
 		private const val DEFAULT_SECTION_TIME = 3600

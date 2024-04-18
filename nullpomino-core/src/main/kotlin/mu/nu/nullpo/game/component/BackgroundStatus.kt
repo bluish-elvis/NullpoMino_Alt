@@ -34,7 +34,7 @@ package mu.nu.nullpo.game.component
 class BackgroundStatus() {
 	/** Background number */
 	var bg = 0
-//TODO bg:BG_RenderClass
+//TODO bg:AbstractBG
 
 	var fadeEnabled = false
 	/** Background fade flag */

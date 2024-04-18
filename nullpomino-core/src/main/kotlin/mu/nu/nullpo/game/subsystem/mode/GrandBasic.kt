@@ -257,7 +257,7 @@ class GrandBasic:AbstractMode() {
 		if(startLevel>2) startLevel = 0
 		owner.bgMan.bg = -1-startLevel
 		engine.statistics.level = startLevel*100
-		nextSecLv = engine.statistics.level+100
+		nextSecLv = startLevel*100+100
 		setSpeed(engine)
 		super.onSettingChanged(engine)
 	}
@@ -275,9 +275,9 @@ class GrandBasic:AbstractMode() {
 	override fun startGame(engine:GameEngine) {
 		engine.statistics.level = startLevel*100
 
-		nextSecLv = minOf(maxOf(100, engine.statistics.level+100), 999)
+		nextSecLv = minOf(maxOf(100, startLevel*100+100), 999)
 
-		owner.bgMan.bg = engine.statistics.level/-100-1
+		owner.bgMan.bg = -engine.statistics.level/100-1
 
 		engine.big = big
 
@@ -366,8 +366,7 @@ class GrandBasic:AbstractMode() {
 
 			// Section time
 			if(showST&&sectionTime.isNotEmpty()) {
-				val x = if(receiver.nextDisplayType==2) 8 else 12
-				val x2 = if(receiver.nextDisplayType==2) 9 else 12
+				val (x,x2) = if(receiver.nextDisplayType==2) 8 to 9 else 12 to 12
 
 				receiver.drawScoreFont(engine, x-1, 2, "SECTION SCORE", COLOR.BLUE)
 
@@ -377,9 +376,7 @@ class GrandBasic:AbstractMode() {
 						if(temp>=300) {
 							temp = 300
 							receiver.drawScoreFont(engine, x-1, 4+i, "BONUS", COLOR.BLUE)
-							receiver.drawScoreNum(
-								engine, x, 5+i, "%4d %d".format(sectionHanabi[i+1], sectionScore[i+1])
-							)
+							receiver.drawScoreNum(engine, x, 5+i, "%4d %d".format(sectionHanabi[i+1], sectionScore[i+1]))
 						}
 
 						val strSection = "%3d%s%4d %d".format(temp, if(i==sectionsDone) "+" else "-", sectionHanabi[i], sectionScore[i])
@@ -389,8 +386,7 @@ class GrandBasic:AbstractMode() {
 
 				receiver.drawScoreFont(engine, x2, 14, "AVERAGE", COLOR.BLUE)
 				receiver.drawScoreNum(
-					engine, x2, 15, (engine.statistics.time/(sectionsDone+if(engine.ending==0) 1 else 0)).toTimeStr,
-					2f
+					engine, x2, 15, (engine.statistics.time/(sectionsDone+if(engine.ending==0) 1 else 0)).toTimeStr, 2f
 				)
 			}
 		}
@@ -398,7 +394,7 @@ class GrandBasic:AbstractMode() {
 
 	/** This function will be called when the piece is active */
 	override fun onMove(engine:GameEngine):Boolean {
-		if(lastSpawnTime<120) lastSpawnTime++
+		if(lastSpawnTime<engine.statistics.level) lastSpawnTime++
 		if(engine.statc[0]==0&&!engine.holdDisable) {
 			lastSpawnTime = 0
 			if(engine.ending==0&&!lvupFlag) {
@@ -413,6 +409,7 @@ class GrandBasic:AbstractMode() {
 
 	/** This function will be called during ARE */
 	override fun onARE(engine:GameEngine):Boolean {
+		lastSpawnTime = 0
 		if(engine.ending==0&&engine.statc[0]>=engine.statc[1]-1&&!lvupFlag) {
 			if(engine.statistics.level<299) engine.statistics.level++
 			levelUp(engine)
@@ -451,10 +448,7 @@ class GrandBasic:AbstractMode() {
 		if(li>=1) {
 			halfMinLine += li
 			val levelb = engine.statistics.level
-			var indexcombo = ev.combo+if(ev.b2b>0) 0 else -1
-			if(indexcombo<0) indexcombo = 0
-			if(indexcombo>tableHanabiComboBonus.size-1) indexcombo = tableHanabiComboBonus.size-1
-			val combobonus = tableHanabiComboBonus[indexcombo]
+			val combobonus = tableHanabiComboBonus[maxOf(0, minOf(ev.combo+if(ev.b2b>0) 0 else -1, tableHanabiComboBonus.size-1))]
 
 			if(engine.ending==0) {
 				engine.statistics.level += li
@@ -476,14 +470,14 @@ class GrandBasic:AbstractMode() {
 					engine.ending = 2
 					halfMinBonus = true
 					halfMinLine = 0
-				} else if(owner.bgMan.bg<(nextSecLv-100)/100) {
-					owner.bgMan.nextBg = (nextSecLv-100)/100
+				}
+				(-(nextSecLv-100)/100).let {
+					if(owner.bgMan.bg!=it) owner.bgMan.nextBg = it
 				}
 			}
 			lastScore = 6*
 				((((levelb+li)/(if(ev.b2b>0) 3 else 4)+engine.softdropFall+(if(engine.manualLock) 1 else 0)+harddropBonus)
-					*li
-					*comboValue*if(engine.field.isEmpty) 4 else 1)
+					*li*comboValue*if(engine.field.isEmpty) 4 else 1)
 					+engine.statistics.level/(if(ev.twist) 2 else 3)+maxOf(0, engine.lockDelay-engine.lockDelayNow)*7)
 			// AC medal
 			if(engine.field.isEmpty) {
@@ -498,8 +492,8 @@ class GrandBasic:AbstractMode() {
 						3 -> 3.8f
 						else -> if(li>=4) 4.7f else 1f
 					}*combobonus*(if(ev.twistMini) 2 else if(ev.twist) 4 else 1)*(if(ev.split) 1.4f else 1f)
-						*(if(intHanabi>-100) 1.3f else 1f)*(maxOf(engine.statistics.level-lastSpawnTime, 100)/100f)
-						*(maxOf(engine.statistics.level-lastSpawnTime, 120)/120f)
+						*(if(intHanabi>-100) 1.3f else 1f)*(maxOf(engine.statistics.level/2, 100)/100f)
+						*(maxOf(engine.statistics.level/2+70, 120)/120f)
 						*(if(halfMinBonus) 1.4f else 1f)*(if(engine.ending==0&&(levelb%25==0||levelb==299)) 1.3f else 1f)
 					).toInt()
 			)

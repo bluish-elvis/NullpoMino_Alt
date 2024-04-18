@@ -47,15 +47,9 @@ import mu.nu.nullpo.util.GeneralUtil.toInt
 import mu.nu.nullpo.util.GeneralUtil.toTimeStr
 
 /** SPEED MANIA 2 Mode */
-class GrandS2:AbstractMode() {
-	/** Default section time */
-	// private static final int DEFAULT_SECTION_TIME = 2520;
-
-	/** Next Section の level (これ-1のときに levelストップする) */
-	private var nextSecLv = 0
-
-	/** Levelが増えた flag */
-	private var lvupFlag = false
+class GrandS2:AbstractGrand() {
+	/** Number of sections */
+	override val SECTION_MAX = 13
 
 	/** 最終結果などに表示される実際の段位 */
 	private var grade = 0
@@ -75,7 +69,7 @@ class GrandS2:AbstractMode() {
 	/** Roll completely cleared flag */
 	private var rollClear = 0
 
-	/** せり上がりまでのBlockcount */
+	/** せり上がりまでのBlock count */
 	private var garbageCount = 0
 
 	/** REGRET display time frame count */
@@ -83,34 +77,6 @@ class GrandS2:AbstractMode() {
 
 	/** 裏段位 */
 	private var secretGrade = 0
-
-	/** Section Time */
-	private val sectionTime = MutableList(SECTION_MAX) {0}
-
-	/** 新記録が出たSection はtrue */
-	private val sectionIsNewRecord = MutableList(SECTION_MAX) {false}
-
-	/** Cleared Section count */
-	private var sectionsDone = 0
-
-	/** Average Section Time */
-	private val sectionAvgTime
-		get() = sectionTime.filter {it>0}.average().toFloat()
-
-	/** 直前のSection Time */
-	private var sectionLastTime = 0
-
-	/** AC medal 状態 */
-	private var medalAC = 0
-
-	/** ST medal 状態 */
-	private var medalST = 0
-
-	/** SK medal 状態 */
-	private var medalSK = 0
-
-	/** CO medal 状態 */
-	private var medalCO = 0
 
 	/** Section Time記録表示中ならtrue */
 	private var isShowBestSectionTime = false
@@ -160,9 +126,6 @@ class GrandS2:AbstractMode() {
 	/** Section Time記録 */
 	private val bestSectionTime = MutableList(SECTION_MAX) {tableTimeRegret[minOf(it, tableTimeRegret.lastIndex)]}
 
-	private var decoration = 0
-	private var decTemp = 0
-
 	/* Mode name */
 	override val name = "Grand Lightning"
 	override val gameIntensity = 3
@@ -177,8 +140,6 @@ class GrandS2:AbstractMode() {
 
 	override fun playerInit(engine:GameEngine) {
 		super.playerInit(engine)
-		nextSecLv = 0
-		lvupFlag = true
 		grade = 0
 		gradeFlash = 0
 		comboValue = 0
@@ -189,14 +150,6 @@ class GrandS2:AbstractMode() {
 		garbageCount = 0
 		regretDispFrame = 0
 		secretGrade = 0
-		sectionTime.fill(0)
-		sectionIsNewRecord.fill(false)
-		sectionsDone = 0
-		sectionLastTime = 0
-		medalAC = 0
-		medalST = 0
-		medalSK = 0
-		medalCO = 0
 
 		rankingRank = -1
 		rankingGrade.fill(0)
@@ -232,27 +185,6 @@ class GrandS2:AbstractMode() {
 		owner.bgMan.bg = 20+startLevel
 	}
 
-	/*
-	override fun loadSetting(prop:CustomProperties, ruleName:String, playerID:Int) {
-		startLevel = prop.getProperty("speedmania2.startLevel", 0)
-		secAlert = prop.getProperty("speedmania2.lvstopse", true)
-		showST = prop.getProperty("speedmania2.showsectiontime", true)
-		big = prop.getProperty("speedmania2.big", false)
-		gradedisp = prop.getProperty("speedmania2.gradedisp", false)
-	}
-
-	override fun saveSetting(prop:CustomProperties, ruleName:String, playerID:Int) {
-		prop.setProperty("speedmania2.startLevel", startLevel)
-		prop.setProperty("speedmania2.lvstopse", secAlert)
-		prop.setProperty("speedmania2.showsectiontime", showST)
-		prop.setProperty("speedmania2.big", big)
-		prop.setProperty("speedmania2.gradedisp", gradedisp)
-	}
-	private fun saveSetting(prop:CustomProperties, strRuleName:String) {
-		saveSetting(prop)
-		prop.setProperty("speedmania2.torikan.$strRuleName", qualify)
-	}*/
-
 	/** Set BGM at start of game
 	 */
 	private fun calcBgmLv(lv:Int) = tableBGMChange.count {lv>=it}
@@ -275,32 +207,8 @@ class GrandS2:AbstractMode() {
 	 * @param engine GameEngine
 	 * @param section Section number
 	 */
-	private fun stMedalCheck(engine:GameEngine, section:Int) {
-		val best = bestSectionTime[section]
-
-		if(sectionLastTime<best||best<=0) {
-			if(medalST<3) {
-				engine.playSE("medal3")
-				if(medalST<1) decTemp += 3
-				if(medalST<2) decTemp += 6
-				medalST = 3
-				decTemp += 6
-			}
-			if(!owner.replayMode) {
-				decTemp++
-				sectionIsNewRecord[section] = true
-			}
-		} else if(sectionLastTime<best+300&&medalST<2) {
-			engine.playSE("medal2")
-			if(medalST<1) decTemp += 3
-			medalST = 2
-			decTemp += 6
-		} else if(sectionLastTime<best+600&&medalST<1) {
-			engine.playSE("medal1")
-			medalST = 1
-			decTemp += 3// 12
-		}
-	}
+	private fun stMedalCheck(engine:GameEngine, section:Int) =
+		stMedalCheck(engine, section, sectionTime[section], bestSectionTime[section])
 
 	/* Called at settings screen */
 	override fun onSetting(engine:GameEngine):Boolean {
@@ -583,6 +491,8 @@ class GrandS2:AbstractMode() {
 
 			// Level up
 			val levelb = engine.statistics.level
+			val section = levelb/100
+			val isRegret = sectionTime[section]>tableTimeRegret[section]
 			levelUp(engine, li.let {it+maxOf(0, it-2)})
 
 			if(engine.statistics.level>=1300) {
@@ -593,14 +503,12 @@ class GrandS2:AbstractMode() {
 				engine.ending = 1
 				rollClear = 1
 
-				// Section Timeを記録
-				sectionLastTime = sectionTime[levelb/100]
 				sectionsDone++
 				decTemp++
 				// ST medal
-				stMedalCheck(engine, levelb/100)
+				stMedalCheck(engine, section)
 
-				if(sectionLastTime>tableTimeRegret[levelb/100]) {
+				if(isRegret) {
 					// REGRET判定
 					regretDispFrame = 180
 					engine.playSE("regret")
@@ -623,14 +531,11 @@ class GrandS2:AbstractMode() {
 
 				secretGrade = engine.field.secretGrade
 
-				// Section Timeを記録
-				sectionLastTime = sectionTime[levelb/100]
 				sectionsDone++
-
 				// ST medal
-				stMedalCheck(engine, levelb/100)
+				stMedalCheck(engine, section)
 
-				if(sectionLastTime>tableTimeRegret[levelb/100]) {
+				if(isRegret) {
 					// REGRET判定
 					regretDispFrame = 180
 					engine.playSE("regret")
@@ -647,12 +552,9 @@ class GrandS2:AbstractMode() {
 				// Background切り替え
 				owner.bgMan.nextBg = 20+nextSecLv/100
 
-				// Section Timeを記録
-				sectionLastTime = sectionTime[levelb/100]
 				sectionsDone++
-
 				// ST medal
-				stMedalCheck(engine, levelb/100)
+				stMedalCheck(engine, section)
 
 				// 骨Block出現開始
 				if(engine.statistics.level>=1000) engine.bone = true
@@ -660,7 +562,7 @@ class GrandS2:AbstractMode() {
 				// Update level for next section
 				nextSecLv += 100
 
-				if(sectionLastTime>tableTimeRegret[levelb/100]) {
+				if(isRegret) {
 					// REGRET判定
 					regretDispFrame = 180
 					engine.playSE("regret")
@@ -933,8 +835,5 @@ class GrandS2:AbstractMode() {
 
 		/** LV999 roll time */
 		private const val ROLLTIMELIMIT = 3238
-
-		/** Number of sections */
-		private const val SECTION_MAX = 13
 	}
 }

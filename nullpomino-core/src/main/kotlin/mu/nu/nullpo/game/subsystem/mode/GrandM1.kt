@@ -37,7 +37,6 @@ import mu.nu.nullpo.game.component.Controller
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
 import mu.nu.nullpo.game.event.Leaderboard
 import mu.nu.nullpo.game.event.Rankable
-import mu.nu.nullpo.game.event.Rankable.GrandRow.Medals
 import mu.nu.nullpo.game.event.ScoreEvent
 import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.game.subsystem.mode.menu.BooleanMenuItem
@@ -54,13 +53,7 @@ import kotlin.math.floor
 import kotlin.math.ln
 
 /** GRAND MANIA Mode */
-class GrandM1:AbstractMode() {
-	/** Next Section の level (これ-1のときに levelストップする) */
-	private var nextSecLv = 0
-
-	/** Levelが増えた flag */
-	private var lvupFlag = false
-
+class GrandM1:AbstractGrand() {
 	/** 段位 */
 	private var grade = 0
 	private var gmPier = 0
@@ -89,26 +82,15 @@ class GrandM1:AbstractMode() {
 	/** 段位表示を光らせる残り frame count */
 	private var gradeFlash = 0
 
-	/** Section Time */
-	private val sectionTime = MutableList(SECTION_MAX) {0}
+	/** Section Score */
 	private val sectionScore = MutableList(SECTION_MAX) {0}
 
 	/** Section Time記録 */
 	private val bestSectionTime = MutableList(SECTION_MAX) {DEFAULT_SECTION_TIME}
 	private val bestSectionScore = MutableList(SECTION_MAX) {0}
 
-	/** 新記録が出たSection はtrue */
-	private val sectionIsNewRecord = MutableList(SECTION_MAX) {false}
-
 	/** どこかのSection で新記録を出すとtrue */
 	private val sectionAnyNewRecord get() = sectionIsNewRecord.any {true}
-
-	/** Cleared Section count */
-	private var sectionsDone = 0
-
-	/** Average Section Time */
-	private val sectionAvgTime
-		get() = sectionTime.filter {it>0}.average().toFloat()
 
 	/** Section Time記録表示中ならtrue */
 	private var isShowBestSectionTime = false
@@ -153,19 +135,6 @@ class GrandM1:AbstractMode() {
 	/** Rankings' times */
 	private val rankingTime = MutableList(RANKING_MAX) {-1}
 
-	/** medal 状態 */
-	private val medals = Medals(MutableList(3) {0}, 0, 0, 0, 0, 0)
-	private var medalAC get() = medals.AC; set(v) {;medals.AC = v}
-	private var medalsST get() = medals.ST; set(v) {;medals.ST = v}
-	private val medalST get() = medalsST.indexOfFirst {it>0}.let {;if(it>=0) medalsST.size-it else 0;}
-	private var medalSK get() = medals.SK; set(v) {;medals.SK = v}
-	private var medalRE get() = medals.RE; set(v) {;medals.RE = v}
-	/*private var medalRO get() = medals.RO; set(v) {;medals.RO = v}
-	private var medalCO get() = medals.CO; set(v) {;medals.CO = v}*/
-
-	private var decoration = 0
-	private var decTemp = 0
-
 	/* Mode name */
 	override val name = "Grand Marathon"
 	override val gameIntensity = 1
@@ -193,10 +162,6 @@ class GrandM1:AbstractMode() {
 		bgmLv = 0
 		gradeFlash = 0
 		sectionScore.fill(0)
-		sectionTime.fill(0)
-		sectionIsNewRecord.fill(false)
-		sectionsDone = 0
-		medalAC = 0
 		decTemp = 0
 
 		rankingRank = -1
@@ -279,30 +244,8 @@ class GrandM1:AbstractMode() {
 	 * @param engine GameEngine
 	 * @param section Section number
 	 */
-	private fun stMedalCheck(engine:GameEngine, section:Int, sectionLastTime:Int = sectionTime[section]) {
-		val best = bestSectionTime[section]
-
-		if(sectionLastTime<best||best<=0) {
-			engine.playSE("medal3")
-			if(medalST<1) decTemp += 3
-			if(medalST<2) decTemp += 6
-			decTemp += 6
-			medalsST[0]++
-			if(!owner.replayMode) {
-				decTemp++
-				sectionIsNewRecord[section] = true
-			}
-		} else if(sectionLastTime<best+300) {
-			engine.playSE("medal2")
-			if(medalST<1) decTemp += 3
-			medalsST[1]++
-			decTemp += 6
-		} else if(sectionLastTime<best+600) {
-			engine.playSE("medal1")
-			medalsST[2]++
-			decTemp += 3
-		}
-	}
+	private fun stMedalCheck(engine:GameEngine, section:Int) =
+		stMedalCheck(engine, section, sectionTime[section], bestSectionTime[section])
 
 	/* Called at settings screen */
 	override fun onSetting(engine:GameEngine):Boolean {
@@ -344,7 +287,7 @@ class GrandM1:AbstractMode() {
 		engine.statistics.level = startLevel*100
 
 		decTemp = 0
-		nextSecLv = engine.statistics.level+100
+		nextSecLv = startLevel*100+100
 		if(engine.statistics.level<0) nextSecLv = 100
 		if(engine.statistics.level>=900) nextSecLv = 999
 
@@ -564,12 +507,6 @@ class GrandM1:AbstractMode() {
 				4
 			} else 1
 
-			lastScore =
-				(((engine.statistics.level+li)/(if(ev.b2b>0) 4 else 3)+engine.softdropFall+engine.harddropFall+engine.manualLock.toInt())
-					*li*comboValue*bravo)
-			sectionScore[sectionsDone] += lastScore
-			engine.statistics.scoreLine += lastScore
-
 			// 段位上昇
 			while(grade<17&&engine.statistics.score>=tableGradeScore[grade]) {
 				engine.playSE("grade${grade*4/17}")
@@ -588,6 +525,8 @@ class GrandM1:AbstractMode() {
 			}
 
 			// Level up
+			val levelb = engine.statistics.level
+			val section = levelb/100
 			levelUp(engine, li)
 			if(engine.statistics.level>=999) {
 				// Ending
@@ -596,7 +535,7 @@ class GrandM1:AbstractMode() {
 				lastGradeTime = engine.statistics.time
 
 				sectionsDone++
-				stMedalCheck(engine,sectionsDone-1)
+				stMedalCheck(engine,section)
 
 				if(engine.statistics.time<=GM_999_TIME_REQUIRE&&engine.statistics.score>=tableGradeScore[17]
 					&&gm300&&gm500
@@ -633,7 +572,7 @@ class GrandM1:AbstractMode() {
 				engine.playSE("levelup")
 
 				sectionsDone++
-				stMedalCheck(engine,sectionsDone-1)
+				stMedalCheck(engine,section)
 
 				if(bgmLv==0&&nextSecLv==500) {
 					bgmLv++
@@ -645,6 +584,11 @@ class GrandM1:AbstractMode() {
 				if(nextSecLv>999) nextSecLv = 999
 			} else if(engine.statistics.level==nextSecLv-1&&secAlert) engine.playSE("levelstop")
 
+			lastScore =
+				(((engine.statistics.level+levelb)/(if(ev.b2b>0) 4 else 3)+engine.softdropFall+engine.harddropFall+engine.manualLock.toInt())
+					*li*comboValue*bravo)
+			sectionScore[sectionsDone] += lastScore
+			engine.statistics.scoreLine += lastScore
 			return lastScore
 		}
 		return 0
