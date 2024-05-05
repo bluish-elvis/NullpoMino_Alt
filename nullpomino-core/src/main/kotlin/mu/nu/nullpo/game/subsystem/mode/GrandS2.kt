@@ -51,6 +51,8 @@ class GrandS2:AbstractGrand() {
 	/** Number of sections */
 	override val SECTION_MAX = 13
 
+	override val medalSKQuads = listOf(listOf(5,10, 17, 25), listOf(1, 2, 4,6))
+
 	/** 最終結果などに表示される実際の段位 */
 	private var grade = 0
 
@@ -88,14 +90,6 @@ class GrandS2:AbstractGrand() {
 	/** LV500の足切りTime */
 	private val itemQualify = TimeMenuItem("lv500torikan", "QUALIFY", COLOR.BLUE, 12300, 0..72000)
 	private var qualify:Int by DelegateMenuItem(itemQualify)
-
-	private val itemAlert = BooleanMenuItem("lvstopse", "Sect.ALERT", COLOR.BLUE, true)
-	/** When true, levelstop sound is enabled */
-	private var secAlert:Boolean by DelegateMenuItem(itemAlert)
-
-	private val itemST = BooleanMenuItem("showsectiontime", "SHOW STIME", COLOR.BLUE, true)
-	/** When true, section time display is enabled */
-	private var showST:Boolean by DelegateMenuItem(itemST)
 
 	private val itemBig = BooleanMenuItem("big", "BIG", COLOR.BLUE, false)
 	/** BigMode */
@@ -192,7 +186,7 @@ class GrandS2:AbstractGrand() {
 	/** Update falling speed
 	 * @param engine GameEngine
 	 */
-	private fun setSpeed(engine:GameEngine) {
+	override fun setSpeed(engine:GameEngine) {
 		engine.speed.gravity = -1
 
 		val section = minOf(engine.statistics.level/100, tableARE.size-1)
@@ -357,13 +351,7 @@ class GrandS2:AbstractGrand() {
 
 	/* 移動中の処理 */
 	override fun onMove(engine:GameEngine):Boolean {
-		// 新規ピース出現時
-		if(engine.ending==0&&engine.statc[0]==0&&!engine.holdDisable&&!lvupFlag) {
-			// Level up
-			levelUp(engine, (engine.statistics.level<nextSecLv-1).toInt())
-		}
-		if(engine.ending==0&&engine.statc[0]>0&&(version>=1||!engine.holdDisable))
-			lvupFlag = false
+		super.onMove(engine)
 
 		if(engine.ending==0&&engine.statc[0]==0&&!engine.holdDisable) {
 			// せり上がりカウント
@@ -390,30 +378,13 @@ class GrandS2:AbstractGrand() {
 		return false
 	}
 
-	/* ARE中の処理 */
-	override fun onARE(engine:GameEngine):Boolean {
-		// 最後の frame
-		if(engine.ending==0&&engine.statc[0]>=engine.statc[1]-1&&!lvupFlag) {
-			levelUp(engine, (engine.statistics.level<nextSecLv-1).toInt())
-			lvupFlag = true
-		}
-
-		return false
-	}
-
 	/** levelが上がったときの共通処理 */
-	private fun levelUp(engine:GameEngine, lu:Int) {
+	override fun levelUp(engine:GameEngine, lu:Int) {
 		val lb = engine.statistics.level
-		engine.statistics.level += lu
+		super.levelUp(engine, lu)
 		val lA = engine.statistics.level
-		// Meter
-		engine.meterValue = lA%100/99f
-		engine.meterColor = GameEngine.METER_COLOR_LEVEL
-		// 速度変更
-		setSpeed(engine)
 
 		if(lu<=0) return
-		if(lA==nextSecLv-1&&secAlert) engine.playSE("levelstop")
 		// BGM fadeout
 		if(tableBGMFadeout.any {it in lb..lA}) owner.musMan.fadeSW = true
 		// BGM切り替え
@@ -427,63 +398,10 @@ class GrandS2:AbstractGrand() {
 	override fun calcScore(engine:GameEngine, ev:ScoreEvent):Int {
 		// Combo
 		val li = ev.lines
-		comboValue = if(li==0) 1
-		else maxOf(1, comboValue+2*li-2)
+		// Calculate score
+		val pts = super.calcScore(engine, ev)
 
 		if(li>=1&&engine.ending==0) {
-			// 4-line clearカウント
-			if(li>=4)
-			// SK medal
-				if(big) when(engine.statistics.totalQuadruple) {
-					1, 2, 4 -> {
-						engine.playSE("medal1")
-						medalSK++
-					}
-				} else when(engine.statistics.totalQuadruple) {
-					5, 10, 17 -> {
-						engine.playSE("medal1")
-						medalSK++
-						decTemp += 3+medalSK*2// 3 8 15
-					}
-				}
-
-			// AC medal
-			val bravo = if(engine.field.isEmpty) {
-				decTemp += li*25
-				if(li==3) decTemp += 25
-				if(li==4) decTemp += 150
-				if(medalAC<3) {
-					decTemp += 3+medalAC*4// 3 10 21
-					engine.playSE("medal${++medalAC}")
-				}
-				2
-			} else 1
-
-			// CO medal
-			if(big) {
-				if(engine.combo>=2&&medalCO<1) {
-					engine.playSE("medal1")
-					medalCO = 1
-				} else if(engine.combo>=3&&medalCO<2) {
-					engine.playSE("medal2")
-					medalCO = 2
-				} else if(engine.combo>=4&&medalCO<3) {
-					engine.playSE("medal3")
-					medalCO = 3
-				}
-			} else if(engine.combo>=3&&medalCO<1) {
-				engine.playSE("medal1")
-				medalCO = 1
-				decTemp += 3// 3
-			} else if(engine.combo>=4&&medalCO<2) {
-				engine.playSE("medal2")
-				medalCO = 2
-				decTemp += 4// 7
-			} else if(engine.combo>=5&&medalCO<3) {
-				engine.playSE("medal3")
-				medalCO = 3
-				decTemp += 5// 12
-			}
 
 			// せり上がりカウント減少
 			if(tableGarbage[engine.statistics.level/100]!=0) garbageCount -= li
@@ -573,14 +491,9 @@ class GrandS2:AbstractGrand() {
 					gradeFlash = 180
 				}
 			}
-
-			// Calculate score
-
-			lastScore = ((((levelb+li)/(if(engine.b2b) 3 else 4)+engine.softdropFall+engine.manualLock.toInt())
-				*li*comboValue)+maxOf(0, engine.lockDelay-engine.lockDelayNow)
-				+engine.statistics.level/if(engine.twist) 2 else 3)*bravo
-
-			engine.statistics.scoreLine += lastScore
+			lastScore = pts
+			engine.statistics.scoreLine += pts
+			return pts
 		}
 		return 0
 	}
@@ -658,7 +571,7 @@ class GrandS2:AbstractGrand() {
 				if(rollClear==1||rollClear==3) gcolor = COLOR.GREEN
 				if(rollClear==2||rollClear==4) gcolor = COLOR.ORANGE
 				receiver.drawMenuFont(engine, 0, 2, "GRADE", COLOR.RED)
-				receiver.drawMenuGrade(engine, 0, 2, tableGradeName[grade], gcolor, 2f)
+				receiver.drawMenuGrade(engine, 0, 1.66f, tableGradeName[grade], gcolor, 2f)
 
 				drawResultStats(
 					engine, receiver, 4, COLOR.RED, Statistic.SCORE, Statistic.LINES, Statistic.LEVEL_MANIA, Statistic.TIME
@@ -683,11 +596,13 @@ class GrandS2:AbstractGrand() {
 				}
 			}
 			2 -> {
-				receiver.drawMenuFont(engine, 0, 2, "MEDAL", COLOR.BLUE)
-				receiver.drawMenuMedal(engine, 5, 2, "AC", medalAC)
-				receiver.drawMenuMedal(engine, 8, 2, "CO", medalCO)
-				receiver.drawMenuMedal(engine, 2, 3, "ST", medalST)
-				receiver.drawMenuMedal(engine, 6, 3, "SK", medalSK)
+				receiver.drawMenuNano(engine, 0, 1.5f, "MEDAL", COLOR.RED,.5f)
+				receiver.drawMenuMedal(engine, 2, 2, "AC", medalAC)
+				receiver.drawMenuMedal(engine, 5, 2, "ST", medalST)
+				receiver.drawMenuMedal(engine, 8, 2, "SK", medalSK)
+				receiver.drawMenuMedal(engine, 1, 3, "RE", medalRE)
+				receiver.drawMenuMedal(engine, 4, 3, "RO", medalRO)
+				receiver.drawMenuMedal(engine, 7, 3, "CO", medalCO)
 
 				drawResultStats(engine, receiver, 4, COLOR.RED, Statistic.LPM, Statistic.SPM, Statistic.PIECE, Statistic.PPS)
 

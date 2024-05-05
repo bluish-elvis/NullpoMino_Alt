@@ -178,7 +178,7 @@ class GrandRoads:NetDummyMode() {
 	/** Set the gravity speed and some other things
 	 * @param engine GameEngine object
 	 */
-	private fun setSpeed(engine:GameEngine) {
+	override fun setSpeed(engine:GameEngine) {
 		engine.speed.replace(nowCourse.speeds[engine.statistics.level])
 		engine.owDelayCancel = if(nowCourse==Course.HARDEST||nowCourse==Course.LONG||nowCourse==Course.CHALLENGE) 7 else -1
 		// Show outline only

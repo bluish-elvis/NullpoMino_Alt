@@ -116,7 +116,7 @@ class Marathon:NetDummyMode() {
 	/** Set the gravity rate
 	 * @param engine GameEngine
 	 */
-	fun setSpeed(engine:GameEngine) {
+	override fun setSpeed(engine:GameEngine) {
 		val goal = tableGameClearLines[goalType]
 		val lv = minOf(maxOf(engine.statistics.lines, startLevel*10), goal)
 		val sLv =

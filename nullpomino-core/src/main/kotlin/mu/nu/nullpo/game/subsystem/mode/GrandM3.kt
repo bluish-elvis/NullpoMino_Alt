@@ -77,12 +77,6 @@ class GrandM3:AbstractGrand() {
 	/** 最後に段位が上がった time */
 	private var lastGradeTime = 0
 
-	/** Hard dropした段count */
-	private var hardDropBonus = 0
-
-	/** Combo bonus */
-	private var comboValue = 0
-
 	/** 現在のSectionにおいてTimeCOOLを達成するとtrue つぎせくｓ */
 	private var cool = false
 
@@ -150,21 +144,9 @@ class GrandM3:AbstractGrand() {
 	/** Level at start */
 	private var startLevel:Int by DelegateMenuItem(itemLevel)
 
-	private val itemGhost = BooleanMenuItem("alwaysghost", "FULL GHOST", COLOR.BLUE, false)
-	/** When true, always ghost ON */
-	private var alwaysGhost:Boolean by DelegateMenuItem(itemGhost)
-
 	private val item20g = BooleanMenuItem("always20g", "20G MODE", COLOR.BLUE, false)
 	/** When true, always 20G */
 	private var always20g:Boolean by DelegateMenuItem(item20g)
-
-	private val itemAlert = BooleanMenuItem("lvstopse", "Sect.ALERT", COLOR.BLUE, true)
-	/** When true, levelstop sound is enabled */
-	private var secAlert:Boolean by DelegateMenuItem(itemAlert)
-
-	private val itemST = BooleanMenuItem("showsectiontime", "SHOW STIME", COLOR.BLUE, true)
-	/** When true, section time display is enabled */
-	private var showST:Boolean by DelegateMenuItem(itemST)
 
 	private val itemBig = BooleanMenuItem("big", "BIG", COLOR.BLUE, false)
 	/** BigMode */
@@ -271,9 +253,6 @@ class GrandM3:AbstractGrand() {
 		gradeBasicPoint = 0
 		gradeBasicDecay = 0
 		lastGradeTime = 0
-		hardDropBonus = 0
-		comboValue = 0
-		lastScore = 0
 		cool = false
 		previousCool = false
 		coolChecked = false
@@ -377,7 +356,7 @@ class GrandM3:AbstractGrand() {
 	/** Update falling speed
 	 * @param engine GameEngine
 	 */
-	private fun setSpeed(engine:GameEngine) {
+	override fun setSpeed(engine:GameEngine) {
 		val mode = goalType
 		val hazardTime = 54*(tableGoalLevel[mode]+1)
 		engine.speed.gravity = if(always20g||engine.statistics.time>=hazardTime) -1
@@ -483,8 +462,6 @@ class GrandM3:AbstractGrand() {
 
 	/* Called at game start */
 	override fun startGame(engine:GameEngine) {
-		decTemp = 0
-		sectionsDone = 0
 		val lv = startLevel*100
 		engine.statistics.level = lv
 		internalLevel = lv
@@ -736,7 +713,7 @@ class GrandM3:AbstractGrand() {
 			receiver.drawMenuFont(engine, 0, 2, "PROMOTION", COLOR.YELLOW)
 			receiver.drawMenuFont(engine, 6, 3, "EXAM", COLOR.YELLOW)
 			receiver.drawMenuGrade(
-				engine, 2, 6, getGradeName(promotionalExam), if(readyFrame%4==0) COLOR.ORANGE else COLOR.WHITE,
+				engine, 2, 5.66f, getGradeName(promotionalExam), if(readyFrame%4==0) COLOR.ORANGE else COLOR.WHITE,
 				2f
 			)
 		}
@@ -744,16 +721,7 @@ class GrandM3:AbstractGrand() {
 
 	/* 移動中の処理 */
 	override fun onMove(engine:GameEngine):Boolean {
-		// 新規ピース出現時
-		if(engine.ending==0&&engine.statc[0]==0&&!engine.holdDisable&&!lvupFlag) {
-			// Level up
-			levelUp(engine, (engine.statistics.level<nextSecLv-1).toInt())
-
-			// Hard drop bonusInitialization
-			hardDropBonus = 0
-		}
-		if(engine.ending==0&&engine.statc[0]>0&&(version>=1||!engine.holdDisable)) lvupFlag = false
-
+		super.onMove(engine)
 		// 段位 point減少
 		if(engine.timerActive&&gradeBasicPoint>0&&engine.combo<0&&engine.lockDelayNow<engine.lockDelay-1) {
 			gradeBasicDecay += if(goalType==0) 1 else (gradeBasicReal+2)
@@ -786,36 +754,16 @@ class GrandM3:AbstractGrand() {
 		return false
 	}
 
-	/* ARE中の処理 */
-	override fun onARE(engine:GameEngine):Boolean {
-		// 最後の frame
-		if(engine.ending==0&&engine.statc[0]>=engine.statc[1]-1&&!lvupFlag) {
-			levelUp(engine, (engine.statistics.level<nextSecLv-1).toInt())
-			lvupFlag = true
-		}
-
-		return false
-	}
-
 	/** levelが上がったときの共通処理 */
-	private fun levelUp(engine:GameEngine, lu:Int = 0) {
+	override fun levelUp(engine:GameEngine, lu:Int) {
 		val lb = internalLevel
-		engine.statistics.level += lu
+		super.levelUp(engine, lu)
 		internalLevel += lu
-		// Meter
-		engine.meterValue = engine.statistics.level%100/99f
-		engine.meterColor = GameEngine.METER_COLOR_LEVEL
 		// COOL check
 		checkCool(engine)
 
-		// 速度変更
-		setSpeed(engine)
-
-		// LV100到達でghost を消す
-		if(engine.statistics.level>=100&&!alwaysGhost) engine.ghost = false
 
 		if(lu<=0) return
-		if(engine.statistics.level==nextSecLv-1&&secAlert) engine.playSE("levelstop")
 		// BGM fadeout
 		val lA = internalLevel+cool.toInt()*100
 		if(tableBGMFadeout.any {it in lb..lA}||
@@ -832,7 +780,8 @@ class GrandM3:AbstractGrand() {
 	override fun calcScore(engine:GameEngine, ev:ScoreEvent):Int {
 		// Combo
 		val li = ev.lines
-		comboValue = if(li==0) 1 else maxOf(1, comboValue+2*li-2)
+		// Calculate score
+		val pts = super.calcScore(engine, ev)
 
 		val ret = if(li>=1&&engine.ending==0) {
 			if(goalType==0) {
@@ -866,59 +815,6 @@ class GrandM3:AbstractGrand() {
 						}
 					}
 				}
-			}
-			// 4-line clearカウント
-			if(li>=4)
-			// SK medal
-				if(big) {
-					if(engine.statistics.totalQuadruple==1||engine.statistics.totalQuadruple==2
-						||engine.statistics.totalQuadruple==4
-					) {
-						engine.playSE("medal${++medalSK}")
-					}
-				} else if(engine.statistics.totalQuadruple==10||engine.statistics.totalQuadruple==20
-					||engine.statistics.totalQuadruple==30
-				) {
-					decTemp += 3+medalSK*2// 3 8 15
-					engine.playSE("medal${++medalSK}")
-				}
-
-			// AC medal
-			if(engine.field.isEmpty) {
-				decTemp += li*25
-				if(li==3) decTemp += 25
-				if(li==4) decTemp += 150
-				if(medalAC<3) {
-					engine.playSE("medal1")
-					decTemp += 3+medalAC*4// 3 10 21
-					medalAC++
-				}
-			}
-
-			// CO medal
-			if(big) {
-				if(ev.combo>=2&&medalCO<1) {
-					engine.playSE("medal1")
-					medalCO = 1
-				} else if(ev.combo>=3&&medalCO<2) {
-					engine.playSE("medal2")
-					medalCO = 2
-				} else if(ev.combo>=4&&medalCO<3) {
-					engine.playSE("medal3")
-					medalCO = 3
-				}
-			} else if(ev.combo>=3&&medalCO<1) {
-				engine.playSE("medal1")
-				medalCO = 1
-				decTemp += 3// 3
-			} else if(ev.combo>=4&&medalCO<2) {
-				engine.playSE("medal2")
-				medalCO = 2
-				decTemp += 4// 7
-			} else if(ev.combo>=5&&medalCO<3) {
-				engine.playSE("medal3")
-				medalCO = 3
-				decTemp += 5// 12
 			}
 
 			// Level up
@@ -997,15 +893,9 @@ class GrandM3:AbstractGrand() {
 					}
 				}
 			}
-			// Calculate score
-
-			lastScore =
-				((((levelb+li)/(if(ev.b2b>0) 3 else 4)+engine.softdropFall+(if(engine.manualLock) 1 else 0)+hardDropBonus)
-					*li*comboValue)+maxOf(0, engine.lockDelay-engine.lockDelayNow)
-					+engine.statistics.level/if(engine.twist) 2 else 3)*if(engine.field.isEmpty) 3 else 1
-
-			engine.statistics.scoreLine += lastScore
-			lastScore
+			lastScore = pts
+			engine.statistics.scoreLine += pts
+			pts
 		} else if(li>=1&&engine.ending==2&&goalType==0) {
 			// Roll 中のLine clear
 			val points = if(!mRollFlag||engine.twist||ev.b2b>0) when {
@@ -1050,11 +940,6 @@ class GrandM3:AbstractGrand() {
 		}
 		if(gradeFlash==180) engine.playSE(if(gradeDisp) "grade${grade/8}" else "medal1")
 		return ret
-	}
-
-	/* Called when hard drop used */
-	override fun afterHardDropFall(engine:GameEngine, fall:Int) {
-		if(fall*2>hardDropBonus) hardDropBonus = fall*2
 	}
 
 	/* 各 frame の終わりの処理 */
@@ -1188,7 +1073,7 @@ class GrandM3:AbstractGrand() {
 				receiver.drawMenuFont(engine, 0, 2, "PROMOTION", COLOR.YELLOW)
 				receiver.drawMenuFont(engine, 1, 3, "CHANCE TO", COLOR.YELLOW)
 				receiver.drawMenuGrade(
-					engine, 2, 6, getGradeName(promotionalExam), if(passFrame%4==0) COLOR.ORANGE else COLOR.WHITE,
+					engine, 2, 5.66f, getGradeName(promotionalExam), if(passFrame%4==0) COLOR.ORANGE else COLOR.WHITE,
 					2f
 				)
 
@@ -1221,7 +1106,7 @@ class GrandM3:AbstractGrand() {
 				receiver.drawMenuFont(engine, 0, 2, "DEMOTION", COLOR.RED)
 				receiver.drawMenuFont(engine, 6, 3, "PINCH OF", COLOR.RED)
 				receiver.drawMenuGrade(
-					engine, 2, 6, getGradeName(demotionExamGrade), if(passFrame%4==0) COLOR.RED else COLOR.WHITE,
+					engine, 2, 5.66f, getGradeName(demotionExamGrade), if(passFrame%4==0) COLOR.RED else COLOR.WHITE,
 					2f
 				)
 				if(passFrame<420)
@@ -1249,7 +1134,7 @@ class GrandM3:AbstractGrand() {
 				0 -> {
 					receiver.drawMenuFont(engine, 0, 3, "GRADE", COLOR.BLUE)
 					receiver.drawMenuGrade(
-						engine, 6, 2, getGradeName(grade), when {
+						engine, 6, 1.66f, getGradeName(grade), when {
 							grade>=32&&engine.statc[2]%2==0 -> COLOR.YELLOW
 							rollClear==1||rollClear==3 -> COLOR.GREEN
 							rollClear==2||rollClear==4 -> COLOR.ORANGE
@@ -1270,7 +1155,7 @@ class GrandM3:AbstractGrand() {
 				1 -> {
 					receiver.drawMenuFont(engine, 0, 2, "SECTION", COLOR.BLUE)
 
-					sectionTime.forEachIndexed {i,it ->
+					sectionTime.forEachIndexed {i, it ->
 						if(it>0) receiver.drawMenuNum(
 							engine, 2, 3+i, it.toTimeStr,
 							if(regretSection[i]) if(sectionIsNewRecord[i]) COLOR.ORANGE else COLOR.RED
@@ -1285,11 +1170,13 @@ class GrandM3:AbstractGrand() {
 					}
 				}
 				2 -> {
-					receiver.drawMenuFont(engine, 0, 2, "MEDAL", COLOR.BLUE)
-					receiver.drawMenuMedal(engine, 5, 2, "AC", medalAC)
-					receiver.drawMenuMedal(engine, 8, 2, "CO", medalCO)
-					receiver.drawMenuMedal(engine, 2, 3, "ST", medalST)
-					receiver.drawMenuMedal(engine, 6, 3, "SK", medalSK)
+					receiver.drawMenuNano(engine, 0, 1.5f, "MEDAL", COLOR.BLUE,.5f)
+					receiver.drawMenuMedal(engine, 2, 2, "AC", medalAC)
+					receiver.drawMenuMedal(engine, 5, 2, "ST", medalST)
+					receiver.drawMenuMedal(engine, 8, 2, "SK", medalSK)
+					receiver.drawMenuMedal(engine, 1, 3, "RE", medalRE)
+					receiver.drawMenuMedal(engine, 4, 3, "RO", medalRO)
+					receiver.drawMenuMedal(engine, 7, 3, "CO", medalCO)
 
 					if(rollPointsTotal>0) {
 						receiver.drawMenuFont(engine, 0, 4, "ROLL POINT", COLOR.BLUE)

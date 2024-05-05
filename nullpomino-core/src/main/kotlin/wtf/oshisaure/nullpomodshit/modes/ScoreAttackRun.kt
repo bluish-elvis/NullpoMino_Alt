@@ -156,7 +156,7 @@ class ScoreAttackRun:AbstractMode() {
 		engine.frameColor = 7
 	}
 
-	fun setSpeed(engine:GameEngine) {
+	override fun setSpeed(engine:GameEngine) {
 		when(gametype) {
 			2, 3, 5 -> {
 				engine.speed.gravity = -1

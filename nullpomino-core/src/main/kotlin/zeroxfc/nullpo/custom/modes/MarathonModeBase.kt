@@ -121,7 +121,7 @@ open class MarathonModeBase:NetDummyMode() {
 	 *
 	 * @param engine GameEngine
 	 */
-	open fun setSpeed(engine:GameEngine) {
+	override fun setSpeed(engine:GameEngine) {
 		var lv = engine.statistics.level
 		if(lv<0) lv = 0
 		if(lv>=tableGravity.size) lv = tableGravity.size-1

@@ -40,25 +40,12 @@ import mu.nu.nullpo.game.subsystem.mode.menu.BooleanMenuItem
 import mu.nu.nullpo.game.subsystem.mode.menu.DelegateMenuItem
 import mu.nu.nullpo.gui.common.BaseFont
 import mu.nu.nullpo.util.CustomProperties
-import mu.nu.nullpo.util.GeneralUtil.toInt
 import mu.nu.nullpo.util.GeneralUtil.toTimeStr
 import kotlin.math.floor
 import kotlin.math.ln
 
 /** GARBAGE MANIA Mode */
-class GrandM2G:AbstractMode() {
-	/** Next Section の level (これ-1のときに levelストップする) */
-	private var nextSecLv = 0
-
-	/** Levelが増えた flag */
-	private var lvupFlag = false
-
-	/** Hard dropした段count */
-	private var harddropBonus = 0
-
-	/** Combo bonus */
-	private var comboValue = 0
-
+class GrandM2G:AbstractGrand() {
 	/** Roll 経過 time */
 	private var rollTime = 0
 
@@ -67,22 +54,6 @@ class GrandM2G:AbstractMode() {
 
 	/** Current BGM */
 	private var bgmLv = 0
-
-	/** Section Time */
-	private val sectionTime = MutableList(SECTION_MAX) {0}
-
-	/** 新記録が出たSection はtrue */
-	private val sectionIsNewRecord = MutableList(SECTION_MAX) {false}
-
-	/** どこかのSection で新記録を出すとtrue */
-	private var sectionAnyNewRecord = false
-
-	/** Average Section Time */
-	private val sectionAvgTime
-		get() = sectionTime.filter {it>0}.average().toFloat()
-
-	/** Cleared Section count */
-	private var sectionsDone = 0
 
 	/** せり上がりパターン number */
 	private var garbagePos = 0
@@ -102,21 +73,12 @@ class GrandM2G:AbstractMode() {
 	/** Level at start */
 	private var startLevel = 0
 
-	/** When true, always ghost ON */
-	private var alwaysGhost = false
-
 	/** When true, always 20G */
 	private var always20g = false
-
-	/** When true, levelstop sound is enabled */
-	private var secAlert = false
 
 	private val itemBig = BooleanMenuItem("big", "BIG", COLOR.BLUE, false)
 	/** BigMode */
 	private var big:Boolean by DelegateMenuItem(itemBig)
-
-	/** When true, section time display is enabled */
-	private var showST = false
 
 	/** Version */
 	private var version = 0
@@ -133,9 +95,6 @@ class GrandM2G:AbstractMode() {
 	/** Section Time記録 */
 	private val bestSectionTime:List<MutableList<Int>> = List(SECTION_MAX) {MutableList(GOALTYPE_MAX) {DEFAULT_SECTION_TIME}}
 
-	private val decoration = 0
-	private val decTemp = 0
-
 	/* Mode name */
 	override val name = "Grand Mountain"
 	override val gameIntensity = 1
@@ -148,18 +107,9 @@ class GrandM2G:AbstractMode() {
 	override fun playerInit(engine:GameEngine) {
 		super.playerInit(engine)
 		goalType = 0
-		nextSecLv = 0
-		lvupFlag = true
-		harddropBonus = 0
-		comboValue = 0
-		lastScore = 0
 		rollTime = 0
 		secretGrade = 0
 		bgmLv = 0
-		sectionTime.fill(0)
-		sectionIsNewRecord.fill(false)
-		sectionAnyNewRecord = false
-		sectionsDone = 0
 		garbagePos = 0
 		garbageCount = 0
 		garbageTotal = 0
@@ -223,7 +173,7 @@ class GrandM2G:AbstractMode() {
 	/** Update falling speed
 	 * @param engine GameEngine
 	 */
-	private fun setSpeed(engine:GameEngine) {
+	override fun setSpeed(engine:GameEngine) {
 		engine.speed.gravity = if(always20g) -1
 		else tableGravityValue[tableGravityChangeLevel.indexOfFirst {engine.statistics.level<it}
 			.let {if(it<0) tableGravityChangeLevel.size-1 else it}]
@@ -232,14 +182,8 @@ class GrandM2G:AbstractMode() {
 	/** Section Time更新処理
 	 * @param section Section number
 	 */
-	private fun stNewRecordCheck(section:Int, goalType:Int) {
-		if(!owner.replayMode&&
-			(sectionTime[section]<bestSectionTime[section][goalType]||bestSectionTime[section][goalType]<0)
-		) {
-			sectionIsNewRecord[section] = true
-			sectionAnyNewRecord = true
-		}
-	}
+	private fun stNewRecordCheck(engine:GameEngine, section:Int, goalType:Int) =
+		stMedalCheck(engine, section, sectionTime[section], bestSectionTime[section][goalType])
 
 	/* Called at settings screen */
 	override fun onSetting(engine:GameEngine):Boolean {
@@ -281,7 +225,6 @@ class GrandM2G:AbstractMode() {
 			if(menuTime<5) menuTime++ else if(engine.ctrl.isPush(Controller.BUTTON_A)) {
 				engine.playSE("decide")
 				isShowBestSectionTime = false
-				sectionsDone = 0
 				return false
 			}
 
@@ -444,56 +387,22 @@ class GrandM2G:AbstractMode() {
 		}
 	}
 
-	/* 移動中の処理 */
-	override fun onMove(engine:GameEngine):Boolean {
-		// 新規ピース出現時
-		if(engine.ending==0&&engine.statc[0]==0&&!engine.holdDisable&&!lvupFlag) {
-			levelUp(engine, (engine.statistics.level<nextSecLv-1).toInt())
-			// Hard drop bonusInitialization
-			harddropBonus = 0
-		}
-		if(engine.ending==0&&engine.statc[0]>0&&(version>=2||!engine.holdDisable)) lvupFlag = false
-
-		return false
-	}
-
-	/* ARE中の処理 */
-	override fun onARE(engine:GameEngine):Boolean {
-		// 最後の frame
-		if(engine.ending==0&&engine.statc[0]>=engine.statc[1]-1&&!lvupFlag) {
-			levelUp(engine, (engine.statistics.level<nextSecLv-1).toInt())
-			lvupFlag = true
-		}
-
-		return false
-	}
-
 	/** levelが上がったときの共通処理 */
-	private fun levelUp(engine:GameEngine, lu:Int = 0) {
-		engine.statistics.level += lu
-		// Meter
-		engine.meterValue = engine.statistics.level%100/99f
-		engine.meterColor = GameEngine.METER_COLOR_LEVEL
-
-		// 速度変更
-		setSpeed(engine)
-
-		// LV100到達でghost を消す
-		if(engine.statistics.level>=100&&!alwaysGhost) engine.ghost = false
-
-		if(lu<=0) return
-		if(engine.statistics.level==nextSecLv-1&&secAlert) engine.playSE("levelstop")
+	override fun levelUp(engine:GameEngine, lu:Int) {
+		super.levelUp(engine, lu)
 		// BGM fadeout
-		if(tableBGMFadeout[bgmLv]!=-1&&engine.statistics.level>=tableBGMFadeout[bgmLv]) owner.musMan.fadeSW = true
+		if(lu>0&&tableBGMFadeout[bgmLv]!=-1&&engine.statistics.level>=tableBGMFadeout[bgmLv]) owner.musMan.fadeSW = true
 	}
 
 	/* Calculate score */
 	override fun calcScore(engine:GameEngine, ev:ScoreEvent):Int {
 		// Combo
 		val li = ev.lines
-		comboValue = if(li==0) 1
-		else maxOf(1, comboValue+2*li-2)
-
+		// Calculate score
+		val pts = super.calcScore(
+			engine,
+			ScoreEvent(ev.piece, ev.lines+engine.field.howManyGarbageLineClears, ev.b2b, ev.combo, ev.twistType, ev.split)
+		)
 		if(li==0) {
 			// せり上がり
 			garbageCount--
@@ -609,7 +518,6 @@ class GrandM2G:AbstractMode() {
 		}
 		if(li>=1&&engine.ending==0) {
 			// Level up
-			val levelb = engine.statistics.level
 			var ls = li
 			ls += engine.field.howManyGarbageLineClears
 			levelUp(engine, ls)
@@ -622,12 +530,11 @@ class GrandM2G:AbstractMode() {
 				engine.ending = 2
 
 				sectionsDone++
-				stNewRecordCheck(sectionsDone-1, goalType)
+				stNewRecordCheck(engine, sectionsDone-1, goalType)
 			} else if(engine.statistics.level>=nextSecLv) {
 				// Next Section
-
 				sectionsDone++
-				stNewRecordCheck(sectionsDone-1, goalType)
+				stNewRecordCheck(engine, sectionsDone-1, goalType)
 
 				// Background切り替え
 				owner.bgMan.nextBg = nextSecLv/100
@@ -645,20 +552,11 @@ class GrandM2G:AbstractMode() {
 				nextSecLv += 100
 				if(nextSecLv>999) nextSecLv = 999
 			}
-			// Calculate score
-			val bravo = if(engine.field.isEmpty) 4 else 1
-
-			lastScore = ((levelb+ls)/4+engine.softdropFall+(if(engine.manualLock) 1 else 0)+harddropBonus)*ls*comboValue*bravo+
-				engine.statistics.level/2+maxOf(0, engine.lockDelay-engine.lockDelayNow)*7
+			lastScore = pts
 			engine.statistics.scoreLine += lastScore
 			return lastScore
 		}
 		return 0
-	}
-
-	/* Called when hard drop used */
-	override fun afterHardDropFall(engine:GameEngine, fall:Int) {
-		if(fall*2>harddropBonus) harddropBonus = fall*2
 	}
 
 	/* 各 frame の終わりの処理 */

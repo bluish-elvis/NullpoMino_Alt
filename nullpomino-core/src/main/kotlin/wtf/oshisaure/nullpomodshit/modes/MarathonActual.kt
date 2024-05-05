@@ -95,7 +95,7 @@ class MarathonActual:AbstractMode() {
 		engine.frameColor = 0
 	}
 
-	fun setSpeed(engine:GameEngine) {
+	override fun setSpeed(engine:GameEngine) {
 		engine.speed.gravity = 1
 		engine.speed.denominator = 1
 	}

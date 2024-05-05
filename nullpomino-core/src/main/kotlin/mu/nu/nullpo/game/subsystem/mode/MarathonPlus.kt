@@ -166,7 +166,7 @@ class MarathonPlus:NetDummyMode() {
 	/** Set the gravity rate
 	 * @param engine GameEngine
 	 */
-	private fun setSpeed(engine:GameEngine) {
+	override fun setSpeed(engine:GameEngine) {
 		val l = maxOf(0, engine.statistics.level)
 		if(l>=50) {
 			val lv = if(l>=200&&turbo==0) 50 else l-50

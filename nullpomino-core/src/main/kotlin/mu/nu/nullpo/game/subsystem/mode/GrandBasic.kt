@@ -51,18 +51,7 @@ import kotlin.math.floor
 import kotlin.math.ln
 
 /** SCORE ATTACK mode (Original from NullpoUE build 121909 by Zircean) */
-class GrandBasic:AbstractMode() {
-	/** Next section level */
-	private var nextSecLv = 0
-
-	/** Level up flag (Set to true when the level increases) */
-	private var lvupFlag = false
-
-	/** Used by Hard-drop scoring */
-	private var harddropBonus = 0
-
-	/** Used by combo scoring */
-	private var comboValue = 0
+class GrandBasic:AbstractGrand() {
 
 	private var hanabi = 0
 	private var tempHanabi = 0
@@ -90,22 +79,6 @@ class GrandBasic:AbstractMode() {
 	/** Section Record */
 	private val sectionHanabi = MutableList(SECTION_MAX+1) {0}
 	private val sectionScore = MutableList(SECTION_MAX+1) {0L}
-	private val sectionTime = MutableList(SECTION_MAX+1) {0}
-
-	/** This will be true if the player achieves new section time record in
-	 * specific section */
-	private val sectionIsNewRecord = MutableList(SECTION_MAX+1) {false}
-
-	/** This will be true if the player achieves new section time record
-	 * somewhere */
-	private val sectionAnyNewRecord get() = sectionIsNewRecord.any()
-
-	/** Amount of sections completed */
-	private var sectionsDone = 0
-
-	/** Average section time */
-	private val sectionAvgTime
-		get() = sectionTime.filter {it>0}.average().toFloat()
 
 	/** false:Leaderboard, true:Section time record
 	 *  (Push F in settings screen to flip it) */
@@ -115,10 +88,6 @@ class GrandBasic:AbstractMode() {
 	/** Level at start */
 	private var startLevel:Int by DelegateMenuItem(itemLevel)
 
-	private val itemGhost = BooleanMenuItem("alwaysghost", "FULL GHOST", COLOR.GREEN, true)
-	/** Always show ghost */
-	private var alwaysGhost:Boolean by DelegateMenuItem(itemGhost)
-
 	private val item20g = BooleanMenuItem("always20g", "20G MODE", COLOR.RED, false)
 	/** Always 20G */
 	private var always20g:Boolean by DelegateMenuItem(item20g)
@@ -126,10 +95,6 @@ class GrandBasic:AbstractMode() {
 	private val itemBig = BooleanMenuItem("big", "BIG", COLOR.GREEN, false)
 	/** BigMode */
 	private var big:Boolean by DelegateMenuItem(itemBig)
-
-	private val itemST = BooleanMenuItem("showsectiontime", "Show S.Time", COLOR.GREEN, true)
-	/** Show section time */
-	private var showST:Boolean by DelegateMenuItem(itemST)
 
 	override val menu = MenuList("scoreattack", itemLevel, itemGhost, itemST, item20g, itemBig)
 	/** Version of this mode */
@@ -158,8 +123,6 @@ class GrandBasic:AbstractMode() {
 	private val bestSectionScore = MutableList(RANKING_MAX) {0L}
 	private val bestSectionHanabi = MutableList(RANKING_MAX) {0}
 	private val bestSectionTime = MutableList(RANKING_MAX) {DEFAULT_SECTION_TIME}
-	private var decoration = 0
-	private var decTemp = 0
 
 	/** Returns the name of this mode */
 	override val name = "Grand Festival"
@@ -172,10 +135,6 @@ class GrandBasic:AbstractMode() {
 	 * screen. */
 	override fun playerInit(engine:GameEngine) {
 		super.playerInit(engine)
-		nextSecLv = 0
-		lvupFlag = true
-		comboValue = 0
-		lastScore = 0
 		bonusInt = 0
 		bonusSpeed = 0
 		tempHanabi = 0
@@ -188,9 +147,6 @@ class GrandBasic:AbstractMode() {
 		lastSpawnTime = 0
 		sectionHanabi.fill(0)
 		sectionScore.fill(0)
-		sectionTime.fill(0)
-		sectionIsNewRecord.fill(false)
-		sectionsDone = 0
 
 		rankingRank = -1
 		ranking.fill(ScoreData())
@@ -222,7 +178,7 @@ class GrandBasic:AbstractMode() {
 	/** Set the gravity speed
 	 * @param engine GameEngine object
 	 */
-	private fun setSpeed(engine:GameEngine) {
+	override fun setSpeed(engine:GameEngine) {
 		engine.speed.gravity = if(always20g) -1
 		else tableGravityValue.lastOrNull {engine.statistics.level>=it.first}?.second ?: -1
 	}
@@ -265,7 +221,6 @@ class GrandBasic:AbstractMode() {
 	override fun onReady(engine:GameEngine):Boolean {
 		if(engine.statc[0]==0) {
 			isShowBestSectionTime = false
-			sectionsDone = 0
 			owner.musMan.fadeSW = true
 		}
 		return super.onReady(engine)
@@ -366,7 +321,7 @@ class GrandBasic:AbstractMode() {
 
 			// Section time
 			if(showST&&sectionTime.isNotEmpty()) {
-				val (x,x2) = if(receiver.nextDisplayType==2) 8 to 9 else 12 to 12
+				val (x, x2) = if(receiver.nextDisplayType==2) 8 to 9 else 12 to 12
 
 				receiver.drawScoreFont(engine, x-1, 2, "SECTION SCORE", COLOR.BLUE)
 
@@ -395,34 +350,18 @@ class GrandBasic:AbstractMode() {
 	/** This function will be called when the piece is active */
 	override fun onMove(engine:GameEngine):Boolean {
 		if(lastSpawnTime<engine.statistics.level) lastSpawnTime++
-		if(engine.statc[0]==0&&!engine.holdDisable) {
-			lastSpawnTime = 0
-			if(engine.ending==0&&!lvupFlag) {
-				if(engine.statistics.level<299) engine.statistics.level++
-				levelUp(engine)
-			}
-		}
-		if(engine.ending==0&&engine.statc[0]>0) lvupFlag = false
-
-		return false
+		return super.onMove(engine)
 	}
 
 	/** This function will be called during ARE */
 	override fun onARE(engine:GameEngine):Boolean {
 		lastSpawnTime = 0
-		if(engine.ending==0&&engine.statc[0]>=engine.statc[1]-1&&!lvupFlag) {
-			if(engine.statistics.level<299) engine.statistics.level++
-			levelUp(engine)
-			lvupFlag = true
-		}
-
-		return false
+		return super.onARE(engine)
 	}
 
 	/** Levelup */
-	private fun levelUp(engine:GameEngine) {
-		engine.meterValue = engine.statistics.level%100/99f
-		engine.meterColor = GameEngine.METER_COLOR_LEVEL
+	override fun levelUp(engine:GameEngine, lu:Int) {
+		super.levelUp(engine, lu)
 
 		if(engine.statistics.level>=nextSecLv) {
 			nextSecLv += 100
@@ -432,9 +371,6 @@ class GrandBasic:AbstractMode() {
 			stNewRecordCheck(sectionsDone-1)
 		}
 
-		setSpeed(engine)
-		engine.ghost = alwaysGhost||engine.statistics.level<100
-
 		if(bgmLv==0&&engine.statistics.level>=280&&engine.ending==0) owner.musMan.fadeSW = true
 	}
 
@@ -442,17 +378,14 @@ class GrandBasic:AbstractMode() {
 	 * lines are cleared) */
 	override fun calcScore(engine:GameEngine, ev:ScoreEvent):Int {
 		val li = ev.lines
-		comboValue = if(li==0) 1
-		else maxOf(1, comboValue+2*li-2)
-
+		val pts = super.calcScore(engine, ev)
 		if(li>=1) {
 			halfMinLine += li
 			val levelb = engine.statistics.level
 			val combobonus = tableHanabiComboBonus[maxOf(0, minOf(ev.combo+if(ev.b2b>0) 0 else -1, tableHanabiComboBonus.size-1))]
 
 			if(engine.ending==0) {
-				engine.statistics.level += li
-				levelUp(engine)
+				levelUp(engine, li)
 
 				if(engine.statistics.level>=300) {
 					if(engine.timerActive) {
@@ -475,16 +408,7 @@ class GrandBasic:AbstractMode() {
 					if(owner.bgMan.bg!=it) owner.bgMan.nextBg = it
 				}
 			}
-			lastScore = 6*
-				((((levelb+li)/(if(ev.b2b>0) 3 else 4)+engine.softdropFall+(if(engine.manualLock) 1 else 0)+harddropBonus)
-					*li*comboValue*if(engine.field.isEmpty) 4 else 1)
-					+engine.statistics.level/(if(ev.twist) 2 else 3)+maxOf(0, engine.lockDelay-engine.lockDelayNow)*7)
-			// AC medal
-			if(engine.field.isEmpty) {
-				decTemp += li*25
-				if(li==3) decTemp += 25
-				if(li==4) decTemp += 150
-			}
+			lastScore = 6*pts
 			tempHanabi += maxOf(
 				1, (
 					when(li) {
@@ -504,11 +428,6 @@ class GrandBasic:AbstractMode() {
 			return lastScore
 		}
 		return 0
-	}
-
-	/** This function will be called when hard-drop is used */
-	override fun afterHardDropFall(engine:GameEngine, fall:Int) {
-		if(fall*2>harddropBonus) harddropBonus = fall*2
 	}
 
 	/** This function will be called when the game timer updates */
@@ -585,38 +504,38 @@ class GrandBasic:AbstractMode() {
 
 		if(engine.statc[1]==0) {
 			receiver.drawMenuNum(engine, 0, 2, "%04d".format(hanabi), 2f)
-			receiver.drawMenuFont(engine, 6, 3, "Score", COLOR.BLUE, .8f)
+			receiver.drawMenuFont(engine, 6, 3, "Score", COLOR.GREEN, .8f)
 			receiver.drawMenuNum(engine, 0, 4, "%7d".format(engine.statistics.score), 1.9f)
-			drawResultStats(engine, receiver, 6, COLOR.BLUE, Statistic.LINES, Statistic.LEVEL, Statistic.TIME)
-			drawResultRank(engine, receiver, 13, COLOR.BLUE, rankingRank)
+			drawResultStats(engine, receiver, 6, COLOR.GREEN, Statistic.LINES, Statistic.LEVEL, Statistic.TIME)
+			drawResultRank(engine, receiver, 13, COLOR.GREEN, rankingRank)
 			if(secretGrade>4)
 				drawResult(
-					engine, receiver, 15, COLOR.BLUE, "S. GRADE",
+					engine, receiver, 15, COLOR.GREEN, "S. GRADE",
 					"%10s".format(tableSecretGradeName[secretGrade-1])
 				)
 		} else if(engine.statc[1]==1) {
-			receiver.drawMenuFont(engine, 0, 2, "SECTION", COLOR.BLUE)
-			receiver.drawMenuFont(engine, 0, 3, "Score", COLOR.BLUE)
+			receiver.drawMenuFont(engine, 0, 2, "SECTION", COLOR.GREEN)
+			receiver.drawMenuFont(engine, 0, 3, "Score", COLOR.GREEN)
 
 			for(i in sectionScore.indices)
 				receiver.drawMenuNum(
 					engine, 1, (if(i==SECTION_MAX) 5 else 4)+i,
 					"%4d:%d".format(sectionHanabi[i], sectionScore[i]), sectionIsNewRecord[i]
 				)
-			receiver.drawMenuFont(engine, 0, 4+SECTION_MAX, "BONUS", COLOR.BLUE)
+			receiver.drawMenuFont(engine, 0, 4+SECTION_MAX, "BONUS", COLOR.GREEN)
 
-			receiver.drawMenuFont(engine, 0, 7+SECTION_MAX, "Time", COLOR.BLUE)
+			receiver.drawMenuFont(engine, 0, 7+SECTION_MAX, "Time", COLOR.GREEN)
 			for(i in sectionTime.indices)
 				if(sectionTime[i]>0)
 					receiver.drawMenuNum(engine, 2, 8+SECTION_MAX+i, sectionTime[i].toTimeStr)
 
 			if(sectionAvgTime>0) {
-				receiver.drawMenuFont(engine, 0, 15, "AVERAGE", COLOR.BLUE)
+				receiver.drawMenuFont(engine, 0, 15, "AVERAGE", COLOR.GREEN)
 				receiver.drawMenuNum(engine, 2, 16, sectionAvgTime.toTimeStr)
 			}
 		} else if(engine.statc[1]==2)
 			drawResultStats(
-				engine, receiver, 2, COLOR.BLUE, Statistic.LPM, Statistic.SPM, Statistic.PIECE, Statistic.PPS
+				engine, receiver, 2, COLOR.GREEN, Statistic.LPM, Statistic.SPM, Statistic.PIECE, Statistic.PPS
 			)
 	}
 

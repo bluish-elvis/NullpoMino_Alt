@@ -31,29 +31,20 @@
 package mu.nu.nullpo.util
 
 import kotlinx.serialization.ExperimentalSerializationApi
-import kotlinx.serialization.InternalSerializationApi
-import kotlinx.serialization.KSerializer
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
-import kotlinx.serialization.modules.PolymorphicModuleBuilder
-import kotlinx.serialization.modules.SerializersModule
 import mu.nu.nullpo.game.component.RuleOptions
-import mu.nu.nullpo.game.event.Leaderboard
-import mu.nu.nullpo.game.event.Rankable
 import mu.nu.nullpo.game.subsystem.ai.AIPlayer
 import mu.nu.nullpo.game.subsystem.wallkick.Wallkick
 import mu.nu.nullpo.tool.ruleeditor.RuleEditor
 import net.omegaboshi.nullpomino.game.subsystem.randomizer.MemorylessRandomizer
 import net.omegaboshi.nullpomino.game.subsystem.randomizer.Randomizer
 import org.apache.logging.log4j.LogManager
-import java.io.File
 import java.io.FileInputStream
-import java.io.FileOutputStream
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.TimeZone
 import java.util.zip.GZIPInputStream
-import java.util.zip.GZIPOutputStream
 
 /** Generic static utils */
 object GeneralUtil {
@@ -84,6 +75,7 @@ object GeneralUtil {
 			return "${dfm.format(c.time)}$this.rep"
 		}
 
+	/** @return true -> 1 , false -> 0 */
 	fun Boolean.toInt() = if(this) 1 else 0
 
 	/** Convert as play time into a String

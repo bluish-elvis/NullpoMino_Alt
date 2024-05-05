@@ -153,7 +153,7 @@ class RetroA:AbstractMode() {
 	/** Set the gravity speed
 	 * @param engine GameEngine object
 	 */
-	private fun setSpeed(engine:GameEngine) {
+	override fun setSpeed(engine:GameEngine) {
 		val lv = maxOf(0, minOf(engine.statistics.level, tableSpeed.size-1))
 		engine.speed.replace(tableSpeed[lv])
 		//engine.speed.lineDelay = if(lv>=10) 20 else 25

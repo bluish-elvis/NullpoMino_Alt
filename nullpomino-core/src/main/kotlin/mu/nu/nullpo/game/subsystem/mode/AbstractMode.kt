@@ -172,32 +172,78 @@ abstract class AbstractMode:GameMode {
 			owner.recordProp.setProperty(key, it)
 		}
 	}
-
-	override fun pieceLocked(engine:GameEngine, lines:Int, finesse:Boolean) {}
-	override fun lineClearEnd(engine:GameEngine):Boolean = false
-	override fun afterHardDropFall(engine:GameEngine, fall:Int) {}
-	override fun afterSoftDropFall(engine:GameEngine, fall:Int) {}
-	override fun blockBreak(engine:GameEngine, blk:Map<Int, Map<Int, Block>>):Boolean = false
-	override fun lineClear(gameEngine:GameEngine, i:Collection<Int>) {}
-	override fun fieldEditExit(engine:GameEngine) {}
 	override fun loadReplay(engine:GameEngine, prop:CustomProperties) {}
+	override fun saveReplay(engine:GameEngine, prop:CustomProperties):Boolean = false
+
 	override fun modeInit(manager:GameManager) {
 		menuTime = 0
 		owner = manager
 	}
 
-	override fun onARE(engine:GameEngine):Boolean = false
-	override fun onCustom(engine:GameEngine):Boolean = false
-	override fun onEndingStart(engine:GameEngine):Boolean = false
-	override fun onExcellent(engine:GameEngine):Boolean = false
 	override fun onFirst(engine:GameEngine) {}
-	override fun onGameOver(engine:GameEngine):Boolean = false
 	/** This function will be called when the game timer updates */
 	override fun onLast(engine:GameEngine) {
 		if(scDisp<engine.statistics.score&&!engine.lagStop) scDisp += ceil(((engine.statistics.score-scDisp)/10f).toDouble()).toInt()
 	}
 
+	override fun onSetting(engine:GameEngine):Boolean {
+		// Menu
+		if(!owner.replayMode&&menu.size>0) {
+			// Configuration changes val change = updateCursor(engine, 5)
+			updateMenu(engine)
+
+			// 決定
+			if(menuTime<5) menuTime++ else if(engine.ctrl.isPush(Controller.BUTTON_A)) {
+				engine.playSE("decide")
+				saveSetting(engine, owner.modeConfig)
+				owner.saveModeConfig()
+				onSettingChanged(engine)
+				return false
+			}
+			// Cancel
+			if(engine.ctrl.isPush(Controller.BUTTON_B)) engine.quitFlag = true
+		} else {
+			menuTime++
+			menuCursor = -1
+			return menuTime<60*(1+(menu.loc.maxOrNull() ?: 0)/engine.fieldHeight)
+		}
+		return true
+	}
+	protected open fun onSettingChanged(engine:GameEngine) {}
+	override fun onProfile(engine:GameEngine):Boolean {
+		showPlayerStats = false
+		return false
+	}
+
+	override fun onReady(engine:GameEngine):Boolean {
+		menuTime = 0
+		return false
+	}
+
+	/** ARE中の処理 */
+	override fun onARE(engine:GameEngine):Boolean = false
+	/** 移動中の処理 */
+	override fun onMove(engine:GameEngine):Boolean = false
+	override fun onLockFlash(engine:GameEngine):Boolean = false
 	override fun onLineClear(engine:GameEngine):Boolean = false
+	override fun onEndingStart(engine:GameEngine):Boolean = false
+	override fun onExcellent(engine:GameEngine):Boolean = false
+	override fun onGameOver(engine:GameEngine):Boolean = false
+	override fun onResult(engine:GameEngine):Boolean = false
+	override fun onFieldEdit(engine:GameEngine):Boolean = false
+	override fun onCustom(engine:GameEngine):Boolean = false
+
+	/** Update falling speed
+	 * @param engine GameEngine
+	 */
+	protected open fun setSpeed(engine:GameEngine) {}
+	override fun fieldEditExit(engine:GameEngine) {}
+	override fun afterSoftDropFall(engine:GameEngine, fall:Int) {}
+	override fun afterHardDropFall(engine:GameEngine, fall:Int) {}
+	override fun pieceLocked(engine:GameEngine, lines:Int, finesse:Boolean) {}
+	override fun lineClear(gameEngine:GameEngine, i:Collection<Int>) {}
+	override fun blockBreak(engine:GameEngine, blk:Map<Int, Map<Int, Block>>):Boolean = false
+	override fun lineClearEnd(engine:GameEngine):Boolean = false
 	/** Calculates line-clear score
 	 * (This function will be called even if no lines are cleared)
 	 * @param engine GameEngine
@@ -338,71 +384,22 @@ abstract class AbstractMode:GameMode {
 		return PowData(base, it-base)
 	}
 
-	override fun onLockFlash(engine:GameEngine):Boolean = false
-	override fun onMove(engine:GameEngine):Boolean = false
-	override fun onReady(engine:GameEngine):Boolean {
-		menuTime = 0
-		return false
-	}
-
-	override fun onResult(engine:GameEngine):Boolean = false
-	override fun onSetting(engine:GameEngine):Boolean {
-		// Menu
-		if(!owner.replayMode&&menu.size>0) {
-			// Configuration changes val change = updateCursor(engine, 5)
-			updateMenu(engine)
-
-			// 決定
-			if(menuTime<5) menuTime++ else if(engine.ctrl.isPush(Controller.BUTTON_A)) {
-				engine.playSE("decide")
-				saveSetting(engine, owner.modeConfig)
-				owner.saveModeConfig()
-				onSettingChanged(engine)
-				return false
-			}
-			// Cancel
-			if(engine.ctrl.isPush(Controller.BUTTON_B)) engine.quitFlag = true
-		} else {
-			menuTime++
-			menuCursor = -1
-			return menuTime<60*(1+(menu.loc.maxOrNull() ?: 0)/engine.fieldHeight)
-		}
-		return true
-	}
-
-	protected open fun onSettingChanged(engine:GameEngine) {}
-
-	override fun onProfile(engine:GameEngine):Boolean {
-		showPlayerStats = false
-		return false
-	}
-
-	override fun onFieldEdit(engine:GameEngine):Boolean = false
 	override fun playerInit(engine:GameEngine) {
 		menuTime = 0
+		lastScore = 0
 		scDisp = 0
 		loadSetting(engine, if(owner.replayMode) owner.replayProp else owner.modeConfig)
 	}
+	override fun startGame(engine:GameEngine) {}
 
-	override fun renderARE(engine:GameEngine) {}
-	override fun renderCustom(engine:GameEngine) {}
-	override fun renderEndingStart(engine:GameEngine) {}
-	override fun renderExcellent(engine:GameEngine) {}
 	override fun renderFirst(engine:GameEngine) {}
-	override fun renderGameOver(engine:GameEngine) {}
 	override fun renderLast(engine:GameEngine) {}
-	override fun renderLineClear(engine:GameEngine) {}
-	/** medal の文字色を取得
-	 * @param medalColor medal 状態
-	 * @return medal の文字色
-	 */
-	fun getMedalFontColor(medalColor:Int):COLOR? = when(medalColor) {
-		1 -> COLOR.RED
-		2 -> COLOR.WHITE
-		3 -> COLOR.YELLOW
-		4 -> COLOR.CYAN
-		else -> null
+	override fun renderReady(engine:GameEngine) {}
+	override fun renderSetting(engine:GameEngine) {
+		//TODO: Custom page breaks
+		menu.drawMenu(engine, engine.playerID, receiver, 0)
 	}
+	override fun renderLineClear(engine:GameEngine) {}
 
 	fun getTimeFontColor(time:Int):COLOR = when {
 		time<600 -> if(time/10%2==0) COLOR.RED else COLOR.WHITE
@@ -411,23 +408,22 @@ abstract class AbstractMode:GameMode {
 		else -> if(time/5%12==0) COLOR.GREEN else COLOR.WHITE
 	}
 
-	override fun renderLockFlash(engine:GameEngine) {}
+	override fun renderARE(engine:GameEngine) {}
 	override fun renderMove(engine:GameEngine) {}
-	override fun renderReady(engine:GameEngine) {}
-	override fun renderResult(engine:GameEngine) {}
-	override fun renderSetting(engine:GameEngine) {
-		//TODO: Custom page breaks
-
-		menu.drawMenu(engine, engine.playerID, receiver, 0)
-	}
-
+	override fun renderLockFlash(engine:GameEngine) {}
 	override fun renderProfile(engine:GameEngine) {}
+	override fun renderEndingStart(engine:GameEngine) {}
+	override fun renderExcellent(engine:GameEngine) {}
+	override fun renderGameOver(engine:GameEngine) {}
+	override fun renderResult(engine:GameEngine) {}
+	override fun renderCustom(engine:GameEngine) {}
 	override fun renderFieldEdit(engine:GameEngine) {}
-	override fun saveReplay(engine:GameEngine, prop:CustomProperties):Boolean = false
-	override fun startGame(engine:GameEngine) {}
+
 	override fun netplayInit(obj:NetLobbyFrame) {}
 	override fun netplayUnload(obj:NetLobbyFrame) {}
 	override fun netplayOnRetryKey(engine:GameEngine) {}
+
+
 	/** Update menu cursor
 	 * @param engine GameEngine
 	 * @param maxCursor Max value of cursor position

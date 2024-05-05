@@ -596,7 +596,7 @@ class PhysicianVS:AbstractMode() {
 	/** Set the gravity rate
 	 * @param engine GameEngine
 	 */
-	fun setSpeed(engine:GameEngine) {
+	override fun setSpeed(engine:GameEngine) {
 		engine.speed.gravity =
 			listOf(6, 8, 10)[speed[engine.playerID]]*(10+(engine.statistics.totalPieceLocked/10))
 		engine.speed.denominator = 3600

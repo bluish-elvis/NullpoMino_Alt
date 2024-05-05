@@ -48,8 +48,6 @@ class GrandSStealth:AbstractGrand() {
 	private var grade = 0
 	/** Remaining frames of flash effect of grade display */
 	private var gradeFlash = 0
-	/** Used by combo scoring */
-	private var comboValue = 0
 
 	/** Secret Grade */
 	private var secretGrade = 0
@@ -64,8 +62,8 @@ class GrandSStealth:AbstractGrand() {
 	/** Current BGM */
 	private var bgmLv = 0
 
-	/** Number of 4-Line clears in current section */
-	private var sectionQuads = 0
+	/** Section 内で4-line clearした count */
+	private var sectionQuads = MutableList(SECTION_MAX) {0}
 	/** Set to true by default, set to false when sectionQuads is below 2 */
 	private var gmQuads = false
 
@@ -76,15 +74,9 @@ class GrandSStealth:AbstractGrand() {
 	/** Selected start level */
 	private var startLevel = 0
 
-	/** Enable/Disable level stop sfx */
-	private var secAlert = false
-
 	private val itemBig = BooleanMenuItem("big", "BIG", COLOR.BLUE, false)
 	/** BigMode */
 	private var big:Boolean by DelegateMenuItem(itemBig)
-
-	/** Show section time */
-	private var showST = false
 
 	/** Version of this mode */
 	private var version = 0
@@ -117,14 +109,11 @@ class GrandSStealth:AbstractGrand() {
 		super.playerInit(engine)
 		grade = 0
 		gradeFlash = 0
-		comboValue = 0
-		lastScore = 0
 		rollTime = 0
 		rollClear = 0
 		rollStarted = false
 		bgmLv = 0
-		sectionQuads = 0
-		gmQuads = true
+		sectionQuads.fill(0)
 		medals.reset()
 		isShowBestSectionTime = false
 		startLevel = 0
@@ -186,7 +175,7 @@ class GrandSStealth:AbstractGrand() {
 	/** Set the gravity speed
 	 * @param engine GameEngine object
 	 */
-	private fun setSpeed(engine:GameEngine) {
+	override fun setSpeed(engine:GameEngine) {
 		engine.speed.gravity = -1
 
 		val section = minOf(engine.statistics.level/100, tableARE.size-1)
@@ -407,117 +396,28 @@ class GrandSStealth:AbstractGrand() {
 
 	/** This function will be called when the piece is active */
 	override fun onMove(engine:GameEngine):Boolean {
-		if(engine.ending==0&&engine.statc[0]==0&&!engine.holdDisable&&!lvupFlag) {
-			if(engine.statistics.level<nextSecLv-1) {
-				engine.statistics.level++
-				if(engine.statistics.level==nextSecLv-1&&secAlert) engine.playSE("levelstop")
-			}
-			levelUp(engine)
-
-			if(engine.timerActive&&medalRE<3) {
-				val blocks = engine.field.howManyBlocks
-
-				if(!recoveryFlag) {
-					if(blocks>=150) recoveryFlag = true
-				} else if(blocks<=70) {
-					recoveryFlag = false
-					engine.playSE("medal${++medalRE}")
-				}
-			}
-		}
-		if(engine.ending==0&&engine.statc[0]>0) lvupFlag = false
-
 		if(engine.ending==2&&!rollStarted) rollStarted = true
-
-		return false
-	}
-
-	/** This function will be called during ARE */
-	override fun onARE(engine:GameEngine):Boolean {
-		if(engine.ending==0&&engine.statc[0]>=engine.statc[1]-1&&!lvupFlag) {
-			if(engine.statistics.level<nextSecLv-1) {
-				engine.statistics.level++
-				if(engine.statistics.level==nextSecLv-1&&secAlert) engine.playSE("levelstop")
-			}
-			levelUp(engine)
-			lvupFlag = true
-		}
-
-		return false
+		return super.onMove(engine)
 	}
 
 	/** Levelup */
-	private fun levelUp(engine:GameEngine) {
-		engine.meterValue = engine.statistics.level%100/99f
-		engine.meterColor = GameEngine.METER_COLOR_GREEN
-		if(engine.statistics.level%100>=50) engine.meterColor = GameEngine.METER_COLOR_YELLOW
-		if(engine.statistics.level%100>=80) engine.meterColor = GameEngine.METER_COLOR_ORANGE
-		if(engine.statistics.level>=nextSecLv-1) engine.meterColor = GameEngine.METER_COLOR_RED
-
-		setSpeed(engine)
-
-		if(tableBGMFadeout[bgmLv]!=-1&&engine.statistics.level>=tableBGMFadeout[bgmLv]) owner.musMan.fadeSW = true
+	override fun levelUp(engine:GameEngine, lu:Int) {
+		super.levelUp(engine, lu)
+		if(lu>0&&tableBGMFadeout[bgmLv]!=-1&&engine.statistics.level>=tableBGMFadeout[bgmLv]) owner.musMan.fadeSW = true
 	}
 
 	/** Calculates line-clear score
 	 * (This function will be called even if no lines are cleared) */
 	override fun calcScore(engine:GameEngine, ev:ScoreEvent):Int {
+		val pts = super.calcScore(engine, ev)
 		val li = ev.lines
-		comboValue = if(li==0) 1
-		else maxOf(1, comboValue+2*li-2)
-
-		var spinTemp = engine.nowPieceSpinCount
-		if(spinTemp>4) spinTemp = 4
-		spinCount += spinTemp
 
 		if(li>=1&&engine.ending==0) {
-			if(li>=4) {
-				sectionQuads++
-
-				if(big) {
-					if(engine.statistics.totalQuadruple==1||engine.statistics.totalQuadruple==2
-						||engine.statistics.totalQuadruple==4
-					) {
-						engine.playSE("medal${++medalSK}")
-					}
-				} else if(engine.statistics.totalQuadruple==5||engine.statistics.totalQuadruple==10
-					||engine.statistics.totalQuadruple==17
-				) {
-					engine.playSE("medal${++medalSK}")
-				}
-			}
-
-			if(engine.field.isEmpty)
-				if(medalAC<3) {
-					engine.playSE("medal${++medalAC}")
-				}
-
-			if(big) {
-				if(engine.combo>=2&&medalCO<1) {
-					engine.playSE("medal1")
-					medalCO = 1
-				} else if(engine.combo>=3&&medalCO<2) {
-					engine.playSE("medal2")
-					medalCO = 2
-				} else if(engine.combo>=4&&medalCO<3) {
-					engine.playSE("medal3")
-					medalCO = 3
-				}
-			} else if(engine.combo>=4&&medalCO<1) {
-				engine.playSE("medal1")
-				medalCO = 1
-			} else if(engine.combo>=5&&medalCO<2) {
-				engine.playSE("medal2")
-				medalCO = 2
-			} else if(engine.combo>=7&&medalCO<3) {
-				engine.playSE("medal3")
-				medalCO = 3
-			}
-
 			val levelb = engine.statistics.level
 			val section = levelb/100
-			engine.statistics.level += li
-			levelUp(engine)
+			if(li>=4) sectionQuads[section]++
+
+			levelUp(engine, li)
 
 			if(engine.statistics.level>=999) {
 				if(engine.timerActive) sectionsDone++
@@ -531,7 +431,7 @@ class GrandSStealth:AbstractGrand() {
 				stMedalCheck(engine, levelb/100)
 				roMedalCheck(engine, 999)
 
-				if(engine.statistics.totalQuadruple>=31&&gmQuads&&sectionQuads>=1) {
+				if(engine.statistics.totalQuadruple>=31&&sectionQuads.all {it>=1}) {
 					grade = 6
 					gradeFlash = 180
 				}
@@ -595,9 +495,8 @@ class GrandSStealth:AbstractGrand() {
 
 				sectionsDone++
 
-
-				if(sectionQuads<2) gmQuads = false
-				sectionQuads = 0
+				gmQuads = sectionQuads.all{it>=2}
+				sectionQuads[section+1] = 0
 				stMedalCheck(engine, section)
 
 				if(nextSecLv==300||nextSecLv==700) roMedalCheck(engine, nextSecLv)
@@ -611,14 +510,10 @@ class GrandSStealth:AbstractGrand() {
 
 				nextSecLv += 100
 				if(nextSecLv>999) nextSecLv = 999
-			} else if(engine.statistics.level==nextSecLv-1&&secAlert) engine.playSE("levelstop")
-
-
-			lastScore = ((((levelb+li)/4+engine.softdropFall+if(engine.manualLock) 1 else 0)*li*comboValue
-				*if(engine.field.isEmpty) 4 else 1)
-				+engine.statistics.level/2+maxOf(0, engine.lockDelay-engine.lockDelayNow)*7)
-			engine.statistics.scoreLine += lastScore
-			//return lastscore
+			}
+			lastScore = pts
+			engine.statistics.scoreLine += pts
+			return pts
 		}
 		return 0
 	}
@@ -698,13 +593,13 @@ class GrandSStealth:AbstractGrand() {
 				receiver.drawMenuFont(engine, 2, 15, sectionAvgTime.toTimeStr)
 			}
 		} else if(engine.statc[1]==2) {
-			receiver.drawMenuFont(engine, 0, 2, "MEDAL", COLOR.PURPLE)
-			getMedalFontColor(medalAC)?.let {receiver.drawMenuFont(engine, 5, 3, "AC", it)}
-			getMedalFontColor(medalST)?.let {receiver.drawMenuFont(engine, 8, 3, "ST", it)}
-			getMedalFontColor(medalSK)?.let {receiver.drawMenuFont(engine, 5, 4, "SK", it)}
-			getMedalFontColor(medalRE)?.let {receiver.drawMenuFont(engine, 8, 4, "RE", it)}
-			getMedalFontColor(medalRO)?.let {receiver.drawMenuFont(engine, 5, 5, "SK", it)}
-			getMedalFontColor(medalCO)?.let {receiver.drawMenuFont(engine, 8, 5, "CO", it)}
+			receiver.drawMenuNano(engine, 0, 1.5f, "MEDAL", COLOR.PURPLE,.5f)
+			receiver.drawMenuMedal(engine, 2, 2, "AC", medalAC)
+			receiver.drawMenuMedal(engine, 5, 2, "ST", medalST)
+			receiver.drawMenuMedal(engine, 8, 2, "SK", medalSK)
+			receiver.drawMenuMedal(engine, 1, 3, "RE", medalRE)
+			receiver.drawMenuMedal(engine, 4, 3, "RO", medalRO)
+			receiver.drawMenuMedal(engine, 7, 3, "CO", medalCO)
 
 			drawResultStats(engine, receiver, 6, COLOR.PURPLE, Statistic.LPM, Statistic.SPM, Statistic.PIECE, Statistic.PPS)
 		}

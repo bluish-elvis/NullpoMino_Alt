@@ -329,8 +329,8 @@ class GrandPuzzle:AbstractMode() {
 		continueNextPieceCount = engine.nextPieceCount
 
 		// Background戻す
-		if(owner.bgMan.bg!=0) {
-			owner.bgMan.nextBg = 0
+		if(owner.bgMan.bg!=stage) {
+			owner.bgMan.nextBg = stage
 		}
 
 		// ghost 復活
@@ -441,9 +441,9 @@ class GrandPuzzle:AbstractMode() {
 	/** Update falling speed
 	 * @param engine GameEngine
 	 */
-	private fun setSpeed(engine:GameEngine) {
+	override fun setSpeed(engine:GameEngine) {
 		engine.speed.gravity = if(always20g) -1
-		else tableGravityValue[tableGravityChangeLevel.indexOfFirst {it>=engine.statistics.level}
+		else tableGravityValue[tableGravityChangeLevel.indexOfFirst {it>=speedlevel}
 			.let {if(it<0) tableGravityChangeLevel.lastIndex else it}]
 
 
@@ -972,7 +972,7 @@ class GrandPuzzle:AbstractMode() {
 				engine.playSE("levelup")
 
 				// Background切り替え
-				owner.bgMan.nextBg = nextSecLv/100
+				owner.bgMan.nextBg = stage+nextSecLv/100
 
 				// Update level for next section
 				nextSecLv += 100

@@ -157,7 +157,7 @@ class RetroN:AbstractMode() {
 	/** Set the gravity speed
 	 * @param engine GameEngine object
 	 */
-	private fun setSpeed(engine:GameEngine) {
+	override fun setSpeed(engine:GameEngine) {
 		var lv = engine.statistics.level
 
 		engine.owSkin = if(speedType==2!=lv>=10) 8 else 9

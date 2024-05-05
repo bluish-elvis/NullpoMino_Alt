@@ -207,7 +207,7 @@ class MarathonShuttle:NetDummyMode() {
 	/** Set the gravity rate
 	 * @param engine GameEngine
 	 */
-	private fun setSpeed(engine:GameEngine) {
+	override fun setSpeed(engine:GameEngine) {
 		val lv = maxOf(0, minOf(engine.statistics.level, tableGravity.size-1))
 
 		engine.speed.gravity = tableGravity[lv]

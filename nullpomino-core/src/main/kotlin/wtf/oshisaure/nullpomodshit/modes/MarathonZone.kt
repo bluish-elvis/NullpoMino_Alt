@@ -180,7 +180,7 @@ class MarathonZone:NetDummyMode() {
 	 * Set the gravity rate
 	 * @param engine GameEngine
 	 */
-	fun setSpeed(engine:GameEngine) {
+	override fun setSpeed(engine:GameEngine) {
 		var lv = engine.statistics.level
 		if(lv<0) lv = 0
 		if(lv>=tableGravity.size) lv = tableGravity.size-1

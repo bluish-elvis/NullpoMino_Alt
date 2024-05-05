@@ -146,7 +146,7 @@ class RetroModern:AbstractMode() {
 	/** Set the gravity speed
 	 * @param engine GameEngine object
 	 */
-	private fun setSpeed(engine:GameEngine) {
+	override fun setSpeed(engine:GameEngine) {
 		val lv = maxOf(0, engine.statistics.level)
 
 		engine.ruleOpt.lockResetMove = gameType!=0

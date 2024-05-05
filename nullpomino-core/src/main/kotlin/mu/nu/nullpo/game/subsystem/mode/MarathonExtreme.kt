@@ -118,7 +118,7 @@ class MarathonExtreme:NetDummyMode() {
 	/** Set the gravity rate
 	 * @param engine GameEngine
 	 */
-	fun setSpeed(engine:GameEngine) {
+	override fun setSpeed(engine:GameEngine) {
 		val lv = maxOf(0, minOf(engine.statistics.level, tableSpeed.size-1))
 		engine.speed.replace(tableSpeed[lv])
 	}

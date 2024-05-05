@@ -43,12 +43,11 @@ import mu.nu.nullpo.game.subsystem.mode.menu.DelegateMenuItem
 import mu.nu.nullpo.gui.common.BaseFont
 import mu.nu.nullpo.util.CustomProperties
 import mu.nu.nullpo.util.GeneralUtil.getONorOFF
-import mu.nu.nullpo.util.GeneralUtil.toInt
 import mu.nu.nullpo.util.GeneralUtil.toTimeStr
 import org.apache.logging.log4j.LogManager
 
 /** PRACTICE Mode */
-class Practice:AbstractMode() {
+class Practice:AbstractGrand() {
 	private var levelTimer = 0
 	private var lastlineTime = 0
 	/** Level upRemaining until point */
@@ -56,15 +55,6 @@ class Practice:AbstractMode() {
 
 	/** I got just before point */
 	private var lastgoal = 0
-
-	/** Most recent scoring eventInB2BIf it&#39;s the casetrue */
-	private var lastb2b = false
-
-	/** Most recent scoring eventInCombocount */
-	private var lastcombo = 0
-
-	/** Most recent scoring eventPiece inID */
-	private var lastpiece = 0
 
 	/** EndingThe rest of the time */
 	private var rollTime = 0
@@ -120,20 +110,8 @@ class Practice:AbstractMode() {
 	/** Current version */
 	private var version = 0
 
-	/** Next Section Of level (This-1At levelStop) */
-	private var nextSecLv = 0
-
-	/** LevelHas increased flag */
-	private var lvupFlag = false
-
 	/** Combo bonus */
 	private var comboValue = 0
-
-	/** Hard drop bonus */
-	private var harddropBonus = 0
-
-	/** levelstop sound */
-	private var secAlert = false
 
 	/** Become clear level */
 	private var goallv = 0
@@ -192,13 +170,9 @@ class Practice:AbstractMode() {
 		goal = 0
 		lastgoal = 0
 		lastScore = 0
-		lastb2b = false
-		lastcombo = 0
-		lastpiece = 0
 		nextSecLv = 100
 		lvupFlag = false
 		comboValue = 0
-		harddropBonus = 0
 		rollTime = 0
 		rollStarted = false
 		secretGrade = 0
@@ -707,10 +681,7 @@ class Practice:AbstractMode() {
 		}
 
 		// Hidden
-		if(blockHidden==-2)
-			engine.blockHidden = engine.ruleOpt.lockFlash
-		else
-			engine.blockHidden = blockHidden
+		engine.blockHidden = if(blockHidden==-2) engine.ruleOpt.lockFlash else blockHidden
 		engine.blockHiddenAnim = blockHiddenAnim
 		engine.blockOutlineType = blockOutlineType
 		engine.blockShowOutlineOnly = blockShowOutlineOnly
@@ -903,18 +874,7 @@ class Practice:AbstractMode() {
 	override fun onMove(engine:GameEngine):Boolean {
 		// Occurrence new piece
 		if(leveltype==LEVELTYPE_MANIA||leveltype==LEVELTYPE_MANIAPLUS) {
-			if(engine.ending==0&&engine.statc[0]==0&&!engine.holdDisable&&!lvupFlag) {
-				// Level up
-				if(engine.statistics.level<nextSecLv-1) {
-					engine.statistics.level++
-					if(engine.statistics.level==nextSecLv-1&&secAlert) engine.playSE("levelstop")
-					setMeter(engine)
-				}
-
-				// Hard drop bonusInitialization
-				harddropBonus = 0
-			}
-			if(engine.ending==0&&engine.statc[0]>0&&(version>=1||!engine.holdDisable)) lvupFlag = false
+			super.onMove(engine)
 		}
 
 		// EndingStart
@@ -938,20 +898,15 @@ class Practice:AbstractMode() {
 	override fun onARE(engine:GameEngine):Boolean {
 		// Last frame
 		if(leveltype==LEVELTYPE_MANIA||leveltype==LEVELTYPE_MANIAPLUS)
-			if(engine.ending==0
-				&&engine.statc[0]>=engine.statc[1]-1&&!lvupFlag
-			) {
-				if(engine.statistics.level<nextSecLv-1) {
-					engine.statistics.level++
-					if(engine.statistics.level==nextSecLv-1&&secAlert) engine.playSE("levelstop")
-					setMeter(engine)
-				}
-				lvupFlag = true
-			}
+			return super.onARE(engine)
 
 		return false
 	}
 
+	override fun levelUp(engine:GameEngine, lu:Int) {
+		super.levelUp(engine, lu)
+		setMeter(engine)
+	}
 	/* Calculate score */
 	override fun calcScore(engine:GameEngine, ev:ScoreEvent):Int {
 		// Decrease Hebo Hidden
@@ -962,27 +917,19 @@ class Practice:AbstractMode() {
 		}
 		calcPower(engine, ev, true)
 		return if(leveltype==LEVELTYPE_MANIA||leveltype==LEVELTYPE_MANIAPLUS)
-			calcScoreMania(engine, ev.lines) else calcScoreNormal(engine, ev)
+			calcScoreMania(engine, ev) else calcScoreNormal(engine, ev)
 	}
 
 	/** levelTypesMANIA At the time ofCalculate score */
-	private fun calcScoreMania(engine:GameEngine, lines:Int):Int {
-		// Combo
-		comboValue = if(lines==0) 1
-		else maxOf(1, comboValue+2*lines-2)
-
+	private fun calcScoreMania(engine:GameEngine, ev:ScoreEvent):Int {
+		super.calcScoreGrand(engine, ev)
+		val lines = ev.lines
 		if(lines>=1&&engine.ending==0) {
-			// Level up
-			val levelb = engine.statistics.level
 
-			if(leveltype==LEVELTYPE_MANIA)
-				engine.statistics.level += lines
-			else {
-				var levelplus = lines
-				if(lines==3) levelplus = 4
-				if(lines>=4) levelplus = 6
-				engine.statistics.level += levelplus
-			}
+			levelUp(
+				engine,
+				if(leveltype==LEVELTYPE_MANIAPLUS&&lines>=3) lines+lines-2 else lines
+			)
 
 			if(engine.statistics.level>=(goallv+1)*100&&goallv!=-1) {
 				// Ending
@@ -1011,19 +958,6 @@ class Practice:AbstractMode() {
 				if(timelimitResetEveryLevel&&timelimit>0) timelimitTimer = timelimit
 			} else if(engine.statistics.level==nextSecLv-1&&secAlert) engine.playSE("levelstop")
 
-			val manualLock = engine.manualLock.toInt()
-			val speedBonus = maxOf(0, engine.lockDelay-engine.statc[0])
-			// Calculate score
-			lastScore = if(leveltype==LEVELTYPE_MANIA) {
-				val bravo = if(engine.field.isEmpty) 4 else 1
-
-				((levelb+lines)/4+engine.softdropFall+manualLock+harddropBonus)*lines*comboValue*bravo+
-					engine.statistics.level/2+speedBonus*7
-			} else {
-				val bravo = 1+engine.field.isEmpty.toInt()
-				(((levelb+lines)/4+engine.softdropFall+manualLock+harddropBonus)*lines*comboValue+speedBonus+
-					engine.statistics.level/2)*bravo
-			}
 			if(engine.clearMode==GameEngine.ClearType.LINE_GEM_BOMB||engine.clearMode==GameEngine.ClearType.LINE_GEM_SPARK) {
 				lastScore /= 7+3*engine.chain
 			}
@@ -1126,9 +1060,7 @@ class Practice:AbstractMode() {
 	}
 
 	override fun afterHardDropFall(engine:GameEngine, fall:Int) {
-		if(leveltype==LEVELTYPE_MANIA||leveltype==LEVELTYPE_MANIAPLUS) {
-			if(fall*2>harddropBonus) harddropBonus = fall*2
-		} else
+		if(leveltype!=LEVELTYPE_MANIA&&leveltype!=LEVELTYPE_MANIAPLUS)
 			engine.statistics.scoreHD += fall*2
 	}
 

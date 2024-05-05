@@ -149,7 +149,7 @@ class RetroS:AbstractMode() {
 	/** Set the gravity speed
 	 * @param engine GameEngine object
 	 */
-	private fun setSpeed(engine:GameEngine) {
+	override fun setSpeed(engine:GameEngine) {
 		val lv = maxOf(0, minOf(engine.statistics.level, tableDenominator[gameType].size-1))
 
 		engine.speed.gravity = 1

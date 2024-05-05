@@ -150,7 +150,7 @@ abstract class Avalanche1PDummyMode:AbstractMode() {
 	/** Set the gravity rate
 	 * @param engine GameEngine
 	 */
-	open fun setSpeed(engine:GameEngine) {
+	override fun setSpeed(engine:GameEngine) {
 		if(level<=40) {
 			engine.speed.gravity = 1
 			engine.speed.denominator = maxOf(43-level-(level%10 shl 1), 2)

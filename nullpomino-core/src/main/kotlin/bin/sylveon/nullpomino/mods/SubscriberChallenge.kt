@@ -115,7 +115,6 @@ class SubscriberChallenge:NetDummyMode() {
 	override val menu = MenuList("subscriberchallenge", itemMode, itemLv, itemBig)
 	override fun playerInit(engine:GameEngine) {
 		super.playerInit(engine)
-		lastScore = 0
 		lastb2b = false
 		lastcombo = 0
 		lastpiece = 0
@@ -143,7 +142,7 @@ class SubscriberChallenge:NetDummyMode() {
 	 * Set the gravity rate
 	 * @param engine GameEngine
 	 */
-	fun setSpeed(engine:GameEngine) {
+	override fun setSpeed(engine:GameEngine) {
 		var lv:Int = engine.statistics.level
 		if(lv<0) lv = 0
 		if(lv>=tableGravity.size) lv = tableGravity.size-1

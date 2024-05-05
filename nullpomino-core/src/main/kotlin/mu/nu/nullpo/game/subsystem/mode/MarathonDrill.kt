@@ -151,7 +151,7 @@ class MarathonDrill:NetDummyMode() {
 	/** Set the gravity rate
 	 * @param engine GameEngine
 	 */
-	private fun setSpeed(engine:GameEngine) {
+	override fun setSpeed(engine:GameEngine) {
 		val lv = maxOf(0, minOf(engine.statistics.level, tableSpeeds.size-1))
 		engine.speed.apply {
 			replace(tableSpeeds[lv])

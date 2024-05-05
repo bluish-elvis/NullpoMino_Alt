@@ -111,7 +111,7 @@ class MarathonSquare:AbstractMode() {
 	/** Set the gravity speed
 	 * @param engine GameEngine
 	 */
-	fun setSpeed(engine:GameEngine) {
+	override fun setSpeed(engine:GameEngine) {
 		engine.speed.gravity = if(gametype==0) {
 			tableGravityValue[tableGravityChangeScore.indexOfLast {it<=engine.statistics.score}
 				.let {if(it<0) tableGravityChangeScore.size-1 else it}]

@@ -367,12 +367,12 @@ abstract class AbstractRenderer:EventReceiver() {
 					} else fillRectSpecific(smX, smY, mW, mH, 0xFF0000)
 					moveLimit.let {l ->
 						if(l>0) repeat(moveLimit-moveCount) {
-							fillRectSpecific(smX+(mW+1)*it/l, smY1, mW/l-1, mH/2, 0x00FF80)
+							fillRectSpecific(smX+(mW+1)*(it+moveCount/2)/l, smY1, mW/l-1, mH/2, 0x00FF80)
 						}
 					}
 					spinLimit.let {l ->
 						if(l>0) repeat(moveLimit-spinCount) {
-							fillRectSpecific(smX+(mW+1)*it/l, smY2, mW/l-1, mH/2, 0x0080FF)
+							fillRectSpecific(smX+(mW+1)*(it+spinCount/2)/l, smY2, mW/l-1, mH/2, 0x0080FF)
 						}
 					}
 				}

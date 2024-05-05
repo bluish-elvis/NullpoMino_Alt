@@ -44,6 +44,7 @@ import mu.nu.nullpo.util.GeneralUtil.toTimeStr
 
 /** FINAL mode (Original from NullpoUE build 010210 by Zircean) */
 class GrandZ:AbstractGrand() {
+	override val medalSKQuads = listOf(listOf(5, 10, 17, 25), listOf(1, 2, 4, 6))
 	private var gametype = 0
 	private var joker = 0
 	private var stacks = 0
@@ -60,9 +61,6 @@ class GrandZ:AbstractGrand() {
 
 	/** Remaining frames of flashing grade display */
 	private var gradeFlash = 0
-
-	/** Used by combo scoring */
-	private var comboValue = 0
 
 	/** Game completed flag (0=Died before Lv999 1=Died during credits roll
 	 * 2=Survived credits roll */
@@ -81,15 +79,9 @@ class GrandZ:AbstractGrand() {
 	/** Selected start level */
 	private var startLevel = 0
 
-	/** Level stop sound */
-	private var secAlert = false
-
 	private val itemBig = BooleanMenuItem("big", "BIG", COLOR.BLUE, false)
 	/** BigMode */
 	private var big:Boolean by DelegateMenuItem(itemBig)
-
-	/** Show section time */
-	private var showST = false
 
 	/** Version of this mode */
 	private var version = 0
@@ -137,8 +129,6 @@ class GrandZ:AbstractGrand() {
 		gradeinternal = 0
 		grade = 0
 		gradeFlash = 0
-		comboValue = 0
-		lastScore = 0
 		secretGrade = 0
 		sectionLine.fill(0)
 		medals.reset()
@@ -190,7 +180,7 @@ class GrandZ:AbstractGrand() {
 	/** Set the gravity speed
 	 * @param engine GameEngine object
 	 */
-	private fun setSpeed(engine:GameEngine) {
+	override fun setSpeed(engine:GameEngine) {
 		engine.speed.gravity = -1
 		if(engine.ending==2) {
 			engine.speed.are = 30
@@ -427,17 +417,7 @@ class GrandZ:AbstractGrand() {
 
 	/** This function will be called when the piece is active */
 	override fun onMove(engine:GameEngine):Boolean {
-		// New piece is active
-		if(engine.ending==0&&engine.statc[0]==0&&gametype==0&&!engine.holdDisable&&!lvupFlag) {
-			// Level up
-			if(engine.statistics.level<nextSecLv-1) {
-				engine.statistics.level++
-				if(engine.statistics.level==nextSecLv-1&&secAlert) engine.playSE("levelstop")
-			}
-			levelUp(engine)
-		}
-		if(engine.ending==0&&engine.statc[0]>0&&(version>=2||!engine.holdDisable)) lvupFlag = false
-
+		if(gametype==0) super.onMove(engine)
 		// Ending start
 		if(engine.ending==2&&!rollStarted) {
 			rollStarted = true
@@ -447,29 +427,8 @@ class GrandZ:AbstractGrand() {
 		return false
 	}
 
-	/** This function will be called during ARE */
 	override fun onARE(engine:GameEngine):Boolean {
-		// Last frame of ARE
-		if(engine.ending==0&&engine.statc[0]>=engine.statc[1]-1&&gametype==0&&!lvupFlag) {
-			if(engine.statistics.level<nextSecLv-1) {
-				engine.statistics.level++
-				if(engine.statistics.level==nextSecLv-1&&secAlert) engine.playSE("levelstop")
-			}
-			levelUp(engine)
-			lvupFlag = true
-		}
-
-		return false
-	}
-
-	/** Levelup */
-	private fun levelUp(engine:GameEngine) {
-		// Meter
-		engine.meterValue = engine.statistics.level%100/99f
-		engine.meterColor = GameEngine.METER_COLOR_LEVEL
-
-		// Update speed
-		setSpeed(engine)
+		return if(gametype==0) super.onARE(engine) else false
 	}
 
 	/** Calculates line-clear score
@@ -482,8 +441,7 @@ class GrandZ:AbstractGrand() {
 				if(engine.lockDelay>engine.lockDelayNow) 1.3f else 1f).toInt()
 
 		// Combo
-		comboValue = if(li==0) 1
-		else maxOf(1, comboValue+2*li-2)
+		val pts = super.calcScore(engine, ev)
 
 		if(li>=1&&engine.ending==0) {
 			if(gametype==2) {
@@ -497,64 +455,19 @@ class GrandZ:AbstractGrand() {
 					engine.playSE("cool")
 				}
 			}
-			// 4 lines clear count
-			if(li>=4) { // SK medal
-				if(big) {
-					if(engine.statistics.totalQuadruple==1||engine.statistics.totalQuadruple==2
-						||engine.statistics.totalQuadruple==4
-					) {
-						engine.playSE("medal${++medalSK}")
-					}
-				} else if(engine.statistics.totalQuadruple==5||engine.statistics.totalQuadruple==10
-					||engine.statistics.totalQuadruple==17
-				) {
-					engine.playSE("medal${++medalSK}")
-				}
-			}
-			// AC medal
-			if(engine.field.isEmpty)
-				if(medalAC<3) {
-					engine.playSE("medal${++medalAC}")
-				}
-
-			// CO medal
-			if(big) {
-				if(engine.combo>=2&&medalCO<1) {
-					engine.playSE("medal1")
-					medalCO = 1
-				} else if(engine.combo>=3&&medalCO<2) {
-					engine.playSE("medal2")
-					medalCO = 2
-				} else if(engine.combo>=4&&medalCO<3) {
-					engine.playSE("medal3")
-					medalCO = 3
-				}
-			} else if(engine.combo>=3&&medalCO<1) {
-				engine.playSE("medal1")
-				medalCO = 1
-			} else if(engine.combo>=4&&medalCO<2) {
-				engine.playSE("medal2")
-				medalCO = 2
-			} else if(engine.combo>=5&&medalCO<3) {
-				engine.playSE("medal3")
-				medalCO = 3
-			}
-
 			// Levelup
 			val levelb = engine.statistics.level
 			val section = levelb/100
 			when(gametype) {
 				1 -> {//joker {
-					engine.statistics.level += 4
+					levelUp(engine, 4)
 					val jo = li>=3||ev.twist||ev.split
 					if(engine.statistics.level<600&&jo) joker++
 					else if(engine.statistics.level>=600&&!jo) joker--
 				}
-				0 -> {
-					engine.statistics.level += li
-					if(li>2) engine.statistics.level += li-2
-				}
-				2 -> engine.statistics.level = engine.statistics.lines*999/FURTHEST_LINES
+				0 -> levelUp(engine, if(li>2) li*2-2 else li)
+
+				2 -> levelUp(engine, engine.statistics.lines*999/FURTHEST_LINES-engine.statistics.level)
 			}
 
 			if((gametype==1&&engine.statistics.level>=1000&&joker<0)||
@@ -623,10 +536,8 @@ class GrandZ:AbstractGrand() {
 
 			// Add score
 			if(section>=0&&section<sectionTime.size) sectionLine[section] += if(gametype==1) (li>=4).toInt() else li
-			lastScore = (((levelb+li)/4+engine.softdropFall+engine.manualLock.toInt())*li*comboValue+
-				maxOf(0, engine.lockDelay-engine.lockDelayNow)+engine.statistics.level/2)*if(engine.field.isEmpty) 2 else 1
-
-			engine.statistics.scoreLine += lastScore
+			lastScore = pts
+			engine.statistics.scoreLine += pts
 			levelUp(engine)
 		}
 		return 0
@@ -684,7 +595,7 @@ class GrandZ:AbstractGrand() {
 					else -> COLOR.WHITE
 				}
 				receiver.drawMenuFont(engine, 0, 2, "GRADE", COLOR.RED)
-				receiver.drawMenuGrade(engine, 6, 2, tableGradeName[grade], gcolor, 2f)
+				receiver.drawMenuGrade(engine, 6, 1.66f, tableGradeName[grade], gcolor, 2f)
 			}
 
 			drawResultStats(
@@ -707,11 +618,13 @@ class GrandZ:AbstractGrand() {
 				receiver.drawMenuNum(engine, 2, 15, sectionAvgTime.toTimeStr)
 			}
 		} else if(engine.statc[1]==2) {
-			receiver.drawMenuFont(engine, 0, 2, "MEDAL", COLOR.RED)
-			receiver.drawMenuMedal(engine, 5, 3, "AC", medalAC)
-			receiver.drawMenuMedal(engine, 8, 3, "ST", medalST)
-			receiver.drawMenuMedal(engine, 5, 4, "SK", medalSK)
-			receiver.drawMenuMedal(engine, 8, 4, "CO", medalCO)
+			receiver.drawMenuNano(engine, 0, 1.5f, "MEDAL", COLOR.RED,.5f)
+			receiver.drawMenuMedal(engine, 2, 2, "AC", medalAC)
+			receiver.drawMenuMedal(engine, 5, 2, "ST", medalST)
+			receiver.drawMenuMedal(engine, 8, 2, "SK", medalSK)
+			receiver.drawMenuMedal(engine, 1, 3, "RE", medalRE)
+			receiver.drawMenuMedal(engine, 4, 3, "RO", medalRO)
+			receiver.drawMenuMedal(engine, 7, 3, "CO", medalCO)
 
 			drawResultStats(engine, receiver, 6, COLOR.RED, Statistic.LPS, Statistic.SPS, Statistic.PIECE, Statistic.PPS)
 		}

@@ -179,7 +179,7 @@ class GrandOrders:NetDummyMode() {
 	/** Set the gravity speed and some other things
 	 * @param engine GameEngine object
 	 */
-	private fun setSpeed(engine:GameEngine) {
+	override fun setSpeed(engine:GameEngine) {
 		val nowMission = nowCourse.missions[engine.statistics.level]
 		engine.speed.replace(nowMission.let {it.speeds[it.lv]})
 		// Show outline only
