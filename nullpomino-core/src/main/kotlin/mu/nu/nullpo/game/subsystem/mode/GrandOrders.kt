@@ -30,7 +30,7 @@
  */
 package mu.nu.nullpo.game.subsystem.mode
 
-import mu.nu.nullpo.game.component.BGMStatus.BGM
+import mu.nu.nullpo.game.component.BGM
 import mu.nu.nullpo.game.component.Controller
 import mu.nu.nullpo.game.component.LevelData
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
@@ -116,10 +116,10 @@ class GrandOrders:NetDummyMode() {
 	private var rankingRank = 0
 
 	/** Ranking ecords */
-	private val rankingLines = List(COURSE_MAX) {MutableList(RANKING_MAX) {0}}
-	private val rankingLives = List(COURSE_MAX) {MutableList(RANKING_MAX) {0}}
-	private val rankingTime = List(COURSE_MAX) {MutableList(RANKING_MAX) {-1}}
-	private val rankingRollClear = List(COURSE_MAX) {MutableList(RANKING_MAX) {0}}
+	private val rankingLines = List(COURSE_MAX) {MutableList(rankingMax) {0}}
+	private val rankingLives = List(COURSE_MAX) {MutableList(rankingMax) {0}}
+	private val rankingTime = List(COURSE_MAX) {MutableList(rankingMax) {-1}}
+	private val rankingRollClear = List(COURSE_MAX) {MutableList(rankingMax) {0}}
 
 	/** Returns the name of this mode */
 	override val name = "Grand Roads"
@@ -285,7 +285,7 @@ class GrandOrders:NetDummyMode() {
 			if(!owner.replayMode&&startLevel==0&&!big&&engine.ai==null&&!netIsWatch) {
 				receiver.drawScoreFont(engine, 8, 3, "Time", COLOR.BLUE)
 
-				for(i in 0..<RANKING_MAX) {
+				for(i in 0..<rankingMax) {
 					val cleared = rankingRollClear[goalType][i]>0
 					val gColor = when {
 						rankingRollClear[goalType][i]==1 -> COLOR.GREEN
@@ -570,7 +570,7 @@ class GrandOrders:NetDummyMode() {
 		rankingRank = checkRanking(lf, ln, time, type, clear)
 
 		if(rankingRank!=-1) {
-			for(i in RANKING_MAX-1 downTo rankingRank+1) {
+			for(i in rankingMax-1 downTo rankingRank+1) {
 				rankingLives[type][i] = rankingLives[type][i-1]
 				rankingLines[type][i] = rankingLines[type][i-1]
 				rankingTime[type][i] = rankingTime[type][i-1]
@@ -594,7 +594,7 @@ class GrandOrders:NetDummyMode() {
 	 * @return Place (First place is 0. -1 is Out of Rank)
 	 */
 	private fun checkRanking(lf:Int, ln:Int, time:Int, type:Int, clear:Int):Int {
-		for(i in 0..<RANKING_MAX) if(clear>rankingRollClear[type][i]) return i
+		for(i in 0..<rankingMax) if(clear>rankingRollClear[type][i]) return i
 		else if(clear==rankingRollClear[type][i]&&ln>rankingLines[type][i]) return i
 		else if(clear==rankingRollClear[type][i]&&ln==rankingLines[type][i]&&lf>rankingLives[type][i]) return i
 		else if(clear==rankingRollClear[type][i]&&ln==rankingLines[type][i]&&lf==rankingLives[type][i]&&time<rankingTime[type][i]) return i

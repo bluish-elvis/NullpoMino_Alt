@@ -31,7 +31,7 @@
 package mu.nu.nullpo.game.play
 
 import kotlinx.serialization.encodeToString
-import mu.nu.nullpo.game.component.BGMStatus.BGM
+import mu.nu.nullpo.game.component.BGM
 import mu.nu.nullpo.game.component.Block
 import mu.nu.nullpo.game.component.Controller
 import mu.nu.nullpo.game.component.Field

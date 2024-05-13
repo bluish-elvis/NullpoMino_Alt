@@ -30,7 +30,7 @@
  */
 package mu.nu.nullpo.game.subsystem.mode
 
-import mu.nu.nullpo.game.component.BGMStatus.BGM
+import mu.nu.nullpo.game.component.BGM
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
 import mu.nu.nullpo.game.event.ScoreEvent
 import mu.nu.nullpo.game.net.NetUtil
@@ -103,13 +103,13 @@ class MarathonShuttle:NetDummyMode() {
 	private var rankingRank = 0
 
 	/** Rankings' scores */
-	private val rankingScore = List(RANKING_TYPE) {MutableList(RANKING_MAX) {0L}}
+	private val rankingScore = List(RANKING_TYPE) {MutableList(rankingMax) {0L}}
 
 	/** Rankings' line counts */
-	private val rankingLines = List(RANKING_TYPE) {MutableList(RANKING_MAX) {0}}
+	private val rankingLines = List(RANKING_TYPE) {MutableList(rankingMax) {0}}
 
 	/** Rankings' times */
-	private val rankingTime = List(RANKING_TYPE) {MutableList(RANKING_MAX) {-1}}
+	private val rankingTime = List(RANKING_TYPE) {MutableList(rankingMax) {-1}}
 
 	override val propRank
 		get() = rankMapOf(rankingScore.mapIndexed {a, x -> "$a.score" to x}+
@@ -237,7 +237,7 @@ class MarathonShuttle:NetDummyMode() {
 				val topY = if(receiver.nextDisplayType==2) 6 else 4
 				receiver.drawScoreFont(engine, 3, topY-1, "SCORE   LINE TIME", COLOR.BLUE)
 
-				for(i in 0..<RANKING_MAX) {
+				for(i in 0..<rankingMax) {
 					receiver.drawScoreGrade(engine, 0, topY+i, "%2d".format(i+1), COLOR.YELLOW)
 					receiver.drawScoreNum(engine, 3, topY+i, "${rankingScore[goalType][i]}", i==rankingRank)
 					receiver.drawScoreNum(engine, 11, topY+i, "${rankingLines[goalType][i]}", i==rankingRank)
@@ -530,7 +530,7 @@ class MarathonShuttle:NetDummyMode() {
 	 * @return Position (-1 if unranked)
 	 */
 	private fun checkRanking(sc:Long, li:Int, time:Int, type:Int):Int {
-		for(i in 0..<RANKING_MAX)
+		for(i in 0..<rankingMax)
 			if(sc>rankingScore[type][i]) return i
 			else if(sc==rankingScore[type][i]&&li>rankingLines[type][i]) return i
 			else if(sc==rankingScore[type][i]&&li==rankingLines[type][i]&&time<rankingTime[type][i]) return i
@@ -643,7 +643,7 @@ class MarathonShuttle:NetDummyMode() {
 
 		if(rankingRank!=-1) {
 			// Shift down ranking entries
-			for(i in RANKING_MAX-1 downTo rankingRank+1) {
+			for(i in rankingMax-1 downTo rankingRank+1) {
 				rankingScore[type][i] = rankingScore[type][i-1]
 				rankingLines[type][i] = rankingLines[type][i-1]
 				rankingTime[type][i] = rankingTime[type][i-1]

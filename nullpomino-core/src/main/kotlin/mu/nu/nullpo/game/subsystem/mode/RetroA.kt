@@ -30,7 +30,7 @@
  */
 package mu.nu.nullpo.game.subsystem.mode
 
-import mu.nu.nullpo.game.component.BGMStatus.BGM
+import mu.nu.nullpo.game.component.BGM
 import mu.nu.nullpo.game.component.LevelData
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
 import mu.nu.nullpo.game.event.ScoreEvent
@@ -90,13 +90,13 @@ class RetroA:AbstractMode() {
 	private var rankingRank = 0
 
 	/** Score records */
-	private val rankingScore = List(RANKING_TYPE) {MutableList(RANKING_MAX) {0L}}
+	private val rankingScore = List(RANKING_TYPE) {MutableList(rankingMax) {0L}}
 
 	/** Line records */
-	private val rankingLines = List(RANKING_TYPE) {MutableList(RANKING_MAX) {0}}
+	private val rankingLines = List(RANKING_TYPE) {MutableList(rankingMax) {0}}
 
 	/** Level records */
-	private val rankingLevel = List(RANKING_TYPE) {MutableList(RANKING_MAX) {0}}
+	private val rankingLevel = List(RANKING_TYPE) {MutableList(rankingMax) {0}}
 
 	override val propRank
 		get() = rankMapOf(
@@ -200,7 +200,7 @@ class RetroA:AbstractMode() {
 			if(!owner.replayMode&&!big&&engine.ai==null) {
 				receiver.drawScoreFont(engine, 3, 3, "SCORE    LINE LV.", COLOR.BLUE)
 
-				for(i in 0..<RANKING_MAX) {
+				for(i in 0..<rankingMax) {
 					receiver.drawScoreGrade(
 						engine, 0, 4+i, "%2d".format(i+1), if(rankingRank==i) COLOR.RAINBOW else COLOR.YELLOW
 					)
@@ -354,7 +354,7 @@ class RetroA:AbstractMode() {
 		val t = type.ordinal
 		if(rankingRank!=-1) {
 			// Shift the ranking data
-			for(i in RANKING_MAX-1 downTo rankingRank+1) {
+			for(i in rankingMax-1 downTo rankingRank+1) {
 				rankingScore[t][i] = rankingScore[t][i-1]
 				rankingLines[t][i] = rankingLines[t][i-1]
 				rankingLevel[t][i] = rankingLevel[t][i-1]
@@ -376,7 +376,7 @@ class RetroA:AbstractMode() {
 	 */
 	private fun checkRanking(sc:Long, li:Int, lv:Int, type:GAMETYPE):Int {
 		val t = type.ordinal
-		for(i in 0..<RANKING_MAX)
+		for(i in 0..<rankingMax)
 			if(sc>rankingScore[t][i])
 				return i
 			else if(sc==rankingScore[t][i]&&li>rankingLines[t][i])

@@ -30,7 +30,7 @@
  */
 package mu.nu.nullpo.game.subsystem.mode
 
-import mu.nu.nullpo.game.component.BGMStatus.BGM
+import mu.nu.nullpo.game.component.BGM
 import mu.nu.nullpo.game.component.Block
 import mu.nu.nullpo.game.component.Controller
 import mu.nu.nullpo.game.component.Piece
@@ -91,13 +91,13 @@ class RetroN:AbstractMode() {
 	private var rankingRank = 0
 
 	/** Score records */
-	private val rankingScore = List(RANKING_TYPE) {MutableList(RANKING_MAX) {0L}}
+	private val rankingScore = List(RANKING_TYPE) {MutableList(rankingMax) {0L}}
 
 	/** Line records */
-	private val rankingLines = List(RANKING_TYPE) {MutableList(RANKING_MAX) {0}}
+	private val rankingLines = List(RANKING_TYPE) {MutableList(rankingMax) {0}}
 
 	/** Level records */
-	private val rankingLevel = List(RANKING_TYPE) {MutableList(RANKING_MAX) {0}}
+	private val rankingLevel = List(RANKING_TYPE) {MutableList(rankingMax) {0}}
 
 	/** Time records Reaches Score Max-out 999999 */
 	private var maxScoredTime:Int? = null
@@ -242,7 +242,7 @@ class RetroN:AbstractMode() {
 			if(!owner.replayMode&&!big&&engine.ai==null) {
 				receiver.drawScoreFont(engine, 3, 3, "SCORE    LINE LV.", COLOR.BLUE)
 
-				for(i in 0..<RANKING_MAX) {
+				for(i in 0..<rankingMax) {
 					receiver.drawScoreGrade(
 						engine, 0, 4+i, "%2d".format(i+1), if(rankingRank==i) COLOR.RAINBOW else COLOR.YELLOW
 					)
@@ -442,7 +442,7 @@ class RetroN:AbstractMode() {
 
 		if(rankingRank!=-1) {
 			// Shift the ranking data
-			for(i in RANKING_MAX-1 downTo rankingRank+1) {
+			for(i in rankingMax-1 downTo rankingRank+1) {
 				rankingScore[type][i] = rankingScore[type][i-1]
 				rankingLines[type][i] = rankingLines[type][i-1]
 				rankingLevel[type][i] = rankingLevel[type][i-1]
@@ -463,7 +463,7 @@ class RetroN:AbstractMode() {
 	 * @return Place (First place is 0. -1 is Out of Rank)
 	 */
 	private fun checkRanking(sc:Long, li:Int, lv:Int, type:Int):Int {
-		for(i in 0..<RANKING_MAX)
+		for(i in 0..<rankingMax)
 			if(sc>rankingScore[type][i]) return i
 			else if(sc==rankingScore[type][i]&&li>rankingLines[type][i])
 				return i

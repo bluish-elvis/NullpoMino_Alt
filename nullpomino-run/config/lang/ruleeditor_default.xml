@@ -141,7 +141,7 @@
  <entry key="Move_UpAndDown">Allow Up+Down</entry>
  <entry key="Move_LeftAndRightAllow">Allow Left+Right</entry>
  <entry key="Move_LeftAndRightUsePreviousInput">When both Left and Right are pressed, use previous button</entry>
- <entry key="Move_ShiftLock">Prevent DAS movement..<drop key is lifted</entry>
+ <entry key="Move_ShiftLock">Prevent DAS movement until drop key is lifted</entry>
 
  <!--PieceNames-->
  <entry key="Basic_Reset">Reset</entry>

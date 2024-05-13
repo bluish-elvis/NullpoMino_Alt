@@ -30,7 +30,7 @@
  */
 package mu.nu.nullpo.game.subsystem.mode
 
-import mu.nu.nullpo.game.component.BGMStatus.BGM
+import mu.nu.nullpo.game.component.BGM
 import mu.nu.nullpo.game.component.Block
 import mu.nu.nullpo.game.component.Controller
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
@@ -87,13 +87,13 @@ class GrandM2G:AbstractGrand() {
 	private var rankingRank = 0
 
 	/** Rankings' level */
-	private val rankingLevel:List<MutableList<Int>> = List(RANKING_MAX) {MutableList(GOALTYPE_MAX) {0}}
+	private val rankingLevel:List<MutableList<Int>> = List(rankingMax) {MutableList(GOALTYPE_MAX) {0}}
 
 	/** Rankings' times */
-	private val rankingTime:List<MutableList<Int>> = List(RANKING_MAX) {MutableList(GOALTYPE_MAX) {-1}}
+	private val rankingTime:List<MutableList<Int>> = List(rankingMax) {MutableList(GOALTYPE_MAX) {-1}}
 
 	/** Section Time記録 */
-	private val bestSectionTime:List<MutableList<Int>> = List(SECTION_MAX) {MutableList(GOALTYPE_MAX) {DEFAULT_SECTION_TIME}}
+	private val bestSectionTime:List<MutableList<Int>> = List(sectionMax) {MutableList(GOALTYPE_MAX) {DEFAULT_SECTION_TIME}}
 
 	/* Mode name */
 	override val name = "Grand Mountain"
@@ -276,7 +276,7 @@ class GrandM2G:AbstractGrand() {
 	}
 
 	override fun renderFirst(engine:GameEngine) {
-		if(engine.ending==2) receiver.drawStaffRoll(engine, rollTime*1f/ROLLTIMELIMIT)
+		if(engine.gameActive&&engine.ending==2) receiver.drawStaffRoll(engine, rollTime*1f/ROLLTIMELIMIT)
 	}
 	/* Render score */
 	override fun renderLast(engine:GameEngine) {
@@ -292,7 +292,7 @@ class GrandM2G:AbstractGrand() {
 					// Rankings
 					receiver.drawScoreFont(engine, 3, 2, "LEVEL TIME", COLOR.BLUE)
 
-					for(i in 0..<RANKING_MAX) {
+					for(i in 0..<rankingMax) {
 						receiver.drawScoreGrade(
 							engine, 0, 3+i, "%2d".format(i+1),
 							if(rankingRank==i) COLOR.RAINBOW else COLOR.YELLOW
@@ -306,7 +306,7 @@ class GrandM2G:AbstractGrand() {
 					// Section Time
 					receiver.drawScoreFont(engine, 0, 2, "SECTION TIME", COLOR.BLUE)
 
-					val totalTime = (0..<SECTION_MAX).fold(0) {tt, i ->
+					val totalTime = (0..<sectionMax).fold(0) { tt, i ->
 						val slv = minOf(i*100, 999)
 						receiver.drawScoreNum(
 							engine, 0, 3+i, "%3d-%3d %s".format(slv, slv+99, bestSectionTime[i][goalType].toTimeStr),
@@ -318,7 +318,7 @@ class GrandM2G:AbstractGrand() {
 					receiver.drawScoreFont(engine, 0, 14, "TOTAL", COLOR.BLUE)
 					receiver.drawScoreNum(engine, 0, 15, totalTime.toTimeStr)
 					receiver.drawScoreFont(engine, 9, 14, "AVERAGE", COLOR.BLUE)
-					receiver.drawScoreNum(engine, 9, 15, (totalTime/SECTION_MAX).toTimeStr)
+					receiver.drawScoreNum(engine, 9, 15, (totalTime/sectionMax).toTimeStr)
 
 					receiver.drawScoreFont(engine, 0, 17, "F:VIEW RANKING", COLOR.GREEN)
 				}
@@ -687,7 +687,7 @@ class GrandM2G:AbstractGrand() {
 
 		if(rankingRank!=-1) {
 			// Shift down ranking entries
-			for(i in RANKING_MAX-1 downTo rankingRank+1) {
+			for(i in rankingMax-1 downTo rankingRank+1) {
 				rankingLevel[i][goalType] = rankingLevel[i-1][goalType]
 				rankingTime[i][goalType] = rankingTime[i-1][goalType]
 			}
@@ -704,7 +704,7 @@ class GrandM2G:AbstractGrand() {
 	 * @return Position (-1 if unranked)
 	 */
 	private fun checkRanking(lv:Int, time:Int, goalType:Int):Int {
-		for(i in 0..<RANKING_MAX)
+		for(i in 0..<rankingMax)
 			if(lv>rankingLevel[i][goalType]) return i
 			else if(lv==rankingLevel[i][goalType]&&time<rankingTime[i][goalType]) return i
 
@@ -713,7 +713,7 @@ class GrandM2G:AbstractGrand() {
 
 	/** Update best section time records */
 	private fun updateBestSectionTime(goalType:Int) {
-		for(i in 0..<SECTION_MAX)
+		for(i in 0..<sectionMax)
 			if(sectionIsNewRecord[i]) bestSectionTime[i][goalType] = sectionTime[i]
 	}
 

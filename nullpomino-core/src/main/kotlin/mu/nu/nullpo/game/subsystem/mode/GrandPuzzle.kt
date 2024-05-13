@@ -30,7 +30,7 @@
  */
 package mu.nu.nullpo.game.subsystem.mode
 
-import mu.nu.nullpo.game.component.BGMStatus.BGM
+import mu.nu.nullpo.game.component.BGM
 import mu.nu.nullpo.game.component.Block
 import mu.nu.nullpo.game.component.Controller
 import mu.nu.nullpo.game.component.Field
@@ -205,16 +205,16 @@ class GrandPuzzle:AbstractMode() {
 	private var rankingRank = 0
 
 	/** Rankings' stage reached */
-	private val rankingStage = List(RANKING_TYPE) {MutableList(RANKING_MAX) {0}}
+	private val rankingStage = List(RANKING_TYPE) {MutableList(rankingMax) {0}}
 
 	/** Rankings' clear ratio */
-	private val rankingRate = List(RANKING_TYPE) {MutableList(RANKING_MAX) {0}}
+	private val rankingRate = List(RANKING_TYPE) {MutableList(rankingMax) {0}}
 
 	/** Rankings' times */
-	private val rankingTime = List(RANKING_TYPE) {MutableList(RANKING_MAX) {-1}}
+	private val rankingTime = List(RANKING_TYPE) {MutableList(rankingMax) {-1}}
 
 	/** Rankings' all clear flag */
-	private val rankingAllClear = List(RANKING_TYPE) {MutableList(RANKING_MAX) {0}}
+	private val rankingAllClear = List(RANKING_TYPE) {MutableList(rankingMax) {0}}
 
 	override val propRank
 		get() = rankMapOf(rankingStage.mapIndexed {a, x -> "$a.stage" to x}+
@@ -585,7 +585,7 @@ class GrandPuzzle:AbstractMode() {
 						3 -> {
 							stagebgm += change
 							if(stagebgm<0) stagebgm = BGM.count
-							if(stagebgm>BGM.count) stagebgm = 0
+							if(stagebgm> BGM.count) stagebgm = 0
 						}
 						4 -> {
 							gimmickMirror += change
@@ -736,7 +736,7 @@ class GrandPuzzle:AbstractMode() {
 				receiver.drawScoreFont(engine, 3, topY-1, "STAGE CLEAR TIME", COLOR.PINK)
 				val type = randomQueue.toInt()
 
-				for(i in 0..<RANKING_MAX) {
+				for(i in 0..<rankingMax) {
 					receiver.drawScoreGrade(
 						engine, 0, topY+i, "%2d".format(i+1), if(rankingRank==i) COLOR.RAINBOW else COLOR.YELLOW
 					)
@@ -1346,7 +1346,7 @@ class GrandPuzzle:AbstractMode() {
 
 		if(rankingRank!=-1) {
 			// Shift down ranking entries
-			for(i in RANKING_MAX-1 downTo rankingRank+1) {
+			for(i in rankingMax-1 downTo rankingRank+1) {
 				rankingStage[type][i] = rankingStage[type][i-1]
 				rankingRate[type][i] = rankingRate[type][i-1]
 				rankingTime[type][i] = rankingTime[type][i-1]
@@ -1371,7 +1371,7 @@ class GrandPuzzle:AbstractMode() {
 	 * @return Position (-1 if unranked)
 	 */
 	private fun checkRanking(type:Int, stg:Int, clper:Int, time:Int, clear:Int):Int {
-		for(i in 0..<RANKING_MAX)
+		for(i in 0..<rankingMax)
 			if(clear>rankingAllClear[type][i]) return i
 			else if(clear==rankingAllClear[type][i]&&stg>rankingStage[type][i]) return i
 			else if(clear==rankingAllClear[type][i]&&stg==rankingStage[type][i]&&clper>rankingRate[type][i]) return i

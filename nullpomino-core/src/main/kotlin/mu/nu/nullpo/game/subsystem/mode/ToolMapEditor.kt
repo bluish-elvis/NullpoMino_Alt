@@ -30,11 +30,8 @@
  */
 package mu.nu.nullpo.game.subsystem.mode
 
-import mu.nu.nullpo.game.component.BGMStatus
-import mu.nu.nullpo.game.component.Block
+import mu.nu.nullpo.game.component.*
 import mu.nu.nullpo.game.component.Block.COLOR as BCOLOR
-import mu.nu.nullpo.game.component.Controller
-import mu.nu.nullpo.game.component.Field
 import mu.nu.nullpo.game.event.EventReceiver.COLOR as ECOLOR
 import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.game.play.GameManager
@@ -141,7 +138,7 @@ class ToolMapEditor:AbstractMode() {
 
 	/* Called at settings screen */
 	override fun onSetting(engine:GameEngine):Boolean {
-		owner.musMan.bgm = BGMStatus.BGM.Menu(2)
+		owner.musMan.bgm = BGM.Menu(2)
 		// Configuration changes
 		val change = updateCursor(engine, 7)
 

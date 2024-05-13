@@ -37,7 +37,7 @@
 
 package zeroxfc.nullpo.custom.modes
 
-import mu.nu.nullpo.game.component.BGMStatus
+import mu.nu.nullpo.game.component.BGM
 import mu.nu.nullpo.game.component.Block
 import mu.nu.nullpo.game.component.Controller
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
@@ -261,7 +261,7 @@ class Collapse:AbstractMode() {
 
 		// 開始
 		if(engine.statc[0]>=engine.goEnd) {
-			if(!engine.readyDone) engine.owner.musMan.bgm = BGMStatus.BGM.Silent
+			if(!engine.readyDone) engine.owner.musMan.bgm = BGM.Silent
 			startGame(engine)
 			engine.owner.receiver.startGame(engine)
 			engine.stat = GameEngine.Status.CUSTOM
@@ -290,7 +290,7 @@ class Collapse:AbstractMode() {
 	}
 
 	override fun startGame(engine:GameEngine) {
-		engine.owner.musMan.bgm = BGMStatus.BGM.values[bgm]
+		engine.owner.musMan.bgm = BGM.values[bgm]
 	}
 
 	override fun onCustom(engine:GameEngine):Boolean {
@@ -717,7 +717,7 @@ class Collapse:AbstractMode() {
 			if(engine.statc[0]==0) {
 				engine.gameEnded()
 				engine.blockShowOutlineOnly = false
-				if(owner.players<2) owner.musMan.bgm = BGMStatus.BGM.Silent
+				if(owner.players<2) owner.musMan.bgm = BGM.Silent
 				if(engine.field.isEmpty) {
 					engine.statc[0] = engine.field.height+1
 				} else {

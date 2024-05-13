@@ -578,7 +578,7 @@ open class RanksAI:DummyAI(), Runnable {
 
 					// if the score is better than the previous best score, replace it.
 					if(scoreCurrent>bestScore) {
-						log.debug("SUB new best piece !")
+						log.debug("SUB new best I piece !")
 
 						bestScore = scoreCurrent
 					}
@@ -612,7 +612,7 @@ open class RanksAI:DummyAI(), Runnable {
 
 								// if the score is better than the previous best score, replace it.
 								if(scoreCurrent>bestScore) {
-									log.debug("SUB new best piece !")
+									log.debug("SUB new best ${Piece.Shape.names[pieceNow]} piece !")
 									bestScore = scoreCurrent
 								}
 							}
@@ -632,7 +632,7 @@ open class RanksAI:DummyAI(), Runnable {
 								)
 								// if the score is better than the previous best score, replace it.
 								if(scoreCurrent>bestScore) {
-									log.debug("SUB new best piece !")
+									log.debug("SUB new best vertical I piece !")
 
 									bestScore = scoreCurrent
 								}

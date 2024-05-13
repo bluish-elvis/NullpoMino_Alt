@@ -37,7 +37,7 @@
 
 package bin.sylveon.nullpomino.mods
 
-import mu.nu.nullpo.game.component.BGMStatus
+import mu.nu.nullpo.game.component.BGM
 import mu.nu.nullpo.game.event.EventReceiver
 import mu.nu.nullpo.game.event.ScoreEvent
 import mu.nu.nullpo.game.net.NetUtil
@@ -53,7 +53,6 @@ import mu.nu.nullpo.util.CustomProperties
 import mu.nu.nullpo.util.GeneralUtil.toInt
 import mu.nu.nullpo.util.GeneralUtil.toTimeStr
 import zeroxfc.nullpo.custom.libs.Interpolation
-import zeroxfc.nullpo.custom.libs.backgroundtypes.AnimatedBackgroundHook
 import kotlin.random.Random
 
 /**
@@ -96,11 +95,11 @@ class SubscriberChallenge:NetDummyMode() {
 	/** Current round's ranking position  */
 	private var rankingRank = 0
 	/** Rankings' scores  */
-	private val rankingScore = List(RANKING_TYPE) {MutableList(RANKING_MAX) {0L}}
+	private val rankingScore = List(RANKING_TYPE) {MutableList(rankingMax) {0L}}
 	/** Rankings' line counts  */
-	private val rankingLines = List(RANKING_TYPE) {MutableList(RANKING_MAX) {0}}
+	private val rankingLines = List(RANKING_TYPE) {MutableList(rankingMax) {0}}
 	/** Rankings' times  */
-	private val rankingTime = List(RANKING_TYPE) {MutableList(RANKING_MAX) {-1}}
+	private val rankingTime = List(RANKING_TYPE) {MutableList(rankingMax) {-1}}
 
 	override val propRank
 		get() = rankMapOf(rankingScore.mapIndexed {a, x -> "$a.score" to x}+
@@ -251,7 +250,7 @@ class SubscriberChallenge:NetDummyMode() {
 		engine.useAllSpinBonus = true
 		engine.twistEnableEZ = true
 		setSpeed(engine)
-		owner.musMan.bgm = if(netIsWatch) BGMStatus.BGM.Silent else BGMStatus.BGM.Generic(bgmLv)
+		owner.musMan.bgm = if(netIsWatch) BGM.Silent else BGM.Generic(bgmLv)
 	}
 	/*
 	 * Render score
@@ -268,7 +267,7 @@ class SubscriberChallenge:NetDummyMode() {
 				val scale:Float = if((receiver.nextDisplayType==2)) 0.5f else 1.0f
 				val topY:Int = if((receiver.nextDisplayType==2)) 6 else 4
 				receiver.drawScoreFont(engine, 3, topY-1, "SCORE  LINE TIME", EventReceiver.COLOR.BLUE, scale)
-				for(i in 0..<RANKING_MAX) {
+				for(i in 0..<rankingMax) {
 					receiver.drawScoreGrade(engine, 0, topY+i, "%2d".format(i+1), EventReceiver.COLOR.YELLOW, scale)
 					receiver.drawScoreFont(engine, 3, topY+i, "${rankingScore[goalType][i]}", (i==rankingRank), scale)
 					receiver.drawScoreFont(engine, 10, topY+i, "${rankingLines[goalType][i]}", (i==rankingRank), scale)
@@ -313,19 +312,10 @@ class SubscriberChallenge:NetDummyMode() {
 		if(engine.gameStarted&&(engine.stat==Status.ARE||engine.stat==Status.LINECLEAR))
 			for(i in 0..<engine.field.width) for(j in engine.field.hiddenHeight*-1..<engine.field.height)
 				engine.field.getBlock(i, j)?.let {
-					it.skin = (++it.skin)%skinCount
+					it.skin++
 				}
 	}
 
-	val skinCount:Int
-		get() {
-			return when(AnimatedBackgroundHook.resourceHook) {
-				AnimatedBackgroundHook.HOLDER_SLICK -> mu.nu.nullpo.gui.slick.ResourceHolder.imgNormalBlockList.size
-				//AnimatedBackgroundHook.HOLDER_SWING -> return ResourceHolderSwing.imgNormalBlockList.size()
-				//AnimatedBackgroundHook.HOLDER_SDL -> return ResourceHolderSDL.imgNormalBlockList.size()
-				else -> 0
-			}
-		}
 	/*
 	 * Calculate score
 	 */
@@ -389,7 +379,7 @@ class SubscriberChallenge:NetDummyMode() {
 				((engine.statistics.lines<tableGameClearLines[goalType])||(tableGameClearLines[goalType]<0))
 			) {
 				bgmLv++
-				owner.musMan.bgm = BGMStatus.BGM.Generic(bgmLv)
+				owner.musMan.bgm = BGM.Generic(bgmLv)
 				owner.musMan.fadeSW = false
 			}
 		}
@@ -473,7 +463,7 @@ class SubscriberChallenge:NetDummyMode() {
 		rankingRank = checkRanking(sc, li, time, type)
 		if(rankingRank!=-1) {
 			// Shift down ranking entries
-			for(i in RANKING_MAX-1 downTo rankingRank+1) {
+			for(i in rankingMax-1 downTo rankingRank+1) {
 				rankingScore[type][i] = rankingScore[type][i-1]
 				rankingLines[type][i] = rankingLines[type][i-1]
 				rankingTime[type][i] = rankingTime[type][i-1]
@@ -494,7 +484,7 @@ class SubscriberChallenge:NetDummyMode() {
 	 * @return Position (-1 if unranked)
 	 */
 	private fun checkRanking(sc:Long, li:Int, time:Int, type:Int):Int {
-		for(i in 0..<RANKING_MAX) {
+		for(i in 0..<rankingMax) {
 			if(sc>rankingScore[type][i]) return i
 			else if((sc==rankingScore[type][i])&&(li>rankingLines[type][i])) return i
 			else if((sc==rankingScore[type][i])&&(li==rankingLines[type][i])&&(time<rankingTime[type][i])) return i

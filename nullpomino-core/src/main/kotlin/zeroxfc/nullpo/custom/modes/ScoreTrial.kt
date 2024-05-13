@@ -37,7 +37,7 @@
 
 package zeroxfc.nullpo.custom.modes
 
-import mu.nu.nullpo.game.component.BGMStatus
+import mu.nu.nullpo.game.component.BGM
 import mu.nu.nullpo.game.component.Controller
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
 import mu.nu.nullpo.game.event.ScoreEvent
@@ -52,9 +52,9 @@ class ScoreTrial:MarathonModeBase() {
 	// In-game Timer
 	private var mainTimer = 0
 	// Ranking stuff
-	private val rankingScore = List(MAX_DIFFICULTIES) {MutableList(RANKING_MAX) {0L}}
-	private val rankingLines = List(MAX_DIFFICULTIES) {MutableList(RANKING_MAX) {0}}
-	private val rankingTime = List(MAX_DIFFICULTIES) {MutableList(RANKING_MAX) {-1}}
+	private val rankingScore = List(MAX_DIFFICULTIES) {MutableList(rankingMax) {0L}}
+	private val rankingLines = List(MAX_DIFFICULTIES) {MutableList(rankingMax) {0}}
+	private val rankingTime = List(MAX_DIFFICULTIES) {MutableList(rankingMax) {-1}}
 	// Lives added/removed
 	private var lifeOffset = 0
 	// Score before increase;
@@ -85,9 +85,9 @@ class ScoreTrial:MarathonModeBase() {
 	private var o = false
 	private var l = 0
 	private var rankingRankPlayer = 0
-	private val rankingScorePlayer = List(MAX_DIFFICULTIES) {MutableList(RANKING_MAX) {0L}}
-	private val rankingLinesPlayer = List(MAX_DIFFICULTIES) {MutableList(RANKING_MAX) {0}}
-	private val rankingTimePlayer = List(MAX_DIFFICULTIES) {MutableList(RANKING_MAX) {0}}
+	private val rankingScorePlayer = List(MAX_DIFFICULTIES) {MutableList(rankingMax) {0L}}
+	private val rankingLinesPlayer = List(MAX_DIFFICULTIES) {MutableList(rankingMax) {0}}
+	private val rankingTimePlayer = List(MAX_DIFFICULTIES) {MutableList(rankingMax) {0}}
 	// Mode name
 	override val name:String
 		get() = "SCORE TRIAL"
@@ -323,7 +323,7 @@ class ScoreTrial:MarathonModeBase() {
 		owner.musMan.bgm = tableBGM[difficultySelected][0]
 		owner.musMan.fadeSW = false
 		if(netIsWatch) {
-			owner.musMan.bgm = BGMStatus.BGM.Silent
+			owner.musMan.bgm = BGM.Silent
 		}
 	}
 
@@ -348,7 +348,7 @@ class ScoreTrial:MarathonModeBase() {
 				val topY = if(receiver.nextDisplayType==2) 6 else 4
 				receiver.drawScoreFont(engine, 3, topY-1, "SCORE  LINE TIME", COLOR.BLUE)
 				if(showPlayerStats) {
-					for(i in 0..<RANKING_MAX) {
+					for(i in 0..<rankingMax) {
 						receiver.drawScoreFont(engine, 0, topY+i, "%2d".format(i+1), COLOR.YELLOW)
 						val s = "${rankingScorePlayer[difficultySelected][i]}"
 						val isLong = s.length>6&&receiver.nextDisplayType!=2
@@ -359,14 +359,14 @@ class ScoreTrial:MarathonModeBase() {
 						receiver.drawScoreFont(engine, 10, topY+i, "${rankingLinesPlayer[difficultySelected][i]}", i==rankingRankPlayer)
 						receiver.drawScoreFont(engine, 15, topY+i, rankingTimePlayer[difficultySelected][i].toTimeStr, i==rankingRankPlayer)
 					}
-					receiver.drawScoreFont(engine, 0, topY+RANKING_MAX+1, "PLAYER SCORES", COLOR.BLUE)
+					receiver.drawScoreFont(engine, 0, topY+rankingMax+1, "PLAYER SCORES", COLOR.BLUE)
 					receiver.drawScoreFont(
-						engine, 0, topY+RANKING_MAX+2, engine.playerProp.nameDisplay, COLOR.WHITE,
+						engine, 0, topY+rankingMax+2, engine.playerProp.nameDisplay, COLOR.WHITE,
 						2f
 					)
-					receiver.drawScoreFont(engine, 0, topY+RANKING_MAX+5, "F:SWITCH RANK SCREEN", COLOR.GREEN)
+					receiver.drawScoreFont(engine, 0, topY+rankingMax+5, "F:SWITCH RANK SCREEN", COLOR.GREEN)
 				} else {
-					for(i in 0..<RANKING_MAX) {
+					for(i in 0..<rankingMax) {
 						receiver.drawScoreFont(engine, 0, topY+i, "%2d".format(i+1), COLOR.YELLOW)
 						val s = "${rankingScore[difficultySelected][i]}"
 						val isLong = s.length>6&&receiver.nextDisplayType!=2
@@ -377,12 +377,12 @@ class ScoreTrial:MarathonModeBase() {
 						receiver.drawScoreFont(engine, 10, topY+i, "${rankingLines[difficultySelected][i]}", i==rankingRank)
 						receiver.drawScoreFont(engine, 15, topY+i, rankingTime[difficultySelected][i].toTimeStr, i==rankingRank)
 					}
-					receiver.drawScoreFont(engine, 0, topY+RANKING_MAX+1, "LOCAL SCORES", COLOR.BLUE)
+					receiver.drawScoreFont(engine, 0, topY+rankingMax+1, "LOCAL SCORES", COLOR.BLUE)
 					if(!engine.playerProp.isLoggedIn) receiver.drawScoreFont(
-						engine, 0, topY+RANKING_MAX+2, "(NOT LOGGED IN)\n(E:LOG IN)"
+						engine, 0, topY+rankingMax+2, "(NOT LOGGED IN)\n(E:LOG IN)"
 					)
 					if(engine.playerProp.isLoggedIn) receiver.drawScoreFont(
-						engine, 0, topY+RANKING_MAX+5, "F:SWITCH RANK SCREEN",
+						engine, 0, topY+rankingMax+5, "F:SWITCH RANK SCREEN",
 						COLOR.GREEN
 					)
 				}
@@ -696,7 +696,7 @@ class ScoreTrial:MarathonModeBase() {
 		rankingRank = checkRanking(sc, li, time, diff)
 		if(rankingRank!=-1) {
 			// Shift down ranking entries
-			for(i in RANKING_MAX-1 downTo rankingRank+1) {
+			for(i in rankingMax-1 downTo rankingRank+1) {
 				rankingScore[diff][i] = rankingScore[diff][i-1]
 				rankingLines[diff][i] = rankingLines[diff][i-1]
 				rankingTime[diff][i] = rankingTime[diff][i-1]
@@ -711,7 +711,7 @@ class ScoreTrial:MarathonModeBase() {
 			rankingRankPlayer = checkRankingPlayer(sc, li, time, diff)
 			if(rankingRank!=-1) {
 				// Shift down ranking entries
-				for(i in RANKING_MAX-1 downTo rankingRankPlayer+1) {
+				for(i in rankingMax-1 downTo rankingRankPlayer+1) {
 					rankingScorePlayer[diff][i] = rankingScorePlayer[diff][i-1]
 					rankingLinesPlayer[diff][i] = rankingLinesPlayer[diff][i-1]
 					rankingTimePlayer[diff][i] = rankingTimePlayer[diff][i-1]
@@ -734,7 +734,7 @@ class ScoreTrial:MarathonModeBase() {
 	 * @return Position (-1 if unranked)
 	 */
 	private fun checkRanking(sc:Long, li:Int, time:Int, diff:Int):Int {
-		for(i in 0..<RANKING_MAX)
+		for(i in 0..<rankingMax)
 			if(sc>rankingScore[diff][i]) return i
 			else if(sc==rankingScore[diff][i]&&li>rankingLines[diff][i]) return i
 			else if(sc==rankingScore[diff][i]&&li==rankingLines[diff][i]&&time<rankingTime[diff][i]) return i
@@ -749,7 +749,7 @@ class ScoreTrial:MarathonModeBase() {
 	 * @return Position (-1 if unranked)
 	 */
 	private fun checkRankingPlayer(sc:Long, li:Int, time:Int, diff:Int):Int {
-		for(i in 0..<RANKING_MAX)
+		for(i in 0..<rankingMax)
 			if(sc>rankingScorePlayer[diff][i]) return i
 			else if(sc==rankingScorePlayer[diff][i]&&li>rankingLinesPlayer[diff][i]) return i
 			else if(sc==rankingScorePlayer[diff][i]&&li==rankingLinesPlayer[diff][i]&&time<rankingTimePlayer[diff][i]) return i
@@ -809,16 +809,16 @@ class ScoreTrial:MarathonModeBase() {
 		private val tableBGM =
 			arrayOf(
 				arrayOf(
-					BGMStatus.BGM.Generic(0), BGMStatus.BGM.Puzzle(1), BGMStatus.BGM.Generic(2),
-					BGMStatus.BGM.GrandM(1)
+					BGM.Generic(0), BGM.Puzzle(1), BGM.Generic(2),
+					BGM.GrandM(1)
 				), //30levels
 				arrayOf(
-					BGMStatus.BGM.Generic(1), BGMStatus.BGM.GrandM(1), BGMStatus.BGM.GrandT(1),
-					BGMStatus.BGM.Generic(4)
+					BGM.Generic(1), BGM.GrandM(1), BGM.GrandT(1),
+					BGM.Generic(4)
 				), //50levels
 				arrayOf(
-					BGMStatus.BGM.Generic(2), BGMStatus.BGM.Generic(3), BGMStatus.BGM.Puzzle(2), BGMStatus.BGM.GrandT(1),
-					BGMStatus.BGM.Generic(5)
+					BGM.Generic(2), BGM.Generic(3), BGM.Puzzle(2), BGM.GrandT(1),
+					BGM.Generic(5)
 				), //200levels
 			)
 	}

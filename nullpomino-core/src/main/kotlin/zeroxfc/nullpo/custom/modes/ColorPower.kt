@@ -42,10 +42,7 @@ COLOR POWER mode
  */
 package zeroxfc.nullpo.custom.modes
 
-import mu.nu.nullpo.game.component.BGMStatus
-import mu.nu.nullpo.game.component.Block
-import mu.nu.nullpo.game.component.Controller
-import mu.nu.nullpo.game.component.Piece
+import mu.nu.nullpo.game.component.*
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
 import mu.nu.nullpo.game.event.ScoreEvent
 import mu.nu.nullpo.game.play.GameEngine
@@ -84,19 +81,19 @@ class ColorPower:MarathonModeBase() {
 	// Hm
 	private var preset = false
 	/** Rankings' scores */
-	private val rankingScore = List(2) {List(RANKING_TYPE) {MutableList(RANKING_MAX) {0L}}}
+	private val rankingScore = List(2) {List(RANKING_TYPE) {MutableList(rankingMax) {0L}}}
 	/** Rankings' line counts */
-	private val rankingLines = List(2) {List(RANKING_TYPE) {MutableList(RANKING_MAX) {0}}}
+	private val rankingLines = List(2) {List(RANKING_TYPE) {MutableList(rankingMax) {0}}}
 	/** Rankings' times */
-	private val rankingTime = List(2) {List(RANKING_TYPE) {MutableList(RANKING_MAX) {-1}}}
+	private val rankingTime = List(2) {List(RANKING_TYPE) {MutableList(rankingMax) {-1}}}
 	/** Player rank */
 	private var rankingRankPlayer = 0
 	/** Rankings' scores */
-	private val rankingScorePlayer = List(2) {List(RANKING_TYPE) {MutableList(RANKING_MAX) {0L}}}
+	private val rankingScorePlayer = List(2) {List(RANKING_TYPE) {MutableList(rankingMax) {0L}}}
 	/** Rankings' line counts */
-	private val rankingLinesPlayer = List(2) {List(RANKING_TYPE) {MutableList(RANKING_MAX) {0}}}
+	private val rankingLinesPlayer = List(2) {List(RANKING_TYPE) {MutableList(rankingMax) {0}}}
 	/** Rankings' times */
-	private val rankingTimePlayer = List(2) {List(RANKING_TYPE) {MutableList(RANKING_MAX) {-1}}}
+	private val rankingTimePlayer = List(2) {List(RANKING_TYPE) {MutableList(rankingMax) {-1}}}
 
 	override val propRank
 		get() = rankMapOf(rankingScore.flatMapIndexed {a, x -> x.mapIndexed {b, y -> "$a.$b.score" to y}}+
@@ -307,7 +304,7 @@ class ColorPower:MarathonModeBase() {
 		hasSet = false
 		preset = true
 		if(netIsWatch) {
-			owner.musMan.bgm = BGMStatus.BGM.Silent
+			owner.musMan.bgm = BGM.Silent
 		}
 		l = -1
 	}
@@ -389,7 +386,7 @@ class ColorPower:MarathonModeBase() {
 				val topY = if(receiver.nextDisplayType==2) 6 else 4
 				receiver.drawScoreFont(engine, 3, topY-1, "SCORE  LINE TIME", COLOR.BLUE)
 				if(showPlayerStats) {
-					for(i in 0..<RANKING_MAX) {
+					for(i in 0..<rankingMax) {
 						receiver.drawScoreFont(engine, 0, topY+i, "%2d".format(i+1), COLOR.YELLOW)
 						val s = "${rankingScorePlayer[if(ruleBoundMode) 1 else 0][goalType][i]}"
 						val isLong = s.length>6&&receiver.nextDisplayType!=2
@@ -406,11 +403,11 @@ class ColorPower:MarathonModeBase() {
 							i==rankingRankPlayer
 						)
 					}
-					receiver.drawScoreFont(engine, 0, topY+RANKING_MAX+1, "PLAYER SCORES", COLOR.BLUE)
-					receiver.drawScoreFont(engine, 0, topY+RANKING_MAX+2, engine.playerProp.nameDisplay, COLOR.WHITE, 2f)
-					receiver.drawScoreFont(engine, 0, topY+RANKING_MAX+5, "F:SWITCH RANK SCREEN", COLOR.GREEN)
+					receiver.drawScoreFont(engine, 0, topY+rankingMax+1, "PLAYER SCORES", COLOR.BLUE)
+					receiver.drawScoreFont(engine, 0, topY+rankingMax+2, engine.playerProp.nameDisplay, COLOR.WHITE, 2f)
+					receiver.drawScoreFont(engine, 0, topY+rankingMax+5, "F:SWITCH RANK SCREEN", COLOR.GREEN)
 				} else {
-					for(i in 0..<RANKING_MAX) {
+					for(i in 0..<rankingMax) {
 						receiver.drawScoreFont(engine, 0, topY+i, "%2d".format(i+1), COLOR.YELLOW)
 						val s = "${rankingScore[if(ruleBoundMode) 1 else 0][goalType][i]}"
 						val isLong = s.length>6&&receiver.nextDisplayType!=2
@@ -424,11 +421,11 @@ class ColorPower:MarathonModeBase() {
 							engine, 15, topY+i, rankingTime[if(ruleBoundMode) 1 else 0][goalType][i].toTimeStr, i==rankingRank
 						)
 					}
-					receiver.drawScoreFont(engine, 0, topY+RANKING_MAX+1, "LOCAL SCORES", COLOR.BLUE)
+					receiver.drawScoreFont(engine, 0, topY+rankingMax+1, "LOCAL SCORES", COLOR.BLUE)
 					if(!engine.playerProp.isLoggedIn)
-						receiver.drawScoreFont(engine, 0, topY+RANKING_MAX+2, "(NOT LOGGED IN)\n(E:LOG IN)")
+						receiver.drawScoreFont(engine, 0, topY+rankingMax+2, "(NOT LOGGED IN)\n(E:LOG IN)")
 					if(engine.playerProp.isLoggedIn)
-						receiver.drawScoreFont(engine, 0, topY+RANKING_MAX+5, "F:SWITCH RANK SCREEN", COLOR.GREEN)
+						receiver.drawScoreFont(engine, 0, topY+rankingMax+5, "F:SWITCH RANK SCREEN", COLOR.GREEN)
 				}
 			}
 		} else if(engine.stat===GameEngine.Status.CUSTOM&&!engine.gameActive)
@@ -733,7 +730,7 @@ class ColorPower:MarathonModeBase() {
 				(engine.statistics.lines<tableGameClearLines[goalType]||tableGameClearLines[goalType]<0)
 			) {
 				bgmLv++
-				owner.musMan.bgm = BGMStatus.BGM.GrandT(bgmLv)
+				owner.musMan.bgm = BGM.GrandT(bgmLv)
 				owner.musMan.fadeSW = false
 			}
 		}
@@ -787,7 +784,7 @@ class ColorPower:MarathonModeBase() {
 		rankingRank = checkRanking(sc, li, time, type)
 		if(rankingRank!=-1) {
 			// Shift down ranking entries
-			for(i in RANKING_MAX-1 downTo rankingRank+1) {
+			for(i in rankingMax-1 downTo rankingRank+1) {
 				rankingScore[if(ruleBoundMode) 1 else 0][type][i] = rankingScore[if(ruleBoundMode) 1 else 0][type][i-1]
 				rankingLines[if(ruleBoundMode) 1 else 0][type][i] = rankingLines[if(ruleBoundMode) 1 else 0][type][i-1]
 				rankingTime[if(ruleBoundMode) 1 else 0][type][i] = rankingTime[if(ruleBoundMode) 1 else 0][type][i-1]
@@ -802,7 +799,7 @@ class ColorPower:MarathonModeBase() {
 			rankingRankPlayer = checkRankingPlayer(sc, li, time, type)
 			if(rankingRankPlayer!=-1) {
 				// Shift down ranking entries
-				for(i in RANKING_MAX-1 downTo rankingRankPlayer+1) {
+				for(i in rankingMax-1 downTo rankingRankPlayer+1) {
 					rankingScorePlayer[if(ruleBoundMode) 1 else 0][type][i] =
 						rankingScorePlayer[if(ruleBoundMode) 1 else 0][type][i-1]
 					rankingLinesPlayer[if(ruleBoundMode) 1 else 0][type][i] =
@@ -828,7 +825,7 @@ class ColorPower:MarathonModeBase() {
 	 * @return Position (-1 if unranked)
 	 */
 	private fun checkRanking(sc:Long, li:Int, time:Int, type:Int):Int {
-		for(i in 0..<RANKING_MAX) {
+		for(i in 0..<rankingMax) {
 			if(sc>rankingScore[if(ruleBoundMode) 1 else 0][type][i]) {
 				return i
 			} else if(sc==rankingScore[if(ruleBoundMode) 1 else 0][type][i]&&li>rankingLines[if(ruleBoundMode) 1 else 0][type][i]) {
@@ -848,7 +845,7 @@ class ColorPower:MarathonModeBase() {
 	 * @return Position (-1 if unranked)
 	 */
 	private fun checkRankingPlayer(sc:Long, li:Int, time:Int, type:Int):Int {
-		for(i in 0..<RANKING_MAX) {
+		for(i in 0..<rankingMax) {
 			if(sc>rankingScorePlayer[if(ruleBoundMode) 1 else 0][type][i]) {
 				return i
 			} else if(sc==rankingScorePlayer[if(ruleBoundMode) 1 else 0][type][i]&&li>rankingLinesPlayer[if(ruleBoundMode) 1 else 0][type][i]) {

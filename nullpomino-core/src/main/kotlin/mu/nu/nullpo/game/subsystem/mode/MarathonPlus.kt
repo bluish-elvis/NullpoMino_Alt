@@ -30,7 +30,7 @@
  */
 package mu.nu.nullpo.game.subsystem.mode
 
-import mu.nu.nullpo.game.component.BGMStatus.BGM
+import mu.nu.nullpo.game.component.BGM
 import mu.nu.nullpo.game.component.Block
 import mu.nu.nullpo.game.component.Controller
 import mu.nu.nullpo.game.component.RuleOptions
@@ -113,10 +113,10 @@ class MarathonPlus:NetDummyMode() {
 	private var rankingRank = 0
 
 	/** Rankings' scores */
-	private val rankingScore = List(RANKING_TYPE) {MutableList(RANKING_MAX) {0L}}
-	private val rankingLives = List(RANKING_TYPE) {MutableList(RANKING_MAX) {0}}
-	private val rankingLines = List(RANKING_TYPE) {MutableList(RANKING_MAX) {0}}
-	private val rankingTime = List(RANKING_TYPE) {MutableList(RANKING_MAX) {-1}}
+	private val rankingScore = List(RANKING_TYPE) {MutableList(rankingMax) {0L}}
+	private val rankingLives = List(RANKING_TYPE) {MutableList(rankingMax) {0}}
+	private val rankingLines = List(RANKING_TYPE) {MutableList(rankingMax) {0}}
+	private val rankingTime = List(RANKING_TYPE) {MutableList(rankingMax) {-1}}
 
 	override val propRank
 		get() = rankMapOf(rankingScore.mapIndexed {a, x -> "$a.score" to x}+
@@ -301,7 +301,7 @@ class MarathonPlus:NetDummyMode() {
 				val topY = if(receiver.nextDisplayType==2) 6 else 4
 				receiver.drawScoreFont(engine, 2, topY-1, "SCORE   LINE TIME", COLOR.BLUE)
 				val gameType = typeSerial(goalType, turbo, startLevel)
-				for(i in 0..<RANKING_MAX) {
+				for(i in 0..<rankingMax) {
 					receiver.drawScoreGrade(engine, 0, topY+i, "%2d".format(i+1), COLOR.YELLOW)
 					receiver.drawScoreNum(engine, 2, topY+i, "${rankingScore[gameType][i]}", i==rankingRank)
 					receiver.drawScoreNum(engine, 10, topY+i, "${rankingLines[gameType][i]}", i==rankingRank)
@@ -668,7 +668,7 @@ class MarathonPlus:NetDummyMode() {
 
 		if(rankingRank!=-1) {
 			// Shift down ranking entries
-			for(i in RANKING_MAX-1 downTo rankingRank+1) {
+			for(i in rankingMax-1 downTo rankingRank+1) {
 				rankingScore[type][i] = rankingScore[type][i-1]
 				rankingLines[type][i] = rankingLines[type][i-1]
 				rankingLives[type][i] = rankingLives[type][i-1]
@@ -690,7 +690,7 @@ class MarathonPlus:NetDummyMode() {
 	 * @return Position (-1 if unranked)
 	 */
 	private fun checkRanking(sc:Long, li:Int, lf:Int, time:Int, type:Int):Int {
-		for(i in 0..<RANKING_MAX)
+		for(i in 0..<rankingMax)
 			if(goalType>0&&startLevel) {
 				if(time<rankingTime[type][i]) return i
 				else if(time==rankingTime[type][i]&&sc>rankingScore[type][i]) return i

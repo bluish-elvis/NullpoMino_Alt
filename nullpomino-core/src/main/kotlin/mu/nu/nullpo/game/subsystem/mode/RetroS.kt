@@ -30,7 +30,7 @@
  */
 package mu.nu.nullpo.game.subsystem.mode
 
-import mu.nu.nullpo.game.component.BGMStatus.BGM
+import mu.nu.nullpo.game.component.BGM
 import mu.nu.nullpo.game.component.Piece.Companion.createQueueFromIntStr
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
 import mu.nu.nullpo.game.event.ScoreEvent
@@ -76,16 +76,16 @@ class RetroS:AbstractMode() {
 	private var rankingRank = 0
 
 	/** Score records */
-	private val rankingScore = List(RANKING_TYPE) {MutableList(RANKING_MAX) {0L}}
+	private val rankingScore = List(RANKING_TYPE) {MutableList(rankingMax) {0L}}
 
 	/** Line records */
-	private val rankingLines = List(RANKING_TYPE) {MutableList(RANKING_MAX) {0}}
+	private val rankingLines = List(RANKING_TYPE) {MutableList(rankingMax) {0}}
 
 	/** Line records */
-	private val rankingLevel = List(RANKING_TYPE) {MutableList(RANKING_MAX) {0}}
+	private val rankingLevel = List(RANKING_TYPE) {MutableList(rankingMax) {0}}
 
 	/** Time records */
-	private val rankingTime = List(RANKING_TYPE) {MutableList(RANKING_MAX) {-1}}
+	private val rankingTime = List(RANKING_TYPE) {MutableList(rankingMax) {-1}}
 
 	/** Score 999,999 Reached time */
 	private var maxScoreTime = -1
@@ -209,7 +209,7 @@ class RetroS:AbstractMode() {
 				val topY = if(receiver.nextDisplayType==2) 6 else 4
 				receiver.drawScoreFont(engine, 0, topY-1, "SCORE LINE LV TIME", COLOR.BLUE)
 
-				for(i in 0..<RANKING_MAX) {
+				for(i in 0..<rankingMax) {
 					receiver.drawScoreGrade(engine, 0, topY+i, "${i+1}", COLOR.YELLOW)
 					receiver.drawScoreNum(
 						engine, 2, topY+i,
@@ -372,7 +372,7 @@ class RetroS:AbstractMode() {
 
 		if(rankingRank!=-1) {
 			// Shift the old records
-			for(i in RANKING_MAX-1 downTo rankingRank+1) {
+			for(i in rankingMax-1 downTo rankingRank+1) {
 				rankingScore[type][i] = rankingScore[type][i-1]
 				rankingLines[type][i] = rankingLines[type][i-1]
 				rankingLevel[type][i] = rankingLevel[type][i-1]
@@ -390,7 +390,7 @@ class RetroS:AbstractMode() {
 	/** This function will check the ranking and returns which place you are.
 	 * (-1: Out of rank) */
 	private fun checkRanking(sc:Long, li:Int, lv:Int, time:Int, type:Int):Int {
-		for(i in 0..<RANKING_MAX)
+		for(i in 0..<rankingMax)
 			if(if(sc<0) sc<rankingScore[type][i] else sc>rankingScore[type][i]) return i
 			else if(sc==rankingScore[type][i]&&if(li<0) li<rankingLines[type][i] else li>rankingLines[type][i]) return i
 			else if(sc==rankingScore[type][i]&&li==rankingLines[type][i]&&

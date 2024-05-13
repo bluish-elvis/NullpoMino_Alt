@@ -37,7 +37,7 @@
 
 package zeroxfc.nullpo.custom.modes
 
-import mu.nu.nullpo.game.component.BGMStatus.BGM
+import mu.nu.nullpo.game.component.BGM
 import mu.nu.nullpo.game.component.Controller
 import mu.nu.nullpo.game.component.Piece
 import mu.nu.nullpo.game.event.EventReceiver
@@ -73,12 +73,12 @@ class MissionMode:MarathonModeBase() {
 	private var missionIsComplete = false
 
 	/** Rankings' scores */
-	private val rankingScore = List(GAMETYPE_MAX) {MutableList(RANKING_MAX) {0L}}
+	private val rankingScore = List(GAMETYPE_MAX) {MutableList(rankingMax) {0L}}
 	/** Rankings' times */
-	private val rankingTime = List(GAMETYPE_MAX) {MutableList(RANKING_MAX) {-1}}
+	private val rankingTime = List(GAMETYPE_MAX) {MutableList(rankingMax) {-1}}
 
-	private val rankingScorePlayer = List(GAMETYPE_MAX) {MutableList(RANKING_MAX) {0L}}
-	private val rankingTimePlayer = List(GAMETYPE_MAX) {MutableList(RANKING_MAX) {-1}}
+	private val rankingScorePlayer = List(GAMETYPE_MAX) {MutableList(rankingMax) {0L}}
+	private val rankingTimePlayer = List(GAMETYPE_MAX) {MutableList(rankingMax) {-1}}
 	private var rankingRankPlayer = 0
 	override val propRank = rankMapOf(rankingScore.mapIndexed {a, x -> "$a.score" to x}
 		+rankingTime.mapIndexed {a, x -> "$a.time" to x})
@@ -238,28 +238,28 @@ class MissionMode:MarathonModeBase() {
 				val topY = if(receiver.nextDisplayType==2) 6 else 4
 				receiver.drawScoreFont(engine, 3, topY-1, "SCORE TIME", COLOR.BLUE)
 				if(showPlayerStats) {
-					for(i in 0..<RANKING_MAX) {
+					for(i in 0..<rankingMax) {
 						receiver.drawScoreGrade(engine, 0, topY+i, "%2d".format(i+1), COLOR.YELLOW)
 						receiver.drawScoreNum(engine, 3, topY+i, "${rankingScorePlayer[goalType][i]}", i==rankingRankPlayer)
 						receiver.drawScoreNum(engine, 9, topY+i, rankingTimePlayer[goalType][i].toTimeStr, i==rankingRankPlayer)
 					}
-					receiver.drawScoreFont(engine, 0, topY+RANKING_MAX+1, "PLAYER SCORES", COLOR.BLUE)
+					receiver.drawScoreFont(engine, 0, topY+rankingMax+1, "PLAYER SCORES", COLOR.BLUE)
 					receiver.drawScoreFont(
-						engine, 0, topY+RANKING_MAX+2, engine.playerProp.nameDisplay, COLOR.WHITE,
+						engine, 0, topY+rankingMax+2, engine.playerProp.nameDisplay, COLOR.WHITE,
 						2f
 					)
-					receiver.drawScoreFont(engine, 0, topY+RANKING_MAX+5, "F:SWITCH RANK SCREEN", COLOR.GREEN)
+					receiver.drawScoreFont(engine, 0, topY+rankingMax+5, "F:SWITCH RANK SCREEN", COLOR.GREEN)
 				} else {
-					for(i in 0..<RANKING_MAX) {
+					for(i in 0..<rankingMax) {
 						receiver.drawScoreGrade(engine, 0, topY+i, "%2d".format(i+1), COLOR.YELLOW)
 						receiver.drawScoreNum(engine, 3, topY+i, "${rankingScore[goalType][i]}", i==rankingRank)
 						receiver.drawScoreNum(engine, 9, topY+i, rankingTime[goalType][i].toTimeStr, i==rankingRank)
 					}
-					receiver.drawScoreFont(engine, 0, topY+RANKING_MAX+1, "LOCAL SCORES", COLOR.BLUE)
+					receiver.drawScoreFont(engine, 0, topY+rankingMax+1, "LOCAL SCORES", COLOR.BLUE)
 					if(!engine.playerProp.isLoggedIn)
-						receiver.drawScoreFont(engine, 0, topY+RANKING_MAX+2, "(NOT LOGGED IN)\n(E:LOG IN)")
+						receiver.drawScoreFont(engine, 0, topY+rankingMax+2, "(NOT LOGGED IN)\n(E:LOG IN)")
 					if(engine.playerProp.isLoggedIn)
-						receiver.drawScoreFont(engine, 0, topY+RANKING_MAX+5, "F:SWITCH RANK SCREEN", COLOR.GREEN)
+						receiver.drawScoreFont(engine, 0, topY+rankingMax+5, "F:SWITCH RANK SCREEN", COLOR.GREEN)
 				}
 			}
 		} else if(engine.stat===GameEngine.Status.CUSTOM) {
@@ -407,7 +407,7 @@ class MissionMode:MarathonModeBase() {
 		rankingRank = checkRanking(sc, time, type)
 		if(rankingRank!=-1) {
 			// Shift down ranking entries
-			for(i in RANKING_MAX-1 downTo rankingRank+1) {
+			for(i in rankingMax-1 downTo rankingRank+1) {
 				rankingScore[type][i] = rankingScore[type][i-1]
 				rankingTime[type][i] = rankingTime[type][i-1]
 			}
@@ -420,7 +420,7 @@ class MissionMode:MarathonModeBase() {
 			rankingRankPlayer = checkRankingPlayer(sc, time, type)
 			if(rankingRankPlayer!=-1) {
 				// Shift down ranking entries
-				for(i in RANKING_MAX-1 downTo rankingRankPlayer+1) {
+				for(i in rankingMax-1 downTo rankingRankPlayer+1) {
 					rankingScorePlayer[type][i] = rankingScorePlayer[type][i-1]
 					rankingTimePlayer[type][i] = rankingTimePlayer[type][i-1]
 				}
@@ -440,7 +440,7 @@ class MissionMode:MarathonModeBase() {
 	 * @return Position (-1 if unranked)
 	 */
 	private fun checkRanking(sc:Long, time:Int, type:Int):Int {
-		for(i in 0..<RANKING_MAX) {
+		for(i in 0..<rankingMax) {
 			if(sc>rankingScore[type][i]) {
 				return i
 			} else if(sc==rankingScore[type][i]&&time<rankingTime[type][i]) {
@@ -457,7 +457,7 @@ class MissionMode:MarathonModeBase() {
 	 * @return Position (-1 if unranked)
 	 */
 	private fun checkRankingPlayer(sc:Long, time:Int, type:Int):Int {
-		for(i in 0..<RANKING_MAX) {
+		for(i in 0..<rankingMax) {
 			if(sc>rankingScorePlayer[type][i]) {
 				return i
 			} else if(sc==rankingScorePlayer[type][i]&&time<rankingTimePlayer[type][i]) {

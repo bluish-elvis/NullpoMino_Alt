@@ -79,7 +79,7 @@ class GameManager(
 	var menuOnly = false
 
 	/** BGMStatus: Manages the status of background music */
-	val musMan:BGMStatus = BGMStatus()
+	val musMan = BGMStatus()
 	/** BackgroundStatus: Manages the status of background image */
 	val bgMan = BackgroundStatus()
 	/** GameEngine: This is where the most action takes place */

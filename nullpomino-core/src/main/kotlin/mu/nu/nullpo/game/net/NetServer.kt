@@ -2765,10 +2765,10 @@ class NetServer {
 								}
 
 							if(style==-1) {
-								log.warn("{StyleChange} Unknown Style:$str")
+								log.warn("loadRuleList:{StyleChange} Unknown Style:$str")
 								style = 0
 							} else
-								log.debug("{StyleChange} StyleID:$style StyleName:$strStyle")
+								log.debug("loadRuleList:{StyleChange} StyleID:$style StyleName:$strStyle")
 						} else
 						// Rule file
 							try {
@@ -2974,9 +2974,9 @@ class NetServer {
 								}
 
 							if(style==-1) {
-								log.warn("{StyleChange} Unknown Style:$str")
+								log.warn("loadSPRankingList:{StyleChange} Unknown Style:$str")
 								style = 0
-							} else log.debug("{StyleChange} StyleID:$style StyleName:$strStyle")
+							} else log.debug("loadSPRankingList:{StyleChange} StyleID:$style StyleName:$strStyle")
 						} else {
 							// Game mode name
 							val strSplit = str.split(Regex(",")).dropLastWhile {it.isEmpty()}

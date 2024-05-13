@@ -56,10 +56,10 @@ class Avalanche1PFever:Avalanche1PDummyMode() {
 	private var rankingRank = 0
 
 	/** Rankings' line counts */
-	private val rankingScore = List(3) {List(FEVER_MAPS.size) {MutableList(RANKING_MAX) {0L}}}
+	private val rankingScore = List(3) {List(FEVER_MAPS.size) {MutableList(rankingMax) {0L}}}
 
 	/** Rankings' times */
-	private val rankingTime = List(3) {List(FEVER_MAPS.size) {MutableList(RANKING_MAX) {-1}}}
+	private val rankingTime = List(3) {List(FEVER_MAPS.size) {MutableList(rankingMax) {-1}}}
 
 	/** Flag for all clear */
 	private var zenKeshiDisplay = 0
@@ -310,7 +310,7 @@ class Avalanche1PFever:Avalanche1PDummyMode() {
 
 				receiver.drawScoreFont(engine, 3, topY-1, "SCORE      TIME", BLUE)
 
-				for(i in 0..<RANKING_MAX) {
+				for(i in 0..<rankingMax) {
 					receiver.drawScoreGrade(engine, 0, topY+i, "%2d".format(i+1), YELLOW)
 					receiver.drawScoreFont(engine, 3, topY+i, "${rankingScore[numColors-3][mapSet][i]}", i==rankingRank)
 					receiver.drawScoreNum(engine, 14, topY+i, rankingTime[numColors-3][mapSet][i].toTimeStr, i==rankingRank)
@@ -577,7 +577,7 @@ class Avalanche1PFever:Avalanche1PDummyMode() {
 
 		if(rankingRank!=-1) {
 			// Shift down ranking entries
-			for(i in RANKING_MAX-1 downTo rankingRank+1) {
+			for(i in rankingMax-1 downTo rankingRank+1) {
 				rankingScore[colors-3][type][i] = rankingScore[colors-3][type][i-1]
 				rankingTime[colors-3][type][i] = rankingTime[colors-3][type][i-1]
 			}
@@ -595,7 +595,7 @@ class Avalanche1PFever:Avalanche1PDummyMode() {
 	 * @return Position (-1 if unranked)
 	 */
 	private fun checkRanking(sc:Long, time:Int, type:Int, colors:Int):Int {
-		for(i in 0..<RANKING_MAX)
+		for(i in 0..<rankingMax)
 			if(sc>rankingScore[colors-3][type][i])
 				return i
 			else if(sc==rankingScore[colors-3][type][i]&&time<rankingTime[colors-3][type][i]) return i

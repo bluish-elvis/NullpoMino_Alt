@@ -100,7 +100,7 @@ class ClassicRecoveryOnFailWallkick:Wallkick {
 		}
 	}
 
-	fun isABlockOnTheField(x:Int, y:Int, fld:Field):Boolean =
+	private fun isABlockOnTheField(x:Int, y:Int, fld:Field):Boolean =
 		if(x>=fld.width||y>=fld.height||fld.getCoordAttribute(x, y)==3) true else
 			fld.getCoordAttribute(x, y)!=2&&fld.getBlockColor(x, y)!=null
 

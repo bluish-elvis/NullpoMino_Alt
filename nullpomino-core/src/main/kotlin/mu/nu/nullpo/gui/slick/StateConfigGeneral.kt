@@ -251,9 +251,7 @@ internal class StateConfigGeneral:BaseMenuConfigState() {
 		loadConfig()
 	}
 
-	/** Load settings
-	 * @param prop Property file to read from
-	 */
+	/** Load settings */
 	private fun loadConfig() {
 		NullpoMinoSlick.loadSlickConfig()
 		val propConfig = NullpoMinoSlick.propConfig
@@ -269,9 +267,7 @@ internal class StateConfigGeneral:BaseMenuConfigState() {
 
 	}
 
-	/** Save settings
-	 * @param prop Property file to save to
-	 */
+	/** Save settings */
 	private fun saveConfig() {
 		val prop = NullpoMinoSlick.propConfig
 		prop.general = confGeneral

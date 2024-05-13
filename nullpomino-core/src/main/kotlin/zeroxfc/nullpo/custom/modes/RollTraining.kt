@@ -37,7 +37,7 @@
 
 package zeroxfc.nullpo.custom.modes
 
-import mu.nu.nullpo.game.component.BGMStatus
+import mu.nu.nullpo.game.component.BGM
 import mu.nu.nullpo.game.component.Controller
 import mu.nu.nullpo.game.component.SpeedParam
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
@@ -101,9 +101,9 @@ class RollTraining:MarathonModeBase() {
 		}
 	}
 
-	private val rankingGrade = List(RANKING_TYPE) {MutableList(RANKING_MAX) {0}}
-	private val rankingLines = List(RANKING_TYPE) {MutableList(RANKING_MAX) {0}}
-	private val rankingTime = List(RANKING_TYPE) {MutableList(RANKING_MAX) {-1}}
+	private val rankingGrade = List(RANKING_TYPE) {MutableList(rankingMax) {0}}
+	private val rankingLines = List(RANKING_TYPE) {MutableList(rankingMax) {0}}
+	private val rankingTime = List(RANKING_TYPE) {MutableList(rankingMax) {-1}}
 
 	private val itemHide = BooleanMenuItem("useMRoll", "Stealth", COLOR.RED, false)
 	private var useMRoll:Boolean by DelegateMenuItem(itemHide)
@@ -116,9 +116,9 @@ class RollTraining:MarathonModeBase() {
 	private var tapGrade = 0.0
 	private var lastGrade = 0
 	private var timer = 0
-	private val rankingGradePlayer = List(RANKING_TYPE) {MutableList(RANKING_MAX) {0}}
-	private val rankingLinesPlayer = List(RANKING_TYPE) {MutableList(RANKING_MAX) {0}}
-	private val rankingTimePlayer = List(RANKING_TYPE) {MutableList(RANKING_MAX) {0}}
+	private val rankingGradePlayer = List(RANKING_TYPE) {MutableList(rankingMax) {0}}
+	private val rankingLinesPlayer = List(RANKING_TYPE) {MutableList(rankingMax) {0}}
+	private val rankingTimePlayer = List(RANKING_TYPE) {MutableList(rankingMax) {0}}
 	private var rankingRankPlayer = 0
 	private val rankIndex:Int
 		get() {
@@ -254,9 +254,9 @@ class RollTraining:MarathonModeBase() {
 		engine.blockHidden = if(useMRoll) engine.ruleOpt.lockFlash else FADING_FRAMES
 		engine.blockHiddenAnim = !useMRoll
 		engine.blockOutlineType = if(useMRoll) GameEngine.BLOCK_OUTLINE_NORMAL else GameEngine.BLOCK_OUTLINE_NONE
-		owner.musMan.bgm = BGMStatus.BGM.Ending(if(usedSpeed==SPEED_TAP) 1 else 2)
+		owner.musMan.bgm = BGM.Ending(if(usedSpeed==SPEED_TAP) 1 else 2)
 		if(netIsWatch) {
-			owner.musMan.bgm = BGMStatus.BGM.Silent
+			owner.musMan.bgm = BGM.Silent
 		}
 	}
 
@@ -289,7 +289,7 @@ class RollTraining:MarathonModeBase() {
 				if(showPlayerStats) {
 					val topY = if(receiver.nextDisplayType==2) 6 else 4
 					receiver.drawScoreFont(engine, 3, topY-1, "GRADE  LINE TIME", COLOR.BLUE)
-					for(i in 0..<RANKING_MAX) {
+					for(i in 0..<rankingMax) {
 						receiver.drawScoreFont(engine, 0, topY+i, "%2d".format(i+1), COLOR.YELLOW)
 						val color = if(rankingRankPlayer==i) COLOR.RED else {
 							if(usedSpeed==SPEED_TAP) {
@@ -305,14 +305,14 @@ class RollTraining:MarathonModeBase() {
 						receiver.drawScoreFont(engine, 3, topY+i, gText, color)
 						receiver.drawScoreFont(engine, 10, topY+i, "${rankingLinesPlayer[rankIndex][i]}", i==rankingRankPlayer)
 						receiver.drawScoreFont(engine, 15, topY+i, rankingTimePlayer[rankIndex][i].toTimeStr, i==rankingRankPlayer)
-						receiver.drawScoreFont(engine, 0, topY+RANKING_MAX+1, "PLAYER SCORES", COLOR.BLUE)
-						receiver.drawScoreFont(engine, 0, topY+RANKING_MAX+2, engine.playerProp.nameDisplay, COLOR.WHITE, 2f)
-						receiver.drawScoreFont(engine, 0, topY+RANKING_MAX+5, "F:SWITCH RANK SCREEN", COLOR.GREEN)
+						receiver.drawScoreFont(engine, 0, topY+rankingMax+1, "PLAYER SCORES", COLOR.BLUE)
+						receiver.drawScoreFont(engine, 0, topY+rankingMax+2, engine.playerProp.nameDisplay, COLOR.WHITE, 2f)
+						receiver.drawScoreFont(engine, 0, topY+rankingMax+5, "F:SWITCH RANK SCREEN", COLOR.GREEN)
 					}
 				} else {
 					val topY = if(receiver.nextDisplayType==2) 6 else 4
 					receiver.drawScoreFont(engine, 3, topY-1, "GRADE  LINE TIME", COLOR.BLUE)
-					for(i in 0..<RANKING_MAX) {
+					for(i in 0..<rankingMax) {
 						receiver.drawScoreFont(engine, 0, topY+i, "%2d".format(i+1), COLOR.YELLOW)
 						val color = if(rankingRank==i) COLOR.RED else {
 							if(usedSpeed==SPEED_TAP) {
@@ -325,11 +325,11 @@ class RollTraining:MarathonModeBase() {
 						receiver.drawScoreGrade(engine, 3, topY+i, gText, color)
 						receiver.drawScoreFont(engine, 10, topY+i, "${rankingLines[rankIndex][i]}", i==rankingRank)
 						receiver.drawScoreFont(engine, 15, topY+i, rankingTime[rankIndex][i].toTimeStr, i==rankingRank)
-						receiver.drawScoreFont(engine, 0, topY+RANKING_MAX+1, "LOCAL SCORES", COLOR.BLUE)
+						receiver.drawScoreFont(engine, 0, topY+rankingMax+1, "LOCAL SCORES", COLOR.BLUE)
 						if(!engine.playerProp.isLoggedIn)
-							receiver.drawScoreFont(engine, 0, topY+RANKING_MAX+2, "(NOT LOGGED IN)\n(E:LOG IN)")
+							receiver.drawScoreFont(engine, 0, topY+rankingMax+2, "(NOT LOGGED IN)\n(E:LOG IN)")
 						if(engine.playerProp.isLoggedIn)
-							receiver.drawScoreFont(engine, 0, topY+RANKING_MAX+5, "F:SWITCH RANK SCREEN", COLOR.GREEN)
+							receiver.drawScoreFont(engine, 0, topY+rankingMax+5, "F:SWITCH RANK SCREEN", COLOR.GREEN)
 					}
 				}
 			}
@@ -532,7 +532,7 @@ class RollTraining:MarathonModeBase() {
 		rankingRank = checkRanking(sc, li, time, type)
 		if(rankingRank!=-1) {
 			// Shift down ranking entries
-			for(i in RANKING_MAX-1 downTo rankingRank+1) {
+			for(i in rankingMax-1 downTo rankingRank+1) {
 				rankingGrade[type][i] = rankingGrade[type][i-1]
 				rankingLines[type][i] = rankingLines[type][i-1]
 				rankingTime[type][i] = rankingTime[type][i-1]
@@ -547,7 +547,7 @@ class RollTraining:MarathonModeBase() {
 			rankingRankPlayer = checkRankingPlayer(sc, li, time, type)
 			if(rankingRankPlayer!=-1) {
 				// Shift down ranking entries
-				for(i in RANKING_MAX-1 downTo rankingRankPlayer+1) {
+				for(i in rankingMax-1 downTo rankingRankPlayer+1) {
 					rankingGradePlayer[type][i] = rankingGradePlayer[type][i-1]
 					rankingLinesPlayer[type][i] = rankingLinesPlayer[type][i-1]
 					rankingTimePlayer[type][i] = rankingTimePlayer[type][i-1]
@@ -573,7 +573,7 @@ class RollTraining:MarathonModeBase() {
 	 * @return Position (-1 if unranked)
 	 */
 	private fun checkRanking(sc:Int, li:Int, time:Int, type:Int):Int {
-		for(i in 0..<RANKING_MAX) {
+		for(i in 0..<rankingMax) {
 			if(getClear(type, time, li)>getClear(type, rankingTime[type][i], rankingLines[type][i])) {
 				return i
 			} else if(getClear(type, time, li)==getClear(
@@ -607,7 +607,7 @@ class RollTraining:MarathonModeBase() {
 	 * @return Position (-1 if unranked)
 	 */
 	private fun checkRankingPlayer(sc:Int, li:Int, time:Int, type:Int):Int {
-		for(i in 0..<RANKING_MAX) {
+		for(i in 0..<rankingMax) {
 			if(getClear(type, time, li)>getClear(type, rankingTimePlayer[type][i], rankingLinesPlayer[type][i])) {
 				return i
 			} else if(getClear(type, time, li)==getClear(

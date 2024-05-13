@@ -49,10 +49,10 @@ class Avalanche1P:Avalanche1PDummyMode() {
 	private var rankingRank = 0
 
 	/** Rankings' line counts */
-	private val rankingScore = List(SCORETYPE_MAX) {List(3) {List(RANKING_TYPE) {MutableList(RANKING_MAX) {0L}}}}
+	private val rankingScore = List(SCORETYPE_MAX) {List(3) {List(RANKING_TYPE) {MutableList(rankingMax) {0L}}}}
 
 	/** Rankings' times */
-	private val rankingTime = List(SCORETYPE_MAX) {List(3) {List(RANKING_TYPE) {MutableList(RANKING_MAX) {-1}}}}
+	private val rankingTime = List(SCORETYPE_MAX) {List(3) {List(RANKING_TYPE) {MutableList(rankingMax) {-1}}}}
 
 	/** Chain display enable/disable */
 	private var showChains = false
@@ -242,7 +242,7 @@ class Avalanche1P:Avalanche1PDummyMode() {
 					2 -> receiver.drawScoreFont(engine, 3, 3, "Time", COLOR.BLUE)
 				}
 
-				for(i in 0..<RANKING_MAX) {
+				for(i in 0..<rankingMax) {
 					receiver.drawScoreGrade(engine, 0, topY+i, "%2d".format(i+1), COLOR.YELLOW, scale)
 					when(gametype) {
 						0 -> {
@@ -457,7 +457,7 @@ class Avalanche1P:Avalanche1PDummyMode() {
 
 		if(rankingRank!=-1) {
 			// Shift down ranking entries
-			for(i in RANKING_MAX-1 downTo rankingRank+1) {
+			for(i in rankingMax-1 downTo rankingRank+1) {
 				rankingScore[sctype][colors-3][type][i] = rankingScore[sctype][colors-3][type][i-1]
 				rankingTime[sctype][colors-3][type][i] = rankingTime[sctype][colors-3][type][i-1]
 			}
@@ -476,7 +476,7 @@ class Avalanche1P:Avalanche1PDummyMode() {
 	 */
 	private fun checkRanking(sc:Long, time:Int, type:Int, sctype:Int, colors:Int):Int {
 		if(type==2&&sc<SPRINT_MAX_SCORE[sprintTarget]) return -1
-		for(i in 0..<RANKING_MAX)
+		for(i in 0..<rankingMax)
 			if(type==0) {
 				if(sc>rankingScore[sctype][colors-3][type][i])
 					return i

@@ -37,7 +37,7 @@
 
 package zeroxfc.nullpo.custom.modes
 
-import mu.nu.nullpo.game.component.BGMStatus
+import mu.nu.nullpo.game.component.BGM
 import mu.nu.nullpo.game.component.Controller
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
 import mu.nu.nullpo.game.event.ScoreEvent
@@ -303,11 +303,11 @@ class Joker:MarathonModeBase() {
 
 		// o = false;
 		setSpeed(engine)
-		owner.musMan.bgm = BGMStatus.BGM.Finale(1)
+		owner.musMan.bgm = BGM.Finale(1)
 
 		owner.musMan.fadeSW = false
 		if(netIsWatch) {
-			owner.musMan.bgm = BGMStatus.BGM.Silent
+			owner.musMan.bgm = BGM.Silent
 		}
 	}
 
@@ -327,7 +327,7 @@ class Joker:MarathonModeBase() {
 				val topY = if(receiver.nextDisplayType==2) 6 else 4
 				receiver.drawScoreFont(engine, 3, topY-1, "LEVEL  LINE TIME", COLOR.BLUE)
 				if(showPlayerStats) {
-					for(i in 0..<RANKING_MAX) {
+					for(i in 0..<rankingMax) {
 						receiver.drawScoreFont(engine, 0, topY+i, "%2d".format(i+1), COLOR.YELLOW)
 						val s = "${rankingLevelPlayer[i]}"
 						val isLong = s.length>6&&receiver.nextDisplayType!=2
@@ -338,14 +338,14 @@ class Joker:MarathonModeBase() {
 						receiver.drawScoreFont(engine, 10, topY+i, "${rankingLinesPlayer[i]}", i==rankingRankPlayer)
 						receiver.drawScoreFont(engine, 15, topY+i, rankingTimePlayer[i].toTimeStr, i==rankingRankPlayer)
 					}
-					receiver.drawScoreFont(engine, 0, topY+RANKING_MAX+1, "PLAYER SCORES", COLOR.BLUE)
+					receiver.drawScoreFont(engine, 0, topY+rankingMax+1, "PLAYER SCORES", COLOR.BLUE)
 					receiver.drawScoreFont(
-						engine, 0, topY+RANKING_MAX+2, engine.playerProp.nameDisplay, COLOR.WHITE,
+						engine, 0, topY+rankingMax+2, engine.playerProp.nameDisplay, COLOR.WHITE,
 						2f
 					)
-					receiver.drawScoreFont(engine, 0, topY+RANKING_MAX+5, "F:SWITCH RANK SCREEN", COLOR.GREEN)
+					receiver.drawScoreFont(engine, 0, topY+rankingMax+5, "F:SWITCH RANK SCREEN", COLOR.GREEN)
 				} else {
-					for(i in 0..<RANKING_MAX) {
+					for(i in 0..<rankingMax) {
 						receiver.drawScoreFont(engine, 0, topY+i, "%2d".format(i+1), COLOR.YELLOW)
 						val s = "${rankingLevel[i]}"
 						val isLong = s.length>6&&receiver.nextDisplayType!=2
@@ -356,12 +356,12 @@ class Joker:MarathonModeBase() {
 						receiver.drawScoreFont(engine, 10, topY+i, "${rankingLines[i]}", i==rankingRank)
 						receiver.drawScoreFont(engine, 15, topY+i, rankingTime[i].toTimeStr, i==rankingRank)
 					}
-					receiver.drawScoreFont(engine, 0, topY+RANKING_MAX+1, "LOCAL SCORES", COLOR.BLUE)
+					receiver.drawScoreFont(engine, 0, topY+rankingMax+1, "LOCAL SCORES", COLOR.BLUE)
 					if(!engine.playerProp.isLoggedIn) receiver.drawScoreFont(
-						engine, 0, topY+RANKING_MAX+2, "(NOT LOGGED IN)\n(E:LOG IN)"
+						engine, 0, topY+rankingMax+2, "(NOT LOGGED IN)\n(E:LOG IN)"
 					)
 					if(engine.playerProp.isLoggedIn) receiver.drawScoreFont(
-						engine, 0, topY+RANKING_MAX+5, "F:SWITCH RANK SCREEN",
+						engine, 0, topY+rankingMax+5, "F:SWITCH RANK SCREEN",
 						COLOR.GREEN
 					)
 				}
@@ -629,7 +629,7 @@ class Joker:MarathonModeBase() {
 		rankingRank = checkRanking(lv, li, time)
 		if(rankingRank!=-1) {
 			// Shift down ranking entries
-			for(i in RANKING_MAX-1 downTo rankingRank+1) {
+			for(i in rankingMax-1 downTo rankingRank+1) {
 				rankingLevel[i] = rankingLevel[i-1]
 				rankingLines[i] = rankingLines[i-1]
 				rankingTime[i] = rankingTime[i-1]
@@ -644,7 +644,7 @@ class Joker:MarathonModeBase() {
 			rankingRankPlayer = checkRankingPlayer(lv, li, time)
 			if(rankingRankPlayer!=-1) {
 				// Shift down ranking entries
-				for(i in RANKING_MAX-1 downTo rankingRankPlayer+1) {
+				for(i in rankingMax-1 downTo rankingRankPlayer+1) {
 					rankingLevelPlayer[i] = rankingLevelPlayer[i-1]
 					rankingLinesPlayer[i] = rankingLinesPlayer[i-1]
 					rankingTimePlayer[i] = rankingTimePlayer[i-1]
@@ -666,7 +666,7 @@ class Joker:MarathonModeBase() {
 	 * @return Position (-1 if unranked)
 	 */
 	private fun checkRanking(lv:Int, li:Int, time:Int):Int {
-		for(i in 0..<RANKING_MAX) {
+		for(i in 0..<rankingMax) {
 			if(lv>rankingLevel[i]) {
 				return i
 			} else if(lv==rankingLevel[i]&&li>rankingLines[i]) {
@@ -685,7 +685,7 @@ class Joker:MarathonModeBase() {
 	 * @return Position (-1 if unranked)
 	 */
 	private fun checkRankingPlayer(lv:Int, li:Int, time:Int):Int {
-		for(i in 0..<RANKING_MAX) {
+		for(i in 0..<rankingMax) {
 			if(lv>rankingLevelPlayer[i]) {
 				return i
 			} else if(lv==rankingLevelPlayer[i]&&li>rankingLinesPlayer[i]) {

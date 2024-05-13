@@ -30,7 +30,7 @@
  */
 package mu.nu.nullpo.game.subsystem.mode
 
-import mu.nu.nullpo.game.component.BGMStatus.BGM
+import mu.nu.nullpo.game.component.BGM
 import mu.nu.nullpo.game.component.Controller
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
 import mu.nu.nullpo.game.net.NetUtil
@@ -85,13 +85,13 @@ class SprintScore:NetDummyMode() {
 	private var rankingRank = 0
 
 	/** Rankings' times */
-	private val rankingTime = List(GOALTYPE_MAX) {MutableList(RANKING_MAX) {-1}}
+	private val rankingTime = List(GOALTYPE_MAX) {MutableList(rankingMax) {-1}}
 
 	/** Rankings' line counts */
-	private val rankingLines = List(GOALTYPE_MAX) {MutableList(RANKING_MAX) {0}}
+	private val rankingLines = List(GOALTYPE_MAX) {MutableList(rankingMax) {0}}
 
 	/** Rankings' score/line */
-	private val rankingSPL = List(GOALTYPE_MAX) {MutableList(RANKING_MAX) {0.0}}
+	private val rankingSPL = List(GOALTYPE_MAX) {MutableList(rankingMax) {0.0}}
 	override val propRank
 		get() = rankMapOf(
 			rankingTime.mapIndexed {a, x -> "$a.time" to x}+
@@ -338,7 +338,7 @@ Ready&Go screen disappears) */
 				val topY = if(receiver.nextDisplayType==2) 6 else 4
 				receiver.drawScoreFont(engine, 2, topY-1, "TIME  LINE SCR/LINE", COLOR.BLUE)
 
-				for(i in 0..<RANKING_MAX) {
+				for(i in 0..<rankingMax) {
 					receiver.drawScoreGrade(engine, 0, topY+i, "%2d".format(i+1), COLOR.YELLOW)
 					receiver.drawScoreNum(engine, 2, topY+i, rankingTime[goalType][i].toTimeStr, rankingRank==i)
 					receiver.drawScoreNum(engine, 9, topY+i, "%3d".format(rankingLines[goalType][i]), rankingRank==i)
@@ -487,7 +487,7 @@ Ready&Go screen disappears) */
 
 		if(rankingRank!=-1) {
 			// Shift down ranking entries
-			for(i in RANKING_MAX-1 downTo rankingRank+1) {
+			for(i in rankingMax-1 downTo rankingRank+1) {
 				rankingTime[goalType][i] = rankingTime[goalType][i-1]
 				rankingLines[goalType][i] = rankingLines[goalType][i-1]
 				rankingSPL[goalType][i] = rankingSPL[goalType][i-1]
@@ -507,7 +507,7 @@ Ready&Go screen disappears) */
 	 * @return Position (-1 if unranked)
 	 */
 	private fun checkRanking(time:Int, lines:Int, spl:Double):Int {
-		for(i in 0..<RANKING_MAX)
+		for(i in 0..<rankingMax)
 			if(time<rankingTime[goalType][i]||rankingTime[goalType][i]<0)
 				return i
 			else if(time==rankingTime[goalType][i]&&(lines<rankingLines[goalType][i]||rankingLines[goalType][i]==0))

@@ -30,7 +30,7 @@
  */
 package mu.nu.nullpo.game.subsystem.mode
 
-import mu.nu.nullpo.game.component.BGMStatus.BGM
+import mu.nu.nullpo.game.component.BGM
 import mu.nu.nullpo.game.component.Controller
 import mu.nu.nullpo.game.component.SpeedParam
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
@@ -81,19 +81,19 @@ class SprintUltra:NetDummyMode() {
 	private var version = 0
 
 	/** Number of entries in rankings */
-	override val RANKING_MAX = 5
+	override val rankingMax = 5
 
 	/** Current round's ranking position */
 	private val rankingRank = MutableList(RANKTYPE_MAX) {-1}
 
 	/** Rankings' scores */
-	private val rankingScore = List(RANKTYPE_MAX) {List(GOALTYPE_MAX) {MutableList(RANKING_MAX) {0L}}}
+	private val rankingScore = List(RANKTYPE_MAX) {List(GOALTYPE_MAX) {MutableList(rankingMax) {0L}}}
 
 	/** Rankings' sent line counts */
-	private val rankingPower = List(RANKTYPE_MAX) {List(GOALTYPE_MAX) {MutableList(RANKING_MAX) {0}}}
+	private val rankingPower = List(RANKTYPE_MAX) {List(GOALTYPE_MAX) {MutableList(rankingMax) {0}}}
 
 	/** Rankings' line counts */
-	private val rankingLines = List(RANKTYPE_MAX) {List(GOALTYPE_MAX) {MutableList(RANKING_MAX) {0}}}
+	private val rankingLines = List(RANKTYPE_MAX) {List(GOALTYPE_MAX) {MutableList(rankingMax) {0}}}
 
 	private var rankingShow = 0
 	override val propRank
@@ -187,7 +187,7 @@ class SprintUltra:NetDummyMode() {
 				receiver.drawScoreFont(engine, 0, 3, "Score RANKING", col2)
 				receiver.drawScoreFont(engine, 1, 4, "Score Power Lines", col1)
 
-				for(i in 0..<minOf(RANKING_MAX, 12)) {
+				for(i in 0..<minOf(rankingMax, 12)) {
 					receiver.drawScoreGrade(engine, 0, 5+i, "%2d".format(i+1), col3)
 					receiver.drawScoreNum(
 						engine, 1, 5+i, "%7d".format(rankingScore[0][gt][i]), i==rankingRank[0]
@@ -203,7 +203,7 @@ class SprintUltra:NetDummyMode() {
 				receiver.drawScoreFont(engine, 0, 11, "Power RANKING", col2)
 				receiver.drawScoreFont(engine, 1, 12, "Power Score Lines", col1)
 
-				for(i in 0..<RANKING_MAX) {
+				for(i in 0..<rankingMax) {
 					receiver.drawScoreGrade(engine, 0, 13+i, "%2d".format(i+1), col3)
 					receiver.drawScoreNum(
 						engine, 2, 13+i, "%5d".format(rankingPower[1][gt][i]), i==rankingRank[1]
@@ -219,7 +219,7 @@ class SprintUltra:NetDummyMode() {
 				receiver.drawScoreFont(engine, 0, 19, "Lines RANKING", col2)
 				receiver.drawScoreFont(engine, 1, 20, "Lines Score Power", col1)
 
-				for(i in 0..<RANKING_MAX) {
+				for(i in 0..<rankingMax) {
 					receiver.drawScoreGrade(engine, 0, 21+i, "%2d".format(i+1), col3)
 					receiver.drawScoreNum(
 						engine, 2, 21+i, "%5d".format(rankingLines[2][gt][i]), i==rankingRank[2]
@@ -420,7 +420,7 @@ class SprintUltra:NetDummyMode() {
 			val ret = checkRanking(it, goal, sc, po, li)
 			if(ret!=-1) {
 				// Shift down ranking entries
-				for(j in RANKING_MAX-1 downTo ret+1) {
+				for(j in rankingMax-1 downTo ret+1) {
 					rankingScore[i][goal][j] = rankingScore[i][goal][j-1]
 					rankingPower[i][goal][j] = rankingPower[i][goal][j-1]
 					rankingLines[i][goal][j] = rankingLines[i][goal][j-1]
@@ -444,7 +444,7 @@ class SprintUltra:NetDummyMode() {
 	 */
 	private fun checkRanking(type:RankingType, goal:Int, sc:Long, po:Int, li:Int):Int {
 		val ord = type.ordinal
-		for(i in 0..<RANKING_MAX)
+		for(i in 0..<rankingMax)
 			when(type) {
 				RankingType.Score ->
 					when {

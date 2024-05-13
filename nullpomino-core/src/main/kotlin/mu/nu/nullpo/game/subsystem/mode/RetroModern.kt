@@ -30,12 +30,11 @@
  */
 package mu.nu.nullpo.game.subsystem.mode
 
-import mu.nu.nullpo.game.component.BGMStatus.BGM
+import mu.nu.nullpo.game.component.BGM
 import mu.nu.nullpo.game.component.Controller
 import mu.nu.nullpo.game.component.LevelData
 import mu.nu.nullpo.game.component.Piece.Companion.createQueueFromIntStr
 import mu.nu.nullpo.game.component.SpeedParam
-import mu.nu.nullpo.game.event.EventReceiver
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
 import mu.nu.nullpo.game.event.ScoreEvent
 import mu.nu.nullpo.game.play.GameEngine
@@ -83,10 +82,10 @@ class RetroModern:AbstractMode() {
 	private var rankingRank = 0
 
 	/** Ranking records */
-	private val rankingScore:List<MutableList<Long>> = List(GAMETYPE_MAX) {MutableList(RANKING_MAX) {0L}}
-	private val rankingLevel:List<MutableList<Int>> = List(GAMETYPE_MAX) {MutableList(RANKING_MAX) {0}}
-	private val rankingLines:List<MutableList<Int>> = List(GAMETYPE_MAX) {MutableList(RANKING_MAX) {0}}
-	private val rankingTime:List<MutableList<Int>> = List(GAMETYPE_MAX) {MutableList(RANKING_MAX) {0}}
+	private val rankingScore:List<MutableList<Long>> = List(GAMETYPE_MAX) {MutableList(rankingMax) {0L}}
+	private val rankingLevel:List<MutableList<Int>> = List(GAMETYPE_MAX) {MutableList(rankingMax) {0}}
+	private val rankingLines:List<MutableList<Int>> = List(GAMETYPE_MAX) {MutableList(rankingMax) {0}}
+	private val rankingTime:List<MutableList<Int>> = List(GAMETYPE_MAX) {MutableList(rankingMax) {0}}
 
 	override val propRank
 		get() = rankMapOf(
@@ -215,7 +214,7 @@ class RetroModern:AbstractMode() {
 	}
 
 	override fun renderFirst(engine:GameEngine) {
-		if(engine.ending==2&&rollTime>ROLLTIMELIMIT-3600) receiver.drawStaffRoll(engine, (rollTime-ROLLTIMELIMIT+3600)/3600f)
+		if(engine.gameActive&&engine.ending==2&&rollTime>ROLLTIMELIMIT-3600) receiver.drawStaffRoll(engine, (rollTime-ROLLTIMELIMIT+3600)/3600f)
 	}
 	/** Renders HUD (leaderboard or game statistics) */
 	override fun renderLast(engine:GameEngine) {
@@ -228,7 +227,7 @@ class RetroModern:AbstractMode() {
 				val topY = if(receiver.nextDisplayType==2) 6 else 4
 				receiver.drawScoreFont(engine, 2, topY-1, "SCORE LINE LV TIME", color = COLOR.BLUE)
 
-				for(i in 0..<RANKING_MAX) {
+				for(i in 0..<rankingMax) {
 					receiver.drawScoreGrade(engine, 0, topY+i, "%2d".format(i+1), COLOR.YELLOW)
 					receiver.drawScoreNum(engine, 2, topY+i, "${rankingScore[gameType][i]}", i==rankingRank)
 					receiver.drawScoreNum(engine, 8.8f, topY+i, "%3d".format(rankingLines[gameType][i]), i==rankingRank)
@@ -565,7 +564,7 @@ class RetroModern:AbstractMode() {
 
 		if(rankingRank!=-1) {
 			// Shift the old records
-			for(i in RANKING_MAX-1 downTo rankingRank+1) {
+			for(i in rankingMax-1 downTo rankingRank+1) {
 				rankingScore[type][i] = rankingScore[type][i-1]
 				rankingLevel[type][i] = rankingLevel[type][i-1]
 				rankingLines[type][i] = rankingLines[type][i-1]
@@ -583,7 +582,7 @@ class RetroModern:AbstractMode() {
 	/** This function will check the ranking and returns which place you are.
 	 * (-1: Out of rank) */
 	private fun checkRanking(sc:Long, lv:Int, li:Int, time:Int, type:Int):Int {
-		for(i in 0..<RANKING_MAX)
+		for(i in 0..<rankingMax)
 			if(sc>rankingScore[type][i]) return i
 			else if(sc==rankingScore[type][i]&&lv>rankingLevel[type][i]) return i
 			else if(sc==rankingScore[type][i]&&lv==rankingLevel[type][i]&&li>rankingLines[type][i]) return i

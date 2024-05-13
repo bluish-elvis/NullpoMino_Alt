@@ -41,7 +41,7 @@ import mu.nu.nullpo.util.GeneralUtil.toInt
 
 abstract class AbstractGrand:AbstractMode() {
 	/** Number of sections */
-	open val SECTION_MAX = 10
+	open val sectionMax = 10
 	/** Next Section の level (これ-1のときに levelストップする) */
 	protected var nextSecLv = 0
 	/** Levelが増えた flag */
@@ -84,9 +84,9 @@ abstract class AbstractGrand:AbstractMode() {
 	private val medalCOChain = listOf(listOf(3, 4, 5), listOf(2, 3, 4))
 
 	/** Section Time in Current run */
-	protected val sectionTime = MutableList(SECTION_MAX) {0}
+	protected val sectionTime = MutableList(sectionMax) {0}
 	/** 新記録が出たSection はtrue */
-	protected val sectionIsNewRecord = MutableList(SECTION_MAX) {false}
+	protected val sectionIsNewRecord = MutableList(sectionMax) {false}
 	/** どこかのSection で新記録を出すとtrue */
 	protected val sectionAnyNewRecord get() = sectionIsNewRecord.any()
 	/** Cleared Section count */
@@ -143,10 +143,10 @@ abstract class AbstractGrand:AbstractMode() {
 	}
 	/** RO medal check */
 	protected fun roMedalCheck(engine:GameEngine, nextSecLv:Int) {
-		val lv = when {
-			nextSecLv==300 -> 0
-			nextSecLv==700 -> 1
-			nextSecLv==999 -> 2
+		val lv = when (nextSecLv) {
+			300 -> 0
+			700 -> 1
+			999 -> 2
 			else -> return
 		}
 		val e = spinCount to engine.statistics.totalPieceLocked-sectionSpins.sumOf {it.second}

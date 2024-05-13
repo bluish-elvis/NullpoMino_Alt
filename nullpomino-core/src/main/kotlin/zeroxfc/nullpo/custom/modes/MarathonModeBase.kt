@@ -37,7 +37,7 @@
 
 package zeroxfc.nullpo.custom.modes
 
-import mu.nu.nullpo.game.component.BGMStatus
+import mu.nu.nullpo.game.component.BGM
 import mu.nu.nullpo.game.component.Controller
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
 import mu.nu.nullpo.game.event.ScoreEvent
@@ -78,11 +78,11 @@ open class MarathonModeBase:NetDummyMode() {
 	/** Current round's ranking position */
 	@JvmField var rankingRank = 0
 	/** Rankings' scores */
-	private val rankingScore = List(RANKING_TYPE) {MutableList(RANKING_MAX) {0L}}
+	private val rankingScore = List(RANKING_TYPE) {MutableList(rankingMax) {0L}}
 	/** Rankings' line counts*/
-	private val rankingLines = List(RANKING_TYPE) {MutableList(RANKING_MAX) {0}}
+	private val rankingLines = List(RANKING_TYPE) {MutableList(rankingMax) {0}}
 	/** Rankings' times */
-	private val rankingTime = List(RANKING_TYPE) {MutableList(RANKING_MAX) {-1}}
+	private val rankingTime = List(RANKING_TYPE) {MutableList(rankingMax) {-1}}
 	override val propRank
 		get() = rankMapOf(rankingScore.mapIndexed {a, x -> "$a.score" to x}+
 			rankingLines.mapIndexed {a, x -> "$a.lines" to x}+
@@ -214,7 +214,7 @@ open class MarathonModeBase:NetDummyMode() {
 		engine.twistEnableEZ = true
 		setSpeed(engine)
 		if(netIsWatch) {
-			owner.musMan.bgm = BGMStatus.BGM.Silent
+			owner.musMan.bgm = BGM.Silent
 		}
 	}
 	/*
@@ -292,7 +292,7 @@ open class MarathonModeBase:NetDummyMode() {
 		rankingRank = checkRanking(sc, li, time, type)
 		if(rankingRank!=-1) {
 			// Shift down ranking entries
-			for(i in RANKING_MAX-1 downTo rankingRank+1) {
+			for(i in rankingMax-1 downTo rankingRank+1) {
 				rankingScore[type][i] = rankingScore[type][i-1]
 				rankingLines[type][i] = rankingLines[type][i-1]
 				rankingTime[type][i] = rankingTime[type][i-1]
@@ -314,7 +314,7 @@ open class MarathonModeBase:NetDummyMode() {
 	 * @return Position (-1 if unranked)
 	 */
 	private fun checkRanking(sc:Long, li:Int, time:Int, type:Int):Int {
-		for(i in 0..<RANKING_MAX) {
+		for(i in 0..<rankingMax) {
 			if(sc>rankingScore[type][i]) return i
 			else if(sc==rankingScore[type][i]&&li>rankingLines[type][i]) return i
 			else if(sc==rankingScore[type][i]&&li==rankingLines[type][i]&&time<rankingTime[type][i]) return i

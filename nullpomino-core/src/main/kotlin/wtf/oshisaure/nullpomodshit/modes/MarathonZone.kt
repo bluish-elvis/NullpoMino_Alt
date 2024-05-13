@@ -37,7 +37,7 @@
 
 package wtf.oshisaure.nullpomodshit.modes
 
-import mu.nu.nullpo.game.component.BGMStatus
+import mu.nu.nullpo.game.component.BGM
 import mu.nu.nullpo.game.component.Block
 import mu.nu.nullpo.game.event.EventReceiver
 import mu.nu.nullpo.game.event.ScoreEvent
@@ -89,11 +89,11 @@ class MarathonZone:NetDummyMode() {
 	/** Current round's ranking position  */
 	private var rankingRank = 0
 	/** Rankings' scores  */
-	private val rankingScore = List(RANKING_TYPE) {MutableList(RANKING_MAX) {0L}}
+	private val rankingScore = List(RANKING_TYPE) {MutableList(rankingMax) {0L}}
 	/** Rankings' line counts  */
-	private val rankingLines = List(RANKING_TYPE) {MutableList(RANKING_MAX) {0}}
+	private val rankingLines = List(RANKING_TYPE) {MutableList(rankingMax) {0}}
 	/** Rankings' times  */
-	private val rankingTime = List(RANKING_TYPE) {MutableList(RANKING_MAX) {-1}}
+	private val rankingTime = List(RANKING_TYPE) {MutableList(rankingMax) {-1}}
 
 	override val propRank
 		get() = rankMapOf(rankingScore.mapIndexed {a, x -> "$a.score" to x}+
@@ -270,9 +270,9 @@ class MarathonZone:NetDummyMode() {
 		engine.twistEnableEZ = true
 		setSpeed(engine)
 		if(netIsWatch) {
-			owner.musMan.bgm = BGMStatus.BGM.Silent
+			owner.musMan.bgm = BGM.Silent
 		} else
-			owner.musMan.bgm = BGMStatus.BGM.Generic(bgmLv)
+			owner.musMan.bgm = BGM.Generic(bgmLv)
 	}
 	/*
 	 * Render score
@@ -291,7 +291,7 @@ class MarathonZone:NetDummyMode() {
 				val scale:Float = if((receiver.nextDisplayType==2)) 0.5f else 1.0f
 				val topY = if((receiver.nextDisplayType==2)) 6 else 4
 				receiver.drawScoreFont(engine, 2, topY-1, "SCORE    LINE TIME", hudcolor, scale)
-				for(i in 0..<RANKING_MAX) {
+				for(i in 0..<rankingMax) {
 					receiver.drawScoreGrade(engine, -1, topY+i, "%2d".format(i+1), EventReceiver.COLOR.YELLOW, scale)
 					receiver.drawScoreNum(engine, 2, topY+i, "${rankingScore[goalType][i]}", (i==rankingRank), scale)
 					receiver.drawScoreNum(engine, 11, topY+i, "${rankingLines[goalType][i]}", (i==rankingRank), scale)
@@ -491,7 +491,7 @@ class MarathonZone:NetDummyMode() {
 				(engine.statistics.lines<tableGameClearLines[goalType]||tableGameClearLines[goalType]<0)
 			) {
 				bgmLv++
-				owner.musMan.bgm = BGMStatus.BGM.Generic(bgmLv)
+				owner.musMan.bgm = BGM.Generic(bgmLv)
 				owner.musMan.fadeSW = false
 			}
 		}
@@ -587,7 +587,7 @@ class MarathonZone:NetDummyMode() {
 		rankingRank = checkRanking(sc, li, time, type)
 		if(rankingRank!=-1) {
 			// Shift down ranking entries
-			for(i in RANKING_MAX-1 downTo rankingRank+1) {
+			for(i in rankingMax-1 downTo rankingRank+1) {
 				rankingScore[type][i] = rankingScore[type][i-1]
 				rankingLines[type][i] = rankingLines[type][i-1]
 				rankingTime[type][i] = rankingTime[type][i-1]
@@ -608,7 +608,7 @@ class MarathonZone:NetDummyMode() {
 	 * @return Position (-1 if unranked)
 	 */
 	private fun checkRanking(sc:Long, li:Int, time:Int, type:Int):Int {
-		for(i in 0..<RANKING_MAX)
+		for(i in 0..<rankingMax)
 			if(sc>rankingScore[type][i]) return i
 			else if((sc==rankingScore[type][i])&&(li>rankingLines[type][i])) return i
 			else if((sc==rankingScore[type][i])&&(li==rankingLines[type][i])&&(time<rankingTime[type][i])) return i

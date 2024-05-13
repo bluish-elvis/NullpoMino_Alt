@@ -41,7 +41,7 @@
 //
 package wtf.oshisaure.nullpomodshit.modes
 
-import mu.nu.nullpo.game.component.BGMStatus
+import mu.nu.nullpo.game.component.BGM
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
 import mu.nu.nullpo.game.event.ScoreEvent
 import mu.nu.nullpo.game.play.GameEngine
@@ -71,8 +71,8 @@ class MarathonActual:AbstractMode() {
 	private var rankingRank = 0
 	private val rankingPPS
 		get() = List(minOf(rankingPieces.size, rankingTime.size)) {rankingPieces[it]*60f/rankingTime[it]}
-	private val rankingPieces = MutableList(RANKING_MAX) {0}
-	private val rankingTime = MutableList(RANKING_MAX) {-1}
+	private val rankingPieces = MutableList(rankingMax) {0}
+	private val rankingTime = MutableList(rankingMax) {-1}
 	override val propRank
 		get() = rankMapOf("pieces" to rankingPieces, "time" to rankingTime)
 	private var totalLength = 0
@@ -184,7 +184,7 @@ class MarathonActual:AbstractMode() {
 			}
 			if(totalLength>=TABLE_BGM_CHANGE[bgmLv]&&totalLength<MARATHON_LENGTH) {
 				++bgmLv
-				owner.musMan.bgm = BGMStatus.BGM.Generic(bgmLv)
+				owner.musMan.bgm = BGM.Generic(bgmLv)
 				owner.musMan.fadeSW = false
 			}
 		}

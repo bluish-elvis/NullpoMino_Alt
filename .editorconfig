@@ -308,6 +308,7 @@ ij_xml_space_inside_empty_tag=false
 ij_xml_text_wrap=normal
 
 [{*.bash,*.sh,*.zsh}]
+end_of_line=lf
 ij_shell_binary_ops_start_line=false
 ij_shell_keep_column_alignment_padding=false
 ij_shell_minify_program=false

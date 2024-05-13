@@ -37,7 +37,7 @@
 
 package zeroxfc.nullpo.custom.modes
 
-import mu.nu.nullpo.game.component.BGMStatus
+import mu.nu.nullpo.game.component.BGM
 import mu.nu.nullpo.game.component.Block
 import mu.nu.nullpo.game.component.Controller
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
@@ -242,7 +242,7 @@ class Minesweeper:AbstractMode() {
 
 		// 開始
 		if(engine.statc[0]>=engine.goEnd) {
-			if(!engine.readyDone) engine.owner.musMan.bgm = BGMStatus.BGM.values[bgm]
+			if(!engine.readyDone) engine.owner.musMan.bgm = BGM.values[bgm]
 			engine.owner.mode?.startGame(engine)
 			engine.owner.receiver.startGame(engine)
 			engine.stat = GameEngine.Status.CUSTOM
@@ -266,7 +266,7 @@ class Minesweeper:AbstractMode() {
 					// もう復活できないとき
 					engine.gameEnded()
 					engine.blockShowOutlineOnly = false
-					if(owner.players<2) owner.musMan.bgm = BGMStatus.BGM.Silent
+					if(owner.players<2) owner.musMan.bgm = BGM.Silent
 					if(field.isEmpty) engine.statc[0] = field.height+1 else engine.resetFieldVisible()
 					engine.statc[0]++
 				}

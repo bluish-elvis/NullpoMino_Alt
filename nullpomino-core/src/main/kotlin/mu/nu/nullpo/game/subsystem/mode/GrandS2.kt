@@ -30,7 +30,7 @@
  */
 package mu.nu.nullpo.game.subsystem.mode
 
-import mu.nu.nullpo.game.component.BGMStatus.BGM
+import mu.nu.nullpo.game.component.BGM
 import mu.nu.nullpo.game.component.Block
 import mu.nu.nullpo.game.component.Controller
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
@@ -49,7 +49,7 @@ import mu.nu.nullpo.util.GeneralUtil.toTimeStr
 /** SPEED MANIA 2 Mode */
 class GrandS2:AbstractGrand() {
 	/** Number of sections */
-	override val SECTION_MAX = 13
+	override val sectionMax = 13
 
 	override val medalSKQuads = listOf(listOf(5,10, 17, 25), listOf(1, 2, 4,6))
 
@@ -83,7 +83,7 @@ class GrandS2:AbstractGrand() {
 	/** Section Time記録表示中ならtrue */
 	private var isShowBestSectionTime = false
 
-	private val itemLevel = LevelGrandMenuItem(COLOR.BLUE, SECTION_MAX)
+	private val itemLevel = LevelGrandMenuItem(COLOR.BLUE, sectionMax)
 	/** Level at start */
 	private var startLevel:Int by DelegateMenuItem(itemLevel)
 
@@ -106,19 +106,19 @@ class GrandS2:AbstractGrand() {
 	private var rankingRank = 0
 
 	/** Rankings' 段位 */
-	private val rankingGrade = MutableList(RANKING_MAX) {0}
+	private val rankingGrade = MutableList(rankingMax) {0}
 
 	/** Rankings' level */
-	private val rankingLevel = MutableList(RANKING_MAX) {0}
+	private val rankingLevel = MutableList(rankingMax) {0}
 
 	/** Rankings' times */
-	private val rankingTime = MutableList(RANKING_MAX) {-1}
+	private val rankingTime = MutableList(rankingMax) {-1}
 
 	/** Rankings' Roll completely cleared flag */
-	private val rankingRollClear = MutableList(RANKING_MAX) {0}
+	private val rankingRollClear = MutableList(rankingMax) {0}
 
 	/** Section Time記録 */
-	private val bestSectionTime = MutableList(SECTION_MAX) {tableTimeRegret[minOf(it, tableTimeRegret.lastIndex)]}
+	private val bestSectionTime = MutableList(sectionMax) {tableTimeRegret[minOf(it, tableTimeRegret.lastIndex)]}
 
 	/* Mode name */
 	override val name = "Grand Lightning"
@@ -173,7 +173,7 @@ class GrandS2:AbstractGrand() {
 				)
 		} else {
 			version = owner.replayProp.getProperty("speedmania2.version", 0)
-			System.arraycopy(tableTimeRegret, 0, bestSectionTime, 0, SECTION_MAX)
+			System.arraycopy(tableTimeRegret, 0, bestSectionTime, 0, sectionMax)
 		}
 
 		owner.bgMan.bg = 20+startLevel
@@ -234,7 +234,7 @@ class GrandS2:AbstractGrand() {
 	}
 
 	override fun renderFirst(engine:GameEngine) {
-		if(engine.ending==2) receiver.drawStaffRoll(engine, rollTime*1f/ROLLTIMELIMIT)
+		if(engine.gameActive&&engine.ending==2) receiver.drawStaffRoll(engine, rollTime*1f/ROLLTIMELIMIT)
 	}
 	/* Render score */
 	override fun renderLast(engine:GameEngine) {
@@ -250,7 +250,7 @@ class GrandS2:AbstractGrand() {
 					val topY = if(receiver.nextDisplayType==2) 5 else 3
 					receiver.drawScoreFont(engine, 0, topY-1, "GRADE LV TIME", COLOR.RED)
 
-					for(i in 0..<RANKING_MAX) {
+					for(i in 0..<rankingMax) {
 						receiver.drawScoreGrade(engine, 0, topY+i, "%02d".format(i+1), COLOR.YELLOW)
 						receiver.drawScoreGrade(
 							engine, 2, topY+i, tableGradeName[rankingGrade[i]], if(rankingRollClear[i]==1) COLOR.GREEN
@@ -265,7 +265,7 @@ class GrandS2:AbstractGrand() {
 					// Section Time
 					receiver.drawScoreFont(engine, 0, 2, "SECTION TIME", COLOR.RED)
 
-					val totalTime = (0..<SECTION_MAX).fold(0) {tt, i ->
+					val totalTime = (0..<sectionMax).fold(0) { tt, i ->
 						val slv = i*100
 						receiver.drawScoreNum(
 							engine, 0, 3+i, "%4d-%4d %s".format(slv, slv+99, bestSectionTime[i].toTimeStr),
@@ -277,7 +277,7 @@ class GrandS2:AbstractGrand() {
 					receiver.drawScoreFont(engine, 0, 17, "TOTAL", COLOR.RED)
 					receiver.drawScoreNum(engine, 0, 18, totalTime.toTimeStr, 2f)
 					receiver.drawScoreFont(engine, 9, 17, "AVERAGE", COLOR.RED)
-					receiver.drawScoreNum(engine, 9, 18, (totalTime/SECTION_MAX).toTimeStr, 2f)
+					receiver.drawScoreNum(engine, 9, 18, (totalTime/sectionMax).toTimeStr, 2f)
 
 					receiver.drawScoreFont(engine, 0, 20, "F:VIEW RANKING", COLOR.GREEN)
 				}
@@ -666,7 +666,7 @@ class GrandS2:AbstractGrand() {
 
 		if(rankingRank!=-1) {
 			// Shift down ranking entries
-			for(i in RANKING_MAX-1 downTo rankingRank+1) {
+			for(i in rankingMax-1 downTo rankingRank+1) {
 				rankingGrade[i] = rankingGrade[i-1]
 				rankingLevel[i] = rankingLevel[i-1]
 				rankingTime[i] = rankingTime[i-1]
@@ -689,7 +689,7 @@ class GrandS2:AbstractGrand() {
 	 * @return Position (-1 if unranked)
 	 */
 	private fun checkRanking(gr:Int, lv:Int, time:Int, clear:Int):Int {
-		for(i in 0..<RANKING_MAX)
+		for(i in 0..<rankingMax)
 			if(clear>rankingRollClear[i])
 				return i
 			else if(clear==rankingRollClear[i]&&gr>rankingGrade[i])
@@ -703,7 +703,7 @@ class GrandS2:AbstractGrand() {
 
 	/** Update best section time records */
 	private fun updateBestSectionTime() {
-		for(i in 0..<SECTION_MAX)
+		for(i in 0..<sectionMax)
 			if(sectionIsNewRecord[i]) bestSectionTime[i] = sectionTime[i]
 	}
 

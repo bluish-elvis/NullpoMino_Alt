@@ -30,7 +30,7 @@
  */
 package mu.nu.nullpo.game.subsystem.mode
 
-import mu.nu.nullpo.game.component.BGMStatus.BGM
+import mu.nu.nullpo.game.component.BGM
 import mu.nu.nullpo.game.component.Controller
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
 import mu.nu.nullpo.game.event.ScoreEvent
@@ -54,7 +54,7 @@ import kotlin.random.Random
 
 /** GRADE MANIA 3 Mode */
 class GrandM3:AbstractGrand() {
-	override val SECTION_MAX = tableSectionMax.max()
+	override val sectionMax = tableSectionMax.max()
 
 	/** 内部 level */
 	private var internalLevel = 0
@@ -99,10 +99,10 @@ class GrandM3:AbstractGrand() {
 	private var regretDispFrame = 0
 
 	/** COOL section flags */
-	private val coolSection = MutableList(SECTION_MAX) {false}
+	private val coolSection = MutableList(sectionMax) {false}
 
 	/** REGRET section flags */
-	private val regretSection = MutableList(SECTION_MAX) {false}
+	private val regretSection = MutableList(sectionMax) {false}
 
 	/** Roll 経過 time */
 	private var rollTime = 0
@@ -119,7 +119,7 @@ class GrandM3:AbstractGrand() {
 	private var gradeFlash = 0
 
 	/** Section Cool Time x00-x70 */
-	private val section70Time = MutableList(SECTION_MAX) {0}
+	private val section70Time = MutableList(sectionMax) {0}
 
 	/** 消えRoll started flag */
 	private var mRollFlag = false
@@ -175,16 +175,16 @@ class GrandM3:AbstractGrand() {
 	private var rankingRank = 0
 
 	/** Rankings' 段位 */
-	private val rankingGrade = List(RANKING_TYPE) {MutableList(RANKING_MAX) {0}}
+	private val rankingGrade = List(RANKING_TYPE) {MutableList(rankingMax) {0}}
 
 	/** Rankings' levels */
-	private val rankingLevel = List(RANKING_TYPE) {MutableList(RANKING_MAX) {0}}
+	private val rankingLevel = List(RANKING_TYPE) {MutableList(rankingMax) {0}}
 
 	/** Rankings' times */
-	private val rankingTime = List(RANKING_TYPE) {MutableList(RANKING_MAX) {-1}}
+	private val rankingTime = List(RANKING_TYPE) {MutableList(rankingMax) {-1}}
 
 	/** Rankings' Roll completely cleared flag */
-	private val rankingRollClear = List(RANKING_TYPE) {MutableList(RANKING_MAX) {0}}
+	private val rankingRollClear = List(RANKING_TYPE) {MutableList(rankingMax) {0}}
 
 	/** Section Time記録 */
 	private val bestSectionTime = List(RANKING_TYPE) {i ->
@@ -332,17 +332,21 @@ class GrandM3:AbstractGrand() {
 				}
 
 				log.debug("** Exam data from replay START **")
-				log.debug("Promotional Exam Grade:${getGradeName(promotionalExam)} ($promotionalExam)")
-				log.debug("Promotional Exam Flag:$promotionFlag")
-				log.debug("Demotion Points:${demotionPoints[goalType]}")
-				log.debug("Demotional Exam Grade:${getGradeName(demotionExamGrade)} ($demotionExamGrade)")
-				log.debug("Demotional Exam Flag:$demotionFlag")
+				logExam()
 				log.debug("*** Exam data from replay END ***")
 			}
 		}
 
 		owner.bgMan.bg = 20+startLevel
 		setSpeed(engine)
+	}
+
+	private fun logExam() {
+		log.debug("Promotional Exam Grade:${getGradeName(promotionalExam)} ($promotionalExam)")
+		log.debug("Promotional Exam Flag:$promotionFlag")
+		log.debug("Demotion Points:${demotionPoints[goalType]}")
+		log.debug("Demotional Exam Grade:${getGradeName(demotionExamGrade)} ($demotionExamGrade)")
+		log.debug("Demotional Exam Flag:$demotionFlag")
 	}
 
 	/** Set BGM at start of game
@@ -477,7 +481,7 @@ class GrandM3:AbstractGrand() {
 	}
 
 	override fun renderFirst(engine:GameEngine) {
-		if(engine.ending==2) receiver.drawStaffRoll(engine, rollTime*1f/ROLLTIMELIMIT)
+		if(engine.gameActive&&engine.ending==2) receiver.drawStaffRoll(engine, rollTime*1f/ROLLTIMELIMIT)
 	}
 	/* Render score */
 	override fun renderLast(engine:GameEngine) {
@@ -493,7 +497,7 @@ class GrandM3:AbstractGrand() {
 
 					receiver.drawScoreFont(engine, 0, 2, "GRADE TIME LEVEL", COLOR.BLUE)
 
-					for(i in 0..<RANKING_MAX) {
+					for(i in 0..<rankingMax) {
 						receiver.drawScoreGrade(
 							engine, 0, 3+i, "%2d".format(i+1), if(rankingRank==i) COLOR.RAINBOW else COLOR.YELLOW
 						)
@@ -666,7 +670,7 @@ class GrandM3:AbstractGrand() {
 			if(!always20g&&!big&&enableExam) {
 				log.debug("** Exam debug log START **")
 				log.debug("Current Qualified Grade:${getGradeName(recordGrade[goalType])} (${recordGrade[goalType]})")
-				log.debug("Demotion Points:${demotionPoints[goalType]}")
+				log.debug("Current Demotion Points:${demotionPoints[goalType]}")
 				if(demotionPoints[goalType]>=30) {
 					demotionFlag = true
 					demotionExamGrade = recordGrade[goalType]
@@ -677,7 +681,7 @@ class GrandM3:AbstractGrand() {
 					log.debug("Promotional Chance Grade:${getGradeName(promotionalExam)} ($promotionalExam)")
 					if(promotionalExam>recordGrade[goalType]) {
 						val rand = Random.Default.nextInt(EXAM_CHANCE)
-						log.debug("Promotional Chance RNG:$rand / $EXAM_CHANCE")
+						log.debug("Promotional Chance RNG:$rand (1 / $EXAM_CHANCE)")
 						if(rand==0) {
 							promotionFlag = true
 							readyFrame = 100
@@ -1036,11 +1040,11 @@ class GrandM3:AbstractGrand() {
 			if(time>41100) decTemp -= 1+(time-41100)/1800
 			if(enableExam) {
 				log.debug("** Exam result log START **")
-				log.debug("Current Qualified Grade:${getGradeName(recordGrade[goalType])} (${recordGrade[goalType]})")
-				log.debug("Current Temporary Grade:${getGradeName(grade)} ($grade)")
-
-				log.debug("Promotional Chance to :${getGradeName(promotionalExam)} ($promotionalExam)")
-				log.debug("Promotional Exam Enabled:$promotionFlag")
+				log.debug("Grade Result/Record:${getGradeName(grade)} ($grade) / ${getGradeName(recordGrade[goalType])} (${recordGrade[goalType]})")
+				log.debug(
+					"Promotional Exam: {}",
+					if(promotionFlag)"${getGradeName(promotionalExam)} ($promotionalExam)" else "disabled"
+				)
 				if(promotionFlag&&grade>=promotionalExam) {
 					recordGrade[goalType] = promotionalExam
 					demotionPoints[goalType] = 0
@@ -1051,7 +1055,7 @@ class GrandM3:AbstractGrand() {
 					if(demo>0) demotionPoints[goalType] += demo
 					log.debug("Demotion Points:${demotionPoints[goalType]} (+ ${maxOf(0, demo)})")
 				}
-				log.debug("Demotion Exam Enabled:$demotionFlag")
+				log.debug("Demotion Exam:$demotionFlag")
 				if(demotionFlag&&grade<demotionExamGrade) {
 					recordGrade[goalType] = maxOf(0, demotionExamGrade-1)
 					decTemp -= 10
@@ -1297,7 +1301,7 @@ class GrandM3:AbstractGrand() {
 
 		if(rankingRank!=-1) {
 			// Shift down ranking entries
-			for(i in RANKING_MAX-1 downTo rankingRank+1) {
+			for(i in rankingMax-1 downTo rankingRank+1) {
 				rankingGrade[t][i] = rankingGrade[t][i-1]
 				rankingLevel[t][i] = rankingLevel[t][i-1]
 				rankingTime[t][i] = rankingTime[t][i-1]
@@ -1320,7 +1324,7 @@ class GrandM3:AbstractGrand() {
 	 * @return Position (-1 if unranked)
 	 */
 	private fun checkRanking(t:Int, gr:Int, lv:Int, time:Int, clear:Int):Int {
-		for(i in 0..<RANKING_MAX)
+		for(i in 0..<rankingMax)
 			if(gr>rankingGrade[t][i]) return i
 			else if(gr==rankingGrade[t][i]&&clear>rankingRollClear[t][i]) return i
 			else if(gr==rankingGrade[t][i]&&clear==rankingRollClear[t][i]&&lv>rankingLevel[t][i]) return i

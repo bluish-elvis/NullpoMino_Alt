@@ -30,7 +30,7 @@
  */
 package mu.nu.nullpo.game.subsystem.mode
 
-import mu.nu.nullpo.game.component.BGMStatus.BGM
+import mu.nu.nullpo.game.component.BGM
 import mu.nu.nullpo.game.component.Controller
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
 import mu.nu.nullpo.game.event.ScoreEvent
@@ -83,13 +83,13 @@ class GrandS1:AbstractGrand() {
 	/** Current round's ranking position */
 	private var rankingRank = 0
 	/** Rankings' 段位 */
-	private val rankingGrade = MutableList(RANKING_MAX) {0}
+	private val rankingGrade = MutableList(rankingMax) {0}
 	/** Rankings' level */
-	private val rankingLevel = MutableList(RANKING_MAX) {0}
+	private val rankingLevel = MutableList(rankingMax) {0}
 	/** Rankings' times */
-	private val rankingTime = MutableList(RANKING_MAX) {-1}
+	private val rankingTime = MutableList(rankingMax) {-1}
 	/** Section Time記録 */
-	private val bestSectionTime = MutableList(SECTION_MAX) {DEFAULT_SECTION_TIME}
+	private val bestSectionTime = MutableList(sectionMax) {DEFAULT_SECTION_TIME}
 
 	override val name = "Grand Storm"
 	override val gameIntensity = 3
@@ -138,7 +138,7 @@ class GrandS1:AbstractGrand() {
 		if(!owner.replayMode) {
 			version = CURRENT_VERSION
 		} else {
-			for(i in 0..<SECTION_MAX)
+			for(i in 0..<sectionMax)
 				bestSectionTime[i] = DEFAULT_SECTION_TIME
 			version = owner.replayProp.getProperty("speedmania.version", 0)
 		}
@@ -211,7 +211,7 @@ class GrandS1:AbstractGrand() {
 	}
 
 	override fun renderFirst(engine:GameEngine) {
-		if(engine.ending==2) receiver.drawStaffRoll(engine, rollTime*1f/ROLLTIMELIMIT)
+		if(engine.gameActive&&engine.ending==2) receiver.drawStaffRoll(engine, rollTime*1f/ROLLTIMELIMIT)
 	}
 	/* Render score */
 	override fun renderLast(engine:GameEngine) {
@@ -227,7 +227,7 @@ class GrandS1:AbstractGrand() {
 					val topY = if(receiver.nextDisplayType==2) 5 else 3
 					receiver.drawScoreFont(engine, 2, topY-1, "LEVEL  TIME", COLOR.BLUE)
 
-					for(i in 0..<RANKING_MAX) {
+					for(i in 0..<rankingMax) {
 						receiver.drawScoreGrade(
 							engine, 0, topY+i, "%2d".format(i+1), if(rankingRank==i) COLOR.RAINBOW else COLOR.YELLOW
 						)
@@ -241,7 +241,7 @@ class GrandS1:AbstractGrand() {
 					// Section Time
 					receiver.drawScoreFont(engine, 0, 2, "SECTION TIME", COLOR.BLUE)
 
-					val totalTime = (0..<SECTION_MAX).fold(0) {tt, i ->
+					val totalTime = (0..<sectionMax).fold(0) { tt, i ->
 						val slv = minOf(i*100, 999)
 						receiver.drawScoreNum(
 							engine, 0, 3+i, "%3d-%3d %s".format(slv, slv+99, bestSectionTime[i].toTimeStr), sectionIsNewRecord[i]
@@ -252,7 +252,7 @@ class GrandS1:AbstractGrand() {
 					receiver.drawScoreFont(engine, 0, 14, "TOTAL", COLOR.BLUE)
 					receiver.drawScoreNum(engine, 0, 15, totalTime.toTimeStr, 2f)
 					receiver.drawScoreFont(engine, 9, 14, "AVERAGE", COLOR.BLUE)
-					receiver.drawScoreNum(engine, 9, 15, (totalTime/SECTION_MAX).toTimeStr, 2f)
+					receiver.drawScoreNum(engine, 9, 15, (totalTime/sectionMax).toTimeStr, 2f)
 
 					receiver.drawScoreFont(engine, 0, 17, "F:VIEW RANKING", COLOR.GREEN)
 				}
@@ -587,7 +587,7 @@ class GrandS1:AbstractGrand() {
 
 		if(rankingRank!=-1) {
 			// Shift down ranking entries
-			for(i in RANKING_MAX-1 downTo rankingRank+1) {
+			for(i in rankingMax-1 downTo rankingRank+1) {
 				rankingGrade[i] = rankingGrade[i-1]
 				rankingLevel[i] = rankingLevel[i-1]
 				rankingTime[i] = rankingTime[i-1]
@@ -607,7 +607,7 @@ class GrandS1:AbstractGrand() {
 	 * @return Position (-1 if unranked)
 	 */
 	private fun checkRanking(gr:Int, lv:Int, time:Int):Int {
-		for(i in 0..<RANKING_MAX)
+		for(i in 0..<rankingMax)
 			if(gr>rankingGrade[i]) return i
 			else if(gr==rankingGrade[i]&&lv>rankingLevel[i]) return i
 			else if(gr==rankingGrade[i]&&lv==rankingLevel[i]&&time<rankingTime[i]) return i
@@ -617,7 +617,7 @@ class GrandS1:AbstractGrand() {
 
 	/** Update best section time records */
 	private fun updateBestSectionTime() {
-		for(i in 0..<SECTION_MAX)
+		for(i in 0..<sectionMax)
 			if(sectionIsNewRecord[i]) bestSectionTime[i] = sectionTime[i]
 	}
 

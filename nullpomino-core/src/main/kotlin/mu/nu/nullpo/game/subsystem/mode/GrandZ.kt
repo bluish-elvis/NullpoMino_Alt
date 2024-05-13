@@ -30,7 +30,7 @@
  */
 package mu.nu.nullpo.game.subsystem.mode
 
-import mu.nu.nullpo.game.component.BGMStatus.BGM
+import mu.nu.nullpo.game.component.BGM
 import mu.nu.nullpo.game.component.Controller
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
 import mu.nu.nullpo.game.event.ScoreEvent
@@ -70,7 +70,7 @@ class GrandZ:AbstractGrand() {
 	private var secretGrade = 0
 
 	/** Section Time */
-	private val sectionLine = MutableList(SECTION_MAX) {0}
+	private val sectionLine = MutableList(sectionMax) {0}
 
 	/** false:Leaderboard, true:Section time record
 	 *  (Push F in settings screen to flip it) */
@@ -90,20 +90,20 @@ class GrandZ:AbstractGrand() {
 	private var rankingRank = 0
 
 	/** Grade records */
-	private val rankingGrade = List(RANKING_TYPE) {MutableList(RANKING_MAX) {0}}
+	private val rankingGrade = List(RANKING_TYPE) {MutableList(rankingMax) {0}}
 
 	/** Level records */
-	private val rankingLevel = List(RANKING_TYPE) {MutableList(RANKING_MAX) {0}}
+	private val rankingLevel = List(RANKING_TYPE) {MutableList(rankingMax) {0}}
 
 	/** Time records */
-	private val rankingTime = List(RANKING_TYPE) {MutableList(RANKING_MAX) {-1}}
+	private val rankingTime = List(RANKING_TYPE) {MutableList(rankingMax) {-1}}
 
 	/** Game completed flag records */
-	private val rankingRollClear = List(RANKING_TYPE) {MutableList(RANKING_MAX) {0}}
+	private val rankingRollClear = List(RANKING_TYPE) {MutableList(rankingMax) {0}}
 
 	/** Best section time records */
-	private val bestSectionTime = List(RANKING_TYPE) {MutableList(SECTION_MAX) {DEFAULT_SECTION_TIME}}
-	private val bestSectionLine = List(RANKING_TYPE) {MutableList(SECTION_MAX) {0}}
+	private val bestSectionTime = List(RANKING_TYPE) {MutableList(sectionMax) {DEFAULT_SECTION_TIME}}
+	private val bestSectionLine = List(RANKING_TYPE) {MutableList(sectionMax) {0}}
 
 	override val propRank
 		get() = rankMapOf(
@@ -293,7 +293,7 @@ class GrandZ:AbstractGrand() {
 	}
 
 	override fun renderFirst(engine:GameEngine) {
-		if(engine.ending==2) receiver.drawStaffRoll(engine, rollTime*1f/ROLLTIMELIMIT)
+		if(engine.gameActive&&engine.ending==2) receiver.drawStaffRoll(engine, rollTime*1f/ROLLTIMELIMIT)
 	}
 	/** Renders HUD (leaderboard or game statistics) */
 	override fun renderLast(engine:GameEngine) {
@@ -308,7 +308,7 @@ class GrandZ:AbstractGrand() {
 					val topY = if(receiver.nextDisplayType==2) 5 else 3
 					receiver.drawScoreFont(engine, 0, topY-1, "GRADE LV TIME", COLOR.RED)
 
-					for(i in 0..<RANKING_MAX) {
+					for(i in 0..<rankingMax) {
 
 						receiver.drawScoreGrade(engine, 0, topY+i, "%02d".format(i+1), COLOR.YELLOW)
 						receiver.drawScoreGrade(
@@ -329,7 +329,7 @@ class GrandZ:AbstractGrand() {
 					receiver.drawScoreFont(engine, 0, 2, "SECTION TIME", COLOR.RED)
 
 					val totalTime =
-						(0..<SECTION_MAX).fold(0) {tt, i ->
+						(0..<sectionMax).fold(0) {tt, i ->
 							val slv = minOf(i*100, 999)
 							receiver.drawScoreNum(
 								engine, 0, 3+i, "%3d-%3d %s %3d".format(
@@ -342,7 +342,7 @@ class GrandZ:AbstractGrand() {
 					receiver.drawScoreFont(engine, 0, 14, "TOTAL", COLOR.RED)
 					receiver.drawScoreNum(engine, 0, 15, totalTime.toTimeStr, 2f)
 					receiver.drawScoreFont(engine, 9, 14, "AVERAGE", COLOR.RED)
-					receiver.drawScoreNum(engine, 9, 15, (totalTime*1f/SECTION_MAX).toTimeStr, 2f)
+					receiver.drawScoreNum(engine, 9, 15, (totalTime*1f/sectionMax).toTimeStr, 2f)
 
 					receiver.drawScoreFont(engine, 0, 19, "F:VIEW RANKING", COLOR.ORANGE)
 				}
@@ -427,9 +427,7 @@ class GrandZ:AbstractGrand() {
 		return false
 	}
 
-	override fun onARE(engine:GameEngine):Boolean {
-		return if(gametype==0) super.onARE(engine) else false
-	}
+	override fun onARE(engine:GameEngine):Boolean = if(gametype==0) super.onARE(engine) else false
 
 	/** Calculates line-clear score
 	 * (This function will be called even if no lines are cleared) */
@@ -518,7 +516,7 @@ class GrandZ:AbstractGrand() {
 				stMedalCheck(engine, section)
 				// Grade Increase
 				if(gametype==0) {
-					val gm = SECTION_MAX*(MAX_LIVES[0]+1)
+					val gm = sectionMax*(MAX_LIVES[0]+1)
 					gradeinternal = maxOf(gm, gradeinternal+1+engine.lives)
 					val gi = gradeinternal*31/gm
 					if(grade!=gi) {
@@ -678,7 +676,7 @@ class GrandZ:AbstractGrand() {
 		rankingRank = checkRanking(type, gr, lv, time, clear)
 
 		if(rankingRank!=-1) {
-			for(i in RANKING_MAX-1 downTo rankingRank+1) {
+			for(i in rankingMax-1 downTo rankingRank+1) {
 				rankingGrade[type][i] = rankingGrade[type][i-1]
 				rankingLevel[type][i] = rankingLevel[type][i-1]
 				rankingTime[type][i] = rankingTime[type][i-1]
@@ -700,7 +698,7 @@ class GrandZ:AbstractGrand() {
 	 * @return Place (First place is 0. -1 is Out of Rank)
 	 */
 	private fun checkRanking(type:Int, gr:Int, lv:Int, time:Int, clear:Int):Int {
-		for(i in 0..<RANKING_MAX)
+		for(i in 0..<rankingMax)
 			if(clear>rankingRollClear[type][i])
 				return i
 			else if(clear==rankingRollClear[type][i]&&gr>rankingGrade[type][i])
@@ -717,7 +715,7 @@ class GrandZ:AbstractGrand() {
 
 	/** Updates best section time records */
 	private fun updateBestSectionTime(t:Int) {
-		for(i in 0..<SECTION_MAX)
+		for(i in 0..<sectionMax)
 			if(sectionIsNewRecord[i]) {
 				bestSectionTime[t][i] = sectionTime[i]
 				bestSectionLine[t][i] = sectionLine[i]

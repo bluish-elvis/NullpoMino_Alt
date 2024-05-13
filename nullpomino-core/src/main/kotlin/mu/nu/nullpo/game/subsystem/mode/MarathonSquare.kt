@@ -67,13 +67,13 @@ class MarathonSquare:AbstractMode() {
 	private var rankingRank = 0
 
 	/** Score records */
-	private val rankingScore = List(RANKING_TYPE) {MutableList(RANKING_MAX) {0L}}
+	private val rankingScore = List(RANKING_TYPE) {MutableList(rankingMax) {0L}}
 
 	/** Time records */
-	private val rankingTime = List(RANKING_TYPE) {MutableList(RANKING_MAX) {-1}}
+	private val rankingTime = List(RANKING_TYPE) {MutableList(rankingMax) {-1}}
 
 	/** Squares records */
-	private val rankingSquares = List(RANKING_TYPE) {MutableList(RANKING_MAX) {0}}
+	private val rankingSquares = List(RANKING_TYPE) {MutableList(rankingMax) {0}}
 
 	/* Returns the name of this mode */
 	override val name = "SQUARE"
@@ -242,7 +242,7 @@ class MarathonSquare:AbstractMode() {
 					2 -> receiver.drawScoreFont(engine, 3, 3, "TIME     SQUARE", EventReceiver.COLOR.BLUE)
 				}
 
-				for(i in 0..<RANKING_MAX) {
+				for(i in 0..<rankingMax) {
 					receiver.drawScoreGrade(engine, 0, topY+i, "%2d".format(i+1), EventReceiver.COLOR.YELLOW, scale)
 					when(gametype) {
 						0 -> {
@@ -520,7 +520,7 @@ class MarathonSquare:AbstractMode() {
 
 		if(rankingRank!=-1) {
 			// Shift the old records
-			for(i in RANKING_MAX-1 downTo rankingRank+1) {
+			for(i in rankingMax-1 downTo rankingRank+1) {
 				rankingScore[type][i] = rankingScore[type][i-1]
 				rankingTime[type][i] = rankingTime[type][i-1]
 				rankingSquares[type][i] = rankingSquares[type][i-1]
@@ -542,7 +542,7 @@ class MarathonSquare:AbstractMode() {
 	 * @return Place (-1: Out of rank)
 	 */
 	private fun checkRanking(sc:Long, time:Int, sq:Int, type:Int):Int {
-		for(i in 0..<RANKING_MAX)
+		for(i in 0..<rankingMax)
 			when {
 				gametype==0 -> {
 					// Marathon

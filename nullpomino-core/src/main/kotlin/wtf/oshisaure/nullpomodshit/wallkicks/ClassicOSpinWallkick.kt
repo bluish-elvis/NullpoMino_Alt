@@ -48,7 +48,7 @@ import mu.nu.nullpo.game.event.WallkickResult
 import mu.nu.nullpo.game.subsystem.wallkick.Wallkick
 
 class ClassicOSpinWallkick:Wallkick {
-	var trySeq = intArrayOf(4, 0, 1, 5, 3, 6, 2)
+	private var trySeq = intArrayOf(4, 0, 1, 5, 3, 6, 2)
 	override fun executeWallkick(
 		x:Int, y:Int, rtDir:Int, rtOld:Int, rtNew:Int, allowUpward:Boolean, piece:Piece, field:Field, ctrl:Controller?
 	): WallkickResult? {

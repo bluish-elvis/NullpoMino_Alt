@@ -30,7 +30,7 @@
  */
 package mu.nu.nullpo.game.subsystem.mode
 
-import mu.nu.nullpo.game.component.BGMStatus.BGM
+import mu.nu.nullpo.game.component.BGM
 import mu.nu.nullpo.game.event.EventReceiver
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
 import mu.nu.nullpo.game.event.ScoreEvent
@@ -97,15 +97,15 @@ class SprintLine:NetDummyMode() {
 	private var rankingRank = 0
 
 	/** Rankings' times */
-	private val rankingTime = List(GOALTYPE_MAX) {MutableList(RANKING_MAX) {1}}
+	private val rankingTime = List(GOALTYPE_MAX) {MutableList(rankingMax) {1}}
 
 	/** Rankings' piece counts */
-	private val rankingPiece = List(GOALTYPE_MAX) {MutableList(RANKING_MAX) {0}}
+	private val rankingPiece = List(GOALTYPE_MAX) {MutableList(rankingMax) {0}}
 
 	/** Rankings' PPS values */
 	private val rankingPPS
 		get() = List(GOALTYPE_MAX) {x ->
-			List(RANKING_MAX) {y -> rankingPiece[x][y]*60f/rankingTime[x][y]}
+			List(rankingMax) { y -> rankingPiece[x][y]*60f/rankingTime[x][y]}
 		}
 
 	/* Mode name */
@@ -163,7 +163,7 @@ Ready&Go screen disappears) */
 				val topY = if(receiver.nextDisplayType==2) 6 else 4
 				receiver.drawScoreFont(engine, 1, topY-1, "TIME   PIECE/sec", COLOR.BLUE)
 
-				for(i in 0..<RANKING_MAX) {
+				for(i in 0..<rankingMax) {
 					receiver.drawScoreGrade(engine, 0, topY+i, "%2d".format(i+1), COLOR.YELLOW)
 					receiver.drawScoreNum(engine, 2, topY+i, rankingTime[goalType][i].toTimeStr, rankingRank==i)
 					if(rankingTime[goalType][i]>=0) {
@@ -278,7 +278,7 @@ Ready&Go screen disappears) */
 
 		if(rankingRank!=-1) {
 			// Shift down ranking entries
-			for(i in RANKING_MAX-1 downTo rankingRank+1) {
+			for(i in rankingMax-1 downTo rankingRank+1) {
 				rankingTime[goalType][i] = rankingTime[goalType][i-1]
 				rankingPiece[goalType][i] = rankingPiece[goalType][i-1]
 //				rankingPPS[goalType][i] = rankingPPS[goalType][i-1]
@@ -297,7 +297,7 @@ Ready&Go screen disappears) */
 	 * @return Position (-1 if unranked)
 	 */
 	private fun checkRanking(time:Int, piece:Int, pps:Float):Int {
-		for(i in 0..<RANKING_MAX)
+		for(i in 0..<rankingMax)
 			if(time<rankingTime[goalType][i]||rankingTime[goalType][i]<=0) return i
 			else if(time==rankingTime[goalType][i]&&(piece<rankingPiece[goalType][i]||rankingPiece[goalType][i]==0)) return i
 			else if(time==rankingTime[goalType][i]&&piece==rankingPiece[goalType][i]&&pps>rankingPPS[goalType][i]) return i

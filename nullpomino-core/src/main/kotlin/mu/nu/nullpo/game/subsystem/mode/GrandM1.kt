@@ -31,7 +31,7 @@
 package mu.nu.nullpo.game.subsystem.mode
 
 import kotlinx.serialization.serializer
-import mu.nu.nullpo.game.component.BGMStatus.BGM
+import mu.nu.nullpo.game.component.BGM
 import mu.nu.nullpo.game.component.Block
 import mu.nu.nullpo.game.component.Controller
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
@@ -83,11 +83,11 @@ class GrandM1:AbstractGrand() {
 	private var gradeFlash = 0
 
 	/** Section Score */
-	private val sectionScore = MutableList(SECTION_MAX) {0}
+	private val sectionScore = MutableList(sectionMax) {0}
 
 	/** Section Time記録 */
-	private val bestSectionTime = MutableList(SECTION_MAX) {DEFAULT_SECTION_TIME}
-	private val bestSectionScore = MutableList(SECTION_MAX) {0}
+	private val bestSectionTime = MutableList(sectionMax) {DEFAULT_SECTION_TIME}
+	private val bestSectionScore = MutableList(sectionMax) {0}
 
 	/** Section Time記録表示中ならtrue */
 	private var isShowBestSectionTime = false
@@ -110,15 +110,15 @@ class GrandM1:AbstractGrand() {
 	/** Current round's ranking position */
 	private var rankingRank = 0
 
-	override val ranking = Leaderboard(RANKING_MAX, serializer<List<Rankable.GrandRow>>())
+	override val ranking = Leaderboard(rankingMax, serializer<List<Rankable.GrandRow>>())
 	/** Rankings' 段位 */
-	private val rankingGrade = MutableList(RANKING_MAX) {0}
+	private val rankingGrade = MutableList(rankingMax) {0}
 
 	/** Rankings' level */
-	private val rankingLevel = MutableList(RANKING_MAX) {0}
+	private val rankingLevel = MutableList(rankingMax) {0}
 
 	/** Rankings' times */
-	private val rankingTime = MutableList(RANKING_MAX) {-1}
+	private val rankingTime = MutableList(rankingMax) {-1}
 
 	/* Mode name */
 	override val name = "Grand Marathon"
@@ -282,7 +282,7 @@ class GrandM1:AbstractGrand() {
 	}
 
 	override fun renderFirst(engine:GameEngine) {
-		if(engine.ending==2) receiver.drawStaffRoll(engine, rollTime*1f/ROLLTIMELIMIT)
+		if(engine.gameActive&&engine.ending==2) receiver.drawStaffRoll(engine, rollTime*1f/ROLLTIMELIMIT)
 	}
 	/* Render score */
 	override fun renderLast(engine:GameEngine) {
@@ -323,7 +323,7 @@ class GrandM1:AbstractGrand() {
 					// Section Time
 					receiver.drawScoreFont(engine, 0, 2, "SECTION TIME SCORE", COLOR.BLUE)
 
-					val totalTime = (0..<SECTION_MAX).fold(0) {tt, i ->
+					val totalTime = (0..<sectionMax).fold(0) { tt, i ->
 						val slv = minOf(i*100, 999)
 						receiver.drawScoreNum(
 							engine, 0, 3+i, "%3d-%3d %s %d".format(slv, slv+99, bestSectionTime[i].toTimeStr, bestSectionScore[i]),
@@ -340,7 +340,7 @@ class GrandM1:AbstractGrand() {
 					)
 					receiver.drawScoreNum(
 						engine, if(receiver.nextDisplayType==2) 0 else 12, if(receiver.nextDisplayType==2) 19 else 15,
-						(totalTime/SECTION_MAX).toTimeStr, scale = 2f
+						(totalTime/sectionMax).toTimeStr, scale = 2f
 					)
 
 					receiver.drawScoreFont(engine, 0, 17, "F:VIEW RANKING", color = COLOR.GREEN)
@@ -711,7 +711,7 @@ class GrandM1:AbstractGrand() {
 
 		if(rankingRank!=-1) {
 			// Shift down ranking entries
-			for(i in RANKING_MAX-1 downTo rankingRank+1) {
+			for(i in rankingMax-1 downTo rankingRank+1) {
 				rankingGrade[i] = rankingGrade[i-1]
 				rankingLevel[i] = rankingLevel[i-1]
 				rankingTime[i] = rankingTime[i-1]
@@ -731,7 +731,7 @@ class GrandM1:AbstractGrand() {
 	 * @return Position (-1 if unranked)
 	 */
 	private fun checkRanking(gr:Int, lv:Int, time:Int):Int {
-		for(i in 0..<RANKING_MAX)
+		for(i in 0..<rankingMax)
 			if(gr>rankingGrade[i]) return i
 			else if(gr==rankingGrade[i]&&lv>rankingLevel[i]) return i
 			else if(gr==rankingGrade[i]&&lv==rankingLevel[i]&&time<rankingTime[i]) return i
@@ -741,7 +741,7 @@ class GrandM1:AbstractGrand() {
 
 	/** Update best section time records */
 	private fun updateBestSectionTime() {
-		for(i in 0..<SECTION_MAX)
+		for(i in 0..<sectionMax)
 			if(sectionIsNewRecord[i]) {
 				bestSectionTime[i] = sectionTime[i]
 				bestSectionScore[i] = sectionScore[i]

@@ -30,7 +30,7 @@
  */
 package mu.nu.nullpo.gui.slick
 
-import mu.nu.nullpo.game.component.BGMStatus.BGM
+import mu.nu.nullpo.game.component.BGM
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
 import mu.nu.nullpo.gui.common.BaseFont
 import mu.nu.nullpo.gui.slick.img.FontNano
@@ -59,7 +59,7 @@ internal class StateConfigMainMenu:BaseMenuChooseState() {
 
 	override fun enter(container:GameContainer?, game:StateBasedGame?) {
 		super.enter(container, game)
-		if(ResourceHolder.bgmPlaying!=BGM.Menu(2)) ResourceHolder.bgmStart(BGM.Menu(2))
+		if(ResourceHolder.bgmPlaying!= BGM.Menu(2)) ResourceHolder.bgmStart(BGM.Menu(2))
 	}
 
 	/* Draw the screen */

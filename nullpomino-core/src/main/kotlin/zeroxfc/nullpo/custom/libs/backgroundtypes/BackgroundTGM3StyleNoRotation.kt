@@ -186,9 +186,6 @@ open class BackgroundTGM3StyleNoRotation<T>(img:ResourceImage<T>):AbstractBG<T>(
 		)
 	}
 
-	override fun drawLite() {
-		super.drawLite()
-	}
 	companion object {
 		/*
      * note: screw slick's image rotation function.

@@ -30,7 +30,7 @@
  */
 package mu.nu.nullpo.tool.musiclisteditor
 
-import mu.nu.nullpo.game.component.BGMStatus.BGM
+import mu.nu.nullpo.game.component.BGM
 import mu.nu.nullpo.util.CustomProperties
 import org.apache.logging.log4j.LogManager
 import java.awt.BorderLayout
@@ -133,7 +133,7 @@ class MusicListEditor:JFrame(), ActionListener {
 		chkboxNoLoop = Array(num) {JCheckBox()}
 		//TODO:Tab : BGM. : Category
 		BGM.values.forEachIndexed { i, tr ->
-			if(tr!=BGM.Silent) {
+			if(tr!= BGM.Silent) {
 				val i = i-1
 				val name = "${tr.name}.${tr.idx}"
 				val id = tr.id

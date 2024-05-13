@@ -36,7 +36,7 @@
  */
 package zeroxfc.nullpo.custom.libs.backgroundtypes
 
-import mu.nu.nullpo.game.component.BGMStatus
+import mu.nu.nullpo.game.component.BGM
 import mu.nu.nullpo.gui.slick.RendererSlick
 import mu.nu.nullpo.gui.slick.ResourceHolder
 import mu.nu.nullpo.gui.slick.ResourceImageSlick
@@ -106,7 +106,7 @@ class ResourceHolderCustomAssetExtension @JvmOverloads constructor(initialCapaci
 		try {
 			putImageAt(image.res, name)
 		} catch(e:Exception) {
-			log.error("Unable to insert image $image at $name")
+			log.error("Unable to insert ResourceImageSlick $image at $name")
 		}
 	}
 	/**
@@ -417,7 +417,7 @@ class ResourceHolderCustomAssetExtension @JvmOverloads constructor(initialCapaci
 
 	companion object {
 		private val log = LogManager.getLogger()
-		private var bgmPrevious:BGMStatus.BGM = BGMStatus.BGM.Silent// Thread-safe code used for when more threads are being used.
+		private var bgmPrevious: BGM = BGM.Silent// Thread-safe code used for when more threads are being used.
 		// Warning: slower.
 		/**
 		 * Gets the current instance's main class name.

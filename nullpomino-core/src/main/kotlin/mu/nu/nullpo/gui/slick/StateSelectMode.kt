@@ -30,7 +30,7 @@
  */
 package mu.nu.nullpo.gui.slick
 
-import mu.nu.nullpo.game.component.BGMStatus.BGM
+import mu.nu.nullpo.game.component.BGM
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
 import mu.nu.nullpo.game.subsystem.mode.GameMode
 import mu.nu.nullpo.gui.slick.NullpoMinoSlick.Companion.modeManager
@@ -125,7 +125,7 @@ internal class StateSelectMode:BaseMenuScrollState() {
 	override fun enter(container:GameContainer?, game:StateBasedGame?) {
 		super.enter(container, game)
 		prepareModeList()
-		if(ResourceHolder.bgmPlaying!=BGM.Menu(0)) ResourceHolder.bgmStart(BGM.Menu(0))
+		if(ResourceHolder.bgmPlaying!= BGM.Menu(0)) ResourceHolder.bgmStart(BGM.Menu(0))
 	}
 
 	/* Render screen */

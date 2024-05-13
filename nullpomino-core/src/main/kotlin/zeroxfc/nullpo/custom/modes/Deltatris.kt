@@ -37,7 +37,7 @@
 
 package zeroxfc.nullpo.custom.modes
 
-import mu.nu.nullpo.game.component.BGMStatus
+import mu.nu.nullpo.game.component.BGM
 import mu.nu.nullpo.game.component.Controller
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
 import mu.nu.nullpo.game.event.ScoreEvent
@@ -65,14 +65,14 @@ class Deltatris:MarathonModeBase() {
 	private var mScale = 1f
 	private var scoreBbefore = 0
 	// Generic
-	private val rankingScore = List(RANKING_TYPE) {MutableList(RANKING_MAX) {0L}}
-	private val rankingTime = List(RANKING_TYPE) {MutableList(RANKING_MAX) {-1}}
-	private val rankingLines = List(RANKING_TYPE) {MutableList(RANKING_MAX) {0}}
+	private val rankingScore = List(RANKING_TYPE) {MutableList(rankingMax) {0L}}
+	private val rankingTime = List(RANKING_TYPE) {MutableList(rankingMax) {-1}}
+	private val rankingLines = List(RANKING_TYPE) {MutableList(rankingMax) {0}}
 	// PROFILE
 	private var rankingRankPlayer = 0
-	private val rankingScorePlayer = List(RANKING_TYPE) {MutableList(RANKING_MAX) {0L}}
-	private val rankingTimePlayer = List(RANKING_TYPE) {MutableList(RANKING_MAX) {0}}
-	private val rankingLinesPlayer = List(RANKING_TYPE) {MutableList(RANKING_MAX) {0}}
+	private val rankingScorePlayer = List(RANKING_TYPE) {MutableList(rankingMax) {0L}}
+	private val rankingTimePlayer = List(RANKING_TYPE) {MutableList(rankingMax) {0}}
+	private val rankingLinesPlayer = List(RANKING_TYPE) {MutableList(rankingMax) {0}}
 	/**
 	 * The good hard drop effect
 	 */
@@ -253,7 +253,7 @@ class Deltatris:MarathonModeBase() {
 		setSpeed(engine)
 		grav = START_GRAVITY.toDouble()
 		if(netIsWatch) {
-			owner.musMan.bgm = BGMStatus.BGM.Silent
+			owner.musMan.bgm = BGM.Silent
 		}
 	}
 
@@ -278,27 +278,27 @@ class Deltatris:MarathonModeBase() {
 				val topY = if(receiver.nextDisplayType==2) 6 else 4
 				receiver.drawScoreFont(engine, 3, topY-1, "SCORE  LINE TIME", COLOR.BLUE)
 				if(showPlayerStats) {
-					for(i in 0..<RANKING_MAX) {
+					for(i in 0..<rankingMax) {
 						receiver.drawScoreFont(engine, 0, topY+i, "%2d".format(i+1), COLOR.YELLOW)
 						receiver.drawScoreFont(engine, 3, topY+i, "${rankingScorePlayer[difficulty][i]}", i==rankingRankPlayer)
 						receiver.drawScoreFont(engine, 10, topY+i, "${rankingLinesPlayer[difficulty][i]}", i==rankingRankPlayer)
 						receiver.drawScoreFont(engine, 15, topY+i, rankingTimePlayer[difficulty][i].toTimeStr, i==rankingRankPlayer)
 					}
-					receiver.drawScoreFont(engine, 0, topY+RANKING_MAX+1, "PLAYER SCORES", COLOR.BLUE)
-					receiver.drawScoreFont(engine, 0, topY+RANKING_MAX+2, engine.playerProp.nameDisplay, COLOR.WHITE, 2f)
-					receiver.drawScoreFont(engine, 0, topY+RANKING_MAX+5, "F:SWITCH RANK SCREEN", COLOR.GREEN)
+					receiver.drawScoreFont(engine, 0, topY+rankingMax+1, "PLAYER SCORES", COLOR.BLUE)
+					receiver.drawScoreFont(engine, 0, topY+rankingMax+2, engine.playerProp.nameDisplay, COLOR.WHITE, 2f)
+					receiver.drawScoreFont(engine, 0, topY+rankingMax+5, "F:SWITCH RANK SCREEN", COLOR.GREEN)
 				} else {
-					for(i in 0..<RANKING_MAX) {
+					for(i in 0..<rankingMax) {
 						receiver.drawScoreFont(engine, 0, topY+i, "%2d".format(i+1), COLOR.YELLOW)
 						receiver.drawScoreFont(engine, 3, topY+i, "${rankingScore[difficulty][i]}", i==rankingRank)
 						receiver.drawScoreFont(engine, 10, topY+i, "${rankingLines[difficulty][i]}", i==rankingRank)
 						receiver.drawScoreFont(engine, 15, topY+i, rankingTime[difficulty][i].toTimeStr, i==rankingRank)
 					}
-					receiver.drawScoreFont(engine, 0, topY+RANKING_MAX+1, "LOCAL SCORES", COLOR.BLUE)
+					receiver.drawScoreFont(engine, 0, topY+rankingMax+1, "LOCAL SCORES", COLOR.BLUE)
 					if(!engine.playerProp.isLoggedIn)
-						receiver.drawScoreFont(engine, 0, topY+RANKING_MAX+2, "(NOT LOGGED IN)\n(E:LOG IN)")
+						receiver.drawScoreFont(engine, 0, topY+rankingMax+2, "(NOT LOGGED IN)\n(E:LOG IN)")
 					if(engine.playerProp.isLoggedIn)
-						receiver.drawScoreFont(engine, 0, topY+RANKING_MAX+5, "F:SWITCH RANK SCREEN", COLOR.GREEN)
+						receiver.drawScoreFont(engine, 0, topY+rankingMax+5, "F:SWITCH RANK SCREEN", COLOR.GREEN)
 				}
 			}
 		} else if(engine.stat===GameEngine.Status.CUSTOM) {
@@ -465,7 +465,7 @@ class Deltatris:MarathonModeBase() {
 			owner.bgMan.nextBg = engine.statistics.level
 			if(engine.statistics.level==4||engine.statistics.level==8||engine.statistics.level==12||engine.statistics.level==16) {
 				bgmLv++
-				owner.musMan.bgm = BGMStatus.BGM.GrandT(bgmLv)
+				owner.musMan.bgm = BGM.GrandT(bgmLv)
 				owner.musMan.fadeSW = false
 			}
 			engine.playSE("levelup")
@@ -473,7 +473,7 @@ class Deltatris:MarathonModeBase() {
 		if(engine.statistics.totalPieceLocked==PIECES_MAX[difficulty]) {
 			engine.playSE("hurryup")
 			bgmLv++
-			owner.musMan.bgm = BGMStatus.BGM.GrandT(bgmLv)
+			owner.musMan.bgm = BGM.GrandT(bgmLv)
 			owner.musMan.fadeSW = false
 		}
 		setSpeed(engine)
@@ -562,7 +562,7 @@ class Deltatris:MarathonModeBase() {
 		rankingRank = checkRanking(sc, li, time, type)
 		if(rankingRank!=-1) {
 			// Shift down ranking entries
-			for(i in RANKING_MAX-1 downTo rankingRank+1) {
+			for(i in rankingMax-1 downTo rankingRank+1) {
 				rankingScore[type][i] = rankingScore[type][i-1]
 				rankingLines[type][i] = rankingLines[type][i-1]
 				rankingTime[type][i] = rankingTime[type][i-1]
@@ -577,7 +577,7 @@ class Deltatris:MarathonModeBase() {
 			rankingRankPlayer = checkRankingPlayer(sc, li, time, type)
 			if(rankingRankPlayer!=-1) {
 				// Shift down ranking entries
-				for(i in RANKING_MAX-1 downTo rankingRankPlayer+1) {
+				for(i in rankingMax-1 downTo rankingRankPlayer+1) {
 					rankingScorePlayer[type][i] = rankingScorePlayer[type][i-1]
 					rankingLinesPlayer[type][i] = rankingLinesPlayer[type][i-1]
 					rankingTimePlayer[type][i] = rankingTimePlayer[type][i-1]
@@ -600,7 +600,7 @@ class Deltatris:MarathonModeBase() {
 	 * @return Position (-1 if unranked)
 	 */
 	private fun checkRanking(sc:Long, li:Int, time:Int, type:Int):Int {
-		for(i in 0..<RANKING_MAX) if(sc>rankingScore[type][i]) return i
+		for(i in 0..<rankingMax) if(sc>rankingScore[type][i]) return i
 		else if(sc==rankingScore[type][i]&&li>rankingLines[type][i]) return i
 		else if(sc==rankingScore[type][i]&&li==rankingLines[type][i]&&time<rankingTime[type][i]) return i
 		return -1
@@ -614,7 +614,7 @@ class Deltatris:MarathonModeBase() {
 	 * @return Position (-1 if unranked)
 	 */
 	private fun checkRankingPlayer(sc:Long, li:Int, time:Int, type:Int):Int {
-		for(i in 0..<RANKING_MAX) if(sc>rankingScorePlayer[type][i]) return i
+		for(i in 0..<rankingMax) if(sc>rankingScorePlayer[type][i]) return i
 		else if(sc==rankingScorePlayer[type][i]&&li>rankingLinesPlayer[type][i]) return i
 		else if(sc==rankingScorePlayer[type][i]&&li==rankingLinesPlayer[type][i]&&time<rankingTimePlayer[type][i]) return i
 		return -1

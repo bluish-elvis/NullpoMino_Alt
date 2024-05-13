@@ -30,7 +30,7 @@
  */
 package mu.nu.nullpo.game.subsystem.mode
 
-import mu.nu.nullpo.game.component.BGMStatus.BGM
+import mu.nu.nullpo.game.component.BGM
 import mu.nu.nullpo.game.component.Controller
 import mu.nu.nullpo.game.component.LevelData
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
@@ -71,13 +71,13 @@ class MarathonExtreme:NetDummyMode() {
 	private var rankingRank = 0
 
 	/** Rankings' scores */
-	private val rankingScore = List(RANKING_TYPE) {MutableList(RANKING_MAX) {0L}}
+	private val rankingScore = List(RANKING_TYPE) {MutableList(rankingMax) {0L}}
 
 	/** Rankings' line counts */
-	private val rankingLines = List(RANKING_TYPE) {MutableList(RANKING_MAX) {0}}
+	private val rankingLines = List(RANKING_TYPE) {MutableList(rankingMax) {0}}
 
 	/** Rankings' times */
-	private val rankingTime = List(RANKING_TYPE) {MutableList(RANKING_MAX) {-1}}
+	private val rankingTime = List(RANKING_TYPE) {MutableList(rankingMax) {-1}}
 
 	override val propRank
 		get() = rankMapOf(
@@ -186,7 +186,7 @@ class MarathonExtreme:NetDummyMode() {
 	}
 
 	override fun renderFirst(engine:GameEngine) {
-		if(engine.ending==2) receiver.drawStaffRoll(engine, rollTime*1f/ROLLTIMELIMIT)
+		if(engine.gameActive&&engine.ending==2) receiver.drawStaffRoll(engine, rollTime*1f/ROLLTIMELIMIT)
 	}
 	/* Render score */
 	override fun renderLast(engine:GameEngine) {
@@ -199,7 +199,7 @@ class MarathonExtreme:NetDummyMode() {
 				val topY = if(receiver.nextDisplayType==2) 6 else 4
 				receiver.drawScoreFont(engine, 2, topY-1, "SCORE LINE TIME", COLOR.RED)
 
-				for(i in 0..<RANKING_MAX) {
+				for(i in 0..<rankingMax) {
 					var endlessIndex = 0
 					if(endless) endlessIndex = 1
 
@@ -403,7 +403,7 @@ class MarathonExtreme:NetDummyMode() {
 			if(endlessMode) endlessIndex = 1
 
 			// Shift down ranking entries
-			for(i in RANKING_MAX-1 downTo rankingRank+1) {
+			for(i in rankingMax-1 downTo rankingRank+1) {
 				rankingScore[endlessIndex][i] = rankingScore[endlessIndex][i-1]
 				rankingLines[endlessIndex][i] = rankingLines[endlessIndex][i-1]
 				rankingTime[endlessIndex][i] = rankingTime[endlessIndex][i-1]
@@ -426,7 +426,7 @@ class MarathonExtreme:NetDummyMode() {
 		var endlessIndex = 0
 		if(endlessMode) endlessIndex = 1
 
-		for(i in 0..<RANKING_MAX)
+		for(i in 0..<rankingMax)
 			if(sc>rankingScore[endlessIndex][i])
 				return i
 			else if(sc==rankingScore[endlessIndex][i]&&li>rankingLines[endlessIndex][i])

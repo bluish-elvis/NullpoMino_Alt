@@ -30,7 +30,7 @@
  */
 package mu.nu.nullpo.game.subsystem.mode
 
-import mu.nu.nullpo.game.component.BGMStatus.BGM
+import mu.nu.nullpo.game.component.BGM
 import mu.nu.nullpo.game.component.Controller
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
 import mu.nu.nullpo.game.event.ScoreEvent
@@ -63,7 +63,7 @@ class GrandSStealth:AbstractGrand() {
 	private var bgmLv = 0
 
 	/** Section 内で4-line clearした count */
-	private var sectionQuads = MutableList(SECTION_MAX) {0}
+	private var sectionQuads = MutableList(sectionMax) {0}
 	/** Set to true by default, set to false when sectionQuads is below 2 */
 	private var gmQuads = false
 
@@ -85,15 +85,15 @@ class GrandSStealth:AbstractGrand() {
 	private var rankingRank = 0
 
 	/** Grade records */
-	private val rankingGrade = MutableList(RANKING_MAX) {0}
+	private val rankingGrade = MutableList(rankingMax) {0}
 	/** Level records */
-	private val rankingLevel = MutableList(RANKING_MAX) {0}
+	private val rankingLevel = MutableList(rankingMax) {0}
 	/** Time records */
-	private val rankingTime = MutableList(RANKING_MAX) {-1}
+	private val rankingTime = MutableList(rankingMax) {-1}
 	/** Roll-Cleared records */
-	private val rankingRollClear = MutableList(RANKING_MAX) {0}
+	private val rankingRollClear = MutableList(rankingMax) {0}
 	/** Best section time records */
-	private val bestSectionTime = MutableList(SECTION_MAX) {DEFAULT_SECTION_TIME}
+	private val bestSectionTime = MutableList(sectionMax) {DEFAULT_SECTION_TIME}
 
 	/** Returns the name of this mode */
 	override val name = "Grand Phantom"
@@ -141,7 +141,7 @@ class GrandSStealth:AbstractGrand() {
 		if(!owner.replayMode) {
 			version = CURRENT_VERSION
 		} else {
-			for(i in 0..<SECTION_MAX)
+			for(i in 0..<sectionMax)
 				bestSectionTime[i] = DEFAULT_SECTION_TIME
 			version = owner.replayProp.getProperty("phantommania.version", 0)
 		}
@@ -296,7 +296,7 @@ class GrandSStealth:AbstractGrand() {
 	}
 
 	override fun renderFirst(engine:GameEngine) {
-		if(engine.ending==2) receiver.drawStaffRoll(engine, rollTime*1f/ROLLTIMELIMIT)
+		if(engine.gameActive&&engine.ending==2) receiver.drawStaffRoll(engine, rollTime*1f/ROLLTIMELIMIT)
 	}
 	/** Renders HUD (leaderboard or game statistics) */
 	override fun renderLast(engine:GameEngine) {
@@ -309,7 +309,7 @@ class GrandSStealth:AbstractGrand() {
 					val topY = if(receiver.nextDisplayType==2) 5 else 3
 					receiver.drawScoreFont(engine, 0, topY-1, "GRADE LV TIME", COLOR.PURPLE)
 
-					for(i in 0..<RANKING_MAX) {
+					for(i in 0..<rankingMax) {
 
 						receiver.drawScoreGrade(
 							engine, 0, topY+i, "%2d".format(i+1), if(rankingRank==i) COLOR.RAINBOW else COLOR.YELLOW
@@ -330,7 +330,7 @@ class GrandSStealth:AbstractGrand() {
 					// Best section time records
 					receiver.drawScoreFont(engine, 0, 2, "SECTION TIME", COLOR.PURPLE)
 
-					val totalTime = (0..<SECTION_MAX).fold(0) {tt, i ->
+					val totalTime = (0..<sectionMax).fold(0) { tt, i ->
 						val slv = minOf(i*100, 999)
 						receiver.drawScoreNum(
 							engine, 0, 3+i, "%3d-%3d %s".format(slv, slv+99, bestSectionTime[i].toTimeStr), sectionIsNewRecord[i]
@@ -340,7 +340,7 @@ class GrandSStealth:AbstractGrand() {
 					receiver.drawScoreFont(engine, 0, 17, "TOTAL", COLOR.PURPLE)
 					receiver.drawScoreNum(engine, 0, 18, totalTime.toTimeStr, 2f)
 					receiver.drawScoreFont(engine, 9, 17, "AVERAGE", COLOR.PURPLE)
-					receiver.drawScoreNum(engine, 9, 18, (totalTime/SECTION_MAX).toTimeStr, 2f)
+					receiver.drawScoreNum(engine, 9, 18, (totalTime/sectionMax).toTimeStr, 2f)
 
 					receiver.drawScoreFont(engine, 0, 17, "F:VIEW RANKING", COLOR.GREEN)
 				}
@@ -648,7 +648,7 @@ class GrandSStealth:AbstractGrand() {
 		rankingRank = checkRanking(gr, lv, time, clear)
 
 		if(rankingRank!=-1) {
-			for(i in RANKING_MAX-1 downTo rankingRank+1) {
+			for(i in rankingMax-1 downTo rankingRank+1) {
 				rankingGrade[i] = rankingGrade[i-1]
 				rankingLevel[i] = rankingLevel[i-1]
 				rankingTime[i] = rankingTime[i-1]
@@ -665,7 +665,7 @@ class GrandSStealth:AbstractGrand() {
 	/** This function will check the ranking and returns which place you are.
 	 * (-1: Out of rank) */
 	private fun checkRanking(gr:Int, lv:Int, time:Int, clear:Int):Int {
-		for(i in 0..<RANKING_MAX)
+		for(i in 0..<rankingMax)
 			if(clear>rankingRollClear[i])
 				return i
 			else if(clear==rankingRollClear[i]&&gr>rankingGrade[i])
@@ -679,7 +679,7 @@ class GrandSStealth:AbstractGrand() {
 
 	/** Updates best section time records */
 	private fun updateBestSectionTime() {
-		for(i in 0..<SECTION_MAX)
+		for(i in 0..<sectionMax)
 			if(sectionIsNewRecord[i]) bestSectionTime[i] = sectionTime[i]
 	}
 

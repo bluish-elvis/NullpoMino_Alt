@@ -31,13 +31,13 @@
 
 package mu.nu.nullpo.game.subsystem.mode.menu
 
-import mu.nu.nullpo.game.component.BGMStatus
+import mu.nu.nullpo.game.component.BGM
 import mu.nu.nullpo.game.event.EventReceiver
 import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.gui.common.BaseFont
 
 class BGMMenuItem(name:String, color:EventReceiver.COLOR, defaultValue:Int = 0):
-	StringsMenuItem(name, "BGM", color, defaultValue, BGMStatus.BGM.values.map {it.drawName}, false, false) {
+	StringsMenuItem(name, "BGM", color, defaultValue, BGM.values.map {it.drawName}, false, false) {
 	override val valueString get() = choiceNames[value]
 	override val colMax = 1
 	override val showHeight = 2

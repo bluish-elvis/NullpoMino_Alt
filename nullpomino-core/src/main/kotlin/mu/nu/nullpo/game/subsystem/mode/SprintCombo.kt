@@ -30,7 +30,7 @@
  */
 package mu.nu.nullpo.game.subsystem.mode
 
-import mu.nu.nullpo.game.component.BGMStatus.BGM
+import mu.nu.nullpo.game.component.BGM
 import mu.nu.nullpo.game.component.Block
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
 import mu.nu.nullpo.game.event.ScoreEvent
@@ -97,10 +97,10 @@ class SprintCombo:NetDummyMode() {
 	private var rankingRank = 0
 
 	/** Rankings' times */
-	private val rankingTime = List(GOAL_TABLE.size) {List(GAMETYPE_MAX) {MutableList(RANKING_MAX) {-1}}}
+	private val rankingTime = List(GOAL_TABLE.size) {List(GAMETYPE_MAX) {MutableList(rankingMax) {-1}}}
 
 	/** Rankings' Combo */
-	private val rankingCombo = List(GOAL_TABLE.size) {List(GAMETYPE_MAX) {MutableList(RANKING_MAX) {-1}}}
+	private val rankingCombo = List(GOAL_TABLE.size) {List(GAMETYPE_MAX) {MutableList(rankingMax) {-1}}}
 
 	/** HindranceLinescount type (0=5,1=10,2=18) */
 	private val itemShape = StringsMenuItem(
@@ -263,7 +263,7 @@ class SprintCombo:NetDummyMode() {
 			if(!owner.replayMode&&!big&&engine.ai==null) {
 				receiver.drawScoreFont(engine, 3, 3, "RECORD", COLOR.BLUE)
 
-				for(i in 0..<RANKING_MAX) {
+				for(i in 0..<rankingMax) {
 					receiver.drawScoreGrade(
 						engine, 0, 4+i, "%2d".format(i+1),
 						if(rankingRank==i) COLOR.RAINBOW else COLOR.YELLOW
@@ -412,7 +412,7 @@ class SprintCombo:NetDummyMode() {
 
 		if(rankingRank!=-1) {
 			// Shift down ranking entries
-			for(i in RANKING_MAX-1 downTo rankingRank+1) {
+			for(i in rankingMax-1 downTo rankingRank+1) {
 				rankingCombo[goalType][gameType][i] = rankingCombo[goalType][gameType][i-1]
 				rankingTime[goalType][gameType][i] = rankingTime[goalType][gameType][i-1]
 			}
@@ -426,7 +426,7 @@ class SprintCombo:NetDummyMode() {
 	/** This function will check the ranking and returns which place you are.
 	 * (-1: Out of rank) */
 	private fun checkRanking(combo:Int, time:Int):Int {
-		for(i in 0..<RANKING_MAX)
+		for(i in 0..<rankingMax)
 			if(combo>rankingCombo[goalType][gameType][i])
 				return i
 			else if(combo==rankingCombo[goalType][gameType][i]&&time>=0&&

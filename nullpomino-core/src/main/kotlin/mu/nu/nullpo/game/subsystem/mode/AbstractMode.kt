@@ -31,7 +31,7 @@
 package mu.nu.nullpo.game.subsystem.mode
 
 import kotlinx.serialization.serializer
-import mu.nu.nullpo.game.component.BGMStatus.BGM
+import mu.nu.nullpo.game.component.BGM
 import mu.nu.nullpo.game.component.Block
 import mu.nu.nullpo.game.component.Controller
 import mu.nu.nullpo.game.component.Piece
@@ -76,8 +76,8 @@ abstract class AbstractMode:GameMode {
 
 	protected fun rankMapOf(vararg array:Pair<String, MutableList<*>>):rankMapType = rankMapOf(listOf(*array))
 
-	open val RANKING_MAX = 13
-	override val ranking:Leaderboard<*> = Leaderboard(this.RANKING_MAX, serializer<List<Int>>())
+	open val rankingMax = 13
+	override val ranking:Leaderboard<*> = Leaderboard(this.rankingMax, serializer<List<Int>>())
 
 	protected var menuColor = COLOR.WHITE
 	/*abstract */override val menu = MenuList(id)

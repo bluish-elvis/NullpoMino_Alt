@@ -271,7 +271,7 @@ open class PoochyBot:DummyAI(), Runnable {
 							if(rt and 1==0&&(canFloorKick||!pieceNow.checkCollision(nowX, nowY, (rt+1)%4, fld))) spinI = true
 							else if(rt and 1>0&&canFloorKick) spinI = true
 							else if(engine.isHoldOK&&!ctrl.isPress(Controller.BUTTON_D)) {
-								if(DEBUG_ALL) log.debug("Stuck I piece - use hold")
+								if(DEBUG_ALL) log.debug("[<-]Stuck I piece - use hold")
 								input = Controller.BUTTON_BIT_D
 
 								val holdPiece = engine.holdPieceObject
@@ -283,7 +283,7 @@ open class PoochyBot:DummyAI(), Runnable {
 							if(rt and 1==0&&(canFloorKick||!pieceNow.checkCollision(nowX, nowY, (rt+1)%4, fld))) spinI = true
 							else if(rt and 1>0&&!pieceNow.checkCollision(nowX-1, nowY, (rt+1)%4, fld)&&canFloorKick) spinI = true
 							else if(engine.isHoldOK&&!ctrl.isPress(Controller.BUTTON_D)) {
-								if(DEBUG_ALL) log.debug("Stuck I piece - use hold")
+								if(DEBUG_ALL) log.debug("[->]Stuck I piece - use hold")
 								input = Controller.BUTTON_BIT_D
 
 								val holdPiece = engine.holdPieceObject

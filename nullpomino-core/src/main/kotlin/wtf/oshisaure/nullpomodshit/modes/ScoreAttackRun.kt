@@ -41,7 +41,7 @@
 //
 package wtf.oshisaure.nullpomodshit.modes
 
-import mu.nu.nullpo.game.component.BGMStatus
+import mu.nu.nullpo.game.component.BGM
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
 import mu.nu.nullpo.game.event.ScoreEvent
 import mu.nu.nullpo.game.play.GameEngine
@@ -65,9 +65,9 @@ class ScoreAttackRun:AbstractMode() {
 	private var incombo = false
 	private var quads = 0
 	private var bgmLv = 0
-	private val rankingScore = List(RANKING_TYPES) {MutableList(RANKING_MAX) {0L}}
-	private val rankingLevel = List(RANKING_TYPES) {MutableList(RANKING_MAX) {0}}
-	private val rankingQuads = List(RANKING_TYPES) {MutableList(RANKING_MAX) {0}}
+	private val rankingScore = List(RANKING_TYPES) {MutableList(rankingMax) {0L}}
+	private val rankingLevel = List(RANKING_TYPES) {MutableList(rankingMax) {0}}
+	private val rankingQuads = List(RANKING_TYPES) {MutableList(rankingMax) {0}}
 	private var rankingRank = 0
 	private var version = 0
 	private var lastscoreL:Long = 0
@@ -88,7 +88,7 @@ class ScoreAttackRun:AbstractMode() {
 	override val menu = MenuList("arcadescoreattack", itemMode)
 
 	override fun loadRanking(prop:CustomProperties) {
-		for(i in 0..<RANKING_MAX) for(j in 0..<RANKING_TYPES) {
+		for(i in 0..<rankingMax) for(j in 0..<RANKING_TYPES) {
 			rankingScore[j][i] = prop.getProperty("$j.score.$i", 0L)
 			rankingLevel[j][i] = prop.getProperty("$j.level.$i", 0)
 			rankingQuads[j][i] = prop.getProperty("$j.quads$i", 0)
@@ -350,7 +350,7 @@ class ScoreAttackRun:AbstractMode() {
 			}
 			if(engine.statistics.lines>=tableBGMChange[bgmLv]) {
 				++bgmLv
-				owner.musMan.bgm = BGMStatus.BGM.Generic(bgmLv)
+				owner.musMan.bgm = BGM.Generic(bgmLv)
 				owner.musMan.fadeSW = false
 			}
 		}

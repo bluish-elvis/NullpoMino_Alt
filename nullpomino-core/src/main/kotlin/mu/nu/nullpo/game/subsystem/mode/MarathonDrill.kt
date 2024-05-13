@@ -31,7 +31,7 @@
 
 package mu.nu.nullpo.game.subsystem.mode
 
-import mu.nu.nullpo.game.component.BGMStatus.BGM
+import mu.nu.nullpo.game.component.BGM
 import mu.nu.nullpo.game.component.Block
 import mu.nu.nullpo.game.component.LevelData
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
@@ -99,13 +99,13 @@ class MarathonDrill:NetDummyMode() {
 	override val menu = MenuList("digchallenge", itemMode, itemHeight, itemLevel, itemDas, itemBGM)
 
 	/** Rankings' scores */
-	private val rankingScore = List(GOALTYPE_MAX) {MutableList(RANKING_MAX) {0L}}
+	private val rankingScore = List(GOALTYPE_MAX) {MutableList(rankingMax) {0L}}
 
 	/** Rankings' line counts */
-	private val rankingLines = List(GOALTYPE_MAX) {MutableList(RANKING_MAX) {0}}
+	private val rankingLines = List(GOALTYPE_MAX) {MutableList(rankingMax) {0}}
 
 	/** Rankings' depth */
-	private val rankingDepth = List(GOALTYPE_MAX) {MutableList(RANKING_MAX) {0}}
+	private val rankingDepth = List(GOALTYPE_MAX) {MutableList(rankingMax) {0}}
 
 	override val propRank
 		get() = rankMapOf(rankingScore.mapIndexed {a, x -> "$a.stage" to x}+rankingLines.mapIndexed {a, x -> "$a.lines" to x}+rankingDepth.mapIndexed {a, x -> "$a.depth" to x}/*+
@@ -203,7 +203,7 @@ class MarathonDrill:NetDummyMode() {
 				val topY = if(receiver.nextDisplayType==2) 6 else 4
 				receiver.drawScoreFont(engine, 0, topY-1, "SCORE LINE DEPTH", COLOR.BLUE)
 
-				for(i in 0..<RANKING_MAX) {
+				for(i in 0..<rankingMax) {
 					receiver.drawScoreGrade(engine, 0, topY+i, "%2d".format(i+1), COLOR.YELLOW)
 					receiver.drawScoreNum(engine, 2, topY+i, "${rankingScore[goalType][i]}", i==rankingRank)
 					receiver.drawScoreNum(engine, 7, topY+i, "${rankingLines[goalType][i]}", i==rankingRank)
@@ -488,7 +488,7 @@ class MarathonDrill:NetDummyMode() {
 
 		if(rankingRank!=-1) {
 			// Shift down ranking entries
-			for(i in RANKING_MAX-1 downTo rankingRank+1) {
+			for(i in rankingMax-1 downTo rankingRank+1) {
 				rankingScore[type][i] = rankingScore[type][i-1]
 				rankingLines[type][i] = rankingLines[type][i-1]
 				rankingDepth[type][i] = rankingDepth[type][i-1]
@@ -509,7 +509,7 @@ class MarathonDrill:NetDummyMode() {
 	 * @return Position (-1 if unranked)
 	 */
 	private fun checkRanking(sc:Long, li:Int, dep:Int, type:Int):Int {
-		for(i in 0..<RANKING_MAX) if(sc>rankingScore[type][i]) return i
+		for(i in 0..<rankingMax) if(sc>rankingScore[type][i]) return i
 		else if(sc==rankingScore[type][i]&&li>rankingLines[type][i]) return i
 		else if(sc==rankingScore[type][i]&&li==rankingLines[type][i]&&dep>rankingDepth[type][i]) return i
 

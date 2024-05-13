@@ -37,7 +37,6 @@
 
 package zeroxfc.nullpo.custom.libs.backgroundtypes
 
-import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.gui.common.AbstractRenderer
 import mu.nu.nullpo.gui.common.ResourceImage
 import mu.nu.nullpo.gui.common.bg.AbstractBG

@@ -30,9 +30,6 @@
  */
 package mu.nu.nullpo.gui.slick
 
-import kotlinx.serialization.decodeFromString
-import kotlinx.serialization.encodeToString
-import mu.nu.nullpo.util.GeneralUtil.Json
 import mu.nu.nullpo.game.component.RuleOptions
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
 import mu.nu.nullpo.game.play.GameManager
@@ -41,6 +38,7 @@ import mu.nu.nullpo.gui.common.ConfigGlobal.AIConf
 import mu.nu.nullpo.gui.common.GameKeyDummy
 import mu.nu.nullpo.gui.slick.img.FontNormal
 import mu.nu.nullpo.util.CustomProperties
+import mu.nu.nullpo.util.GeneralUtil.Json
 import org.apache.logging.log4j.LogManager
 import org.newdawn.slick.AppGameContainer
 import org.newdawn.slick.GameContainer
@@ -117,7 +115,7 @@ internal class StateInGame:BasicGameState() {
 	fun startNewGame(mode:String = pGl.lastMode[""] ?: "", strRulePath:String? = null) {
 		modeName = mode
 		val modeObj = NullpoMinoSlick.modeManager[mode]
-		if(modeObj==null) log.error("Couldn't find mode:$mode")
+		if(modeObj==null) log.error("startNewGame: Couldn't find mode:$mode")
 		gameManager = GameManager(RendererSlick(appContainer!!.graphics), modeObj).also {
 			pause = false
 
@@ -164,7 +162,7 @@ internal class StateInGame:BasicGameState() {
 		// Mode
 		modeName = prop.getProperty("name.mode", "")
 		val modeObj = NullpoMinoSlick.modeManager[modeName]
-		if(modeObj==null) log.error("Couldn't find mode:$modeName")
+		if(modeObj==null) log.error("startReplayGame: Couldn't find mode:$modeName")
 
 		gameManager = GameManager(RendererSlick(appContainer!!.graphics), modeObj).also {
 			it.replayMode = true

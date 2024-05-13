@@ -35,7 +35,6 @@ import mu.nu.nullpo.gui.common.BaseFont
 import mu.nu.nullpo.gui.common.GameKeyDummy
 import mu.nu.nullpo.gui.slick.img.FontNormal
 import org.newdawn.slick.GameContainer
-import org.newdawn.slick.Graphics
 import org.newdawn.slick.Input
 import org.newdawn.slick.SlickException
 import org.newdawn.slick.state.StateBasedGame
@@ -50,12 +49,6 @@ abstract class BaseMenuChooseState:BaseMenuState() {
 
 	/** Top choice's y-coordinate */
 	protected open var minChoiceY = 3
-
-	/* Draw the screen */
-	override fun renderImpl(container:GameContainer, game:StateBasedGame, g:Graphics) {
-
-		super.renderImpl(container, game, g)
-	}
 
 	@Throws(SlickException::class)
 	override fun updateImpl(container:GameContainer, game:StateBasedGame, delta:Int) {

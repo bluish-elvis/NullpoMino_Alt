@@ -57,10 +57,10 @@ class Physician:AbstractMode() {
 	private var rankingRank = 0
 
 	/** Rankings' line counts */
-	private val rankingScore = MutableList(RANKING_MAX) {0L}
+	private val rankingScore = MutableList(rankingMax) {0L}
 
 	/** Rankings' times */
-	private val rankingTime = MutableList(RANKING_MAX) {-1}
+	private val rankingTime = MutableList(rankingMax) {-1}
 	override val propRank
 		get() = rankMapOf("score" to rankingScore, "time" to rankingTime)
 	/** Number of initial gem blocks */
@@ -187,7 +187,7 @@ class Physician:AbstractMode() {
 		if(engine.stat==GameEngine.Status.SETTING||engine.stat==GameEngine.Status.RESULT&&!owner.replayMode) {
 			if(!owner.replayMode&&engine.ai==null) {
 				receiver.drawScoreFont(engine, 3, 3, "SCORE  TIME", EventReceiver.COLOR.BLUE)
-				for(i in 0..<RANKING_MAX) {
+				for(i in 0..<rankingMax) {
 					receiver.drawScoreFont(engine, 0, 4+i, "%2d".format(i+1), EventReceiver.COLOR.YELLOW)
 					receiver.drawScoreFont(engine, 3, 4+i, "${rankingScore[i]}", i==rankingRank)
 					receiver.drawScoreFont(engine, 10, 4+i, rankingTime[i].toTimeStr, i==rankingRank)
@@ -343,7 +343,7 @@ class Physician:AbstractMode() {
 
 		if(rankingRank!=-1) {
 			// Shift down ranking entries
-			for(i in RANKING_MAX-1 downTo rankingRank+1) {
+			for(i in rankingMax-1 downTo rankingRank+1) {
 				rankingScore[i] = rankingScore[i-1]
 				rankingTime[i] = rankingTime[i-1]
 			}
@@ -360,7 +360,7 @@ class Physician:AbstractMode() {
 	 * @return Position (-1 if unranked)
 	 */
 	private fun checkRanking(sc:Long, time:Int):Int {
-		for(i in 0..<RANKING_MAX)
+		for(i in 0..<rankingMax)
 			if(sc>rankingScore[i])
 				return i
 			else if(sc==rankingScore[i]&&time<rankingTime[i]) return i

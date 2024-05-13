@@ -30,7 +30,7 @@
  */
 package mu.nu.nullpo.gui.slick
 
-import mu.nu.nullpo.game.component.BGMStatus
+import mu.nu.nullpo.game.component.BGM
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
 import mu.nu.nullpo.game.play.GameManager
 import mu.nu.nullpo.gui.common.BaseStaffRoll
@@ -85,7 +85,7 @@ internal class StateTitle:BaseMenuChooseState() {
 			val strURL = NullpoMinoSlick.propGlobal.updateChecker.url
 			UpdateChecker.startCheckForUpdates(strURL)
 		}
-		if(ResourceHolder.bgmPlaying!=BGMStatus.BGM.Menu(0)) ResourceHolder.bgmStart(BGMStatus.BGM.Menu(0))
+		if(ResourceHolder.bgmPlaying!= BGM.Menu(0)) ResourceHolder.bgmStart(BGM.Menu(0))
 	}
 
 	override fun updateImpl(container:GameContainer, game:StateBasedGame, delta:Int) {

@@ -30,7 +30,7 @@
  */
 package mu.nu.nullpo.gui.slick
 
-import mu.nu.nullpo.game.component.BGMStatus.BGM
+import mu.nu.nullpo.game.component.BGM
 import mu.nu.nullpo.gui.common.BaseFontTTF
 import org.newdawn.slick.Music
 import org.newdawn.slick.UnicodeFont
@@ -120,7 +120,7 @@ object ResourceHolder:mu.nu.nullpo.gui.common.ResourceHolder() {
 
 	/** Current BGM number */
 	private var bgmint:Pair<Int, Int> = 0 to 0
-	var bgmPlaying:BGM? = null; private set
+	var bgmPlaying: BGM? = null; private set
 
 	/** 画像や音声を読み込み */
 	fun load() {
@@ -157,7 +157,7 @@ object ResourceHolder:mu.nu.nullpo.gui.common.ResourceHolder() {
 		bgm = BGM.all.map {MutableList(it.size) {null to false}}
 		bgmPlaying = null
 
-		if(pCo.audio.bgmPreload) BGM.all.forEach {list ->
+		if(pCo.audio.bgmPreload) BGM.all.forEach { list ->
 			list.forEach {loadBGM(it, false)}
 		}
 	}
@@ -188,10 +188,10 @@ object ResourceHolder:mu.nu.nullpo.gui.common.ResourceHolder() {
 	}
 
 	/** 指定した numberのBGMをメモリ上に読み込み
-	 * @param _m enum [mu.nu.nullpo.game.component.BGMStatus.BGM]
+	 * @param _m enum [mu.nu.nullpo.game.component.BGM]
 	 * @param showErr 例外が発生したときにコンソールに表示する
 	 */
-	private fun loadBGM(_m:BGM, showErr:Boolean = false) {
+	private fun loadBGM(_m: BGM, showErr:Boolean = false) {
 		if(!pCo.audio.bgm) return
 		val name = _m.name
 		val n = _m.longName
@@ -219,9 +219,9 @@ object ResourceHolder:mu.nu.nullpo.gui.common.ResourceHolder() {
 	}
 
 	/** 指定した numberのBGMを再生
-	 * @param m enums of BGM [mu.nu.nullpo.game.component.BGMStatus.BGM]
+	 * @param m enums of BGM [mu.nu.nullpo.game.component.BGM]
 	 */
-	internal fun bgmStart(m:BGM) {
+	internal fun bgmStart(m: BGM) {
 		if(!pCo.audio.bgm) return
 		bgmStop()
 		val x = minOf(m.id, bgm.size-1)
@@ -230,7 +230,7 @@ object ResourceHolder:mu.nu.nullpo.gui.common.ResourceHolder() {
 			if(it<=0) return bgmStop()
 		}
 
-		if(m!=BGM.Silent&&m!=bgmPlaying) {
+		if(m!= BGM.Silent&&m!=bgmPlaying) {
 			bgm[x][y].first?.also {
 				try {
 					val z = BGM.values.indexOf(m)
