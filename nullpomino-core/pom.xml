@@ -8,7 +8,7 @@
   <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
   <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
   <lwjgl.version>2.9.3</lwjgl.version>
-  <kotlin.version>2.0.0-RC3</kotlin.version>
+  <kotlin.version>2.0.20-RC2</kotlin.version>
   <log4j.version>3.0.0-beta2</log4j.version>
   <java.version>22</java.version>
   <maven.compiler.source>${java.version}</maven.compiler.source>
@@ -248,7 +248,7 @@
    <version>2.0.7</version>
    <type>pom</type>
   </dependency>
-
+  <!-- https://mvnrepository.com/artifact/org.apache.logging.log4j/log4j-core -->
   <dependency>
    <groupId>org.apache.logging.log4j</groupId>
    <artifactId>log4j-core</artifactId>

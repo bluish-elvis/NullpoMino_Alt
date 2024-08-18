@@ -380,6 +380,7 @@ abstract class AbstractMode:GameMode {
 			val combo = maxOf(0, ev.combo)
 			if(it<=0) floor(ln1p(combo*1.25f)).toInt() else it+combo*it/4+engine.field.isEmpty.toInt()*10
 		}
+		//+if(ev.b2b<=-4) ev.b2b.absoluteValue else 0
 
 		return PowData(base, it-base)
 	}

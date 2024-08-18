@@ -2320,7 +2320,7 @@ class GameEngine(
 							}
 							(are>0||lagARE||ruleOpt.lockFlashBeforeLineClear)&&
 								ruleOpt.lockFlash>1||(ruleOpt.lockFlash==1&&ruleOpt.lockFlashOnlyFrame)
-							-> {
+								-> {
 								// AREあり (光あり）
 								stat = Status.LOCKFLASH
 								statc[0] = if(ruleOpt.lockFlashOnlyFrame) 0 else 1
@@ -2456,8 +2456,8 @@ class GameEngine(
 					}
 					// B2B bonus
 
-					if(b2bEnable)
-						if(li>=4||(split&&splitB2B)||twist) {
+					if(li>=1&&b2bEnable)
+						if(li>=4||(split&&splitB2B)||twist||field.isEmpty) {
 							b2bCount++
 							if(b2bCount>0) {
 								playSE("b2b_combo", minOf(1.5f, 1f+(b2bCount)/13f))
@@ -2470,9 +2470,12 @@ class GameEngine(
 									if(b2bCount>=statistics.maxB2B) statistics.maxB2B = b2bCount
 								}
 								owner.receiver.addCombo(this, nowPieceX, nowPieceBottomY-(combo>0).toInt(), b2bCount, CHAIN.B2B)
-							} else playSE("b2b_start")
+							} else {
+								playSE("b2b_start")
+								b2bCount = 0
+							}
 						} else if(b2bCount>=0&&combo<0) {
-							b2bCount = -1
+							b2bCount = -b2bCount.absoluteValue
 							playSE("b2b_end")
 						}
 					// Combo
@@ -2525,6 +2528,7 @@ class GameEngine(
 					owner.receiver.addScore(this, nowPieceX, field.lastLinesBottom, it)
 			}
 			if(li>0) owner.receiver.calcScore(this, ev)
+			if(b2bCount<-1) b2bCount = -1
 
 			// Blockを消す演出を出す (まだ実際には消えていない）
 			(0..<field.height).filter {field.getLineFlag(it)}.toSet().let {row ->
@@ -3001,7 +3005,7 @@ class GameEngine(
 		// 続行 flag
 		val contFlag = when(interruptItemNumber) { //TODO: process Each Item
 			Block.ITEM.MIRROR // ミラー
-			-> interruptItemMirrorProc()
+				-> interruptItemMirrorProc()
 			Block.ITEM.TURN_HORIZ -> false
 			Block.ITEM.TURN_VERT -> false
 			Block.ITEM.DEL_TOP -> false
