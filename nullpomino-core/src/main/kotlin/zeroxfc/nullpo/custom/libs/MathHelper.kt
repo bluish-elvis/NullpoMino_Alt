@@ -70,84 +70,32 @@ object MathHelper {
 	/**
 	 * Modulo operator that functions similarly to Python's % operator.
 	 *
-	 * @param value   Number
 	 * @param divisor Divisor
 	 * @return Remainder after division
 	 */
-	fun pythonModulo(value:Int, divisor:Int):Int = (value%divisor).let {
+	@JvmName("pythonModuloInt")
+	fun Int.pythonModulo(divisor:Int):Int = (this%divisor).let {
 		if(it<0) it+divisor else it
 	}
+	@Deprecated("Int extended", ReplaceWith("value.pythonModulo(divisor)"))
+	fun pythonModulo(value:Int, divisor:Int):Int = value.pythonModulo(divisor)
 	/**
 	 * Modulo operator that functions similarly to Python's % operator.
 	 *
-	 * @param value   Number
 	 * @param divisor Divisor
 	 * @return Remainder after division
 	 */
-	fun pythonModulo(value:Long, divisor:Long) = (value%divisor).let {
+	@JvmName("pythonModuloLong")
+	fun Long.pythonModulo(divisor:Long) = (this%divisor).let {
 		if(it<0) it+divisor else it
 	}
+	@Deprecated("Long extended", ReplaceWith("value.pythonModulo(divisor)"))
+	fun pythonModulo(value:Long, divisor:Long) = value.pythonModulo(divisor)
 	/**
-	 * Clamps a value to within a range.
-	 *
-	 * @param value Value to clamp
-	 * @param min   Min value
-	 * @param max   Max value
-	 * @return Clamped value
-	 */
-	fun clamp(value:Int, min:Int, max:Int):Int = when {
-		value<min -> min
-		value>max -> max
-		else -> value
-	}
-	/**
-	 * Clamps a value to within a range.
-	 *
-	 * @param value Value to clamp
-	 * @param min   Min value
-	 * @param max   Max value
-	 * @return Clamped value
-	 */
-	fun clamp(value:Long, min:Long, max:Long):Long = when {
-		value<min -> min
-		value>max -> max
-		else -> value
-	}
-	/**
-	 * Clamps a value to within a range.
-	 *
-	 * @param value Value to clamp
-	 * @param min   Min value
-	 * @param max   Max value
-	 * @return Clamped value
-	 */
-	fun clamp(value:Float, min:Float, max:Float):Float = when {
-		value<min -> min
-		value>max -> max
-		else -> value
-	}
-	/**
-	 * Clamps a value to within a range.
-	 *
-	 * @param value Value to clamp
-	 * @param min   Min value
-	 * @param max   Max value
-	 * @return Clamped value
-	 */
-	fun clamp(value:Double, min:Double, max:Double):Double = when {
-		value<min -> min
-		value>max -> max
-		else -> value
-	}
-	/**
-	 * Gets the greatest common divisor between two integers.<br></br>
+	 * Gets the greatest common divisor between [a] and [b].
 	 * Recursive function.
-	 *
-	 * @param a int
-	 * @param b int
-	 * @return GCD of the two integers
 	 */
-	private fun gcd(a:Int, b:Int):Int = if(a==0) b else gcd(b%a, a)
+	fun gcd(a:Int, b:Int):Int = if(a==0) b else gcd(b%a, a)
 	/**
 	 * Gets the lowest common multiple between two integers.<br></br>
 	 * Calls `gcd(a, b)`, a recursive function.
@@ -157,14 +105,26 @@ object MathHelper {
 	 * @return LCM of the two integers
 	 */
 	fun lcm(a:Int, b:Int):Int = a*b/gcd(a, b)
+
+	@Deprecated("Double extended", ReplaceWith("a.almostEqual(b, eps)"))
+	fun almostEqual(a:Double, b:Double, eps:Double):Boolean = a.almostEqual(b, eps)
 	/**
-	 * Is almost equal to.
+	 * Is [this] almost equal to [b]?
 	 *
-	 * @param a   Value
-	 * @param b   Value
 	 * @param eps Exclusive maximum difference
 	 * @return Is the difference <= eps?
 	 */
-	fun almostEqual(a:Double, b:Double, eps:Double):Boolean = abs(a-b)<eps
-	fun almostEqual(a:Float, b:Float, eps:Float):Boolean = abs(a-b)<eps
+	@JvmName("almostEqualDouble")
+	fun Double.almostEqual(b:Double, eps:Double):Boolean = abs(this-b)<eps
+
+	@Deprecated("Float extended", ReplaceWith("a.almostEqual(b, eps)"))
+	fun almostEqual(a:Float, b:Float, eps:Float):Boolean = a.almostEqual(b, eps)
+	/**
+	 * Is [this] almost equal to [b]?
+	 *
+	 * @param eps Exclusive maximum difference
+	 * @return Is the difference <= eps?
+	 */
+	@JvmName("almostEqualFloat")
+	fun Float.almostEqual(b:Float, eps:Float):Boolean = abs(this-b)<eps
 }

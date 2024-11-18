@@ -8,9 +8,9 @@
   <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
   <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
   <lwjgl.version>2.9.3</lwjgl.version>
-  <kotlin.version>2.0.20-RC2</kotlin.version>
+  <kotlin.version>2.1.0-RC</kotlin.version>
   <log4j.version>3.0.0-beta2</log4j.version>
-  <java.version>22</java.version>
+  <java.version>23</java.version>
   <maven.compiler.source>${java.version}</maven.compiler.source>
   <maven.compiler.target>${java.version}</maven.compiler.target>
   <kotlin.compiler.languageVersion>2.0</kotlin.compiler.languageVersion>
@@ -25,12 +25,12 @@
    <plugin>
     <groupId>org.codehaus.mojo</groupId>
     <artifactId>versions-maven-plugin</artifactId>
-    <version>2.7</version>
+    <version>2.16.2</version>
    </plugin>
    <plugin>
     <groupId>org.codehaus.mojo</groupId>
     <artifactId>build-helper-maven-plugin</artifactId>
-    <version>3.3.0</version>
+    <version>3.5.0</version>
     <executions>
      <execution>
       <id>add-source</id>
@@ -94,7 +94,7 @@
    <plugin>
     <groupId>org.apache.maven.plugins</groupId>
     <artifactId>maven-compiler-plugin</artifactId>
-    <version>3.11.0</version>
+    <version>3.13.0</version>
     <configuration>
      <source>${java.version}</source>
      <target>${java.version}</target>

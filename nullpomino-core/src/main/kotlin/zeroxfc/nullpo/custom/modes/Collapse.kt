@@ -45,12 +45,12 @@ import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.game.subsystem.mode.AbstractMode
 import mu.nu.nullpo.gui.slick.MouseInput
 import mu.nu.nullpo.gui.slick.NullpoMinoSlick
-import zeroxfc.nullpo.custom.libs.backgroundtypes.ResourceHolderCustomAssetExtension
 import mu.nu.nullpo.util.CustomProperties
 import mu.nu.nullpo.util.GeneralUtil.getONorOFF
 import mu.nu.nullpo.util.GeneralUtil.toTimeStr
 import zeroxfc.nullpo.custom.libs.SideWaveText
 import zeroxfc.nullpo.custom.libs.WeightedRandomizer
+import zeroxfc.nullpo.custom.libs.backgroundtypes.ResourceHolderCustomAssetExtension
 import kotlin.math.pow
 import kotlin.math.sqrt
 import kotlin.random.Random
@@ -66,8 +66,8 @@ class Collapse:AbstractMode() {
 	private var bgm = 0
 	private var cursorX = 0
 	private var cursorY = 0
-	private var fieldX = 0
-	private var fieldY = 0
+	private var curFX = 0
+	private var curFY = 0
 	private var holderType = 0
 	private var spawnTimer = 0
 	private var spawnTimerLimit = 0
@@ -85,12 +85,14 @@ class Collapse:AbstractMode() {
 	private val rankingLevelPlayer = List(MAX_DIFFICULTIES) {MutableList(MAX_RANKING) {0}}
 	private var rankingRankPlayer = 0
 	override val propRank
-		get() = rankMapOf(rankingScore.mapIndexed {a, x -> "$a.score" to x}+
-			rankingLevel.mapIndexed {a, x -> "$a.level" to x})
+		get() = rankMapOf(
+			rankingScore.mapIndexed {a, x -> "$a.score" to x}+
+				rankingLevel.mapIndexed {a, x -> "$a.level" to x})
 
 	override val propPB
-		get() = rankMapOf(rankingScorePlayer.mapIndexed {a, x -> "$a.score" to x}+
-			rankingLevelPlayer.mapIndexed {a, x -> "$a.level" to x})
+		get() = rankMapOf(
+			rankingScorePlayer.mapIndexed {a, x -> "$a.score" to x}+
+				rankingLevelPlayer.mapIndexed {a, x -> "$a.level" to x})
 
 	/*
      * ------ MAIN METHODS ------
@@ -110,8 +112,8 @@ class Collapse:AbstractMode() {
 		bgm = 0
 		cursorX = 0
 		cursorY = 0
-		fieldX = -1
-		fieldY = -1
+		curFX = -1
+		curFY = -1
 		wRandomEngine = WeightedRandomizer(intArrayOf(), 0L)
 		wRandomEngineBomb = WeightedRandomizer(intArrayOf(), 0L)
 		localRandom = Random.Default
@@ -232,8 +234,8 @@ class Collapse:AbstractMode() {
 			resetSTextArr()
 			cursorX = 0
 			cursorY = 0
-			fieldX = -1
-			fieldY = -1
+			curFX = -1
+			curFY = -1
 			localState = -1
 			force = false
 			localRandom = Random(engine.randSeed-1L)
@@ -341,9 +343,9 @@ class Collapse:AbstractMode() {
 		var score = 0
 		var squares = 0
 		var fromBomb = false
-		engine.field.getBlock(fieldX, fieldY)?.let {b ->
+		engine.field.getBlock(curFX, curFY)?.let {b ->
 			if(b.color?.color==true) {
-				squares = getSquares(engine, fieldX, fieldY)
+				squares = getSquares(engine, curFX, curFY)
 				if(squares>=3) {
 					score = getClearScore(engine, squares)
 					for(y in 0..<engine.field.height) for(x in 0..<engine.field.width)
@@ -372,7 +374,7 @@ class Collapse:AbstractMode() {
 					squares = 0
 					for(y in 0..<engine.field.height) for(x in 0..<engine.field.width)
 						engine.field.getBlock(x, y)?.let {
-							if(isCoordWithinRadius(fieldX, fieldY, x, y, 4.5)) {
+							if(isCoordWithinRadius(curFX, curFY, x, y, 4.5)) {
 								it.setAttribute(true, Block.ATTRIBUTE.ERASE)
 								squares++
 							}
@@ -399,8 +401,8 @@ class Collapse:AbstractMode() {
 	}
 
 	private fun stateInGame(engine:GameEngine):Boolean {
-		if(fieldX!=-1)
-			if(!engine.field.getBlockEmpty(fieldX, fieldY))
+		if(curFX!=-1)
+			if(!engine.field.getBlockEmpty(curFX, curFY))
 				clearSquares(engine)
 
 
@@ -663,13 +665,13 @@ class Collapse:AbstractMode() {
 		if(engine.ctrl.isPush(Controller.BUTTON_RIGHT)) changeX++
 		if(engine.ctrl.isPush(Controller.BUTTON_UP)) changeY--
 		if(engine.ctrl.isPush(Controller.BUTTON_DOWN)) changeY++
-		fieldX += changeX
-		fieldY += changeY
+		curFX += changeX
+		curFY += changeY
 		if(changeX!=0||changeY!=0) engine.playSE("change")
-		if(fieldX<0) fieldX = 11
-		if(fieldX>11) fieldX = 0
-		if(fieldY<0) fieldY = 15
-		if(fieldY>15) fieldY = 0
+		if(curFX<0) curFX = 11
+		if(curFX>11) curFX = 0
+		if(curFY<0) curFY = 15
+		if(curFY>15) curFY = 0
 		if(engine.ctrl.isPush(Controller.BUTTON_B)&&localState==LOCALSTATE_INGAME) force = true
 		when(holderType) {
 			HOLDER_SLICK -> {
@@ -677,11 +679,11 @@ class Collapse:AbstractMode() {
 				cursorX = MouseInput.mouseX
 				cursorY = MouseInput.mouseY
 				if(MouseInput.isMouseClicked) {
-					fieldX = (cursorX-4-(receiver.fieldX(engine)-engine.frameX).toInt())/16
-					fieldY = (cursorY-52-(receiver.fieldY(engine)-engine.frameY).toInt())/16
+					curFX = (cursorX-4-(receiver.fieldX(engine)-engine.frameX).toInt())/16
+					curFY = (cursorY-52-(receiver.fieldY(engine)-engine.frameY).toInt())/16
 				} else {
-					fieldX = -1
-					fieldY = -1
+					curFX = -1
+					curFY = -1
 				}
 			}
 			/*HOLDER_SDL -> {
@@ -702,10 +704,10 @@ class Collapse:AbstractMode() {
 			}
 			else -> { }*/
 		}
-		if(fieldX<0||fieldX>11||fieldY<0||fieldY>15) {
-			if(fieldY==17&&localState==LOCALSTATE_INGAME) force = true
-			fieldX = -1
-			fieldY = -1
+		if(curFX<0||curFX>11||curFY<0||curFY>15) {
+			if(curFY==17&&localState==LOCALSTATE_INGAME) force = true
+			curFX = -1
+			curFY = -1
 		} else {
 			force = false
 		}
@@ -883,7 +885,7 @@ class Collapse:AbstractMode() {
 					scale
 				) else receiver.drawDirectFont(x+nOffX, y+nOffY, it.text, COLOR.ORANGE, scale)
 			}
-			receiver.drawMenuFont(engine, fieldX, fieldY, "f", COLOR.YELLOW)
+			receiver.drawMenuFont(engine, curFX, curFY, "f", COLOR.YELLOW)
 
 			if(localState==LOCALSTATE_TRANSITION) {
 				val s = "$bScore"
@@ -903,7 +905,7 @@ class Collapse:AbstractMode() {
 //			receiver.drawScoreFont(engine, playerID, 0, 19, "($fieldX, $fieldY)");
 			if(localState==LOCALSTATE_INGAME) {
 				val fx = receiver.fieldX(engine)+4
-				val fy = receiver.fieldY(engine,17)+52
+				val fy = receiver.fieldY(engine, 17)+52
 				nextBlocks.forEachIndexed {i, it ->
 					receiver.drawBlock(fx+i*16f, fy, it)
 				}
@@ -938,7 +940,7 @@ class Collapse:AbstractMode() {
 	 *
 	 * @param prop Property file
 	 */
-	override fun loadSetting(engine: GameEngine, prop: CustomProperties, ruleName: String, playerID: Int) {
+	override fun loadSetting(engine:GameEngine, prop:CustomProperties, ruleName:String, playerID:Int) {
 		enableBombs = prop.getProperty("collapse.enableBombs", true)
 		difficulty = prop.getProperty("collapse.difficulty", 1)
 		bgm = prop.getProperty("collapse.bgm", 0)

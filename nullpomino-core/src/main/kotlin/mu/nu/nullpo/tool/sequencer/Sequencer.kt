@@ -36,6 +36,7 @@ import net.omegaboshi.nullpomino.game.subsystem.randomizer.Randomizer
 import org.apache.logging.log4j.LogManager
 import java.awt.BorderLayout
 import java.awt.Dimension
+import java.awt.Font
 import java.awt.GridLayout
 import java.awt.event.ActionEvent
 import java.awt.event.ActionListener
@@ -291,6 +292,7 @@ class Sequencer:JFrame(), ActionListener {
 					columns = 37
 					lineWrap = true
 					isEditable = false
+					font = Font("Courier New",font.style,font.size)
 				}, ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS,
 				ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER
 			)

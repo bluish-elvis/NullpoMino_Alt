@@ -39,7 +39,6 @@ import mu.nu.nullpo.util.GeneralUtil.filterNotNullIndexed
 import mu.nu.nullpo.util.GeneralUtil.toInt
 import org.apache.logging.log4j.LogManager
 import kotlin.math.abs
-import kotlin.math.roundToLong
 import kotlin.random.Random
 
 /** Game Field */
@@ -340,7 +339,8 @@ import kotlin.random.Random
 	val howManySquareClears:List<Int>
 		get() = findBlocks {!it.getAttribute(ATTRIBUTE.GARBAGE)&&(it.isGoldSquareBlock||it.isSilverSquareBlock)}
 			.filter {(y, _) -> getLineFlag(y)}.values.let {y ->
-				listOf(y.sumOf {x -> x.values.count {it.isGoldSquareBlock}},
+				listOf(
+					y.sumOf {x -> x.values.count {it.isGoldSquareBlock}},
 					y.sumOf {x -> x.values.count {it.isSilverSquareBlock}}
 				)
 			}
@@ -437,7 +437,7 @@ import kotlin.random.Random
 				} catch(e:NumberFormatException) {
 					mapArray[j][0].aNum
 				}
-				setBlock(j, i, Block(blkColor).apply{elapsedFrames=-1})
+				setBlock(j, i, Block(blkColor).apply {elapsedFrames = -1})
 			}
 		}
 	}
@@ -2288,7 +2288,8 @@ import kotlin.random.Random
 		}
 	}
 
-	fun addHoverBlock(x:Int, y:Int, mode:Pair<Block.COLOR, Block.TYPE>, skin:Int = 0):Boolean = setBlock(x, y,
+	fun addHoverBlock(x:Int, y:Int, mode:Pair<Block.COLOR, Block.TYPE>, skin:Int = 0):Boolean = setBlock(
+		x, y,
 		Block(mode, skin, ATTRIBUTE.ANTIGRAVITY, ATTRIBUTE.BROKEN, ATTRIBUTE.VISIBLE).apply {
 			setAttribute(
 				false, ATTRIBUTE.GARBAGE, ATTRIBUTE.ERASE,
@@ -2365,22 +2366,24 @@ import kotlin.random.Random
 		return result
 	}
 
+	val delEvenRange get() = (highestBlockY..<height).filter {it and 1==0}
 	fun delEven() {
-		for(y in highestBlockY..<height)
-			if(y and 1==0) delLine(y)
+		for(y in delEvenRange) delLine(y)
 	}
+
+	val delLowerRange get() = height-(height-highestBlockY+1 shr 1)..<height
 
 	fun delLower() {
-		val rows = height-highestBlockY+1 shr 1
-		for(i in 1..rows)
-			delLine(height-i)
+//		for(i in 1..(height-highestBlockY+1 shr 1)) delLine(height-i)
+		for(y in delLowerRange) delLine(y)
 	}
 
+	// I think this rounds up.
+	val delUpperRange get() = highestBlockY..<highestBlockY+((height-highestBlockY)/2)
+
 	fun delUpper() {
-		val rows = ((height-highestBlockY)/2.0).roundToLong().toInt()
-		// I think this rounds up.
-		val g = highestBlockY
-		for(y in 0..<rows) delLine(g+y)
+//		for(y in 0..<(((height-highestBlockY)/2.0).roundToLong().toInt()))) delLine(highestBlockY+y)
+		for(y in delUpperRange) delLine(y)
 	}
 
 	fun delLine(y:Int) {
@@ -2428,11 +2431,12 @@ import kotlin.random.Random
 		}
 	}
 
-	fun negaField() {
+	fun negaField():Field {
 		for(y in highestBlockY..<height) for(x in 0..<width) {
 			if(getBlockEmpty(x, y)) garbageDropPlace(x, y, false, 0) // TODO: Set color
 			else setBlock(x, y, null)
 		}
+		return this
 	}
 
 	/**
@@ -2442,37 +2446,46 @@ import kotlin.random.Random
 	 */
 	val fullHeight:Int get() = hiddenHeight+height
 
-	fun flipVertical() {
-		val field2 = Field(this)
+	/** filp this field vertically */
+	fun flipVertical():Field {
+		var temp:Block?
 		var yMin = highestBlockY-hiddenHeight
 		var yMax = fullHeight-1
 		while(yMin<yMax) {
 			for(x in 0..<width) {
-				setBlock(x, yMin, field2.getBlock(x, yMin))
-				setBlock(x, yMax, field2.getBlock(x, yMax))
+				temp = getBlock(x, yMin)
+				setBlock(x, yMin, getBlock(x, yMax))
+				setBlock(x, yMax, temp)
 			}
 			yMin++
 			yMax--
 		}
+		return this
 	}
 
-	fun mirror() {
+	/** filp this field horizontally */
+	fun flipHorizontal():Field {
 		var temp:Block?
-		var y = highestBlockY
-		while(y<height) {
-			var xMin = 0
-			var xMax = width-1
-			while(xMin<xMax) {
+		var xMin = 0
+		var xMax = width-1
+		while(xMin<xMax) {
+			for(y in highestBlockY..<height) {
 				temp = getBlock(xMin, y)
 				setBlock(xMin, y, getBlock(xMax, y))
 				setBlock(xMax, y, temp)
 				xMin++
 				xMax--
 			}
-			y--
 		}
+		return this
 	}
 
+	/** filp this field 180 */
+	fun mirror():Field {
+		flipVertical()
+		flipHorizontal()
+		return this
+	}
 	companion object {
 		/** Log */
 		internal var log = LogManager.getLogger()

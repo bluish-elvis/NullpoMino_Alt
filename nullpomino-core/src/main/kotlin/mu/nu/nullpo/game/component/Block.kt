@@ -30,6 +30,7 @@
  */
 package mu.nu.nullpo.game.component
 
+import mu.nu.nullpo.game.component.Block.COLOR.entries
 import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.util.GeneralUtil.aNum
 import mu.nu.nullpo.util.GeneralUtil.toAlphaNum
@@ -90,7 +91,7 @@ import mu.nu.nullpo.util.GeneralUtil.toAlphaNum
 	var placeNum:Int = -1
 
 	/** アイテム enum */
-	var item:ITEM? = null
+	var item:Item? = null
 	/** アイテム number */
 	var iNum
 		get() = item?.let {it.ordinal+1} ?: 0
@@ -235,32 +236,6 @@ import mu.nu.nullpo.util.GeneralUtil.toAlphaNum
 		}
 	}
 
-	enum class ITEM(val color:Block.COLOR = Block.COLOR.RED, val showName:String? = null) {
-		MIRROR, ROLL_ROLL(showName = "Forced S"), DEATH(showName = "BIG BLOCK"), XRAY, COLOR, LOCK_SPIN, HIDE_NEXT, MAGNET, FREEZE,
-		LOCK_HOLD, TURN_HORIZ(showName = "FLIP Horizontal"), SPEED, ALL_I, TURN_VERT(showName = "FLIP Vertical"), REMOTE, DARK,
-		DEL_TOP(Block.COLOR.BLUE, "ERASE UpHALF"),
-		DEL_BOTTOM(Block.COLOR.BLUE, "ERASE DownHALF"),
-		DEL_EVEN(Block.COLOR.BLUE, "ERASE EvEn"),
-		TRANSFORM, LASER, NEGA, SHOTGUN, EXCHANGE, HARD_MINO, SHUFFLE,
-		/**
-		 * */
-		RANDOM(Block.COLOR.RAINBOW, "RANDOMIZER"),
-		FREE_FALL(Block.COLOR.GREEN, "Free Fall"),
-		MOVE_LEFT(Block.COLOR.BLUE),
-		MOVE_RIGHT(Block.COLOR.BLUE),
-		TURN_180,
-		LASER_16T,
-		REFLECT,
-		DOUBLE_RISE,
-		ALL_CLEAR,
-		MISS,
-		COPY_FIELD,
-		FAKE_NEXT,
-		BONE_BLOCK,
-		SPOT_LIGHT,
-		SPIN_FIELD
-	}
-
 	enum class ATTRIBUTE {
 		/** Block表示あり */
 		VISIBLE,
@@ -301,7 +276,7 @@ import mu.nu.nullpo.util.GeneralUtil.toAlphaNum
 	}
 
 	companion object {
-		private val items = ITEM.entries
+		private val items = Item.entries
 		/** Block colorの定数 */
 		const val COLOR_INVALID = -2
 		const val COLOR_NONE = -1
@@ -355,7 +330,7 @@ import mu.nu.nullpo.util.GeneralUtil.toAlphaNum
 		/** Color-shift phase for rainbow blocks */
 		var rainbowPhase = 0
 
-		fun colorNumber(color:COLOR?, type:TYPE, isBone:Boolean = false, item:ITEM? = null):Int =
+		fun colorNumber(color:COLOR?, type:TYPE, isBone:Boolean = false, item:Item? = null):Int =
 			if(color==COLOR.RAINBOW) {
 				if(type==TYPE.GEM) COLOR_GEM_RAINBOW
 				else COLOR_RAINBOW

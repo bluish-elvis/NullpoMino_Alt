@@ -26,8 +26,8 @@
  <properties>
   <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
   <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-  <kotlin.version>2.0.20-RC2</kotlin.version>
-  <java.version>22</java.version>
+  <kotlin.version>2.1.0-RC</kotlin.version>
+  <java.version>23</java.version>
   <maven.compiler.source>${java.version}</maven.compiler.source>
   <maven.compiler.target>${java.version}</maven.compiler.target>
   <kotlin.compiler.jvmTarget>${java.version}</kotlin.compiler.jvmTarget>
@@ -43,12 +43,12 @@
     <plugin>
      <groupId>org.apache.maven.plugins</groupId>
      <artifactId>maven-dependency-plugin</artifactId>
-     <version>3.3.0</version>
+     <version>3.7.1</version>
     </plugin>
     <plugin>
      <groupId>org.apache.maven.plugins</groupId>
      <artifactId>maven-assembly-plugin</artifactId>
-     <version>3.4.2</version>
+     <version>3.7.1</version>
     </plugin>
     <plugin>
      <groupId>org.apache.maven.plugins</groupId>

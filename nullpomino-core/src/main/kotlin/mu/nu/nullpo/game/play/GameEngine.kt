@@ -31,16 +31,8 @@
 package mu.nu.nullpo.game.play
 
 import kotlinx.serialization.encodeToString
-import mu.nu.nullpo.game.component.BGM
-import mu.nu.nullpo.game.component.Block
-import mu.nu.nullpo.game.component.Controller
-import mu.nu.nullpo.game.component.Field
-import mu.nu.nullpo.game.component.Piece
-import mu.nu.nullpo.game.component.ReplayData
-import mu.nu.nullpo.game.component.RuleOptions
-import mu.nu.nullpo.game.component.SpeedParam
+import mu.nu.nullpo.game.component.*
 import mu.nu.nullpo.game.component.SpeedParam.Companion.SDS_FIXED
-import mu.nu.nullpo.game.component.Statistics
 import mu.nu.nullpo.game.event.EventReceiver
 import mu.nu.nullpo.game.event.ScoreEvent
 import mu.nu.nullpo.game.event.ScoreEvent.Twister
@@ -61,10 +53,12 @@ import mu.nu.nullpo.util.GeneralUtil.toInt
 import net.omegaboshi.nullpomino.game.subsystem.randomizer.MemorylessRandomizer
 import net.omegaboshi.nullpomino.game.subsystem.randomizer.Randomizer
 import org.apache.logging.log4j.LogManager
+import zeroxfc.nullpo.custom.libs.MathHelper.almostEqual
 import zeroxfc.nullpo.custom.libs.ProfileProperties
 import java.util.Calendar
 import java.util.Locale
 import kotlin.math.absoluteValue
+import kotlin.math.sign
 import kotlin.random.Random
 import mu.nu.nullpo.game.event.EventReceiver.Companion as ReceiverC
 
@@ -297,8 +291,6 @@ class GameEngine(
 
 	/** Most recent scoring event type */
 	var lastEvent:ScoreEvent? = null
-	val lastEventShape get() = lastEvent?.piece?.type
-	val lastEventPiece get() = lastEvent?.piece?.id ?: 0
 
 	var lastLinesY = emptySet<Set<Int>>()
 
@@ -374,7 +366,7 @@ class GameEngine(
 	/** gem Block Rate per blocks */
 	var gemRate = 0f
 
-	/** Big blocks */
+	/** Big blocks mode */
 	var big = false
 	/** Big movement type (false:1cell true:2cell) */
 	var bigMove = false
@@ -480,40 +472,56 @@ class GameEngine(
 	 * ( such as "READY", "GO!", "GAME OVER",etc. ) */
 	var allowTextRenderByReceiver = true
 
+	var itemQueue:MutableList<Item> = mutableListOf(); private set
 	/** Item enable flag */
-	var itemEnable:Block.ITEM? = null
+	var itemEnable:Item?
+		get() = itemQueue.firstOrNull()
+		set(value) {
+			if(value!=null) itemQueue.addFirst(value)
+		}
 	/** RollRoll (Auto rotation) enable flag */
 	var itemRollRollEnable
-		get() = itemEnable==Block.ITEM.ROLL_ROLL
+		get() = itemEnable is Item.ROLL_ROLL
 		set(value) {
-			itemEnable = if(value) Block.ITEM.ROLL_ROLL else null
+			itemEnable = if(value) Item.ROLL_ROLL() else null
 		}
 	/** RollRoll (Auto rotation) interval */
-	var itemRollRollInterval = 0
+	var itemRollRollInterval
+		get() = (itemEnable as? Item.ROLL_ROLL)?.interval ?: 0
+		set(value) {
+			if(itemEnable is Item.ROLL_ROLL) (itemEnable as? Item.ROLL_ROLL)?.interval = value
+		}//; private set
+
 	/** X-RAY enable flag */
 	var itemXRayEnable
-		get() = itemEnable==Block.ITEM.XRAY
+		get() = itemEnable is Item.XRAY
 		set(value) {
-			itemEnable = if(value) Block.ITEM.XRAY else null
+			itemEnable = if(value) Item.XRAY() else null
 		}
-	/** X-RAY counter */
-	var itemXRayCount = 0
+	/** X-RAY time counter */
+	private var itemXRayCount
+		get() = (itemEnable as? Item.XRAY)?.time ?: 0
+		set(value) {
+			if(itemEnable is Item.XRAY) (itemEnable as? Item.XRAY)?.time = value
+		}//; private set
 	/** Color-block enable flag */
 	var itemColorEnable
-		get() = itemEnable==Block.ITEM.COLOR
+		get() = itemEnable is Item.COLOR
 		set(value) {
-			itemEnable = if(value) Block.ITEM.COLOR else null
+			itemEnable = if(value) Item.COLOR() else null
 		}
 	/** Color-block counter */
-	private var itemColorCount = 0//; private set
+	private var itemColorCount
+		get() = (itemEnable as? Item.COLOR)?.time ?: 0
+		set(value) {
+			if(itemEnable is Item.COLOR) (itemEnable as? Item.COLOR)?.time = value
+		}//; private set
 
 	/** Gameplay-interruptable inum */
-	var interruptItemNumber:Block.ITEM? = null
+	var interruptItem:Item? = null
 
 	/** Post-status of interruptable inum */
 	private var interruptItemPreviousStat:Status = Status.MOVE//; private set
-	/** Backup field for Mirror/Exchange */
-	private var interruptItemBackupField:Field = Field()//; private set
 
 	/**Overwriting Rule settings(should not change from gamemode)*/
 	var owTune = TuneConf()
@@ -940,16 +948,14 @@ class GameEngine(
 
 		allowTextRenderByReceiver = true
 
-		itemRollRollEnable = false
+		itemQueue.clear()
 		itemRollRollInterval = 30
 
-		itemXRayEnable = false
 		itemXRayCount = 0
 
-		itemColorEnable = false
 		itemColorCount = 0
 
-		interruptItemNumber = null
+		interruptItem = null
 
 		clearMode = LINE
 		colorClearSize = -1
@@ -1441,10 +1447,13 @@ class GameEngine(
 
 		//  button input timeの更新
 		ctrl.updateButtonTime()
-
 		// 最初の処理
 		owner.mode?.onFirst(this)
 		owner.receiver.onFirst(this)
+
+		if(!frameX.almostEqual(0f, 0.0625f)) frameX *= 0.875f else if(frameX!=0f) frameX = 0f
+		if(!frameY.almostEqual(0f, 0.0625f)) frameY *= 0.875f else if(frameY!=0f) frameY = 0f
+
 		if(stat!=Status.SETTING&&stat!=Status.PROFILE&&stat!=Status.NOTHING&&
 			(!owner.replayMode||owner.replayRerecord)
 		) ai?.onFirst(this, playerID)
@@ -1897,7 +1906,7 @@ class GameEngine(
 					initialSpinLastDirection = initialSpinDirection
 					initialSpinContinuousUse = true
 					if(nowPieceSpinFailCount>0) nowPieceSpinFailCount--
-					else if(spin!=0) playSE("initialrotate")
+					else if(spin!=0) playSE(if(skin==FRAME_SKIN_GB) "initialrotateold" else "initialrotate")
 				} else if(statc[0]>0||ruleOpt.moveFirstFrame) {
 					if(itemRollRollEnable&&replayTimer%itemRollRollInterval==0) spin = 1 // Roll Roll
 
@@ -1980,7 +1989,7 @@ class GameEngine(
 							LastMove.SPIN_GROUND
 						} else LastMove.SPIN_AIR
 
-						playSE("rotate")
+						if(skin!=FRAME_SKIN_SG) playSE(if(skin!=FRAME_SKIN_GB) "rotateold" else "rotate")
 						val twisting = checkTwisted(nowPieceX, nowPieceY, it, field)
 						if(twisting!=null) playSE("twist")
 						nowPieceSpinCount += spin.absoluteValue
@@ -2092,6 +2101,7 @@ class GameEngine(
 										dasCount = das
 										dasSpeedCount = dasDelay
 									}
+									frameX += (5f*move.sign).let {(frameX+it).coerceIn(-5f, 5f)-frameX}
 								}
 
 							} else dasSpeedCount++
@@ -2112,6 +2122,7 @@ class GameEngine(
 						harddropContinuousUse = !ruleOpt.harddropLock
 						owner.mode?.afterHardDropFall(this, harddropFall)
 						owner.receiver.afterHardDropFall(this, harddropFall)
+						frameY += (4+fpf/4).let {minOf((frameY+it), 15f)-frameY}
 
 						lastMove = LastMove.FALL_SELF
 						if(ruleOpt.lockResetFall) {
@@ -2174,7 +2185,7 @@ class GameEngine(
 			// 接地と固定
 			if(it.checkCollision(nowPieceX, nowPieceY+1, field)&&(statc[0]>0||ruleOpt.moveFirstFrame)) {
 				if(lockDelayNow==0&&lockDelay>0&&lastMove!=LastMove.SLIDE_GROUND&&lastMove!=LastMove.SPIN_GROUND) {
-					playSE("step")
+					playSE(if(skin==FRAME_SKIN_GB) "step_old" else "step")
 					if(!ruleOpt.softdropLock&&ruleOpt.softdropSurfaceLock&&softDropUsed) softdropContinuousUse = true
 				}
 				if(lockDelayNow<lockDelay) lockDelayNow++
@@ -2330,7 +2341,7 @@ class GameEngine(
 								statc[1] = are
 								stat = Status.ARE
 							}
-							interruptItemNumber!=null -> {
+							interruptItem!=null -> {
 								// 中断効果のあるアイテム処理
 								nowPieceObject = null
 								interruptItemPreviousStat = Status.MOVE
@@ -2431,8 +2442,8 @@ class GameEngine(
 						)
 						lastLinesY = field.lastLinesY
 						lastLineY = field.lastLinesBottom
-						playSE("line${maxOf(1, minOf(li, 4))}")
-						if(li>=4) playSE("applause${maxOf(0, minOf(2+b2bCount, 4))}")
+						playSE("line${li.coerceIn(1, 4)}")
+						if(li>=4) playSE("applause${(2+b2bCount).coerceIn(0, 4)}")
 						if(twist) {
 							playSE("twister")
 							if(li>=3||li>=2&&b2b) playSE("crowd1") else playSE("crowd0")
@@ -2635,7 +2646,7 @@ class GameEngine(
 						statc[2] = 1
 						stat = Status.ARE
 					}
-					interruptItemNumber!=null -> {
+					interruptItem!=null -> {
 						// AREなし:中断効果のあるアイテム処理
 						nowPieceObject = null
 						interruptItemPreviousStat = Status.MOVE
@@ -2699,7 +2710,7 @@ class GameEngine(
 			resetStatc()
 			lockDelayNow = 0
 
-			if(interruptItemNumber!=null) {
+			if(interruptItem!=null) {
 				// 中断効果のあるアイテム処理
 				interruptItemPreviousStat = Status.MOVE
 				stat = Status.INTERRUPTITEM
@@ -3003,67 +3014,13 @@ class GameEngine(
 	/** プレイ中断効果のあるアイテム処理 */
 	private fun statInterruptItem() {
 		// 続行 flag
-		val contFlag = when(interruptItemNumber) { //TODO: process Each Item
-			Block.ITEM.MIRROR // ミラー
-				-> interruptItemMirrorProc()
-			Block.ITEM.TURN_HORIZ -> false
-			Block.ITEM.TURN_VERT -> false
-			Block.ITEM.DEL_TOP -> false
-			Block.ITEM.DEL_BOTTOM -> false
-			Block.ITEM.DEL_EVEN -> false
-			Block.ITEM.FREE_FALL -> false
-			Block.ITEM.MOVE_LEFT -> false
-			Block.ITEM.MOVE_RIGHT -> false
-			Block.ITEM.TURN_180 -> false
-			Block.ITEM.LASER -> false
-			Block.ITEM.NEGA -> false
-			Block.ITEM.SHOTGUN -> false
-			Block.ITEM.EXCHANGE -> false
-			Block.ITEM.SHUFFLE -> false
-			Block.ITEM.RANDOM -> false
-			Block.ITEM.LASER_16T -> false
-			Block.ITEM.ALL_CLEAR -> false
-			Block.ITEM.COPY_FIELD -> false
-			Block.ITEM.SPIN_FIELD -> false
-			else -> false
-		}
+		val contFlag = interruptItem?.statInterrupt(this) ?: false
 
 		if(!contFlag) {
-			interruptItemNumber = null
+			interruptItem = null
 			resetStatc()
 			stat = interruptItemPreviousStat
 		}
-	}
-
-	/** ミラー処理
-	 * @return When true,ミラー処理続行
-	 */
-	fun interruptItemMirrorProc():Boolean {
-		when {
-			statc[0]==0 -> {
-				// fieldをバックアップにコピー
-				interruptItemBackupField = Field(field)
-				// fieldのBlockを全部消す
-				field.reset()
-			}
-			statc[0]>=21&&statc[0]<21+field.width*2&&statc[0]%2==0 -> {
-				// 反転
-				val x = (statc[0]-20)/2-1
-
-				for(y in field.hiddenHeight*-1..<field.height)
-					field.setBlock(field.width-x-1, y, interruptItemBackupField.getBlock(x, y))
-			}
-			statc[0]<21+field.width*2+5 -> {
-				// 待ち time
-			}
-			else -> {
-				// 終了
-				statc[0] = 0
-				return false
-			}
-		}
-		statc[0]++
-		return true
 	}
 
 	/** Constants of main game status */

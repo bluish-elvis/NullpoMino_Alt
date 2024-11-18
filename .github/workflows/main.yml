@@ -15,7 +15,7 @@ jobs:
       - name: Setup JDK
         uses: actions/setup-java@v4
         with:
-          java-version: '22'
+          java-version: '23'
           distribution: 'liberica'
           architecture: x64
           check-latest: true
