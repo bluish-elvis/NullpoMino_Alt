@@ -100,13 +100,11 @@ class BackgroundHorizontalBars<T>(img:ResourceImage<T>, pulseFrames:Int, sliceSi
 	override fun update() {
 		currentPulsePhase = (currentPulsePhase+1)%pulsePhaseMax
 		for(i in chunks.indices) {
-			var j = i
-			if(reverse) j = chunks.size-i-1
+			val j = if(reverse) chunks.size-i-1 else i
 			val ppu = (currentPulsePhase+i)%pulsePhaseMax
-			val baseScale = if(pulseBaseScale==null) BASE_SCALE else pulseBaseScale!!
-			val scaleVariance = if(pulseScaleVariance==null) SCALE_VARIANCE else pulseScaleVariance!!
-			var newScale = baseScale+sin(TWO_PI*(ppu.toDouble()/pulsePhaseMax))*scaleVariance
-			if(newScale<1.0) newScale = 1.0
+			val baseScale = pulseBaseScale ?: BASE_SCALE
+			val scaleVariance = pulseScaleVariance ?: SCALE_VARIANCE
+			val newScale = (baseScale+sin(TWO_PI*(ppu.toDouble()/pulsePhaseMax))*scaleVariance).coerceAtLeast(1.0)
 			chunks[j].scale = listOf(1f, newScale.toFloat())
 		}
 	}
@@ -116,12 +114,12 @@ class BackgroundHorizontalBars<T>(img:ResourceImage<T>, pulseFrames:Int, sliceSi
 		update()
 	}
 
-	override fun draw(render: AbstractRenderer) {
+	override fun draw(render:AbstractRenderer) {
 		val priorityList = chunks.sortedBy {it.scale[1]}.toMutableList()
-		val baseScale = if(pulseBaseScale==null) BASE_SCALE else pulseBaseScale!!
-		if(almostEqual(baseScale.toDouble(), 1.0, 0.005)) {
+		val baseScale = pulseBaseScale ?: BASE_SCALE
+		if(baseScale.toDouble().almostEqual(1.0, 0.005)) {
 			img.draw()
-			priorityList.removeAll {almostEqual(it.scale[0].toDouble(), 1.0, 0.005)}
+			priorityList.removeAll {it.scale[0].toDouble().almostEqual(1.0, 0.005)}
 		}
 		priorityList.forEach {i ->
 			val pos = i.drawLocation

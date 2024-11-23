@@ -44,6 +44,7 @@ import mu.nu.nullpo.gui.common.BaseFont.Companion.NAME_END
 import mu.nu.nullpo.gui.common.BaseFont.Companion.NAME_REV
 import mu.nu.nullpo.util.CustomProperties
 import org.apache.logging.log4j.LogManager
+import zeroxfc.nullpo.custom.libs.MathHelper.pythonModulo
 import zeroxfc.nullpo.custom.libs.ProfileProperties.LoginScreen.Companion.State.Init
 import zeroxfc.nullpo.custom.libs.ProfileProperties.LoginScreen.Companion.State.Name
 import zeroxfc.nullpo.custom.libs.ProfileProperties.LoginScreen.Companion.State.Pin
@@ -729,7 +730,7 @@ class ProfileProperties @JvmOverloads constructor(colorHeading:EventReceiver.COL
 		 * @return Character at index
 		 */
 		fun getCharAt(index:Int):String {
-			val i = MathHelper.pythonModulo(index, ENTRY_CHARS.length)
+			val i = index.pythonModulo(ENTRY_CHARS.length)
 			return ENTRY_CHARS.substring(i, i+1)
 		}
 		/**

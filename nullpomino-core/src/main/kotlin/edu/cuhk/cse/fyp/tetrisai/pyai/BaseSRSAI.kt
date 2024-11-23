@@ -37,7 +37,7 @@ BasePvPAI - Base PvP AI Class
 class BaseSRSAI:PyAI("BasePvPAI", scriptPath, BaseSRSAI::class.java) {
 	companion object {
 		/** Log  */
-		var log:Logger = Logger.getLogger(BaseSRSAI::class.java)
+		val log:Logger = Logger.getLogger(BaseSRSAI::class.java)
 		private var scriptPath = "pyai-scripts/BasePvPAI.py"
 	}
 }

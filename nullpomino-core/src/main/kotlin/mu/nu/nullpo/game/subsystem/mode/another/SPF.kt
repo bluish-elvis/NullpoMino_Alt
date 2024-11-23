@@ -1500,6 +1500,6 @@ class SPF:AbstractMode() {
 			}
 		}
 
-		fun getRowValue(row:Int):Double = ROW_VALUES[minOf(maxOf(row, 0), ROW_VALUES.size-1)]
+		fun getRowValue(row:Int):Double = ROW_VALUES[row.coerceIn(0, ROW_VALUES.size-1)]
 	}
 }

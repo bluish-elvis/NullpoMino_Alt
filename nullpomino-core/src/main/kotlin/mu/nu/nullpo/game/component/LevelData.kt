@@ -77,7 +77,7 @@ data class LevelData(
 	val size get() = maxOf(gravity.size, denominator.size, are.size, areLine.size, lineDelay.size, lockDelay.size, das.size)
 
 	companion object {
-		fun lv(arr:List<Int>, i:Int):Int = arr[maxOf(0, minOf(i, arr.size-1))]
+		fun lv(arr:List<Int>, i:Int):Int = if(arr.isEmpty()) 0 else arr[(i).coerceIn(0, maxOf(0, arr.size-1))]
 	}
 
 }

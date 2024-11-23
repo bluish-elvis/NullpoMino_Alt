@@ -51,7 +51,7 @@ class GrandS2:AbstractGrand() {
 	/** Number of sections */
 	override val sectionMax = 13
 
-	override val medalSKQuads = listOf(listOf(5,10, 17, 25), listOf(1, 2, 4,6))
+	override val medalSKQuads = listOf(listOf(5, 10, 17, 25), listOf(1, 2, 4, 6))
 
 	/** 最終結果などに表示される実際の段位 */
 	private var grade = 0
@@ -222,7 +222,7 @@ class GrandS2:AbstractGrand() {
 		val lv = startLevel*100
 		engine.statistics.level = lv
 
-		nextSecLv = maxOf(100, minOf(1300, lv+100))
+		nextSecLv = (lv+100).coerceIn(100, 1300)
 		if(engine.statistics.level>=1000) engine.bone = true
 
 		owner.bgMan.bg = 20+engine.statistics.level/100
@@ -265,7 +265,7 @@ class GrandS2:AbstractGrand() {
 					// Section Time
 					receiver.drawScoreFont(engine, 0, 2, "SECTION TIME", COLOR.RED)
 
-					val totalTime = (0..<sectionMax).fold(0) { tt, i ->
+					val totalTime = (0..<sectionMax).fold(0) {tt, i ->
 						val slv = i*100
 						receiver.drawScoreNum(
 							engine, 0, 3+i, "%4d-%4d %s".format(slv, slv+99, bestSectionTime[i].toTimeStr),
@@ -596,7 +596,7 @@ class GrandS2:AbstractGrand() {
 				}
 			}
 			2 -> {
-				receiver.drawMenuNano(engine, 0, 1.5f, "MEDAL", COLOR.RED,.5f)
+				receiver.drawMenuNano(engine, 0, 1.5f, "MEDAL", COLOR.RED, .5f)
 				receiver.drawMenuMedal(engine, 2, 2, "AC", medalAC)
 				receiver.drawMenuMedal(engine, 5, 2, "ST", medalST)
 				receiver.drawMenuMedal(engine, 8, 2, "SK", medalSK)

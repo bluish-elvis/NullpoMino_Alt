@@ -147,7 +147,7 @@ class BackgroundCircularRipple<T>(img:ResourceImage<T>, cellWidth:Int? = DEF_GRI
 						val distanceX = abs(cellAnchorX-cx).toDouble()
 						val distanceY = abs(cellAnchorY-cy).toDouble()
 						val dTotal = sqrt(distanceX*distanceX+distanceY*distanceY)
-						if(almostEqual(dTotal, cr.toDouble(), wl.toDouble())&&dTotal>=0) {
+						if(dTotal.almostEqual(cr.toDouble(), wl.toDouble())&&dTotal>=0) {
 							val usedDistance = dTotal-cr
 							val sinVal = sin(PI*(usedDistance/wl))
 							var newScale = it.scale[0]+sinVal*scaleVariance
@@ -180,11 +180,11 @@ class BackgroundCircularRipple<T>(img:ResourceImage<T>, cellWidth:Int? = DEF_GRI
 		update()
 	}
 
-	override fun draw(render: AbstractRenderer) {
+	override fun draw(render:AbstractRenderer) {
 		val priorityList = chunkGrid.flatten().sortedBy {it.scale[0]}.toMutableList()
-		if(almostEqual(pulseBaseScale.toDouble(), 1.0, 0.005)) {
+		if(pulseBaseScale.toDouble().almostEqual(1.0, 0.005)) {
 			img.draw()
-			priorityList.removeAll {almostEqual(it.scale[0].toDouble(), 1.0, 0.005)}
+			priorityList.removeAll {it.scale[0].toDouble().almostEqual(1.0, 0.005)}
 		}
 		priorityList.forEach {i ->
 			val pos = i.drawLocation

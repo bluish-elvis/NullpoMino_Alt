@@ -44,6 +44,7 @@ import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.gui.common.ResourceImage
 import org.apache.logging.log4j.LogManager
 import org.jetbrains.kotlin.utils.keysToMap
+import zeroxfc.nullpo.custom.libs.MathHelper.almostEqual
 
 abstract class ExamSpinnerBase private constructor(private val gradeText:String, private val selectedOutcome:Int,
 	private val close:Boolean, private val custom:Boolean) {
@@ -318,7 +319,7 @@ abstract class ExamSpinnerBase private constructor(private val gradeText:String,
 				// log.debug(lifeTime + ": (LOC) " + Arrays.toString(endXs) + ", " + j);
 				// log.debug(lifeTime + ": (RAW) " + sb.toString());
 				for(i in endXs.indices) {
-					if(MathHelper.almostEqual((endXs[i]%320).toFloat(), 80f, 24f)) {
+					if((endXs[i]%320).toFloat().almostEqual(80f, 24f)) {
 						if(!clickedBefore) {
 							clickedBefore = true
 							engine.playSE("change")

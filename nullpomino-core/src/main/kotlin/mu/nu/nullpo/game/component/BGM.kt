@@ -34,22 +34,27 @@ package mu.nu.nullpo.game.component
 import kotlin.reflect.full.createInstance
 import kotlin.reflect.full.primaryConstructor
 
-/** 音楽の定数 */
+/** 音楽の定数
+ * @param _idx index of Sub Track
+ * @param _num number of Sub Tracks
+ * @param hidden -flag for excluding from selection */
 sealed class BGM(
-	val id:Int, _idx:Int = 0, val hidden:Boolean = false, _num:Int = 1, ln:String = "",
+	val id:Int, _idx:Int = 0, val hidden:Boolean = false, _num:Int = 1, _long:String = "",
 	sn:List<String> = emptyList()
 ) {
-	constructor(id:Int, idx:Int, nums:Int, ln:String):this(id, idx, false, nums, ln)
+	constructor(id:Int, idx:Int, _num:Int, ln:String):this(id, idx, false, _num, ln)
+	/** @param sn list of Sub Track Names */
 	constructor(id:Int, idx:Int, ln:String, hidden:Boolean = false, sn:List<String>):this(id, idx, hidden, sn.size, ln, sn)
+	/** @param sn Sub Track Names */
 	constructor(id:Int, idx:Int, ln:String, vararg sn:String = emptyArray(), hidden:Boolean = false)
 		:this(id, idx, hidden, sn.size, ln, sn.toList())
 
 	//		val id:Int = BGM::class.java.declaredClasses.indexOfFirst {it==this::class.java}
-	val idx:Int = minOf(maxOf(0, _idx), _num-1)
+	val idx:Int = (_num-1).coerceIn(0, maxOf(0, _idx))
 	val nums = maxOf(1, _num, sn.size)
 
 	val name = this::class.simpleName ?: ""
-	val longName:String = ln.ifEmpty {name}
+	val longName:String = _long.ifEmpty {name}
 	val subName:String = if(sn.isEmpty()) "" else sn[maxOf(minOf(idx, minOf(sn.size, _num)-1), 0)]
 	val drawName = "#$id-$idx ${name.replace('_', ' ')}"
 	val fullName = "$longName $subName"
@@ -59,22 +64,18 @@ sealed class BGM(
 		super.equals(other)||if(other is BGM) id==other.id&&idx==other.idx else false
 
 	operator fun compareTo(o:BGM):Int = if(id==o.id) idx-o.idx else id-o.id
-	override fun hashCode():Int {
-		var result = hidden.hashCode()
-		result = 31*result+id
-		result = 31*result+idx
-		result = 31*result+nums
-		result = 31*result+name.hashCode()
-		result = 31*result+longName.hashCode()
-		result = 31*result+subName.hashCode()
-		result = 31*result+drawName.hashCode()
-		result = 31*result+fullName.hashCode()
-		return result
-	}
+	override fun hashCode():Int = hidden.hashCode().let {31*it+id}
+		.let {31*it+idx}
+		.let {31*it+nums}
+		.let {31*it+name.hashCode()}
+		.let {31*it+longName.hashCode()}
+		.let {31*it+subName.hashCode()}
+		.let {31*it+drawName.hashCode()}
+		.let {31*it+fullName.hashCode()}
 
 	override fun toString():String = fullName
 
-	object Silent:BGM(0, ln = "Silent")
+	object Silent:BGM(0, _long = "Silent")
 	class Generic(idx:Int = 0):BGM(1, idx, "Guidelines Modes", sn = List(10) {"Level:${it+1}"})
 	class Rush(idx:Int = 0):BGM(2, idx, "Trial Rush", sn = List(4) {"Level:${it+1}"})
 	class Extra(idx:Int = 0):BGM(3, idx, 5, "Extra Modes")

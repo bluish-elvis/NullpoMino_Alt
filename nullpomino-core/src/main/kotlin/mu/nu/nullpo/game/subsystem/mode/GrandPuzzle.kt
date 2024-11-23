@@ -34,6 +34,7 @@ import mu.nu.nullpo.game.component.BGM
 import mu.nu.nullpo.game.component.Block
 import mu.nu.nullpo.game.component.Controller
 import mu.nu.nullpo.game.component.Field
+import mu.nu.nullpo.game.component.Item
 import mu.nu.nullpo.game.component.Piece.Companion.createQueueFromIntStr
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
 import mu.nu.nullpo.game.event.ScoreEvent
@@ -217,10 +218,11 @@ class GrandPuzzle:AbstractMode() {
 	private val rankingAllClear = List(RANKING_TYPE) {MutableList(rankingMax) {0}}
 
 	override val propRank
-		get() = rankMapOf(rankingStage.mapIndexed {a, x -> "$a.stage" to x}+
-			rankingRate.mapIndexed {a, x -> "$a.rate" to x}+
-			rankingAllClear.mapIndexed {a, x -> "$a.clear" to x}+
-			rankingTime.mapIndexed {a, x -> "$a.time" to x})
+		get() = rankMapOf(
+			rankingStage.mapIndexed {a, x -> "$a.stage" to x}+
+				rankingRate.mapIndexed {a, x -> "$a.rate" to x}+
+				rankingAllClear.mapIndexed {a, x -> "$a.clear" to x}+
+				rankingTime.mapIndexed {a, x -> "$a.time" to x})
 
 	private var decoration = 0
 	private var decTemp = 0
@@ -585,7 +587,7 @@ class GrandPuzzle:AbstractMode() {
 						3 -> {
 							stagebgm += change
 							if(stagebgm<0) stagebgm = BGM.count
-							if(stagebgm> BGM.count) stagebgm = 0
+							if(stagebgm>BGM.count) stagebgm = 0
 						}
 						4 -> {
 							gimmickMirror += change
@@ -903,19 +905,18 @@ class GrandPuzzle:AbstractMode() {
 			if(gimmickXRay>0)
 				if(thisStageTotalPieceLockCount%gimmickXRay==0)
 					engine.itemXRayEnable = true
-				else {
-					engine.itemXRayEnable = false
+				else if(engine.itemXRayEnable) {
+					engine.itemQueue.removeFirst()
 					engine.resetFieldVisible()
 				}
-
-			// カラー
-			if(gimmickColor>0)
-				if(thisStageTotalPieceLockCount%gimmickColor==0)
-					engine.itemColorEnable = true
-				else {
-					engine.itemColorEnable = false
-					engine.resetFieldVisible()
-				}
+				// カラー
+				else if(gimmickColor>0)
+					if(thisStageTotalPieceLockCount%gimmickColor==0)
+						engine.itemColorEnable = true
+					else if(engine.itemColorEnable) {
+						engine.itemQueue.removeFirst()
+						engine.resetFieldVisible()
+					}
 		}
 
 		return false
@@ -992,7 +993,7 @@ class GrandPuzzle:AbstractMode() {
 
 		// ミラー
 		if(gimmickMirror>0&&thisStageTotalPieceLockCount%gimmickMirror==0)
-			engine.interruptItemNumber = Block.ITEM.MIRROR
+			engine.interruptItem = Item.MIRROR()
 
 		//  stage 終了判定
 		if(lines<=0) checkStageEnd(engine)
@@ -1040,7 +1041,7 @@ class GrandPuzzle:AbstractMode() {
 			if((stage==MAX_STAGE_NORMAL-1||stage==laststage)&&trainingType==0) owner.musMan.fadeSW = true
 
 			// ギミック解除
-			engine.interruptItemNumber = null
+			engine.interruptItem = null
 			engine.itemXRayEnable = false
 			engine.itemColorEnable = false
 			engine.resetFieldVisible()
@@ -1187,7 +1188,7 @@ class GrandPuzzle:AbstractMode() {
 
 				engine.itemXRayEnable = false
 				engine.itemColorEnable = false
-				engine.interruptItemNumber = null
+				engine.interruptItem = null
 
 				engine.resetFieldVisible()
 

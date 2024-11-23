@@ -492,10 +492,10 @@ class VSBattle:AbstractMode() {
 						"HU INTERVAL" to hurryUpInterval[pid]
 					)
 					drawMenuBGM(engine, receiver, bgmId, COLOR.PINK)
-					drawMenu(engine, receiver, 10, COLOR.PINK, 22,  "SHOW STATS" to showStats)
+					drawMenu(engine, receiver, 10, COLOR.PINK, 22, "SHOW STATS" to showStats)
 					drawMenu(
 						engine, receiver, 12, COLOR.CYAN, 23, "USE MAP" to useMap[pid], "MAP SET" to mapSet[pid],
-						"MAP NO." to  "${if(mapNumber[pid]<0) "RANDOM" else mapNumber[pid]}/${mapMaxNo[pid]-1}"
+						"MAP NO." to "${if(mapNumber[pid]<0) "RANDOM" else mapNumber[pid]}/${mapMaxNo[pid]-1}"
 					)
 				}
 			}
@@ -607,7 +607,7 @@ class VSBattle:AbstractMode() {
 			receiver.drawScoreSpeed(engine, 0, 12, score[0]/50, 5f)
 			receiver.drawScoreSpeed(engine, 5, 12, score[1]/50, 5f)
 			val x = receiver.fieldX(engine)
-			val y = receiver.fieldY(engine,22)+1
+			val y = receiver.fieldY(engine, 22)+1
 
 
 			garbageEntries[pid].forEachIndexed {i, (lines, playerID, time) ->
@@ -658,7 +658,7 @@ class VSBattle:AbstractMode() {
 		//  Attack
 		if((pts-ofs)>0) {
 			garbageEntries[enemyID].add(
-				GarbageEntry(pts-ofs, pID, maxOf(10, minOf(24, 30-owner.engine[enemyID].statistics.time/600)))
+				GarbageEntry(pts-ofs, pID, (30-owner.engine[enemyID].statistics.time/600).coerceIn(10, 24))
 			)
 
 			if(owner.engine[enemyID].ai==null&&garbage[enemyID]>=4) owner.engine[enemyID].playSE("levelstop")

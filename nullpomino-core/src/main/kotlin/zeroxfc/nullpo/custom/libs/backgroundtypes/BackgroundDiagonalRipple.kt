@@ -108,18 +108,15 @@ class BackgroundDiagonalRipple<T>(img:ResourceImage<T>, cellWidth:Int? = DEF_GRI
 
 	override fun update() {
 		currentPulsePhase = (currentPulsePhase+1)%pulseFrame
-		for(y in chunkGrid.indices) {
-			for(x in 0..<chunkGrid[y].size) {
-				var j = currentPulsePhase
-				if(reverse) j = pulseFrame-currentPulsePhase-1
-				if(reverseSlant) j -= x+y else j += x+y
-				var ppu = j%pulseFrame
-				if(ppu<0) ppu = pulseFrame-ppu
-				val baseScale = pulseBaseScale
-				val scaleVariance = pulseScaleVariance
-				val newScale = minOf(1.0, baseScale+sin(TWO_PI*ppu.toDouble()/pulseFrame)*scaleVariance)
-				chunkGrid[y][x].scale = listOf(newScale.toFloat(), newScale.toFloat())
+		for(y in chunkGrid.indices) for(x in 0..<chunkGrid[y].size) {
+			val j = currentPulsePhase.let {
+				(if(reverse) pulseFrame-it-1 else it)+(x+y)*(if(reverseSlant) -1 else 1)
 			}
+			val ppu = (j%pulseFrame).let {if(it<0) pulseFrame-it else it}
+			val baseScale = pulseBaseScale
+			val scaleVariance = pulseScaleVariance
+			val newScale = minOf(1.0, baseScale+sin(TWO_PI*ppu.toDouble()/pulseFrame)*scaleVariance)
+			chunkGrid[y][x].scale = listOf(newScale.toFloat(), newScale.toFloat())
 		}
 	}
 
@@ -131,9 +128,9 @@ class BackgroundDiagonalRipple<T>(img:ResourceImage<T>, cellWidth:Int? = DEF_GRI
 	override fun draw(render:AbstractRenderer) {
 		val priorityList = chunkGrid.flatten().sortedBy {it.scale[0]}.toMutableList()
 		val baseScale = pulseBaseScale
-		if(almostEqual(baseScale.toDouble(), 1.0, 0.005)) {
+		if(baseScale.toDouble().almostEqual(1.0, 0.005)) {
 			img.draw()
-			priorityList.removeAll {almostEqual(it.scale[0].toDouble(), 1.0, 0.005)}
+			priorityList.removeAll {it.scale[0].toDouble().almostEqual(1.0, 0.005)}
 		}
 		priorityList.forEach {i ->
 			val pos = i.drawLocation

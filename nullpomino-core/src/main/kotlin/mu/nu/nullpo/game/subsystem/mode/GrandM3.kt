@@ -793,7 +793,7 @@ class GrandM3:AbstractGrand() {
 				val index = minOf(gradeBasicInternal, tableGradePoint[li-1].size-1)
 
 				val basePoint = tableGradePoint[li-1][index]
-				val indexCombo = minOf(maxOf(0, ev.combo+if(ev.b2b>0) 0 else -1), tableGradeComboBonus[li-1].size-1)
+				val indexCombo = (ev.combo+if(ev.b2b>0) 0 else -1).coerceIn(0, tableGradeComboBonus[li-1].size-1)
 				val comboBonus = tableGradeComboBonus[li-1][indexCombo]
 
 				val levelBonus = 1+engine.statistics.level/250
@@ -1043,7 +1043,7 @@ class GrandM3:AbstractGrand() {
 				log.debug("Grade Result/Record:${getGradeName(grade)} ($grade) / ${getGradeName(recordGrade[goalType])} (${recordGrade[goalType]})")
 				log.debug(
 					"Promotional Exam: {}",
-					if(promotionFlag)"${getGradeName(promotionalExam)} ($promotionalExam)" else "disabled"
+					if(promotionFlag) "${getGradeName(promotionalExam)} ($promotionalExam)" else "disabled"
 				)
 				if(promotionFlag&&grade>=promotionalExam) {
 					recordGrade[goalType] = promotionalExam
@@ -1174,7 +1174,7 @@ class GrandM3:AbstractGrand() {
 					}
 				}
 				2 -> {
-					receiver.drawMenuNano(engine, 0, 1.5f, "MEDAL", COLOR.BLUE,.5f)
+					receiver.drawMenuNano(engine, 0, 1.5f, "MEDAL", COLOR.BLUE, .5f)
 					receiver.drawMenuMedal(engine, 2, 2, "AC", medalAC)
 					receiver.drawMenuMedal(engine, 5, 2, "ST", medalST)
 					receiver.drawMenuMedal(engine, 8, 2, "SK", medalSK)

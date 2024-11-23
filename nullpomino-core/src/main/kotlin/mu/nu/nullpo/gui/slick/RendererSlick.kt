@@ -150,7 +150,7 @@ class RendererSlick(
 		}.toFloat()
 		val isSticky = resources.getBlockIsSticky(sk)
 		val bone = (if(isSticky) sy else sx) in 9..17
-		val filter = (minOf(1f, maxOf(0f, 1f-darkness))).let {Color(it, it, it, alpha)}
+		val filter = (1f-darkness).coerceIn(0f, 1f).let {Color(it, it, it, alpha)}
 
 		val imageWidth = img.width
 		if(sx*si>=imageWidth&&imageWidth!=-1) return
@@ -164,7 +164,7 @@ class RendererSlick(
 
 			if(heavyEffect>0&&!bone) {
 				g.setDrawMode(Graphics.MODE_COLOR_MULTIPLY)
-				val shf = Color(1f, 1f, 1f, (minOf(1f, maxOf(0f, -darkness*alpha))))
+				val shf = Color(1f, 1f, 1f, (-darkness*alpha).coerceIn(0f, 1f))
 				val shx = if(isSticky) sx else 1
 				val shy = if(isSticky) 1 else 0
 				g.drawImage(img, x, y, (x+size), (y+size), shx*si, shy*si, (shx+1)*si, (shy+1)*si, shf)
@@ -173,7 +173,7 @@ class RendererSlick(
 			}
 		} else if(heavyEffect>0&&darkness>0&&!bone) {
 			g.setDrawMode(Graphics.MODE_ADD)
-			val shf = (minOf(1f, maxOf(0f, darkness*alpha/2))).let {Color(it, it, it, it)}
+			val shf = (darkness*alpha/2).coerceIn(0f, 1f).let {Color(it, it, it, it)}
 			val shx = if(isSticky) sx else 0
 			val shy = 0
 			g.drawImage(img, x, y, (x+size), (y+size), shx*si, shy*si, (shx+1)*si, (shy+1)*si, shf)

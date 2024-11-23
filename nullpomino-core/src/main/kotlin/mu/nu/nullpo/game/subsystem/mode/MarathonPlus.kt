@@ -741,7 +741,7 @@ class MarathonPlus:NetDummyMode() {
 			if(owner.bgMan.fadeSW) owner.bgMan.nextBg else engine.owner.bgMan.bg
 		val msg = "game\tstats\t"+engine.run {
 			statistics.run {"${scoreLine}\t${scoreSD}\t${scoreHD}\t${scoreBonus}\t${lines}\t${totalPieceLocked}\t${time}\t${level}\t"}+
-				"${gameActive}\t${timerActive}\t$lastScore\t$scDisp\t${lastEvent}\tt${lastEventPiece}\t"
+				"${gameActive}\t${timerActive}\t$lastScore\t$scDisp\t${lastEvent}\t"
 		}+"$bg\t$bonusLines\t$bonusFlashNow\t$bonusPieceCount\t$bonusTime\n"
 		netLobby?.netPlayerClient?.send(msg)
 	}

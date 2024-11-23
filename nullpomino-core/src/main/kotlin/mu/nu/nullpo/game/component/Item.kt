@@ -44,7 +44,7 @@ sealed class Item(val id:Int, val showName:String? = null, val color:BCOLOR = BC
 	 * Interrupts the game state
 	 */
 	open fun statInterrupt(e:GameEngine):Boolean = false
-	override fun toString():String = this.showName ?: this::class.simpleName ?: ""
+	override fun toString():String = this.showName?:this::class.simpleName?:""
 	val ordinal get() = entries.indexOf(this)
 	/** Flip Opponents Field horizontally 3 times */
 	class MIRROR(var maxCount:Int = 3):Item(0, "MIRROR") {
@@ -406,7 +406,7 @@ sealed class Item(val id:Int, val showName:String? = null, val color:BCOLOR = BC
 		//operator fun get(index: Int): BGM = if(this._idx)
 		val entries:List<Item>
 			get() = Item::class.sealedSubclasses.map {
-				it.objectInstance ?: it.createInstance()
+				it.objectInstance?:it.createInstance()
 			}.sortedBy {it.id}
 
 		fun values():Array<Item> = entries.toTypedArray()

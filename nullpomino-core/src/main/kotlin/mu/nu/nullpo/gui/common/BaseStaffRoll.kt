@@ -80,7 +80,7 @@ abstract class BaseStaffRoll {
 
 		strList.drop(maxOf(0, floor(scr/lh).toInt()))
 			.take(
-				1+ceil(maxOf(0f, minOf(dh, dh+scr))/lh).toInt()
+				1+ceil((dh+scr).coerceIn(0f, dh)/lh).toInt()
 			).forEachIndexed {l, (type, str) ->
 				drawFont(str, x, type, y+l*lh-if(scr<0) scr else scr%lh, dh, alpha)
 			}

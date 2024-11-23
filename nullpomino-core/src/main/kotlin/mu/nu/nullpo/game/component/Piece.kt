@@ -589,7 +589,7 @@ If the piece is big (size == 2), a 2x2 space is allotted per block. */
 
 	fun finesseLimit(nowPieceX:Int):Int =
 		FINESSE_LIST.getOrNull(id)?.let {it[direction%(it.size)]}
-			?.let {it[maxOf(0, minOf(nowPieceX+minimumBlockX, it.size-1))]} ?: 0
+			?.let {it[(nowPieceX+minimumBlockX).coerceIn(0, maxOf(0,it.size-1))]} ?: 0
 
 	companion object {
 

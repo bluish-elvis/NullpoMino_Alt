@@ -117,7 +117,7 @@ open class BackgroundTGM3StyleNoRotation<T>(img:ResourceImage<T>):AbstractBG<T>(
 		var ns:Float
 		do {
 			ns = (valueRandomizer.nextFloat()*(MAX_SCALE-MIN_SCALE))+MIN_SCALE
-		} while(!almostEqual(ns, currentValues.scale, 1f))
+		} while(!ns.almostEqual(currentValues.scale, 1f))
 		targetValues.scale = ns
 
 		// Find max pan from center

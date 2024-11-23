@@ -292,7 +292,7 @@ class Sequencer:JFrame(), ActionListener {
 					columns = 37
 					lineWrap = true
 					isEditable = false
-					font = Font("Courier New",font.style,font.size)
+					font = Font("Courier New", font.style, font.size)
 				}, ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS,
 				ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER
 			)
@@ -413,7 +413,7 @@ class Sequencer:JFrame(), ActionListener {
 	}
 
 	override fun actionPerformed(e:ActionEvent) {
-		when (e.actionCommand) {
+		when(e.actionCommand) {
 			"New" -> {
 			}
 			"Open" -> {

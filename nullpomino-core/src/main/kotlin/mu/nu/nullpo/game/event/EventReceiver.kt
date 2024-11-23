@@ -52,6 +52,8 @@ import java.io.FileOutputStream
 import java.io.IOException
 import java.util.zip.GZIPInputStream
 import java.util.zip.GZIPOutputStream
+import kotlin.math.absoluteValue
+import kotlin.math.sign
 import kotlin.random.Random
 
 /** Drawing and event handling EventReceiver */
@@ -183,8 +185,9 @@ open class EventReceiver {
 		val mx = engine.fieldWidth*engine.blockSize
 		val my = engine.fieldHeight*8
 		val x = engine.fX+random.nextInt(mx)
-		var y = engine.fY+random.nextInt(my)+50
-		if(my<engine.field.highestBlockY) y += my
+		val y = (engine.fY+random.nextInt(my)+50).let {
+			if(my<engine.field.highestBlockY) it+my else it
+		}
 		shootFireworks(engine, x, y, COLOR.all[random.nextInt(7)])
 	}
 
@@ -523,7 +526,7 @@ open class EventReceiver {
 	 * @param len Meter Width Grid
 	 */
 	fun drawMenuSpeed(engine:GameEngine, x:Float, y:Float, sp:Float, len:Float = 3f) {
-		var sx = x*BS+maxOf(minOf(len, BS/2f), 0f)
+		var sx = x*BS+minOf(len.absoluteValue, BS/2f)*len.sign
 		var sy = y*BS.toFloat()
 		if(!engine.owner.menuOnly) {
 			sx += engine.fX
@@ -568,7 +571,7 @@ open class EventReceiver {
 	 * @param len Meter Width Grid
 	 */
 	fun drawScoreSpeed(engine:GameEngine, x:Float, y:Float, sp:Float, len:Float = 3f) {
-		val dx1 = engine.sX+x*BS+maxOf(minOf(len, BS/2f), 0f)
+		val dx1 = engine.sX+x*BS+minOf(len.absoluteValue, BS/2f)*len.sign
 		val dy1 = engine.sY+y*BS+BS/2f
 		//if(engine.owner.menuOnly) return
 		drawSpeedMeter(dx1, dy1, sp, len)

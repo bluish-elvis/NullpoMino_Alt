@@ -92,7 +92,7 @@ class MarathonExtreme:NetDummyMode() {
 	override val menu = MenuList("extreme", itemEndless, itemLevel, itemBig)
 	override fun playerInit(engine:GameEngine) {
 		super.playerInit(engine)
-		engine.owner.receiver.setBGSpd(engine.owner,2)
+		engine.owner.receiver.setBGSpd(engine.owner, 2)
 		lastScore = 0
 		bgmLv = 0
 		rollTime = 0
@@ -119,7 +119,7 @@ class MarathonExtreme:NetDummyMode() {
 	 * @param engine GameEngine
 	 */
 	override fun setSpeed(engine:GameEngine) {
-		val lv = maxOf(0, minOf(engine.statistics.level, tableSpeed.size-1))
+		val lv = engine.statistics.level.coerceIn(0, tableSpeed.size-1)
 		engine.speed.replace(tableSpeed[lv])
 	}
 
@@ -277,7 +277,7 @@ class MarathonExtreme:NetDummyMode() {
 			// BGM fade-out effects and BGM changes
 
 			if(engine.statistics.lines>=nextbgmLine(engine.statistics.lines)-5) owner.musMan.fadeSW = true
-			val newbgm = minOf(maxOf(0, bgmLv(engine.statistics.lines)), tableBGM.size-1)
+			val newbgm = bgmLv(engine.statistics.lines).coerceIn(0, tableBGM.size-1)
 			if(bgmLv!=newbgm) {
 				bgmLv = newbgm
 				owner.musMan.bgm = tableBGM[bgmLv]
@@ -445,14 +445,15 @@ class MarathonExtreme:NetDummyMode() {
 		val msg = "game\tstats\t"+engine.run {
 			statistics.run {
 				"${scoreLine}\t${scoreSD}\t${scoreHD}\t${scoreBonus}\t${lines}\t${totalPieceLocked}\t${time}\t${level}\t$endless\t"
-			}+"${gameActive}\t${timerActive}\t$lastScore\t$scDisp\t${lastEvent}\t${lastEventPiece}\t$bg\t$rollTime\n"
+			}+"${gameActive}\t${timerActive}\t$lastScore\t$scDisp\t${lastEvent}\t$bg\t$rollTime\n"
 		}
 		netLobby?.netPlayerClient?.send(msg)
 	}
 
 	/** NET: Parse Received [message] as in-game stats of [engine] */
 	override fun netRecvStats(engine:GameEngine, message:List<String>) {
-		listOf<(String)->Unit>({}, {}, {}, {},
+		listOf<(String)->Unit>(
+			{}, {}, {}, {},
 			{engine.statistics.scoreLine = it.toInt()},
 			{engine.statistics.scoreSD = it.toInt()},
 			{engine.statistics.scoreHD = it.toInt()},

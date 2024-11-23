@@ -283,7 +283,7 @@ class GrandSStealth:AbstractGrand() {
 	 * Ready&Go screen disappears) */
 	override fun startGame(engine:GameEngine) {
 		engine.statistics.level = startLevel*100
-		nextSecLv = maxOf(100, minOf(startLevel*100+100, 999))
+		nextSecLv = (startLevel*100+100).coerceIn(100, 999)
 
 		owner.bgMan.bg = engine.statistics.level/100
 
@@ -330,7 +330,7 @@ class GrandSStealth:AbstractGrand() {
 					// Best section time records
 					receiver.drawScoreFont(engine, 0, 2, "SECTION TIME", COLOR.PURPLE)
 
-					val totalTime = (0..<sectionMax).fold(0) { tt, i ->
+					val totalTime = (0..<sectionMax).fold(0) {tt, i ->
 						val slv = minOf(i*100, 999)
 						receiver.drawScoreNum(
 							engine, 0, 3+i, "%3d-%3d %s".format(slv, slv+99, bestSectionTime[i].toTimeStr), sectionIsNewRecord[i]
@@ -495,7 +495,7 @@ class GrandSStealth:AbstractGrand() {
 
 				sectionsDone++
 
-				gmQuads = sectionQuads.all{it>=2}
+				gmQuads = sectionQuads.all {it>=2}
 				sectionQuads[section+1] = 0
 				stMedalCheck(engine, section)
 
@@ -593,7 +593,7 @@ class GrandSStealth:AbstractGrand() {
 				receiver.drawMenuFont(engine, 2, 15, sectionAvgTime.toTimeStr)
 			}
 		} else if(engine.statc[1]==2) {
-			receiver.drawMenuNano(engine, 0, 1.5f, "MEDAL", COLOR.PURPLE,.5f)
+			receiver.drawMenuNano(engine, 0, 1.5f, "MEDAL", COLOR.PURPLE, .5f)
 			receiver.drawMenuMedal(engine, 2, 2, "AC", medalAC)
 			receiver.drawMenuMedal(engine, 5, 2, "ST", medalST)
 			receiver.drawMenuMedal(engine, 8, 2, "SK", medalSK)

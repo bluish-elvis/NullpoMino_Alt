@@ -2486,6 +2486,7 @@ import kotlin.random.Random
 		flipHorizontal()
 		return this
 	}
+
 	companion object {
 		/** Log */
 		internal var log = LogManager.getLogger()

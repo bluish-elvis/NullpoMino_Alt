@@ -76,7 +76,8 @@ class SubscriberChallenge:NetDummyMode() {
 	/** Level at start time  */
 	private var startLevel:Int by DelegateMenuItem(itemLv)
 
-	private val itemMode = StringsMenuItem("goalType", "GOAL", EventReceiver.COLOR.BLUE, 0,
+	private val itemMode = StringsMenuItem(
+		"goalType", "GOAL", EventReceiver.COLOR.BLUE, 0,
 		List(GAMETYPE_MAX) {if(tableGameClearLines[it]<=0) "ENDLESS" else "${tableGameClearLines[it]} LINES"})
 	/** Game type  */
 	private var goalType:Int by DelegateMenuItem(itemMode)
@@ -102,9 +103,10 @@ class SubscriberChallenge:NetDummyMode() {
 	private val rankingTime = List(RANKING_TYPE) {MutableList(rankingMax) {-1}}
 
 	override val propRank
-		get() = rankMapOf(rankingScore.mapIndexed {a, x -> "$a.score" to x}+
-			rankingLines.mapIndexed {a, x -> "$a.lines" to x}+
-			rankingTime.mapIndexed {a, x -> "$a.time" to x})
+		get() = rankMapOf(
+			rankingScore.mapIndexed {a, x -> "$a.score" to x}+
+				rankingLines.mapIndexed {a, x -> "$a.lines" to x}+
+				rankingTime.mapIndexed {a, x -> "$a.time" to x})
 	/*
 	 * Mode name
 	 */
@@ -142,9 +144,7 @@ class SubscriberChallenge:NetDummyMode() {
 	 * @param engine GameEngine
 	 */
 	override fun setSpeed(engine:GameEngine) {
-		var lv:Int = engine.statistics.level
-		if(lv<0) lv = 0
-		if(lv>=tableGravity.size) lv = tableGravity.size-1
+		val lv = engine.statistics.level.coerceIn(0, maxOf(0, tableGravity.size-1))
 		engine.speed.gravity = tableGravity[lv]
 		engine.speed.denominator = tableDenominator[lv]
 	}
@@ -321,7 +321,6 @@ class SubscriberChallenge:NetDummyMode() {
 	 */
 	override fun calcScore(engine:GameEngine, ev:ScoreEvent):Int {
 		// Line clear bonus
-		var sub = 0
 		val li = ev.lines
 		if(li>0) lastValue = subscriber
 		val pts = calcScoreBase(engine, ev)
@@ -337,7 +336,7 @@ class SubscriberChallenge:NetDummyMode() {
 			else engine.statistics.scoreBonus += get
 		}
 		// T-Spin 0 lines
-		sub += if(engine.twist) when {
+		var sub = if(engine.twist) when {
 			(li==0)&&(!engine.twistEZ) -> subscriberRNG.nextInt(100)
 			engine.twistEZ&&(li>0) -> subscriberRNG.nextInt(100*li)+100*li
 			li==1 -> (if(engine.twistMini) subscriberRNG.nextInt(200)+3000 else subscriberRNG.nextInt(700)+6000)

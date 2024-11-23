@@ -99,9 +99,10 @@ class GrandM2G:AbstractGrand() {
 	override val name = "Grand Mountain"
 	override val gameIntensity = 1
 	override val propRank
-		get() = rankMapOf(rankingLevel.mapIndexed {a, x -> "$a.lines" to x}+
-			rankingTime.mapIndexed {a, x -> "$a.time" to x}+
-			bestSectionTime.mapIndexed {a, x -> "$a.section.time" to x})
+		get() = rankMapOf(
+			rankingLevel.mapIndexed {a, x -> "$a.lines" to x}+
+				rankingTime.mapIndexed {a, x -> "$a.time" to x}+
+				bestSectionTime.mapIndexed {a, x -> "$a.section.time" to x})
 
 	/* Initialization */
 	override fun playerInit(engine:GameEngine) {
@@ -258,11 +259,8 @@ class GrandM2G:AbstractGrand() {
 	/* Called at game start */
 	override fun startGame(engine:GameEngine) {
 		engine.statistics.level = startLevel*100
-
-		nextSecLv = maxOf(100, minOf(engine.statistics.level+100, 999))
-
+		nextSecLv = (engine.statistics.level+100).coerceIn(100, 999)
 		owner.bgMan.bg = engine.statistics.level/100
-
 		garbageCount = 13-engine.statistics.level/100
 		engine.big = big
 		if(goalType==GOALTYPE_RANDOM)
@@ -306,7 +304,7 @@ class GrandM2G:AbstractGrand() {
 					// Section Time
 					receiver.drawScoreFont(engine, 0, 2, "SECTION TIME", COLOR.BLUE)
 
-					val totalTime = (0..<sectionMax).fold(0) { tt, i ->
+					val totalTime = (0..<sectionMax).fold(0) {tt, i ->
 						val slv = minOf(i*100, 999)
 						receiver.drawScoreNum(
 							engine, 0, 3+i, "%3d-%3d %s".format(slv, slv+99, bestSectionTime[i][goalType].toTimeStr),

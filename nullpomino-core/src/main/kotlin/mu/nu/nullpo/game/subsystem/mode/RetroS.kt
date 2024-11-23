@@ -68,7 +68,7 @@ class RetroS:AbstractMode() {
 	/** PowerOn Pattern on/off */
 	private var powerOn:Boolean by DelegateMenuItem(itemPower)
 
-	override val menu = MenuList("retromania",itemMode,itemPower,itemLevel,itemBig)
+	override val menu = MenuList("retromania", itemMode, itemPower, itemLevel, itemBig)
 	/** Version of this mode */
 	private var version = 0
 
@@ -150,12 +150,12 @@ class RetroS:AbstractMode() {
 	 * @param engine GameEngine object
 	 */
 	override fun setSpeed(engine:GameEngine) {
-		val lv = maxOf(0, minOf(engine.statistics.level, tableDenominator[gameType].size-1))
+		val lv = engine.statistics.level.coerceIn(0, tableDenominator[gameType].size-1)
 
 		engine.speed.gravity = 1
 		engine.speed.denominator = tableDenominator[gameType][lv]
 
-		owner.musMan.bgm = BGM.RetroS(maxOf(0, minOf(engine.statistics.level/6, 5)))
+		owner.musMan.bgm = BGM.RetroS((engine.statistics.level/6).coerceIn(0, 5))
 	}
 
 	/** Main routine for game setup screen */

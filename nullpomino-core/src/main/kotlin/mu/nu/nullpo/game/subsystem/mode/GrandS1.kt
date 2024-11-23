@@ -200,7 +200,7 @@ class GrandS1:AbstractGrand() {
 	override fun startGame(engine:GameEngine) {
 		val lv = startLevel*100
 		engine.statistics.level = lv
-		nextSecLv = maxOf(100, minOf(lv+100, 999))
+		nextSecLv = (lv+100).coerceIn(100, 999)
 
 		owner.bgMan.bg = engine.statistics.level/100
 
@@ -241,7 +241,7 @@ class GrandS1:AbstractGrand() {
 					// Section Time
 					receiver.drawScoreFont(engine, 0, 2, "SECTION TIME", COLOR.BLUE)
 
-					val totalTime = (0..<sectionMax).fold(0) { tt, i ->
+					val totalTime = (0..<sectionMax).fold(0) {tt, i ->
 						val slv = minOf(i*100, 999)
 						receiver.drawScoreNum(
 							engine, 0, 3+i, "%3d-%3d %s".format(slv, slv+99, bestSectionTime[i].toTimeStr), sectionIsNewRecord[i]
@@ -364,7 +364,7 @@ class GrandS1:AbstractGrand() {
 			// Level up
 			val lb = engine.statistics.level
 			val sec = lb/100
-			levelUp(engine, li+maxOf(0, minOf(2, ev.b2b)))
+			levelUp(engine, li+ev.b2b.coerceIn(0, 2))
 			if(engine.statistics.level>=999) {
 				// Ending
 				engine.playSE("endingstart")
@@ -516,7 +516,7 @@ class GrandS1:AbstractGrand() {
 				}
 			}
 			2 -> {
-				receiver.drawMenuNano(engine, 0, 1.5f, "MEDAL", COLOR.RED,.5f)
+				receiver.drawMenuNano(engine, 0, 1.5f, "MEDAL", COLOR.RED, .5f)
 				receiver.drawMenuMedal(engine, 2, 2, "AC", medalAC)
 				receiver.drawMenuMedal(engine, 5, 2, "ST", medalST)
 				receiver.drawMenuMedal(engine, 8, 2, "SK", medalSK)

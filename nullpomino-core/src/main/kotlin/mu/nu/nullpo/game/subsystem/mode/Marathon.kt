@@ -81,9 +81,10 @@ class Marathon:NetDummyMode() {
 	private val rankingTime = List(RANKING_TYPE) {MutableList(rankingMax) {-1}}
 
 	override val propRank
-		get() = rankMapOf(rankingScore.mapIndexed {a, x -> "$a.score" to x}+
-			rankingLines.mapIndexed {a, x -> "$a.lines" to x}+
-			rankingTime.mapIndexed {a, x -> "$a.time" to x})
+		get() = rankMapOf(
+			rankingScore.mapIndexed {a, x -> "$a.score" to x}+
+				rankingLines.mapIndexed {a, x -> "$a.lines" to x}+
+				rankingTime.mapIndexed {a, x -> "$a.time" to x})
 
 	// Mode name
 	override val name = "Marathon"
@@ -118,7 +119,7 @@ class Marathon:NetDummyMode() {
 	 */
 	override fun setSpeed(engine:GameEngine) {
 		val goal = tableGameClearLines[goalType]
-		val lv = minOf(maxOf(engine.statistics.lines, startLevel*10), goal)
+		val lv = engine.statistics.lines.coerceIn(startLevel*10, goal)
 		val sLv =
 			maxOf(
 				0, minOf(
@@ -140,8 +141,8 @@ class Marathon:NetDummyMode() {
 		engine.speed.are = maxOf(0, minOf(20-ln/30, 50-ln/3))
 		engine.speed.areLine = maxOf(0, minOf(20-ln/30, 50-ln/3))
 		engine.speed.lineDelay = maxOf(0, minOf(30-ln/10, 35-ln/5, 50-ln/3))
-		engine.speed.lockDelay = maxOf(18, minOf(48, 60-ln/7))
-		engine.speed.das = maxOf(6, minOf(14, 21-ln/10))
+		engine.speed.lockDelay = (60-ln/7).coerceIn(18, 48)
+		engine.speed.das = (21-ln/10).coerceIn(6, 14)
 
 	}
 
@@ -397,7 +398,8 @@ class Marathon:NetDummyMode() {
 
 	/** NET: Parse Received [message] as in-game stats of [engine] */
 	override fun netRecvStats(engine:GameEngine, message:List<String>) {
-		listOf<(String)->Unit>({}, {}, {}, {},
+		listOf<(String)->Unit>(
+			{}, {}, {}, {},
 			{engine.statistics.scoreLine = it.toInt()},
 			{engine.statistics.scoreSD = it.toInt()},
 			{engine.statistics.scoreHD = it.toInt()},

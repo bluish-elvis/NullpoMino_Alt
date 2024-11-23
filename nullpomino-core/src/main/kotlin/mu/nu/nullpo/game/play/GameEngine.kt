@@ -2117,7 +2117,7 @@ class GameEngine(
 						fpf = nowPieceBottomY-nowPieceY
 						if(nowPieceY!=nowPieceBottomY) {
 							nowPieceY = nowPieceBottomY
-							playSE("harddrop", 1f, maxOf(.75f, minOf(1f, fpf*2f/field.height)))
+							playSE("harddrop", 1f, (fpf*2f/field.height).coerceIn(.75f, 1f))
 						}
 						harddropContinuousUse = !ruleOpt.harddropLock
 						owner.mode?.afterHardDropFall(this, harddropFall)

@@ -30,7 +30,6 @@
  */
 package mu.nu.nullpo.game.component
 
-import mu.nu.nullpo.game.component.Block.COLOR.entries
 import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.util.GeneralUtil.aNum
 import mu.nu.nullpo.util.GeneralUtil.toAlphaNum
@@ -204,22 +203,19 @@ import mu.nu.nullpo.util.GeneralUtil.toAlphaNum
 	fun toChar():Char = cint.toAlphaNum
 
 	override fun toString():String = "${toChar()}"
-	override fun hashCode():Int {
-		var result = color?.hashCode() ?: 0
-		result = 31*result+type.hashCode()
-		result = 31*result+skin
-		result = 31*result+aint
-		result = 31*result+elapsedFrames
-		result = 31*result+darkness.hashCode()
-		result = 31*result+alpha.hashCode()
-		result = 31*result+placeNum
-		result = 31*result+(item?.hashCode() ?: 0)
-		result = 31*result+hard
-		result = 31*result+countdown
-		result = 31*result+secondaryColor.hashCode()
-		result = 31*result+bonusValue
-		return result
-	}
+	override fun hashCode():Int = (color?.hashCode() ?: 0)
+		.let {31*it+type.hashCode()}
+		.let {31*it+skin}
+		.let {31*it+aint}
+		.let {31*it+elapsedFrames}
+		.let {31*it+darkness.hashCode()}
+		.let {31*it+alpha.hashCode()}
+		.let {31*it+placeNum}
+		.let {31*it+(item?.hashCode() ?: 0)}
+		.let {31*it+hard}
+		.let {31*it+countdown}
+		.let {31*it+secondaryColor.hashCode()}
+		.let {31*it+bonusValue}
 
 	enum class TYPE(val pos:Byte = 0) { BLOCK, GEM, SQUARE_GOLD, SQUARE_SILVER, ITEM }
 	enum class COLOR(val color:Boolean = true) {

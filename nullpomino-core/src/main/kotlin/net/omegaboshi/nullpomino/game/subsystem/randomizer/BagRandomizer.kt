@@ -62,7 +62,7 @@ open class BagRandomizer:Randomizer() {
 				i = tmp.indices.random(r)
 				c++
 			} while(if(tmp.size==bagLen) !isPieceSZOOnly&&noSZO&&isFirst&&(tmp[i]==Piece.PIECE_S||tmp[i]==Piece.PIECE_Z||tmp[i]==Piece.PIECE_O)
-				else c<limitPrev&&bag.takeLast(minOf(4, maxOf(0, tmp.size-1))).contains(tmp[i]))
+				else c<limitPrev&&bag.takeLast((tmp.size-1).coerceIn(0, 4)).contains(tmp[i]))
 			isFirst = false
 			bag += tmp.removeAt(i)
 		}

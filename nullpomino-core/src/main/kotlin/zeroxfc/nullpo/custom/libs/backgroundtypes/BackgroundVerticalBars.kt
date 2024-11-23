@@ -99,11 +99,10 @@ class BackgroundVerticalBars<T>(img:ResourceImage<T>, pulseFrames:Int, sliceSize
 	override fun update() {
 		currentPulsePhase = (currentPulsePhase+1)%pulsePhaseMax
 		for(i in chunks.indices) {
-			var j = i
-			if(reverse) j = chunks.size-i-1
+			val j = if(reverse) chunks.size-i-1 else i
 			val ppu = (currentPulsePhase+i)%pulsePhaseMax
-			val baseScale = if(pulseBaseScale==null) BASE_SCALE else pulseBaseScale!!
-			val scaleVariance = if(pulseScaleVariance==null) SCALE_VARIANCE else pulseScaleVariance!!
+			val baseScale = pulseBaseScale ?: BASE_SCALE
+			val scaleVariance = pulseScaleVariance ?: SCALE_VARIANCE
 			val newScale = minOf(1.0, baseScale+sin(TWO_PI*(ppu.toDouble()/pulsePhaseMax))*scaleVariance)
 			chunks[j].scale = listOf(newScale.toFloat(), 1f)
 		}
@@ -120,10 +119,10 @@ class BackgroundVerticalBars<T>(img:ResourceImage<T>, pulseFrames:Int, sliceSize
 		priorityList.sortWith {c1:ImageChunk, c2:ImageChunk ->
 			c1.scale[0].compareTo(c2.scale[0])
 		}
-		val baseScale = if(pulseBaseScale==null) BASE_SCALE else pulseBaseScale!!
-		if(almostEqual(baseScale.toDouble(), 1.0, 0.005)) {
+		val baseScale = pulseBaseScale ?: BASE_SCALE
+		if(baseScale.toDouble().almostEqual(1.0, 0.005)) {
 			img.draw()
-			priorityList.removeAll {almostEqual(it.scale[0].toDouble(), 1.0, 0.005)}
+			priorityList.removeAll {it.scale[0].toDouble().almostEqual(1.0, 0.005)}
 		}
 		priorityList.forEach {i ->
 			val pos = i.drawLocation

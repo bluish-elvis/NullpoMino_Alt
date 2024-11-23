@@ -69,7 +69,8 @@ class RetroA:AbstractMode() {
 	/** Next level lines */
 	private var levelLines = 0
 
-	private val itemMode = StringsMenuItem("mode", "GAME TYPE", COLOR.BLUE,
+	private val itemMode = StringsMenuItem(
+		"mode", "GAME TYPE", COLOR.BLUE,
 		GAMETYPE.RACE200.ordinal, GAMETYPE.entries.map {it.name})
 	private var gameMode:Int by DelegateMenuItem(itemMode)
 	/** Selected game type */
@@ -154,7 +155,7 @@ class RetroA:AbstractMode() {
 	 * @param engine GameEngine object
 	 */
 	override fun setSpeed(engine:GameEngine) {
-		val lv = maxOf(0, minOf(engine.statistics.level, tableSpeed.size-1))
+		val lv = engine.statistics.level.coerceIn(0, tableSpeed.size-1)
 		engine.speed.replace(tableSpeed[lv])
 		//engine.speed.lineDelay = if(lv>=10) 20 else 25
 	}
@@ -284,7 +285,7 @@ class RetroA:AbstractMode() {
 
 			levelLines += if(gameType==GAMETYPE.PRESSURE) 5 else 10
 
-			val lv = maxOf(0, minOf(engine.statistics.level, 19))
+			val lv = engine.statistics.level.coerceIn(0, 19)
 
 			owner.bgMan.nextBg = lv
 			owner.musMan.bgm = BGM.RetroA(maxOf(lv/4, 4))

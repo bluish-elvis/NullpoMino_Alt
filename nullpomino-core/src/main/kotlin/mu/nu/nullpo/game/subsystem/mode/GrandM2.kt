@@ -284,7 +284,7 @@ class GrandM2:AbstractGrand() {
 		engine.statistics.level = lv
 
 		decTemp = 0
-		nextSecLv = maxOf(100, minOf(999, lv+100))
+		nextSecLv = (lv+100).coerceIn(100, 999)
 
 		owner.bgMan.bg = 10+startLevel/100
 
@@ -489,7 +489,7 @@ class GrandM2:AbstractGrand() {
 			val index = minOf(gradeInternal, tableGradePoint[li-1].size-1)
 			val basePoint = tableGradePoint[li-1][index]
 
-			val indexCombo = maxOf(0, minOf(engine.combo+if(ev.b2b>0) 0 else -1, tableGradeComboBonus[li-1].size-1))
+			val indexCombo = (engine.combo+if(ev.b2b>0) 0 else -1).coerceIn(0, tableGradeComboBonus[li-1].size-1)
 			val comboBonus = tableGradeComboBonus[li-1][indexCombo]
 
 			val levelBonus = 1+engine.statistics.level/250
@@ -518,7 +518,7 @@ class GrandM2:AbstractGrand() {
 			// Level up
 			val levelb = engine.statistics.level
 			val section = levelb/100
-			levelUp(engine, li+maxOf(0, minOf(2, ev.b2b)))
+			levelUp(engine, li+(ev.b2b).coerceIn(0, 2))
 
 			if(engine.statistics.level>=999) {
 				// Ending
@@ -665,7 +665,7 @@ class GrandM2:AbstractGrand() {
 
 		when(engine.statc[1]) {
 			0 -> {
-				val gcolor = when (rollClear) {
+				val gcolor = when(rollClear) {
 					1, 3 -> COLOR.GREEN
 					2, 4 -> COLOR.ORANGE
 					else -> COLOR.WHITE
@@ -697,7 +697,7 @@ class GrandM2:AbstractGrand() {
 				}
 			}
 			2 -> {
-				receiver.drawMenuNano(engine, 0, 1.5f, "MEDAL", COLOR.BLUE,.5f)
+				receiver.drawMenuNano(engine, 0, 1.5f, "MEDAL", COLOR.BLUE, .5f)
 				receiver.drawMenuMedal(engine, 2, 2, "AC", medalAC)
 				receiver.drawMenuMedal(engine, 5, 2, "ST", medalST)
 				receiver.drawMenuMedal(engine, 8, 2, "SK", medalSK)

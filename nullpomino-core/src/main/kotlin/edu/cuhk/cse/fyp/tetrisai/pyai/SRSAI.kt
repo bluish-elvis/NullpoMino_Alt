@@ -37,7 +37,7 @@ SRSAI - PvP AI Class
 class SRSAI:PyAI("SRSAI", scriptPath, SRSAI::class.java) {
 	companion object {
 		/** Log  */
-		var log:Logger = Logger.getLogger(SRSAI::class.java)
+		val log:Logger = Logger.getLogger(SRSAI::class.java)
 		private var scriptPath = "pyai-scripts/PvPAI.py"
 	}
 }

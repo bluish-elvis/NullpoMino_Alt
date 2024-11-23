@@ -45,7 +45,6 @@ abstract class BaseFontMedal:BaseFont {
 		const val MB = H-PT
 	}
 
-
 	protected fun processTxt(x:Float, y:Float, str:String, tier:Int, scale:Float,
 		draw:(x:Float, y:Float, dx:Float, dy:Float, sx:Int, sy:Int, sw:Int, sh:Int)->Unit) {
 		val sy = maxOf(0, 4-tier)*H
@@ -79,7 +78,7 @@ abstract class BaseFontMedal:BaseFont {
 		{dx:Float, dy:Float, w:Float, h:Float, sx:Int, sy:Int, sw:Int, sh:Int ->
 			getImg(0).draw(
 				dx, dy, w, h, sx, sy, sw, sh,
-				alpha, (minOf(1f, maxOf(0f, 1f-darkness))).let {brit -> Triple(brit, brit, brit)}
+				alpha, (1f-darkness).coerceIn(0f, 1f).let {brit -> Triple(brit, brit, brit)}
 			)
 		}
 

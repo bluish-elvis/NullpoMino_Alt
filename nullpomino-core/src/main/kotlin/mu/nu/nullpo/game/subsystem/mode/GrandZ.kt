@@ -279,7 +279,7 @@ class GrandZ:AbstractGrand() {
 	override fun startGame(engine:GameEngine) {
 		val lv = if(gametype==2) 0 else startLevel
 		engine.statistics.level = lv*100
-		nextSecLv = maxOf(100, minOf(lv*100+100, 999))
+		nextSecLv = (lv*100+100).coerceIn(100, 999)
 		owner.bgMan.bg = 30+startLevel
 		engine.big = big
 
@@ -616,7 +616,7 @@ class GrandZ:AbstractGrand() {
 				receiver.drawMenuNum(engine, 2, 15, sectionAvgTime.toTimeStr)
 			}
 		} else if(engine.statc[1]==2) {
-			receiver.drawMenuNano(engine, 0, 1.5f, "MEDAL", COLOR.RED,.5f)
+			receiver.drawMenuNano(engine, 0, 1.5f, "MEDAL", COLOR.RED, .5f)
 			receiver.drawMenuMedal(engine, 2, 2, "AC", medalAC)
 			receiver.drawMenuMedal(engine, 5, 2, "ST", medalST)
 			receiver.drawMenuMedal(engine, 8, 2, "SK", medalSK)

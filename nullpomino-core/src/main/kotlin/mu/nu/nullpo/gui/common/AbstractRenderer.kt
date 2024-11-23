@@ -171,7 +171,7 @@ abstract class AbstractRenderer:EventReceiver() {
 	}
 
 	class FontBadge(type:Int) {
-		val type = maxOf(0, minOf(b.size-1, type))
+		val type = type.coerceIn(0, b.size-1)
 		val sx = listOf(0, 10, 20, 30, 0, 10, 20, 30, 0, 20, 40, 0)[type]
 		val sy = listOf(0, 0, 0, 0, 14, 14, 14, 14, 24, 24, 0, 44)[type]
 		val w = listOf(10, 10, 10, 10, 10, 10, 10, 10, 20, 20, 32, 64)[type]
@@ -184,16 +184,16 @@ abstract class AbstractRenderer:EventReceiver() {
 
 	protected abstract fun drawBG(engine:GameEngine)
 	protected abstract fun drawFrameSpecific(x:Float, y:Float, engine:GameEngine)
-	private fun drawFrame(x:Float, y:Float, engine:GameEngine, inside:()->Unit) {
+	private fun drawFrame(lX:Float, tY:Float, engine:GameEngine, inside:()->Unit) {
 		// Upと下
 		val s = engine.blockSize
 		val fieldW = engine.field.width// ?: Field.DEFAULT_WIDTH
 		val fieldH = engine.field.height//?: Field.DEFAULT_HEIGHT
 		val fW = fieldW*s
 		val fH = fieldH*s
-		val lX = x+engine.frameX
+		val cX = lX+fW/2f
 		val rX = lX+fW
-		val tY = y+engine.frameY
+		val cY = tY+fH/2f
 		val bY = tY+fH
 		// NEXT area background
 		if(showBG&&darkNextArea) {
@@ -251,15 +251,15 @@ abstract class AbstractRenderer:EventReceiver() {
 			} else if(showBG) drawRect(lX, tY, 0f+fW, 0f+fH, 0, fieldBgBright)
 
 		inside()
-		drawFrameSpecific(x, y, engine)
+		drawFrameSpecific(lX, tY, engine)
 
 		when(engine.frameColor) {
 			GameEngine.FRAME_SKIN_GB -> {
-				drawRect(x.toInt(), y.toInt(), fW, fH, 0x888888)
+				drawRect(lX.toInt(), tY.toInt(), fW, fH, 0x888888)
 				val fi = resources.imgFrameOld[0]
 				for(i in 0..fieldH) {
-					val zx = x.toInt()-s
-					val zy = y.toInt()+i*s
+					val zx = lX.toInt()-s
+					val zy = tY.toInt()+i*s
 					fi.draw(zx, zy, zx+s, zy+s, 0, 0, 16, 16)
 					fi.draw(zx+fW+s, zy, zx+fW+s*2, zy+s, 0, 0, 16, 16)
 					if(i==fieldH)
@@ -268,12 +268,12 @@ abstract class AbstractRenderer:EventReceiver() {
 				}
 			}
 			GameEngine.FRAME_SKIN_SG -> {
-				drawRect(x.toInt(), y.toInt(), fW, fH, 0)
+				drawRect(lX.toInt(), tY.toInt(), fW, fH, 0)
 
 				val fi = resources.imgFrameOld[1]
 				val mW = fW+s*2
-				fi.draw(x-s, y-s, x-s+mW/2, y-s+(fieldH+2)*s, 0, 0, 96, 352)
-				fi.draw(x-s+mW, y-s, x-s+mW/2, y-s+(fieldH+2)*s, 0, 0, 96, 352)
+				fi.draw(lX-s, tY-s, lX-s+mW/2, tY-s+(fieldH+2)*s, 0, 0, 96, 352)
+				fi.draw(lX-s+mW, tY-s, lX-s+mW/2, tY-s+(fieldH+2)*s, 0, 0, 96, 352)
 			}
 			GameEngine.FRAME_SKIN_HEBO -> {
 				val fi = resources.imgFrameOld[2]
@@ -304,8 +304,8 @@ abstract class AbstractRenderer:EventReceiver() {
 		if(showMeter) {
 			// 右Meter
 			val mH = fH+s
-			val mainH = mH*maxOf(0f, minOf(1f, engine.meterValue))
-			val subH = mH*maxOf(0f, minOf(1f, engine.meterValueSub))
+			val mainH = mH*engine.meterValue.coerceIn(0f, 1f)
+			val subH = mH*engine.meterValueSub.coerceIn(0f, 1f)
 			val mW = maxOf(2f, s/4f)
 			val zx = rX+s/2f-mW/2f
 			val zy = tY-s/2f
@@ -1256,13 +1256,13 @@ abstract class AbstractRenderer:EventReceiver() {
 				//			var g = meterColor/256%256
 				//			var b = meterColor%256
 				GameEngine.METER_COLOR_LEVEL ->
-					(0xFF*maxOf(0f, minOf(value*3-1, 1f))).toInt()*0x10000+
-						(0xFF*maxOf(0f, minOf(3-value*3f, 1f))).toInt()*0x100+
-						(0xFF*maxOf(0f, minOf((1-value*3), 1f))).toInt()
+					(0xFF*(value*3-1).coerceIn(0f, 1f)).toInt()*0x10000+
+						(0xFF*(3-value*3f).coerceIn(0f, 1f)).toInt()*0x100+
+						(0xFF*(1-value*3).coerceIn(0f, 1f)).toInt()
 				GameEngine.METER_COLOR_LIMIT -> //red<yellow<green<cyan
-					(0xFF*maxOf(0f, minOf((2-value*3), 1f))).toInt()*0x10000+
-						(0xFF*maxOf(0f, minOf(value*3, 1f))).toInt()*0x100+
-						(0xFF*maxOf(0f, minOf((value*3f-2f), 1f))).toInt()
+					(0xFF*(2-value*3).coerceIn(0f, 1f)).toInt()*0x10000+
+						(0xFF*(value*3).coerceIn(0f, 1f)).toInt()*0x100+
+						(0xFF*(value*3f-2f).coerceIn(0f, 1f)).toInt()
 				else -> meterColor
 			}
 	}

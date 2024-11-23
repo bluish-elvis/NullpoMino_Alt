@@ -108,7 +108,8 @@ class MarathonDrill:NetDummyMode() {
 	private val rankingDepth = List(GOALTYPE_MAX) {MutableList(rankingMax) {0}}
 
 	override val propRank
-		get() = rankMapOf(rankingScore.mapIndexed {a, x -> "$a.stage" to x}+rankingLines.mapIndexed {a, x -> "$a.lines" to x}+rankingDepth.mapIndexed {a, x -> "$a.depth" to x}/*+
+		get() = rankMapOf(
+			rankingScore.mapIndexed {a, x -> "$a.stage" to x}+rankingLines.mapIndexed {a, x -> "$a.lines" to x}+rankingDepth.mapIndexed {a, x -> "$a.depth" to x}/*+
 				rankingTime.mapIndexed {a, x -> "$a.time" to x}*/
 		)
 
@@ -152,7 +153,7 @@ class MarathonDrill:NetDummyMode() {
 	 * @param engine GameEngine
 	 */
 	override fun setSpeed(engine:GameEngine) {
-		val lv = maxOf(0, minOf(engine.statistics.level, tableSpeeds.size-1))
+		val lv = engine.statistics.level.coerceIn(0, tableSpeeds.size-1)
 		engine.speed.apply {
 			replace(tableSpeeds[lv])
 			das = this@MarathonDrill.das
@@ -531,7 +532,8 @@ class MarathonDrill:NetDummyMode() {
 
 	/** NET: Parse Received [message] as in-game stats of [engine] */
 	override fun netRecvStats(engine:GameEngine, message:List<String>) {
-		listOf<(String)->Unit>({},
+		listOf<(String)->Unit>(
+			{},
 			{},
 			{},
 			{},

@@ -45,7 +45,7 @@ For I = 0 To 29: Sea(I) = Rnd * 640: Next I*/
 	/** Speed 0f-2f*/
 	private var spdN = 0f
 	private var waveH = 0f; private set
-	private fun waveMag(i:Int) = maxOf(0.1f,(1.15f.pow(i)-spdN/2)*(1.4f-spdN*.2f))
+	private fun waveMag(i:Int) = maxOf(0.1f, (1.15f.pow(i)-spdN/2)*(1.4f-spdN*.2f))
 	override fun update() {
 		tick++
 		if(tick>=180) tick = 0
@@ -82,8 +82,8 @@ For I = 0 To 29: Sea(I) = Rnd * 640: Next I*/
 			} else {
 				//ocean
 				val j = i-1
-				val waveH = minOf(maxOf(0f, spdN-.5f), 2f)
-				val wy = if(j>0)minOf(maxOf(0f,j*8+((s/waveMag(j))-1)*j*waveH),232f) else 0f
+				val waveH = (spdN-.5f).coerceIn(0f, 2f)
+				val wy = if(j>0) (j*8+((s/waveMag(j))-1)*j*waveH).coerceIn(0f, 232f) else 0f
 				val x1 = (x+s).let {it+if(it<0) 640 else 0}%640
 				img.draw(0f, 240f+j*8, x1, 240+wy, 640f, 248+wy)
 				img.draw(640-x1, 240f+j*8, 0f, 240+wy, x1, 248+wy)

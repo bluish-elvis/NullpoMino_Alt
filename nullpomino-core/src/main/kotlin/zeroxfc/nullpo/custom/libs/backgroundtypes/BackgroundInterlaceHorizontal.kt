@@ -85,12 +85,10 @@ class BackgroundInterlaceHorizontal<T>(img:ResourceImage<T>, rowHeight:Int = DEF
 		pulseTimer++
 		if(pulseTimer>=pulseTimerMax) pulseTimer = 0
 		chunks.indices.forEach {i ->
-			var j = i
-			if(reverse) j = chunks.size-1-i
+			val j = if(reverse) chunks.size-1-i else i
 			val ppu = (pulseTimer+i)%pulseTimerMax
 			val s = sin(PI*(ppu.toDouble()/pulseTimerMax))
-			var scale = baseScale+scaleVariance*s
-			if(scale<1.0) scale = 1.0
+			val scale = (baseScale+scaleVariance*s).coerceAtLeast(1.0)
 			chunks[j].scale = listOf(scale.toFloat(), 1f)
 		}
 	}
@@ -108,7 +106,7 @@ class BackgroundInterlaceHorizontal<T>(img:ResourceImage<T>, rowHeight:Int = DEF
 		update()
 	}
 
-	override fun draw(render: AbstractRenderer) {
+	override fun draw(render:AbstractRenderer) {
 		chunks.forEach {i ->
 			val pos = i.drawLocation
 			val ddim = i.drawDimensions

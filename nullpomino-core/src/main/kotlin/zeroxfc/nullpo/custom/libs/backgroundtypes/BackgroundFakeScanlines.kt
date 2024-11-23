@@ -40,6 +40,7 @@ package zeroxfc.nullpo.custom.libs.backgroundtypes
 import mu.nu.nullpo.gui.common.AbstractRenderer
 import mu.nu.nullpo.gui.common.ResourceImage
 import mu.nu.nullpo.gui.common.bg.AbstractBG
+import mu.nu.nullpo.util.GeneralUtil.toInt
 import zeroxfc.nullpo.custom.libs.AnchorPoint
 import kotlin.random.Random
 
@@ -49,7 +50,7 @@ class BackgroundFakeScanlines<T>(img:ResourceImage<T>):AbstractBG<T>(img) {
 	private var chunks:Array<ImageChunk> = emptyArray()
 	private var phase = 0
 
-	init{
+	init {
 		setup()
 	}
 
@@ -79,21 +80,19 @@ class BackgroundFakeScanlines<T>(img:ResourceImage<T>):AbstractBG<T>(img) {
 
 	override fun draw(render:AbstractRenderer) {
 		for(id in chunks.indices) {
-			var col = 1f-BASE_LUMINANCE_OFFSET
-			if(id and 2==0) col -= BASE_LUMINANCE_OFFSET
-			if(phase>=PERIOD/2&&(id==phase-PERIOD/2||id==1+phase-PERIOD/2||id==-1+phase-PERIOD/2))
-				col += BASE_LUMINANCE_OFFSET
-
-
-			// Randomness offset
-			col -= (.025f*colorRandom.nextFloat())
-			val pos = chunks[id].drawLocation.map{it.toFloat()}
-			val ddim = chunks[id].drawDimensions.map{it.toFloat()}
-			val sloc = chunks[id].sourceLocation.map{it.toFloat()}
-			val sdim = chunks[id].sourceDimensions.map{it.toFloat()}
-			img.draw( pos[0], pos[1], ddim[0], ddim[1], sloc[0], sloc[1], sdim[0], sdim[1], 1f, Triple(col, col, col))
+			val col = (1f-BASE_LUMINANCE_OFFSET).let {
+				it-BASE_LUMINANCE_OFFSET*(id and 2==0).toInt()+
+					BASE_LUMINANCE_OFFSET*(phase>=PERIOD/2&&(id==phase-PERIOD/2||id==1+phase-PERIOD/2||id==-1+phase-PERIOD/2)).toInt()
+				-(.025f*colorRandom.nextFloat())// Randomness offset
+			}
+			val pos = chunks[id].drawLocation.map {it.toFloat()}
+			val ddim = chunks[id].drawDimensions.map {it.toFloat()}
+			val sloc = chunks[id].sourceLocation.map {it.toFloat()}
+			val sdim = chunks[id].sourceDimensions.map {it.toFloat()}
+			img.draw(pos[0], pos[1], ddim[0], ddim[1], sloc[0], sloc[1], sdim[0], sdim[1], 1f, Triple(col, col, col))
 		}
 	}
+
 	companion object {
 		private const val AMT = 480/2
 		private const val PERIOD = 480 // Frames

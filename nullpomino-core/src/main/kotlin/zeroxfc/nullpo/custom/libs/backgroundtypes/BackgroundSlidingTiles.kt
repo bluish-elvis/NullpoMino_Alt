@@ -103,9 +103,7 @@ class BackgroundSlidingTiles(private val custom:ResourceImage<*>?, directionRand
 				}
 			}
 		} else {
-			var s = 16
-			if(size<0) s = 8
-			if(size>0) s = 32
+			val s = if(size<0) 8 else if(size>0) 32 else 16
 			width = s
 			height = s
 			gridChunks = Array(480/s+2) {y ->

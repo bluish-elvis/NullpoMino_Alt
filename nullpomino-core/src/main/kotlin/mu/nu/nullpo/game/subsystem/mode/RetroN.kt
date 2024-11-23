@@ -150,7 +150,7 @@ class RetroN:AbstractMode() {
 
 		owner.bgMan.bg = startLevel
 		if(owner.bgMan.bg>19) owner.bgMan.bg = 19
-		lvLines = minOf((startLevel+1)*10, maxOf(100, (startLevel-5)*10))
+		lvLines = ((startLevel-5)*10).coerceIn(minOf((startLevel+1)*10,100), 100)
 		engine.frameColor = GameEngine.FRAME_SKIN_GB
 	}
 
@@ -158,19 +158,15 @@ class RetroN:AbstractMode() {
 	 * @param engine GameEngine object
 	 */
 	override fun setSpeed(engine:GameEngine) {
-		var lv = engine.statistics.level
-
+		val lv = engine.statistics.level
+			.coerceIn(0, if(speedType>0) tableDenominatorHard.size-1 else tableDenominator.size-1)
 		engine.owSkin = if(speedType==2!=lv>=10) 8 else 9
 		if(speedType>0) {
-			lv = maxOf(0, minOf(lv, tableDenominatorHard.size-1))
-
 			engine.speed.gravity = if(speedType>1) 60000 else 50007
 			engine.speed.denominator = tableDenominatorHard[lv]*60000
 			engine.speed.das = 12
 			engine.owARR = 4
 		} else {
-			lv = maxOf(0, minOf(lv, tableDenominator.size-1))
-
 			engine.speed.gravity = 601
 			engine.speed.denominator = tableDenominator[lv]*600
 			engine.speed.das = 16
@@ -181,7 +177,7 @@ class RetroN:AbstractMode() {
 
 	/** Main routine for game setup screen */
 	override fun onSettingChanged(engine:GameEngine) {
-		lvLines = minOf((startLevel+1)*10, maxOf(100, (startLevel-5)*10))
+		lvLines = ((startLevel-5)*10).coerceIn(minOf((startLevel+1)*10,100), 100)
 		super.onSettingChanged(engine)
 	}
 
@@ -205,7 +201,7 @@ class RetroN:AbstractMode() {
 				createFieldIfNeeded()
 			}
 			fillGarbage(engine, startHeight)
-			lvLines = minOf((startLevel+1)*10, maxOf(100, (startLevel-5)*10))
+			lvLines = ((startLevel-5)*10).coerceIn(minOf((startLevel+1)*10,100), 100)
 		}
 		return false
 	}
@@ -343,7 +339,7 @@ class RetroN:AbstractMode() {
 			//engine.framecolor = engine.statistics.level
 			if(engine.statistics.level>255) engine.statistics.level = 0
 
-			owner.bgMan.nextBg = maxOf(0, minOf(19, engine.statistics.level))
+			owner.bgMan.nextBg = engine.statistics.level
 
 			setSpeed(engine)
 			engine.playSE("levelup")

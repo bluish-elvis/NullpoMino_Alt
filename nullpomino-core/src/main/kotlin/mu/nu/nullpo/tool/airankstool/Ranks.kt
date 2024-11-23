@@ -158,7 +158,7 @@ int n4=0; */
 			var newValue = (ranks[i]-rankMin).toLong()*(Integer.MAX_VALUE-rankMin).toLong()
 			newValue /= (rankMax-rankMin)
 
-			newValue = maxOf(minOf(newValue, (Integer.MAX_VALUE-rankMin).toLong()), 0)
+			newValue = newValue.coerceIn(0, Integer.MAX_VALUE-rankMin.toLong())
 			newValue += rankMin
 			/* if (newValue/pas==0){
 n1++;
@@ -211,7 +211,7 @@ n4++;
 			//System.out.println("piece :"+p+" rank : "+rankForPiece);
 			sum += rankForPiece.toLong()
 		}
-		val result:Int = maxOf(rankMin, minOf(rankMax, (sum/Piece.PIECE_STANDARD_COUNT).toInt()))
+		val result:Int = (sum/Piece.PIECE_STANDARD_COUNT).toInt().coerceIn(rankMin, rankMax)
 		if(result<0) {
 			println("ahhhhhh")
 			return 0
@@ -270,7 +270,7 @@ n4++;
 	}
 
 	fun heightsToSurface(heights:List<Int>) = List(stackWidth-1) {i ->
-		heights[i+1]-maxOf(-maxJump, minOf(maxJump, heights[i]))
+		heights[i+1]-heights[i].coerceIn(-maxJump, maxJump)
 	}
 
 	private fun getRankPieceRotation(surface:List<Int>, surfaceDecodedWork:MutableList<Int>, piece:Int, rotation:Int):Int {

@@ -230,7 +230,7 @@ class GrandBasic:AbstractGrand() {
 	override fun startGame(engine:GameEngine) {
 		engine.statistics.level = startLevel*100
 
-		nextSecLv = minOf(maxOf(100, startLevel*100+100), 999)
+		nextSecLv = (startLevel*100+100).coerceIn(100, 999)
 
 		owner.bgMan.bg = -engine.statistics.level/100-1
 
@@ -382,7 +382,7 @@ class GrandBasic:AbstractGrand() {
 		if(li>=1) {
 			halfMinLine += li
 			val levelb = engine.statistics.level
-			val combobonus = tableHanabiComboBonus[maxOf(0, minOf(ev.combo+if(ev.b2b>0) 0 else -1, tableHanabiComboBonus.size-1))]
+			val combobonus = tableHanabiComboBonus[(ev.combo+if(ev.b2b>0) 0 else -1).coerceIn(0, tableHanabiComboBonus.size-1)]
 
 			if(engine.ending==0) {
 				levelUp(engine, li)

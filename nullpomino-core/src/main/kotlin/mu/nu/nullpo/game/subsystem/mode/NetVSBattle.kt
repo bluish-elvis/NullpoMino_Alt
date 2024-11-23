@@ -277,8 +277,8 @@ class NetVSBattle:NetDummyVSMode() {
 
 			// Combo
 			if(engine.comboType!=GameEngine.COMBO_TYPE_DISABLE) {
-				val cmbindex = maxOf(0, minOf(engine.combo, COMBO_ATTACK_TABLE[attackNumPlayerIndex].size-1))
-				pts[ATTACK_CATEGORY_COMBO] += COMBO_ATTACK_TABLE[attackNumPlayerIndex][cmbindex]
+				val cmbIndex = engine.combo.coerceIn(0, COMBO_ATTACK_TABLE[attackNumPlayerIndex].size-1)
+				pts[ATTACK_CATEGORY_COMBO] += COMBO_ATTACK_TABLE[attackNumPlayerIndex][cmbIndex]
 				lastcombo[pid] = engine.combo
 			}
 

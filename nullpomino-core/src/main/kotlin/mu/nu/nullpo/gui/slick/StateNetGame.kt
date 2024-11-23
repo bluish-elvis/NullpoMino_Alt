@@ -112,7 +112,7 @@ internal class StateNetGame:BasicGameState(), NetLobbyListener {
 		// Mode initialization
 		enterNewMode(null)
 
-		if(Res.bgmPlaying!= BGM.Menu(1)) Res.bgmStart(BGM.Menu(1))
+		if(Res.bgmPlaying!=BGM.Menu(1)) Res.bgmStart(BGM.Menu(1))
 		// Lobby start
 		netLobby.init()
 		netLobby.isVisible = true
@@ -194,7 +194,7 @@ internal class StateNetGame:BasicGameState(), NetLobbyListener {
 						// BGM
 						if(Res.bgmPlaying!=gameManager.musMan.bgm) Res.bgmStart(gameManager.musMan.bgm)
 						if(Res.bgmIsPlaying)
-							container.musicVolume = maxOf(0f, minOf(1f, gameManager.musMan.volume*pCo.audio.bgmVolume/128f)).also {
+							container.musicVolume = (gameManager.musMan.volume*pCo.audio.bgmVolume/128f).coerceIn(0f, 1f).also {
 								if(it<=0f) Res.bgmStop()
 							}
 

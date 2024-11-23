@@ -172,9 +172,9 @@ internal class StateInGame:BasicGameState() {
 			// Initialization for each player
 			it.engine.forEachIndexed {i, e ->
 				// ルール
-				val ruleOpt = try{
+				val ruleOpt = try {
 					Json.decodeFromString(prop.getProperty("$i.rule"))
-				}catch (_:Exception){
+				} catch(_:Exception) {
 					RuleOptions().apply {readProperty(prop, i)}
 				}
 				e.ruleOpt = ruleOpt
@@ -402,7 +402,7 @@ internal class StateInGame:BasicGameState() {
 			if(Res.bgmPlaying!=m.musMan.bgm&&!m.musMan.fadeSW)
 				Res.bgmStart(m.musMan.bgm)
 			if(Res.bgmIsPlaying) c.musicVolume =
-				maxOf(0f, minOf(m.musMan.volume*pCo.audio.bgmVolume/128f, 1f)).also {
+				(m.musMan.volume*pCo.audio.bgmVolume/128f).coerceIn(0f, 1f).also {
 					if(it<=0f) Res.bgmStop()
 				}
 

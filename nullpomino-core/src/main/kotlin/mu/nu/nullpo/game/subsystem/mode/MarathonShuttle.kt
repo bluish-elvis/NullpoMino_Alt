@@ -35,11 +35,7 @@ import mu.nu.nullpo.game.event.EventReceiver.COLOR
 import mu.nu.nullpo.game.event.ScoreEvent
 import mu.nu.nullpo.game.net.NetUtil
 import mu.nu.nullpo.game.play.GameEngine
-import mu.nu.nullpo.game.subsystem.mode.menu.BooleanMenuItem
-import mu.nu.nullpo.game.subsystem.mode.menu.DelegateMenuItem
-import mu.nu.nullpo.game.subsystem.mode.menu.LevelMenuItem
-import mu.nu.nullpo.game.subsystem.mode.menu.MenuList
-import mu.nu.nullpo.game.subsystem.mode.menu.StringsMenuItem
+import mu.nu.nullpo.game.subsystem.mode.menu.*
 import mu.nu.nullpo.util.CustomProperties
 import mu.nu.nullpo.util.GeneralUtil.toTimeStr
 import kotlin.math.ceil
@@ -112,9 +108,10 @@ class MarathonShuttle:NetDummyMode() {
 	private val rankingTime = List(RANKING_TYPE) {MutableList(rankingMax) {-1}}
 
 	override val propRank
-		get() = rankMapOf(rankingScore.mapIndexed {a, x -> "$a.score" to x}+
-			rankingLines.mapIndexed {a, x -> "$a.lines" to x}+
-			rankingTime.mapIndexed {a, x -> "$a.time" to x})
+		get() = rankMapOf(
+			rankingScore.mapIndexed {a, x -> "$a.score" to x}+
+				rankingLines.mapIndexed {a, x -> "$a.lines" to x}+
+				rankingTime.mapIndexed {a, x -> "$a.time" to x})
 
 	/* Mode name */
 	override val name = "MARATHON ShuttleRun"
@@ -208,7 +205,7 @@ class MarathonShuttle:NetDummyMode() {
 	 * @param engine GameEngine
 	 */
 	override fun setSpeed(engine:GameEngine) {
-		val lv = maxOf(0, minOf(engine.statistics.level, tableGravity.size-1))
+		val lv = engine.statistics.level.coerceIn(0, tableGravity.size-1)
 
 		engine.speed.gravity = tableGravity[lv]
 		engine.speed.denominator = tableDenominator[lv]
@@ -291,14 +288,16 @@ class MarathonShuttle:NetDummyMode() {
 
 			val b = goalType==GAMETYPE_10MIN_EASY||goalType==GAMETYPE_10MIN_HARD
 			val elapsed = engine.statistics.time.let {if(b) TIMELIMIT_10MIN-it else it}
-			receiver.drawScoreNum(engine, 0, 12, elapsed.toTimeStr,
+			receiver.drawScoreNum(
+				engine, 0, 12, elapsed.toTimeStr,
 				when {
-				!b -> COLOR.WHITE
-				elapsed<10*60 -> COLOR.RED
-				elapsed<30*60 -> COLOR.ORANGE
-				elapsed<60*60 -> COLOR.YELLOW
-				else -> COLOR.GREEN
-			}, 2f)
+					!b -> COLOR.WHITE
+					elapsed<10*60 -> COLOR.RED
+					elapsed<30*60 -> COLOR.ORANGE
+					elapsed<60*60 -> COLOR.YELLOW
+					else -> COLOR.GREEN
+				}, 2f
+			)
 
 			// Ending time
 			if(engine.gameActive&&(engine.ending==2||rollTime>0)) {
@@ -574,7 +573,8 @@ class MarathonShuttle:NetDummyMode() {
 
 	/** NET: Parse Received [message] as in-game stats of [engine] */
 	override fun netRecvStats(engine:GameEngine, message:List<String>) {
-		listOf<(String)->Unit>({}, {}, {}, {},
+		listOf<(String)->Unit>(
+			{}, {}, {}, {},
 			{engine.statistics.scoreLine = it.toInt()},
 			{engine.statistics.scoreSD = it.toInt()},
 			{engine.statistics.scoreHD = it.toInt()},
