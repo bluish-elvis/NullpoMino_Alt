@@ -32,24 +32,27 @@ package mu.nu.nullpo.game.component
 
 import mu.nu.nullpo.game.component.Block.ATTRIBUTE
 import mu.nu.nullpo.game.play.GameEngine
-import mu.nu.nullpo.game.play.GameEngine.LineGravity
+import mu.nu.nullpo.game.play.LineGravity
+import mu.nu.nullpo.game.play.clearRule.Line.checkLines
+import mu.nu.nullpo.game.play.clearRule.Line.clearLines
 import mu.nu.nullpo.util.CustomProperties
 import mu.nu.nullpo.util.GeneralUtil.aNum
-import mu.nu.nullpo.util.GeneralUtil.filterNotNullIndexed
 import mu.nu.nullpo.util.GeneralUtil.toInt
 import org.apache.logging.log4j.LogManager
 import kotlin.math.abs
 import kotlin.random.Random
 
 /** Game Field */
-@kotlinx.serialization.Serializable class Field {
+@kotlinx.serialization.Serializable
+class Field {
 	/** パラメータ付きConstructor
 	 * @param w fieldの幅
 	 * @param h Field height
 	 * @param hh fieldより上の見えない部分の高さ
 	 * @param c 天井の有無
 	 */
-	@JvmOverloads constructor(w:Int = DEFAULT_WIDTH, h:Int = DEFAULT_HEIGHT, hh:Int = DEFAULT_HIDDEN_HEIGHT, c:Boolean = false) {
+	@JvmOverloads
+	constructor(w:Int = DEFAULT_WIDTH, h:Int = DEFAULT_HEIGHT, hh:Int = DEFAULT_HIDDEN_HEIGHT, c:Boolean = false) {
 		width = w
 		height = h
 		hiddenHeight = hh
@@ -118,8 +121,8 @@ import kotlin.random.Random
 	var lastLinesY = emptySet<Set<Int>>(); private set
 	val lastLinesHeight get() = lastLinesY.map {it.size}
 
-	val lastLinesTop get() = lastLinesY.flatten().minOrNull() ?: height
-	val lastLinesBottom get() = lastLinesY.flatten().maxOrNull() ?: -hiddenHeight
+	val lastLinesTop get() = lastLinesY.flatten().minOrNull()?:height
+	val lastLinesBottom get() = lastLinesY.flatten().maxOrNull()?:-hiddenHeight
 
 	var lastLinesSplited = false; private set
 
@@ -129,13 +132,11 @@ import kotlin.random.Random
 	// public ArrayList<Block[]> pendingGarbage;
 
 	/** BombとSparkの効果範囲 */
-	private var explodWidth = 0
-	private var explodHeight = 0
-	private var explodWidthBig = 0
-	private var explodHeightBig = 0
+	var explodWidth = 0
+	var explodHeight = 0
 
-	/** 消えるLinescountを数える
-	 * @return Linescount
+	/** 消えるLines countを数える
+	 * @return Lines count
 	 */
 	val lines get() = (-hiddenHeight..<heightWithoutHurryupFloor).count {getLineFlag(it)}
 
@@ -148,49 +149,43 @@ import kotlin.random.Random
 	 * @return field内にあるBlockのcount
 	 */
 	val howManyBlocks
-		get() = (-hiddenHeight..<heightWithoutHurryupFloor)
-			.filter {!getLineFlag(it)}
+		get() = (-hiddenHeight..<heightWithoutHurryupFloor).filter {!getLineFlag(it)}
 			.sumOf {getRow(it).count {b -> b?.isEmpty==false}}
 
 	/** 左から何個のBlockが並んでいるか調べる
 	 * @return 左から並んでいるBlockの総count
 	 */
 	val howManyBlocksFromLeft
-		get() = (-hiddenHeight..<heightWithoutHurryupFloor)
-			.filter {!getLineFlag(it)}
+		get() = (-hiddenHeight..<heightWithoutHurryupFloor).filter {!getLineFlag(it)}
 			.sumOf {getRow(it).takeWhile {b -> b?.isEmpty==false}.size}
 
 	/** 右から何個のBlockが並んでいるか調べる
 	 * @return 右から並んでいるBlockの総count
 	 */
 	val howManyBlocksFromRight:Int
-		get() = (-hiddenHeight..<heightWithoutHurryupFloor)
-			.filter {!getLineFlag(it)}
+		get() = (-hiddenHeight..<heightWithoutHurryupFloor).filter {!getLineFlag(it)}
 			.sumOf {getRow(it).takeLastWhile {b -> b?.isEmpty==false}.size}
 
 	/** 一番上にあるBlockのY-coordinateを取得
 	 * @return 一番上にあるBlockのY-coordinate
 	 */
 	val highestBlockY:Int
-		get() =
-			(-hiddenHeight..<heightWithoutHurryupFloor)
-				.filter {!getLineFlag(it)}
-				.firstOrNull {getRow(it).filterNotNull().any {b -> !b.isEmpty}} ?: height
+		get() = (-hiddenHeight..<heightWithoutHurryupFloor).filter {!getLineFlag(it)}
+			.firstOrNull {getRow(it).filterNotNull().any {b -> !b.isEmpty}}?:height
 
 	/** garbage blockが最初に現れるY-coordinateを取得
 	 * @return garbage blockが最初に現れるY-coordinate
 	 */
 	val highestGarbageBlockY:Int
-		get() =
-			(-hiddenHeight..<heightWithoutHurryupFloor)
-				.filter {!getLineFlag(it)}
-				.firstOrNull {getRow(it).filterNotNull().any {b -> b.getAttribute(ATTRIBUTE.GARBAGE)}} ?: height
+		get() = (-hiddenHeight..<heightWithoutHurryupFloor).filter {!getLineFlag(it)}.firstOrNull {
+			getRow(it).filterNotNull().any {b ->
+				b.getAttribute(ATTRIBUTE.GARBAGE)
+			}
+		}?:height
 
 	val howManyBlocksCovered:Int
 		get() = (0..<width).sumOf {j ->
-			(getHighestBlockY(j)..<heightWithoutHurryupFloor)
-				.filter {!getLineFlag(it)}
-				.count {getBlockEmpty(j, it)}
+			(getHighestBlockY(j)..<heightWithoutHurryupFloor).filter {!getLineFlag(it)}.count {getBlockEmpty(j, it)}
 		}
 
 	val danger get() = (howManyBlocks+howManyLidAboveHoles)*4/(width*heightWithoutHurryupFloor)>=3
@@ -207,13 +202,11 @@ import kotlin.random.Random
 			for(j in 0..<width) {
 				samehole = false
 
-				for(i in highestBlockY..<heightWithoutHurryupFloor)
-					if(!getLineFlag(i))
-						when {
-							isHoleBelow(j, i) -> samehole = true
-							samehole&&getBlockEmpty(j, i) -> hole++
-							else -> samehole = false
-						}
+				for(i in highestBlockY..<heightWithoutHurryupFloor) if(!getLineFlag(i)) when {
+					isHoleBelow(j, i) -> samehole = true
+					samehole&&getBlockEmpty(j, i) -> hole++
+					else -> samehole = false
+				}
 			}
 
 			return hole
@@ -229,13 +222,11 @@ import kotlin.random.Random
 			for(j in 0..<width) {
 				var count = 0
 
-				for(i in highestBlockY..<heightWithoutHurryupFloor-1)
-					if(!getLineFlag(i))
-						if(isHoleBelow(j, i)) {
-							count++
-							blocks += count
-							count = 0
-						} else if(!getBlockEmpty(j, i)) count++
+				for(i in highestBlockY..<heightWithoutHurryupFloor-1) if(!getLineFlag(i)) if(isHoleBelow(j, i)) {
+					count++
+					blocks += count
+					count = 0
+				} else if(!getBlockEmpty(j, i)) count++
 			}
 
 			return blocks
@@ -280,11 +271,10 @@ import kotlin.random.Random
 				val holeLoc = -abs(i-height/2)+height/2-1
 				if(getBlockEmpty(holeLoc, i)&&!getBlockEmpty(holeLoc, i-1)) {
 					rowCheck = true
-					for(j in 0..<width)
-						if(j!=holeLoc&&getBlockEmpty(j, i)) {
-							rowCheck = false
-							break
-						}
+					for(j in 0..<width) if(j!=holeLoc&&getBlockEmpty(j, i)) {
+						rowCheck = false
+						break
+					}
 					if(rowCheck) rows++
 					else break
 				} else break
@@ -297,15 +287,13 @@ import kotlin.random.Random
 	 * @return 宝石Blockのcount
 	 */
 	val howManyGems:Int
-		get() = (-hiddenHeight..<heightWithoutHurryupFloor)
-			.sumOf {i -> getRow(i).filterNotNull().count {it.isGemBlock}}
+		get() = (-hiddenHeight..<heightWithoutHurryupFloor).sumOf {i -> getRow(i).filterNotNull().count {it.isGemBlock}}
 
 	/** 宝石Blockがいくつ消えるか取得
 	 * @return 消える宝石Blockのcount
 	 */
 	val howManyGemClears:Int
-		get() = (-hiddenHeight..<heightWithoutHurryupFloor)
-			.filter {getLineFlag(it)}
+		get() = (-hiddenHeight..<heightWithoutHurryupFloor).filter {getLineFlag(it)}
 			.sumOf {i -> getRow(i).filterNotNull().count {it.isGemBlock}}
 
 	/** Checks for inum blocks cleared
@@ -314,8 +302,7 @@ import kotlin.random.Random
 	 */
 	val itemClears
 		get() = List(Block.MAX_ITEM+1) {item ->
-			(-hiddenHeight..<heightWithoutHurryupFloor)
-				.filter {getLineFlag(it)}.any {i -> getRow(i).any {b -> b?.iNum==item}}
+			(-hiddenHeight..<heightWithoutHurryupFloor).filter {getLineFlag(it)}.any {i -> getRow(i).any {b -> b?.iNum==item}}
 		}
 
 	/** Garbageを含むラインがいくつ消えるか取得
@@ -323,10 +310,9 @@ import kotlin.random.Random
 	 */
 	// Check the lines we are clearing.
 	val howManyGarbageLineClears:Int
-		get() = (-hiddenHeight..<heightWithoutHurryupFloor)
-			.filter {getLineFlag(it)}.count {
-				getRow(it).filterNotNull().any {b -> b.getAttribute(ATTRIBUTE.GARBAGE)}
-			}
+		get() = (-hiddenHeight..<heightWithoutHurryupFloor).filter {getLineFlag(it)}.count {
+			getRow(it).filterNotNull().any {b -> b.getAttribute(ATTRIBUTE.GARBAGE)}
+		}
 
 	/** Checks the lines that are currently being cleared to see how many strips of squares are present in them.
 	 * @return +4 for every 1x4 strip of gold (index 0) or silver (index 1)
@@ -337,13 +323,13 @@ import kotlin.random.Random
 	// We have to divide the amount by 4 because it's based on 1x4 strips,
 	// not single blocks.
 	val howManySquareClears:List<Int>
-		get() = findBlocks {!it.getAttribute(ATTRIBUTE.GARBAGE)&&(it.isGoldSquareBlock||it.isSilverSquareBlock)}
-			.filter {(y, _) -> getLineFlag(y)}.values.let {y ->
-				listOf(
-					y.sumOf {x -> x.values.count {it.isGoldSquareBlock}},
-					y.sumOf {x -> x.values.count {it.isSilverSquareBlock}}
-				)
-			}
+		get() = findBlocks {
+			!it.getAttribute(ATTRIBUTE.GARBAGE)&&(it.isGoldSquareBlock||it.isSilverSquareBlock)
+		}.filter {(y, _) ->
+			getLineFlag(y)
+		}.values.let {y ->
+			listOf(y.sumOf {x -> x.values.count {it.isGoldSquareBlock}}, y.sumOf {x -> x.values.count {it.isSilverSquareBlock}})
+		}
 
 	/** HURRY UPの地面を除いたField heightを返す
 	 * @return HURRY UPの地面を除いたField height
@@ -367,11 +353,8 @@ import kotlin.random.Random
 		lastLinesY = emptySet()
 
 		lastLinesSplited = false
-		garbageCleared = 0
 		explodWidth = 0
 		explodHeight = 0
-		explodWidthBig = 0
-		explodHeightBig = 0
 	}
 
 	/** [f]から内容をコピー*/
@@ -394,19 +377,15 @@ import kotlin.random.Random
 			gemsCleared = o.gemsCleared
 			lineColorsCleared = o.lineColorsCleared.toList()
 			lastLinesCleared = o.lastLinesCleared.toList()
-			garbageCleared = o.garbageCleared
 			lastLinesY = o.lastLinesY.toSet()
 			lastLinesSplited = o.lastLinesSplited
 
 			explodHeight = o.explodHeight
 			explodWidth = o.explodWidth
-			explodHeightBig = o.explodHeightBig
-			explodWidthBig = o.explodWidthBig
-		} ?: reset()
+		}?:reset()
 	}
 
-	/** プロパティセットに保存
-	 * @param p プロパティセット
+	/** プロパティセット[p]に保存
 	 * @param id 適当なID
 	 */
 	fun writeProperty(p:CustomProperties, id:Int) {
@@ -414,7 +393,7 @@ import kotlin.random.Random
 			val mapStr = StringBuilder()
 
 			for(j in 0..<width) {
-				mapStr.append("${getBlock(j, i)?.toChar() ?: '_'}")
+				mapStr.append("${getBlock(j, i)?.toChar()?:'_'}")
 				if(j<width-1) mapStr.append(",")
 			}
 
@@ -422,8 +401,7 @@ import kotlin.random.Random
 		}
 	}
 
-	/** プロパティセットから読み込み
-	 * @param p プロパティセット
+	/** プロパティセット[p]から読み込み
 	 * @param id 適当なID
 	 */
 	fun readProperty(p:CustomProperties, id:Int) {
@@ -442,9 +420,7 @@ import kotlin.random.Random
 		}
 	}
 
-	/** 指定された座標の属性を取得
-	 * @param x X-coordinate
-	 * @param y Y-coordinate
+	/** [x],[y]座標の属性を取得
 	 * @return 座標の属性
 	 */
 	fun getCoordAttribute(x:Int, y:Int):Int = when {
@@ -455,9 +431,7 @@ import kotlin.random.Random
 		else -> COORD_VANISH// 置いたBlockが消える
 	}
 
-	/** 指定された座標にBlockが置けるかを取得
-	 * @param x X-coordinate
-	 * @param y Y-coordinate
+	/** [x],[y]座標にBlockが置けるかを取得
 	 * @return Blockが置ける座標ならtrue
 	 */
 	fun getCoordVaild(x:Int, y:Int):Boolean = getCoordAttribute(x, y).let {it==COORD_NORMAL||it==COORD_HIDDEN}
@@ -466,23 +440,21 @@ import kotlin.random.Random
 	 * @return a reference to the row
 	 */
 	fun getRow(y:Int):List<Block?> = (if(height>0&&y>=0) blockField.getOrNull(y)
-	else blockHidden.getOrNull(y*-1-1))?.map {if(it?.isEmpty!=false) null else it} ?: List(10) {null}
+	else blockHidden.getOrNull(y*-1-1))?.map {if(it?.isEmpty!=false) null else it}?:List(10) {null}
 
-	/** 指定した座標にあるBlockを取得
-	 * @param x X-coordinate
-	 * @param y Y-coordinate
+	/** [x],[y]座標にあるBlockを取得
 	 * @return 成功したら指定した座標にあるBlockオブジェクト, 失敗したらnull
 	 */
 	fun getBlock(x:Int, y:Int):Block? = getRow(y).getOrNull(x).let {if(it?.isEmpty!=false) null else it}
 
-	/** Set block to specific location
+	/** Set block [blk] to [x],[y] location
 	 * @param x X-coordinate
 	 * @param y Y-coordinate
 	 * @param blk Block
 	 * @return true if successful, false if failed
 	 */
-	fun setBlock(x:Int, y:Int, blk:Block?):Boolean = if(blk?.color==null) delBlock(x, y)!=null else
-		if(getCoordVaild(x, y)) try {
+	fun setBlock(x:Int, y:Int, blk:Block?):Boolean =
+		if(blk?.color==null) delBlock(x, y)!=null else if(getCoordVaild(x, y)) try {
 			if(y<0) {
 				if((getBlock(x, y)?.replace(blk))==null) blockHidden[y*-1-1][x] = Block(blk)
 			} else if((getBlock(x, y)?.replace(blk))==null) blockField[y][x] = Block(blk)
@@ -493,9 +465,7 @@ import kotlin.random.Random
 		}
 		else false
 
-	/** Remove block from specific location
-	 * @param x X-coordinate
-	 * @param y Y-coordinate
+	/** Remove block from [x],[y] location
 	 * @return Previous Block if successful, null if failed
 	 */
 	fun delBlock(x:Int, y:Int):Block? = if(getCoordVaild(x, y)) try {
@@ -518,61 +488,47 @@ import kotlin.random.Random
 
 	fun findBlocks(inHide:Boolean = true, cond:(b:Block)->Boolean):Map<Int, Map<Int, Block>> =
 		findBlocks((if(inHide) -1*hiddenHeight else 0)..<height, cond)
-	/** Remove blocks from specific location
+	/** Remove blocks from [pos] locations
 	 * @param pos [X,y] coordinate-array
 	 * @return Previous Block if successful, null if failed
 	 */
-	@JvmName("delBlocksi") fun delBlocks(pos:Map<Int, Collection<Int>>) =
+	@JvmName("delBlocksi")
+	fun delBlocks(pos:Map<Int, Collection<Int>>) =
 		pos.map {(y, row) -> y to row.mapNotNull {x -> delBlock(x, y)?.let {x to it}}.associate {it}}.associate {it}
 
 	fun delBlocks(blocks:Map<Int, Map<Int, Block>>) =
 		blocks.map {(y, row) -> y to row.mapNotNull {(x, _) -> delBlock(x, y)?.let {x to it}}.associate {it}}.associate {it}
-	/** 指定した座標にあるBlock colorを取得
-	 * @param x X-coordinate
-	 * @param y Y-coordinate
+	/** [x],[y]座標にあるBlock colorを取得
 	 * @param gemSame If true, a gem block will return the cint of the
 	 * corresponding normal block.
 	 * @return 指定した座標にあるBlock cint (失敗したらBLOCK_COLOR_INVALID）
 	 */
 	fun getBlockColor(x:Int, y:Int, gemSame:Boolean = false):Int =
-		if(getCoordVaild(x, y)) (getBlock(x, y)?.cint ?: Block.COLOR_NONE)
-			.let {if(gemSame) Block.gemToNormalColor(it) else it}
+		if(getCoordVaild(x, y)) (getBlock(x, y)?.cint?:Block.COLOR_NONE).let {if(gemSame) Block.gemToNormalColor(it) else it}
 		else Block.COLOR_INVALID
 
-	fun getBlockColor(x:Int, y:Int):Block.COLOR? =
-		if(getCoordVaild(x, y)) getBlock(x, y)?.color else null
+	fun getBlockColor(x:Int, y:Int):Block.COLOR? = if(getCoordVaild(x, y)) getBlock(x, y)?.color else null
 
-	/** 指定した座標にあるBlock colorを変更
-	 * @param x X-coordinate
-	 * @param y Y-coordinate
-	 * @param c 色
+	/** [x],[y]座標にあるBlock colorを[c]に変更
 	 * @return true if successful, false if failed
 	 */
 	fun setBlockColor(x:Int, y:Int, c:Block.COLOR):Boolean =
-		if(getCoordVaild(x, y))
-			if(getBlock(x, y)?.also {it.color = c}==null) setBlock(x, y, Block(c)) else true
+		if(getCoordVaild(x, y)) if(getBlock(x, y)?.also {it.color = c}==null) setBlock(x, y, Block(c)) else true
 		else false
 
-	/** 指定した座標にあるBlock colorを変更
-	 * @param x X-coordinate
-	 * @param y Y-coordinate
-	 * @param c 色 to タイプ
+	/** [x],[y]座標にあるBlock colorを[c]に変更
 	 * @return true if successful, false if failed
 	 */
 	fun setBlockColor(x:Int, y:Int, c:Pair<Block.COLOR, Block.TYPE>):Boolean =
-		if(getCoordVaild(x, y))
-			if(getBlock(x, y)?.also {it.color = c.first;it.type = c.second}==null)
-				setBlock(x, y, Block(c.first, c.second)) else true
+		if(getCoordVaild(x, y)) if(getBlock(x, y)?.also {it.color = c.first;it.type = c.second}==null) setBlock(x, y,
+			Block(c.first, c.second)) else true
 		else false
-	/** 指定した座標にあるBlock colorを変更
-	 * @param x X-coordinate
-	 * @param y Y-coordinate
-	 * @param c 色タイプ
+	/** [x],[y]座標にあるBlock colorを[c]に変更
 	 * @return true if successful, false if failed
 	 */
 	fun setBlockColor(x:Int, y:Int, c:Int):Boolean =
-		if(c<0) delBlock(x, y)!=null else if(getCoordVaild(x, y))
-			if(getBlock(x, y)?.also {it.cint = c}==null&&c>=1) setBlock(x, y, Block(c)) else true
+		if(c<0) delBlock(x, y)!=null else if(getCoordVaild(x, y)) if(getBlock(x, y)?.also {it.cint = c}==null&&c>=1) setBlock(
+			x, y, Block(c)) else true
 		else false
 
 	/*fun howManyColor(c:Block.COLOR):Int =
@@ -581,33 +537,25 @@ import kotlin.random.Random
 	fun howManyColor(c:Block.COLOR,t:Block.TYPE):Int =
 		(blockField+blockHidden).sum{it.count{it.color==c && it.type==t}}
 */
-	/** Line clear flagを取得
+	/** [y]座標のLine clear flagを取得
 	 * @param y Y-coordinate
 	 * @return 消える列ならtrue, そうでないなら (もしくは座標が範囲外なら）false
 	 */
-	fun getLineFlag(y:Int):Boolean =
-		(if(y>=0) lineflagField.getOrNull(y)
-		else lineflagHidden.getOrNull(y*-1-1)) ?: false
+	fun getLineFlag(y:Int):Boolean = (if(y>=0) lineflagField.getOrNull(y)
+	else lineflagHidden.getOrNull(y*-1-1))?:false
 
-	/** 指定した座標にあるBlockが空白かどうか判定
-	 * @param x X-coordinate
-	 * @param y Y-coordinate
-	 * @return 指定した座標にあるBlockが空白ならtrue (指定した座標が範囲外の場合もtrue）
+	/** [x],[y]座標にあるBlockが空白かどうか判定
+	 * @oaram ob 指定した座標が範囲外の場合の結果
 	 */
-	fun getBlockEmpty(x:Int, y:Int, ob:Boolean = true):Boolean = if(getCoordVaild(x, y)) getBlock(x, y)?.isEmpty ?: true
+	fun getBlockEmpty(x:Int, y:Int, ob:Boolean = true):Boolean = if(getCoordVaild(x, y)) getBlock(x, y)?.isEmpty?:true
 	else ob
 
-	/** 指定した座標にあるBlockが空白かどうか判定 (指定した座標が範囲外の場合はfalse）
-	 * @param x X-coordinate
-	 * @param y Y-coordinate
-	 * @return 指定した座標にあるBlockが空白ならtrue (指定した座標が範囲外の場合はfalse）
+	/** [x],[y]座標にあるBlockが空白かどうか判定 (指定した座標が範囲外の場合はfalse）
 	 */
 	@Deprecated("overloaded", ReplaceWith("getBlockEmpty(x,y,false)"))
 	fun getBlockEmptyF(x:Int, y:Int):Boolean = getBlockEmpty(x, y, false)
 
-	/** Line clear flagを設定
-	 * @param y Y-coordinate
-	 * @param flag 設定するLine clear flag
+	/** [y]座標のLine clear flagを[flag]に設定
 	 * @return true if successful, false if failed
 	 */
 	fun setLineFlag(y:Int, flag:Boolean):Boolean = try {
@@ -620,135 +568,35 @@ import kotlin.random.Random
 	}
 
 	/** Line clear check
-	 * @return 消えるLinescount
+	 * @param flag Will mark flag the lines for clear process
+	 * @return 消えるLines count
 	 */
-	fun checkLine():Int {
-		val res = checkLinesNoFlag()
-		val lines = res.flatten()
-		if(height<=0||lines.isEmpty()) return 0
-		lastLinesCleared = lines.map {getRow(it)}
-		lastLinesY = res
-
-		lastLinesSplited = false
-		var inv = false
-		for(i in -hiddenHeight..<heightWithoutHurryupFloor) {
-			val flag = lines.any {it==i}
-			setLineFlag(i, flag)
-			if(flag) {
-				if(inv) lastLinesSplited = true
-				for(it in getRow(i)) {
-					it?.setAttribute(true, ATTRIBUTE.ERASE)
-				}
-			} else if(i>=lines.minOf {it}) inv = true
-		}
-		return lines.size
-	}
+	fun checkLine(flag:Boolean = true) = checkLines(flag).size
 
 	/** Line clear check (消去 flagの設定とかはしない）
-	 * @return 消えるLinescount
+	 * @return 消えるLines count
 	 */
-	fun checkLineNoFlag():Int = checkLinesNoFlag().flatten().size
-
-	/** Line clear check (消去 flagの設定とかはしない）
-	 * @return 消えるY-coordinates(group by continuous)
-	 */
-	fun checkLinesNoFlag():Set<Set<Int>> {
-		val lines = (-hiddenHeight..<heightWithoutHurryupFloor)
-			.filter {
-				getRow(it).all {b -> b?.isEmpty==false&&!b.getAttribute(ATTRIBUTE.WALL)}
-			}
-		garbageCleared = lines.count {
-			getRow(it).any {b -> b?.getAttribute(ATTRIBUTE.GARBAGE)==true}
-		}
-		return lines.sorted().fold(mutableListOf<Set<Int>>()) {a, t ->
-			if(a.isEmpty()||a.last().maxOrNull()!=t-1) a += setOf(t)
-			else a[a.lastIndex] = a[a.lastIndex]+t
-			a
-		}.toSet()
-	}
+	@Deprecated("renamed", ReplaceWith("checkLine(false)"))
+	fun checkLineNoFlag():Int = checkLine(false)
 
 	/** Linesを消す
-	 * @return 消えたLinescount
+	 * @return 消えたLines count
 	 */
-	fun clearLine():Int {
-		val lines = checkLinesNoFlag()
-		// field内
-		lines.flatten().forEach {y ->
-			getRow(y).filterNotNullIndexed().forEach {(x, b) ->
-				if(b.hard>0) {
-					b.hard--
-					setLineFlag(y, false)
-				} else delBlock(x, y)
-			}
-			// 消えたLinesの上下のBlockの結合を解除
-			getRow(y+1).filterNotNullIndexed().forEach {(j, blk) ->
-				if(blk.getAttribute(ATTRIBUTE.CONNECT_UP)) {
-					blk.setAttribute(false, ATTRIBUTE.CONNECT_UP)
-					setBlockLinkBroken(j, y)
-				}
-			}
-			getRow(y-1).filterNotNullIndexed().forEach {(j, blk) ->
-				if(blk.getAttribute(ATTRIBUTE.CONNECT_DOWN)) {
-					blk.setAttribute(false, ATTRIBUTE.CONNECT_DOWN)
-					setBlockLinkBroken(j, y)
-				}
-			}
-		}
-		return lines.size
-	}
+	fun clearLine():Int = clearLines().size
 
 	/** 上にあったBlockをすべて下まで下ろす
 	 * @return 消えていたLines count
 	 */
-	fun downFloatingBlocks():Int {
-		var lines = 0
-		var y = heightWithoutHurryupFloor-1
-
-		for(i in -hiddenHeight..<heightWithoutHurryupFloor)
-			if(getLineFlag(y)) {
-				lines++
-
-				// Blockを1段上からコピー
-				for(k in y downTo 1-hiddenHeight)
-					for(l in 0..<width) {
-						setBlock(l, k, getBlock(l, k-1) ?: Block())
-						setLineFlag(k, getLineFlag(k-1))
-					}
-
-				// 一番上を空白にする
-				for(l in 0..<width)
-					setBlock(l, -hiddenHeight, Block())
-
-				setLineFlag(-hiddenHeight, false)
-			} else y--
-
-		return lines
-	}
+	fun downFloatingBlocks() = LineGravity.Native.fallInstant(this)
 
 	/** 上にあったBlockを1段だけ下ろす */
-	fun downFloatingBlocksSingleLine() {
-		val y = heightWithoutHurryupFloor-1
-
-		for(i in -hiddenHeight..<heightWithoutHurryupFloor)
-			if(getLineFlag(y)) {
-				// Blockを1段上からコピー
-				for(k in y downTo 1-hiddenHeight)
-					for(l in 0..<width) {
-						setBlock(l, k, getBlock(l, k-1))
-						setLineFlag(k, getLineFlag(k-1))
-					}
-
-				// 一番上を空白にする
-				for(l in 0..<width) delBlock(l, -hiddenHeight)
-				setLineFlag(-hiddenHeight, false)
-				break
-			}
-	}
+	fun downFloatingBlocksSingleLine() = LineGravity.Native.fallSingle(this)
 
 	/** Check if specified line is completely empty
 	 * @param y Y coord
 	 * @return `true` if the specified line is completely empty,
 	 * `false` otherwise.
+	 * @see mu.nu.nullpo.game.play.clearRule.isEmptyLine
 	 */
 	fun isEmptyLine(y:Int):Boolean = (0..<width).all {getBlockEmpty(it, y)}
 
@@ -760,39 +608,8 @@ import kotlin.random.Random
 	 * @param big Bigかどうか
 	 * @return Twisterになる地形だったらtrue
 	 */
-	fun isTwistSpot(x:Int, y:Int, big:Boolean):Boolean {
-		// 判定用相対座標を設定
-		val tx = IntArray(4)
-		val ty = IntArray(4)
-
-		if(big) {
-			tx[0] = 1
-			ty[0] = 1
-			tx[1] = 4
-			ty[1] = 1
-			tx[2] = 1
-			ty[2] = 4
-			tx[3] = 4
-			ty[3] = 4
-		} else {
-			tx[0] = 0
-			ty[0] = 0
-			tx[1] = 2
-			ty[1] = 0
-			tx[2] = 0
-			ty[2] = 2
-			tx[3] = 2
-			ty[3] = 2
-		}
-
-		// 判定
-		var count = 0
-
-		for(i in tx.indices)
-			if(getBlock(x+tx[i], y+ty[i])!=null) count++
-
-		return count>=3
-	}
+	fun isTwistSpot(x:Int, y:Int, big:Boolean):Boolean =
+		big.toInt().let {b -> tx[b].indices.count {(getBlock(x+tx[b][it], y+ty[b][it])!=null)}>=3}
 
 	/** Twisterできそうな穴だったらtrue
 	 * @param x X-coordinate
@@ -821,123 +638,73 @@ import kotlin.random.Random
 		}
 
 		// 判定用相対座標を設定
-		val tx = IntArray(4)
-		val ty = IntArray(4)
-
-		if(big) {
-			tx[0] = 1
-			ty[0] = 1
-			tx[1] = 4
-			ty[1] = 1
-			tx[2] = 1
-			ty[2] = 4
-			tx[3] = 4
-			ty[3] = 4
-		} else {
-			tx[0] = 0
-			ty[0] = 0
-			tx[1] = 2
-			ty[1] = 0
-			tx[2] = 0
-			ty[2] = 2
-			tx[3] = 2
-			ty[3] = 2
-		}
-
+		val tx = tx[big.toInt()]
+		val ty = ty[big.toInt()]
 		// 判定
-		var count = 0
-
-		for(i in tx.indices)
-			if(getBlock(x+tx[i], y+ty[i])!=null) count++
-
-		return count==3
+		return tx.indices.count {(getBlock(x+tx[it], y+ty[it])!=null)}==3
 	}
 
 	/** Twisterできそうな穴が何個あるか調べる
 	 * @param big Bigだったらtrue
 	 * @return Twisterできそうな穴のcount
 	 */
-	fun getHowManyTSlot(big:Boolean):Int {
-		var result = 0
-
-		for(j in 0..<width)
-			for(i in 0..<heightWithoutHurryupFloor-2)
-				if(!getLineFlag(i)) if(isTSlot(j, i, big)) result++
-
-		return result
+	fun getHowManyTSlot(big:Boolean):Int = (0..<width).sumOf {j ->
+		(0..<heightWithoutHurryupFloor-2).count {i ->
+			!getLineFlag(i)&&isTSlot(j, i, big)
+		}
 	}
 
-	/** Twisterで消えるLinescountを返す
-	 * @param x X-coordinate
-	 * @param y Y-coordinate
+	/** [x],[y]座標でのTwisterで消えるLines countを返す
 	 * @param big Bigかどうか(未対応)
-	 * @return Twisterで消えるLinescount(Twisterじゃない場合などは0)
+	 * @return Twisterで消えるLines count(Twisterじゃない場合などは0)
 	 */
-	fun getTSlotLineClear(x:Int, y:Int, big:Boolean):Int {
-		if(!isTSlot(x, y, big)) return 0
-
-		val lineflag = (0..1).map {i ->
-			!(0..<width).any {j ->
-				// ■■■★※■■■■■
-				// □□□※※※□□□□
-				// □□□○※○□□□□
-				(j<x||j>=x+3)&&getBlockEmpty(j, y+1+i, false)
-			}
+	fun getTSlotLineClear(x:Int, y:Int, big:Boolean):Int = if(!isTSlot(x, y, big)) 0 else (0..2).count {i ->
+		!(0..<width).any {j ->
+			// ■■■★※■■■■■
+			// □□□※※※□□□□
+			// □□□○※○□□□□
+			(j !in x..x+2||(i!=1&&j!=x+1))&&getBlockEmpty(j, y+i, false)
 		}
-		var lines = 0
-		for(element in lineflag)
-			if(element) lines++
-
-		return lines
 	}
 
-	/** Twisterで消えるLinescountを返す(field全体)
+	/** Twisterで消えるLines countを返す(field全体)
 	 * @param big Bigかどうか(未対応)
-	 * @param minimum 最低Linescount(2にするとTwister Doubleにだけ反応)
-	 * @return Twisterで消えるLinescount(Twisterじゃない場合やminimumに満たないLinesなどは0)
+	 * @param minimum 最低Lines count(2にするとTwister Doubleにだけ反応)
+	 * @return Twisterで消えるLines count(Twisterじゃない場合やminimumに満たないLinesなどは0)
 	 */
-	fun getTSlotLineClearAll(big:Boolean, minimum:Int = 0):Int = (0..<width)
-		.sumOf {j ->
-			(0..<heightWithoutHurryupFloor-2)
-				.filter {getLineFlag(it)&&getTSlotLineClear(j, it, big)>=minimum}
-				.sumOf {getTSlotLineClear(j, it, big)}
-		}
+	fun getTSlotLineClearAll(big:Boolean, minimum:Int = 0):Int = (0..<width).sumOf {j ->
+		(0..<heightWithoutHurryupFloor-2).filter {
+			getLineFlag(it)&&getTSlotLineClear(j, it, big)>=minimum
+		}.sumOf {getTSlotLineClear(j, it, big)}
+	}
 
-	/** 一番上にあるBlockのY-coordinateを取得 (X-coordinateを指定できるVersion）
-	 * @param x X-coordinate
-	 * @return 一番上にあるBlockのY-coordinate
-	 */
+	/** [x]列にて一番上のBlockがあるY座標を取得 */
 	fun getHighestBlockY(x:Int):Int =
-		(-hiddenHeight..<heightWithoutHurryupFloor)
-			.firstOrNull {!getLineFlag(it)&&!getBlockEmpty(x, it)}
-			?: height
+		(-hiddenHeight..<heightWithoutHurryupFloor).firstOrNull {!getLineFlag(it)&&!getBlockEmpty(x, it)}?:height
 
-	/** 指定した座標の下に隙間があるか調べる
-	 * @param x X-coordinate
-	 * @param y Y-coordinate
-	 * @return 指定した座標の下に隙間があればtrue
+	/** [x],[y]座標の下に隙間があるか調べる
+	 * @return 指定した座標にブロックがあり、かつ下に隙間があればtrue
 	 */
-	fun isHoleBelow(x:Int, y:Int):Boolean = !getBlockEmpty(x, y)&&getBlockEmpty(x, y+1)
+	fun isHoleBelow(x:Int, y:Int) = !getBlockEmpty(x, y)&&getBlockEmpty(x, y+1, false)
+
+	/** [x],[y] 座標の下が何マス空いているか
+	 * @return 指定した座標にブロックがある場合、その下に連続した空白の数
+	 * 指定座標が空であれば、その空白の高さ
+	 */
+	fun getHoleBelow(x:Int, y:Int):Int =
+		(if(getBlockEmpty(x, y)) ((y downTo -hiddenHeight).firstOrNull {!getBlockEmpty(x, it)}?:y)+1
+		else y+1).let {startY ->
+			(startY..<heightWithoutHurryupFloor).takeWhile {getBlockEmpty(x, it, false)}.size
+		}
 
 	/** 谷 (■ ■になっている地形）の深さを調べる
 	 * @param x 調べるX-coordinate
 	 * @return 谷の深さ (無かったら0）
 	 */
-	fun getValleyDepth(x:Int):Int {
-		var depth = 0
-
-		var highest = getHighestBlockY(x-1)
-		highest = minOf(highest, getHighestBlockY(x))
-		highest = minOf(highest, getHighestBlockY(x+1))
-
-		for(i in highest..<heightWithoutHurryupFloor)
-			if(!getLineFlag(i))
-				if((!getBlockEmpty(x-1, i, false)||x<=0)&&getBlockEmpty(x, i, false)
-					&&(!getBlockEmpty(x+1, i, false)||x>=width-1)
-				)
-					depth++
-
-		return depth
+	fun getValleyDepth(x:Int):Int = minOf(getHighestBlockY(x-1), getHighestBlockY(x), getHighestBlockY(x+1)).let {startY ->
+		(startY..<heightWithoutHurryupFloor).takeWhile {
+			!getBlockEmpty(x-1, it, false)&&getBlockEmpty(x, it, false)&&!getBlockEmpty(x+1, it, false)
+		}.size
 	}
 
 	/** field全体を上にずらす
@@ -969,15 +736,13 @@ import kotlin.random.Random
 			for(i in heightWithoutHurryupFloor-1 downTo 1-hiddenHeight)
 			// Blockを1段上からコピー
 				for(j in 0..<width) {
-					var blk = getBlock(j, i-1)
-					if(blk==null) blk = Block()
-					setBlock(j, i, blk)
+					setBlock(j, i, getBlock(j, i-1))
 					setLineFlag(i, getLineFlag(i+1))
 				}
 
 			// 一番上を空白にする
 			for(j in 0..<width) {
-				setBlock(j, -hiddenHeight, Block())
+				delBlock(j, -hiddenHeight)
 				setLineFlag(-hiddenHeight, false)
 			}
 		}
@@ -1002,14 +767,21 @@ import kotlin.random.Random
 	}
 
 	fun setSingleHoleLine(hole:Int, y:Int, color:Block.COLOR, skin:Int) {
-		for(j in 0..<width)
-			if(j!=hole)
-				setBlock(
-					j, y, Block(
-						color, skin, ATTRIBUTE.VISIBLE, ATTRIBUTE.OUTLINE, ATTRIBUTE.GARBAGE,
-						if(j<hole) ATTRIBUTE.CONNECT_LEFT else ATTRIBUTE.CONNECT_RIGHT
-					)
-				)
+		for(j in 0..<width) if(j!=hole) setBlock(j, y,
+			Block(color, skin, ATTRIBUTE.VISIBLE, ATTRIBUTE.OUTLINE, ATTRIBUTE.GARBAGE,
+				if(j<hole) ATTRIBUTE.CONNECT_LEFT else ATTRIBUTE.CONNECT_RIGHT))
+	}
+	/** Add a single hole garbage (Attributes are automatically set)
+	 * @param hole Hole position
+	 * @param color Color
+	 * @param skin Skin
+	 * @param lines Number of garbage lines to add
+	 */
+	fun addSingleHoleGarbage(hole:Int, color:Block.COLOR, skin:Int, lines:Int) {
+		for(it in 0..<lines) {
+			pushUp(1)
+			setSingleHoleLine(hole, heightWithoutHurryupFloor-1, color, skin)
+		}
 	}
 	/** Add a single hole garbage (Attributes are automatically set)
 	 * @param hole Hole position before add lines
@@ -1035,22 +807,10 @@ import kotlin.random.Random
 		return x
 	}
 
-	/** Add a single hole garbage (Attributes are automatically set)
-	 * @param hole Hole position
-	 * @param color Color
-	 * @param skin Skin
-	 * @param lines Number of garbage lines to add
-	 */
-	fun addSingleHoleGarbage(hole:Int, color:Block.COLOR, skin:Int, lines:Int) {
-		for(it in 0..<lines) {
-			pushUp(1)
-			setSingleHoleLine(hole, heightWithoutHurryupFloor-1, color, skin)
-		}
-	}
 	/** 一番下のLinesの形をコピーしたgarbage blockを一番下に追加
 	 * @param skin garbage blockの絵柄
 	 * @param attrs garbage blockの属性
-	 * @param lines 追加するgarbage blockのLinescount
+	 * @param lines 追加するgarbage blockのLines count
 	 */
 	fun addBottomCopyGarbage(skin:Int, lines:Int, vararg attrs:ATTRIBUTE) {
 		for(k in 0..<lines) {
@@ -1062,24 +822,37 @@ import kotlin.random.Random
 		}
 	}
 
+	fun filterAttributeMap(vararg attr:ATTRIBUTE):Map<Int, Map<Int, Block>> =
+		(-hiddenHeight..<heightWithoutHurryupFloor).associateWith {y ->
+			(getRow(y).mapIndexedNotNull {x, it -> if(it?.getAttribute(*attr)==true) x to it else null}.toMap())
+		}.filter {it.value.isNotEmpty()}
+
+	fun filterAttributeIList(vararg attr:ATTRIBUTE):Iterable<IndexedValue<List<Block?>>> =
+		(-hiddenHeight..<heightWithoutHurryupFloor).map {i ->
+			IndexedValue(i, getRow(i).map {if(it?.getAttribute(*attr)==true) it else null})
+		}.filter {it.value.isNotEmpty()}
+
+	fun filterAttributeBlocks(vararg attr:ATTRIBUTE):Set<Triple<Int, Int, Block>> =
+		(-hiddenHeight..<heightWithoutHurryupFloor).flatMap {y ->
+			(0..<width).mapNotNull {x ->
+				getBlock(x, y)?.let {if(it.getAttribute(*attr)) Triple(x, y, it) else null}
+			}
+		}.toSet()
+
 	/** 全てのBlockの属性を変更
 	 * @param attr 変更したい属性
 	 * @param status 変更後 state
 	 */
 	fun setAllAttribute(status:Boolean, vararg attr:ATTRIBUTE) {
-		for(i in -hiddenHeight..<height)
-			for(j in 0..<width) {
-				getBlock(j, i)?.setAttribute(status, *attr)
-			}
+		for(i in -hiddenHeight..<height) for(j in 0..<width) getBlock(j, i)?.setAttribute(status, *attr)
+
 	}
 
 	/** 全てのBlockの絵柄を変更
 	 * @param skin 絵柄
 	 */
 	fun setAllSkin(skin:Int) {
-		for(i in -hiddenHeight..<height)
-			for(j in 0..<width)
-				getBlock(j, i)?.skin = skin
+		for(i in -hiddenHeight..<height) for(j in 0..<width) getBlock(j, i)?.skin = skin
 	}
 
 	/** Checks for 2x2 square formations of gem and
@@ -1088,31 +861,27 @@ import kotlin.random.Random
 	 */
 	fun checkForBigBomb():Int {
 		// Check for big bomb
-		for(i in -hiddenHeight..<heightWithoutHurryupFloor-1)
-			for(j in 0..<width-1) {
-				// rootBlk is the upper-left square
-				getBlock(j, i)?.let {rootBlk ->
-					var squareCheck = false
-					/* id is the cint of the top-left square: if it is a
+		for(i in -hiddenHeight..<heightWithoutHurryupFloor-1) for(j in 0..<width-1) {
+			// rootBlk is the upper-left square
+			getBlock(j, i)?.let {rootBlk ->
+				var squareCheck = false          /* id is the cint of the top-left square: if it is a
 					 * monosquare, every block in the 4x4 area will have this
 					 * cint. */
-					if(rootBlk.isGemBlock) {
-						squareCheck = true
-						for(k in 1..4) {
-							val blk = getBlock(j+1, i)
-							if(blk==null||blk.isEmpty||!blk.isGemBlock||
-								blk.cint==Block.COLOR_GEM_RAINBOW
-							) {
-								squareCheck = false
-								break
-							}
+				if(rootBlk.isGemBlock) {
+					squareCheck = true
+					for(k in 1..2) {
+						val blk = getBlock(j+1, i)
+						if(blk==null||blk.isEmpty||!blk.isGemBlock||blk.cint==Block.COLOR_GEM_RAINBOW) {
+							squareCheck = false
+							break
 						}
 					}
-					if(squareCheck) {
-						// TODO: Gain Big Bomb
-					}
+				}
+				if(squareCheck) {
+					// TODO: Gain Big Bomb
 				}
 			}
+		}
 
 		return 0
 	}
@@ -1126,423 +895,98 @@ import kotlin.random.Random
 		val squares = intArrayOf(0, 0)
 
 		// Check for gold squares
-		for(i in -hiddenHeight..<heightWithoutHurryupFloor-3)
-			for(j in 0..<width-3) {
-				// rootBlk is the upper-left square
-				val rootBlk = getBlock(j, i)
-				var squareCheck = false
+		for(i in -hiddenHeight..<heightWithoutHurryupFloor-3) for(j in 0..<width-3) {
+			// rootBlk is the upper-left square
+			val rootBlk = getBlock(j, i)
+			var squareCheck = false
 
-				/* id is the cint of the top-left square: if it is a
-				 * monosquare, every block in the 4x4 area will have this
-				 * cint. */
-				var id = Block.COLOR_NONE
-				if(!(rootBlk==null||rootBlk.isEmpty)) id = rootBlk.cint
+			/* id is the cint of the top-left square: if it is a
+			 * monosquare, every block in the 4x4 area will have this
+			 * cint. */
+			var id = Block.COLOR_NONE
+			if(!(rootBlk==null||rootBlk.isEmpty)) id = rootBlk.cint
 
-				// This can't be a square if rootBlk doesn't exist or is part of
-				// another square.
-				if(!(rootBlk==null||rootBlk.isEmpty||rootBlk.isGoldSquareBlock||rootBlk.isSilverSquareBlock)) {
-					// A square is innocent until proven guilty.
-					squareCheck = true
-					for(k in 0..3) {
-						for(l in 0..3) {
-							// blk is the current block
-							val blk = getBlock(j+l, i+k)
-							/* Reasons why the entire area would not be a
-							 * monosquare: this block does not exist, it is
-							 * part
-							 * of another square, it has been broken by line
-							 * clears, is a garbage block, is not the same cint
-							 * as id, or has connections outside the area. */
-							if(blk==null||blk.isEmpty||blk.isGoldSquareBlock||blk.isSilverSquareBlock
-								||blk.getAttribute(ATTRIBUTE.BROKEN)
-								||blk.getAttribute(ATTRIBUTE.GARBAGE)||blk.cint!=id
-								||l==0&&blk.getAttribute(ATTRIBUTE.CONNECT_LEFT)
-								||l==3&&blk.getAttribute(ATTRIBUTE.CONNECT_RIGHT)
-								||k==0&&blk.getAttribute(ATTRIBUTE.CONNECT_UP)
-								||k==3&&blk.getAttribute(ATTRIBUTE.CONNECT_DOWN)
-							) {
-								squareCheck = false
-								break
-							}
+			// This can't be a square if rootBlk doesn't exist or is part of
+			// another square.
+			if(!(rootBlk==null||rootBlk.isEmpty||rootBlk.isGoldSquareBlock||rootBlk.isSilverSquareBlock)) {
+				// A square is innocent until proven guilty.
+				squareCheck = true
+				for(k in 0..3) {
+					for(l in 0..3) {
+						// blk is the current block
+						val blk = getBlock(j+l, i+k)
+						if(blk==null||blk.isEmpty||blk.isGoldSquareBlock||blk.isSilverSquareBlock||
+							blk.getAttribute(ATTRIBUTE.BROKEN)||blk.getAttribute(ATTRIBUTE.GARBAGE)||blk.cint!=id||
+							l==0&&blk.getAttribute(ATTRIBUTE.CONNECT_LEFT)||l==3&&blk.getAttribute(ATTRIBUTE.CONNECT_RIGHT)||
+							k==0&&blk.getAttribute(ATTRIBUTE.CONNECT_UP)||k==3&&blk.getAttribute(ATTRIBUTE.CONNECT_DOWN)) {
+							/* Reasons why the entire area would not be a monosquare:
+							 this block does not exist, it is part of another square,
+							 it has been broken by line clears, is a garbage block,
+								is not the same cint as id, or has connections outside the area. */
+							squareCheck = false
+							break
 						}
-						if(!squareCheck) break
 					}
-				}
-				// We found a square! Set all the blocks equal to gold blocks.
-				if(squareCheck) {
-					squares[0]++
-					val squareX = listOf(0, 1, 1, 2)
-					val squareY = listOf(0, 3, 3, 6)
-					for(k in 0..3)
-						for(l in 0..3) getBlock(j+l, i+k)?.apply {
-							cint = Block.COLOR_SQUARE_GOLD_1+squareX[l]+squareY[k]
-							// For stylistic concerns, we attach all blocks in the square together.
-							if(k>0) setAttribute(true, ATTRIBUTE.CONNECT_UP)
-							if(k<3) setAttribute(true, ATTRIBUTE.CONNECT_DOWN)
-							if(l>0) setAttribute(true, ATTRIBUTE.CONNECT_LEFT)
-							if(l<3) setAttribute(true, ATTRIBUTE.CONNECT_RIGHT)
-						}
+					if(!squareCheck) break
 				}
 			}
+			// We found a square! Set all the blocks equal to gold blocks.
+			if(squareCheck) {
+				squares[0]++
+				val squareX = listOf(0, 1, 1, 2)
+				val squareY = listOf(0, 3, 3, 6)
+				for(k in 0..3) for(l in 0..3) getBlock(j+l, i+k)?.apply {
+					cint = Block.COLOR_SQUARE_GOLD_1+squareX[l]+squareY[k]
+					// For stylistic concerns, we attach all blocks in the square together.
+					if(k>0) setAttribute(true, ATTRIBUTE.CONNECT_UP)
+					if(k<3) setAttribute(true, ATTRIBUTE.CONNECT_DOWN)
+					if(l>0) setAttribute(true, ATTRIBUTE.CONNECT_LEFT)
+					if(l<3) setAttribute(true, ATTRIBUTE.CONNECT_RIGHT)
+				}
+			}
+		}
 		// Check for silver squares
-		for(i in -hiddenHeight..<heightWithoutHurryupFloor-3)
-			for(j in 0..<width-3) {
-				val rootBlk = getBlock(j, i)
-				var squareCheck = false
-				// We don't have to check colors because this loop checks for
-				// multisquares.
-				if(!(rootBlk==null||rootBlk.isEmpty||rootBlk.isGoldSquareBlock||rootBlk.isSilverSquareBlock)) {
-					// A square is innocent until proven guilty
-					squareCheck = true
-					for(k in 0..3) {
-						for(l in 0..3) {
-							val blk = getBlock(j+l, i+k)
-							// See above, but without the cint checking.
-							if(blk==null||blk.isEmpty||blk.isGoldSquareBlock||blk.isSilverSquareBlock
-								||blk.getAttribute(ATTRIBUTE.BROKEN)
-								||blk.getAttribute(ATTRIBUTE.GARBAGE)
-								||l==0&&blk.getAttribute(ATTRIBUTE.CONNECT_LEFT)
-								||l==3&&blk.getAttribute(ATTRIBUTE.CONNECT_RIGHT)
-								||k==0&&blk.getAttribute(ATTRIBUTE.CONNECT_UP)
-								||k==3&&blk.getAttribute(ATTRIBUTE.CONNECT_DOWN)
-							) {
-								squareCheck = false
-								break
-							}
+		for(i in -hiddenHeight..<heightWithoutHurryupFloor-3) for(j in 0..<width-3) {
+			val rootBlk = getBlock(j, i)
+			var squareCheck = false
+			// We don't have to check colors because this loop checks for
+			// multisquares.
+			if(!(rootBlk==null||rootBlk.isEmpty||rootBlk.isGoldSquareBlock||rootBlk.isSilverSquareBlock)) {
+				// A square is innocent until proven guilty
+				squareCheck = true
+				for(k in 0..3) {
+					for(l in 0..3) {
+						val blk = getBlock(j+l, i+k)
+						// See above, but without the cint checking.
+						if(blk==null||blk.isEmpty||blk.isGoldSquareBlock||blk.isSilverSquareBlock||
+							blk.getAttribute(ATTRIBUTE.BROKEN)||blk.getAttribute(ATTRIBUTE.GARBAGE)||
+							l==0&&blk.getAttribute(ATTRIBUTE.CONNECT_LEFT)||l==3&&blk.getAttribute(ATTRIBUTE.CONNECT_RIGHT)||
+							k==0&&blk.getAttribute(ATTRIBUTE.CONNECT_UP)||k==3&&blk.getAttribute(ATTRIBUTE.CONNECT_DOWN)) {
+							squareCheck = false
+							break
 						}
-						if(!squareCheck) break
 					}
-				}
-				// We found a square! Set all the blocks equal to silver blocks.
-				if(squareCheck) {
-					squares[1]++
-					val squareX = listOf(0, 1, 1, 2)
-					val squareY = listOf(0, 3, 3, 6)
-					for(k in 0..3)
-						for(l in 0..3) getBlock(j+l, i+k)?.apply {
-							cint = Block.COLOR_SQUARE_SILVER_1+squareX[l]+squareY[k]
-							if(k>0) setAttribute(true, ATTRIBUTE.CONNECT_UP)
-							if(k<3) setAttribute(true, ATTRIBUTE.CONNECT_DOWN)
-							if(l>0) setAttribute(true, ATTRIBUTE.CONNECT_LEFT)
-							if(l<3) setAttribute(true, ATTRIBUTE.CONNECT_RIGHT)
-						}
+					if(!squareCheck) break
 				}
 			}
+			// We found a square! Set all the blocks equal to silver blocks.
+			if(squareCheck) {
+				squares[1]++
+				val squareX = listOf(0, 1, 1, 2)
+				val squareY = listOf(0, 3, 3, 6)
+				for(k in 0..3) for(l in 0..3) getBlock(j+l, i+k)?.apply {
+					cint = Block.COLOR_SQUARE_SILVER_1+squareX[l]+squareY[k]
+					if(k>0) setAttribute(true, ATTRIBUTE.CONNECT_UP)
+					if(k<3) setAttribute(true, ATTRIBUTE.CONNECT_DOWN)
+					if(l>0) setAttribute(true, ATTRIBUTE.CONNECT_LEFT)
+					if(l<3) setAttribute(true, ATTRIBUTE.CONNECT_RIGHT)
+				}
+			}
+		}
 
 		return squares
 	}
 //-----------------------------------
-	/** ライン上の爆弾の取得
-	 * @param ignite 爆弾を発火予約する
-	 * @return ライン上の爆弾ブロックの個数
-	 */
-	fun checkBombOnLine(ignite:Boolean):Int {
-		var ret = 0
-		for(i in -hiddenHeight..<heightWithoutHurryupFloor) {
-			val bil = ArrayList<Int>()
-			for(j in 0..<width) {
-				val b = getBlock(j, i)
-				if(b?.isEmpty!=false) {
-					bil.clear()
-					break
-				}
-				if(b.isGemBlock) bil.add(j)
-			}
-			setLineFlag(i, bil.isNotEmpty())
-			if(bil.isNotEmpty()) {
-				ret += bil.size
-				if(ignite)
-					for(j in bil)
-						getBlock(j, i)?.run {
-							cint = Block.COLOR_GEM_RAINBOW
-							setAttribute(true, ATTRIBUTE.ERASE)
-						}
-			}
-		}
-		return ret
-	}
-
-	/** 点火した爆弾ブロックの個数
-	 * @return 点火した爆弾ブロックの個数
-	 */
-	fun checkBombIgnited():Int {
-		var ret = 0
-		for(i in -hiddenHeight..<heightWithoutHurryupFloor)
-			for(j in 0..<width) {
-				val b = getBlock(j, i) ?: continue
-				if(b.cint==Block.COLOR_GEM_RAINBOW&&b.getAttribute(ATTRIBUTE.ERASE))
-					ret++
-			}
-		return ret
-	}
-
-	/** 予約済みの爆弾を爆発させる
-	 * @param w width
-	 * @param h height
-	 * @param bigw
-	 * @param bigh
-	 * @return 破壊するブロックの個数
-	 */
-	@JvmOverloads
-	fun igniteBomb(w:Int = explodWidth, h:Int = explodHeight, bigw:Int = explodWidth, bigh:Int = explodHeight):Int {
-		var ret = 0
-		explodWidth = w
-		explodHeight = h
-		explodHeightBig = bigh
-		explodWidthBig = bigw
-		for(i in -hiddenHeight..<heightWithoutHurryupFloor)
-			for(j in 0..<width) {
-				val b = getBlock(j, i) ?: continue
-				if(b.cint==Block.COLOR_GEM_RAINBOW&&b.getAttribute(ATTRIBUTE.ERASE)) {
-					val big = b.getAttribute(ATTRIBUTE.IGNORE_LINK)
-					ret += detonateBomb(j, i, if(big) bigw else w, if(big) bigh else h)
-					setLineFlag(i, false)
-				}
-			}
-
-		return ret
-	}
-
-	/** 爆弾Blockごとの消去予約をする
-	 * @param x x-coordinates
-	 * @param y y-coordinates
-	 * @return 消えるBlocks
-	 */
-	private fun detonateBomb(x:Int, y:Int, w:Int, h:Int):Int {
-		//range={[4,3],
-		//[3,0],[3,1],[3,2],[3,3],[4,4],[5,5],[5,5],[6,6],[6,6],[7,7]}
-		val my = heightWithoutHurryupFloor
-		var blocks = 0
-		val r =
-			listOf(
-				if(y-h>-hiddenHeight) y-h else -hiddenHeight, if(y+h<my) y+h else my, if(x>w) x-w else 0,
-				if(x+w<width) x+w else width
-			)
-		for(i in r[0]..r[1])
-			for(j in r[2]..r[3]) {
-				val b = getBlock(j, i) ?: continue
-				if(!b.getAttribute(ATTRIBUTE.ERASE)) {
-					blocks++
-					b.setAttribute(true, ATTRIBUTE.ERASE)
-				}
-			}
-		return blocks
-	}
-
-	/** Clear blocks got Erase Frag.
-	 * @param gemType 1 = Bomb,2 = Spark
-	 * @return Total number of blocks cleared.
-	 */
-	fun clearProceed(gemType:Int = 0):Int {
-		var total = 0
-		var b:Block?
-		for(i in -hiddenHeight..<heightWithoutHurryupFloor)
-			for(j in 0..<width) {
-				b = getBlock(j, i)
-				if(b==null) continue
-				if(b.hard>0) {
-					b.hard--
-					continue
-				}
-				if(b.getAttribute(ATTRIBUTE.ERASE)) {
-					total++
-					if(b.getAttribute(ATTRIBUTE.CONNECT_DOWN)) {
-						getBlock(j, i+1)?.run {
-							setAttribute(false, ATTRIBUTE.CONNECT_UP)
-							setAttribute(true, ATTRIBUTE.BROKEN)
-						}
-					}
-					if(b.getAttribute(ATTRIBUTE.CONNECT_UP)) {
-						getBlock(j, i-1)?.run {
-							setAttribute(false, ATTRIBUTE.CONNECT_DOWN)
-							setAttribute(true, ATTRIBUTE.BROKEN)
-						}
-					}
-					if(b.getAttribute(ATTRIBUTE.CONNECT_LEFT)) {
-						getBlock(j-1, i)?.run {
-							setAttribute(false, ATTRIBUTE.CONNECT_RIGHT)
-							setAttribute(true, ATTRIBUTE.BROKEN)
-						}
-					}
-					if(b.getAttribute(ATTRIBUTE.CONNECT_RIGHT)) {
-						getBlock(j+1, i)?.run {
-							setAttribute(false, ATTRIBUTE.CONNECT_LEFT)
-							setAttribute(true, ATTRIBUTE.BROKEN)
-						}
-					}
-
-					if(gemType!=0&&b.isGemBlock&&b.cint!=Block.COLOR_GEM_RAINBOW)
-						setBlockColor(j, i, Block.COLOR_GEM_RAINBOW)
-					else delBlock(j, i)
-				}
-			}
-		return total
-	}
-
-	/** Check for clears of Color Connected straight line.
-	 * @param size Minimum length of connect for a clear
-	 * @param flag `true` to set Block.ATTRIBUTE.ERASE on blocks to be cleared.
-	 * @param diagonals `true` to check diagonals,
-	 * `false` to check only vertical and horizontal
-	 * @param gemSame `true` to check gem blocks
-	 * @return Total number of blocks that would be cleared.
-	 */
-	fun checkConnectLine(size:Int, flag:Boolean, diagonals:Boolean, gemSame:Boolean):Int {
-		if(size<1) return 0
-		if(flag) {
-			setAllAttribute(false, ATTRIBUTE.ERASE)
-			lineColorsCleared = emptyList()
-			gemsCleared = 0
-		}
-		val colored = MutableList(0) {0}
-		var total = 0
-		var x:Int
-		var y:Int
-		var count:Int
-		var blockColor:Int
-		var lineColor:Int
-		for(i in -hiddenHeight..<heightWithoutHurryupFloor)
-			for(j in 0..<width) {
-				lineColor = getBlockColor(j, i, gemSame)
-				if(lineColor==Block.COLOR_NONE||lineColor==Block.COLOR_INVALID) continue
-				for(dir in 0..<if(diagonals) 3 else 2) {
-					blockColor = lineColor
-					x = j
-					y = i
-					count = 0
-					while(lineColor==blockColor) {
-						count++
-						if(dir!=1) y++
-						if(dir!=0) x++
-						blockColor = getBlockColor(x, y, gemSame)
-					}
-					if(count<size) continue
-					total += count
-					if(!flag) continue
-					if(count==size) colored.add(lineColor)
-					x = j
-					y = i
-					blockColor = lineColor
-					while(lineColor==blockColor) {
-						getBlock(x, y)?.apply {
-							if(hard>0) hard--
-							else if(!getAttribute(ATTRIBUTE.ERASE)) {
-								if(isGemBlock) gemsCleared++
-								setAttribute(true, ATTRIBUTE.ERASE)
-							}
-						}
-						if(dir!=1) y++
-						if(dir!=0) x++
-						blockColor = getBlockColor(x, y, gemSame)
-					}
-				}
-			}
-		lineColorsCleared = colored.toList()
-		return total
-	}
-
-	/** Performs all cint clears of sufficient size containing at least one gem
-	 * block.
-	 * @param size Minimum size of cluster for a clear
-	 * @param garbageClear `true` to clear garbage blocks adjacent to cleared
-	 * clusters
-	 * @return Total number of blocks cleared.
-	 */
-	fun gemClearColor(size:Int, garbageClear:Boolean, ignoreHidden:Boolean = false):Int {
-		val temp = Field(this)
-		var total = 0
-		var b:Block?
-
-		for(i in -hiddenHeight..<heightWithoutHurryupFloor)
-			for(j in 0..<width) {
-				b = getBlock(j, i)
-				if(b==null) continue
-				if(!b.isGemBlock) continue
-				val clear = temp.clearColor(j, i, false, garbageClear, true, ignoreHidden)
-				if(clear>=size) {
-					total += clear
-					clearColor(j, i, false, garbageClear, true, ignoreHidden)
-				}
-			}
-		return total
-	}
-
-	/** Performs all cint clears of sufficient size.
-	 * @param size Minimum size of cluster for a clear
-	 * @param garbageClear `true` to clear garbage blocks adjacent to cleared
-	 * clusters
-	 * @param gemSame `true` to check gem blocks
-	 * @return Total number of blocks cleared.
-	 */
-	fun clearColor(size:Int, garbageClear:Boolean, gemSame:Boolean, ignoreHidden:Boolean = false):Int {
-		val temp = Field(this)
-		var total = 0
-		for(i in (if(ignoreHidden) 0 else -hiddenHeight)..<heightWithoutHurryupFloor)
-			for(j in 0..<width) {
-				val clear = temp.clearColor(j, i, false, garbageClear, gemSame, ignoreHidden)
-				if(clear>=size) {
-					total += clear
-					clearColor(j, i, false, garbageClear, gemSame, ignoreHidden)
-				}
-			}
-		return total
-	}
-
-	/** Clears the block at the given position as well as all adjacent blocks of
-	 * the same cint, and any garbage blocks adjacent to the group if
-	 * garbageClear is true.
-	 * @param x x-coordinate
-	 * @param y y-coordinate
-	 * @param flag `true` to set Block.ATTRIBUTE.ERASE to true on
-	 * cleared blocks.
-	 * @param garbageClear `true` to clear garbage blocks adjacent to
-	 * cleared clusters
-	 * @param gemSame `true` to check gem blocks
-	 * @return The number of blocks cleared.
-	 */
-	fun clearColor(x:Int, y:Int, flag:Boolean, garbageClear:Boolean, gemSame:Boolean, ignoreHidden:Boolean):Int {
-		val blockColor = getBlockColor(x, y, gemSame)
-		if(blockColor==Block.COLOR_NONE||blockColor==Block.COLOR_INVALID) return 0
-		return if(getBlock(x, y)?.getAttribute(ATTRIBUTE.GARBAGE)!=false) 0
-		else clearColor(x, y, blockColor, flag, garbageClear, gemSame, ignoreHidden)
-	}
-
-	/** Note: This method is private because calling it with a targetColor
-	 * parameter of BLOCK_COLOR_NONE or BLOCK_COLOR_INVALID may cause an
-	 * infinite loop and crash the game. This check is handled by the above
-	 * public method to avoid redundant checks. */
-	private fun clearColor(
-		x:Int, y:Int, targetColor:Int, flag:Boolean, garbageClear:Boolean, gemSame:Boolean,
-		ignoreHidden:Boolean
-	):Int {
-		if(ignoreHidden&&y<0) return 0
-		val blockColor = getBlockColor(x, y, gemSame)
-		if(blockColor==Block.COLOR_INVALID||blockColor==Block.COLOR_NONE) return 0
-		getBlock(x, y)?.also {b ->
-			if(flag&&b.getAttribute(ATTRIBUTE.ERASE)) return@clearColor 0
-			if(garbageClear&&b.getAttribute(ATTRIBUTE.GARBAGE)
-				&&!b.getAttribute(ATTRIBUTE.WALL)
-			)
-				when {
-					flag -> {
-						b.setAttribute(true, ATTRIBUTE.ERASE)
-						garbageCleared++
-					}
-					b.hard>0 -> b.hard--
-					else -> delBlock(x, y)
-				}
-			if(blockColor!=targetColor) return@clearColor 0
-			when {
-				flag -> b.setAttribute(true, ATTRIBUTE.ERASE)
-				b.hard>0 -> b.hard--
-				else -> delBlock(x, y)
-			}
-		}
-		return (1+clearColor(x+1, y, targetColor, flag, garbageClear, gemSame, ignoreHidden)
-			+clearColor(x-1, y, targetColor, flag, garbageClear, gemSame, ignoreHidden)
-			+clearColor(x, y+1, targetColor, flag, garbageClear, gemSame, ignoreHidden)
-			+clearColor(x, y-1, targetColor, flag, garbageClear, gemSame, ignoreHidden))
-	}
 
 	/** Clears all blocks of the same color
 	 * @param targetColor The color to clear
@@ -1554,15 +998,13 @@ import kotlin.random.Random
 	fun allClearColor(targetColor:Block.COLOR, flag:Boolean, gemSame:Boolean):Int {
 		if(targetColor==Block.COLOR.RAINBOW) return 0
 		var total = 0
-		for(y in -1*hiddenHeight..<height)
-			for(x in 0..<width)
-				getBlock(x, y)?.let {
-					if(it.color==targetColor&&gemSame||it.type==Block.TYPE.BLOCK) {
-						total++
-						if(flag) it.setAttribute(true, ATTRIBUTE.ERASE)
-						else delBlock(x, y)
-					}
-				}
+		for(y in -1*hiddenHeight..<height) for(x in 0..<width) getBlock(x, y)?.let {
+			if(it.color==targetColor&&gemSame||it.type==Block.TYPE.BLOCK) {
+				total++
+				if(flag) it.setAttribute(true, ATTRIBUTE.ERASE)
+				else delBlock(x, y)
+			}
+		}
 		return total
 	}
 
@@ -1579,113 +1021,34 @@ import kotlin.random.Random
 	 * Main routine for cascade gravity.
 	 * @return `true` if something falls. `false` if nothing falls.
 	 */
-	private fun doCascadeGravity():Boolean {
-		var result = false
-		setAllAttribute(false, ATTRIBUTE.CASCADE_FALL)
-		for(i in heightWithoutHurryupFloor-1 downTo -hiddenHeight) for(j in 0..<width) {
-			getBlock(j, i)?.let {blk ->
-				if(!blk.isEmpty&&!blk.getAttribute(ATTRIBUTE.ANTIGRAVITY)) {
-					checkBlockLink(j, i)
-					val fall = !(heightWithoutHurryupFloor-1 downTo -hiddenHeight).any {k ->
-						(0..<width).any {l ->
-							getBlock(l, k)?.let {
-								if(!it.isEmpty&&it.getAttribute(ATTRIBUTE.TEMP_MARK)&&!it.getAttribute(ATTRIBUTE.CASCADE_FALL))
-									getBlock(l, k+1)?.let {bBelow ->
-										getCoordAttribute(l, k+1)==COORD_WALL||!bBelow.isEmpty&&!bBelow.getAttribute(ATTRIBUTE.TEMP_MARK)
-									} else false
-							} ?: false
-						}
-					}
-					if(fall) {
-						result = true
-						cascadeDown()
-					}
-				}
-			}
-		}
-		setAllAttribute(false, ATTRIBUTE.TEMP_MARK, ATTRIBUTE.CASCADE_FALL)
-
-		/*
-			for(int i = (hidden_height * -1); i < getHeightWithoutHurryupFloor(); i++) {
-				setLineFlag(i, false);
-			}
-			*/return result
-	}
+	private fun doCascadeGravity():Boolean = LineGravity.CASCADE.fallInstant(this)>0
 	/**
 	 * Routine for cascade gravity which checks from the top down for a slower fall animation.
 	 * @return `true` if something falls. `false` if nothing falls.
 	 */
-	private fun doCascadeSlow():Boolean {
-		var result = false
-		setAllAttribute(false, ATTRIBUTE.CASCADE_FALL)
-		for(i in hiddenHeight*-1..<heightWithoutHurryupFloor) for(j in 0..<width) getBlock(j, i)?.let {blk ->
-			if(!blk.isEmpty&&!blk.getAttribute(ATTRIBUTE.ANTIGRAVITY)) {
-
-				checkBlockLink(j, i)
-				val fall = !(heightWithoutHurryupFloor-1 downTo -hiddenHeight).any {k ->
-					(0..<width).any {l ->
-						getBlock(l, k)?.let {
-							if(!it.isEmpty&&it.getAttribute(ATTRIBUTE.TEMP_MARK)&&!it.getAttribute(ATTRIBUTE.CASCADE_FALL))
-								getBlock(l, k+1)?.let {bBelow ->
-									getCoordAttribute(l, k+1)==COORD_WALL||!bBelow.isEmpty&&!bBelow.getAttribute(ATTRIBUTE.TEMP_MARK)
-								} else false
-						} ?: false
-					}
-				}
-				if(fall) {
-					result = true
-					cascadeDown()
-				}
-			}
-		}
-		setAllAttribute(false, ATTRIBUTE.TEMP_MARK, ATTRIBUTE.CASCADE_FALL)
-		return result
-	}
-
-	private fun cascadeDown() {
-		for(y in heightWithoutHurryupFloor-1 downTo -hiddenHeight) for(x in 0..<width)
-			getBlock(x, y)?.let {bTemp ->
-				getBlock(x, y+1)?.let {bBelow ->
-					if(getCoordAttribute(x, y+1)!=COORD_WALL&&!bTemp.isEmpty&&bBelow.isEmpty&&
-						bTemp.getAttribute(ATTRIBUTE.TEMP_MARK)&&!bTemp.getAttribute(ATTRIBUTE.CASCADE_FALL)) {
-						bTemp.setAttribute(false, ATTRIBUTE.TEMP_MARK)
-						bTemp.setAttribute(true, ATTRIBUTE.CASCADE_FALL, ATTRIBUTE.LAST_COMMIT)
-						if(bTemp.getAttribute(ATTRIBUTE.IGNORE_LINK)) bTemp.setAttribute(
-							false, ATTRIBUTE.CONNECT_LEFT, ATTRIBUTE.CONNECT_DOWN, ATTRIBUTE.CONNECT_UP, ATTRIBUTE.CONNECT_RIGHT
-						)
-						setBlock(x, y+1, bTemp)
-						delBlock(x, y)
-					}
-				}
-			}
-	}
+	private fun doCascadeSlow():Boolean = LineGravity.CASCADE.fallSingle(this)>0
 
 	/** Checks the connection of blocks and set "mark" to each block.
 	 * @param x X coord
 	 * @param y Y coord
 	 */
-	private fun checkBlockLink(x:Int, y:Int) {
+	internal fun checkBlockLink(x:Int, y:Int) {
 		setAllAttribute(false, ATTRIBUTE.TEMP_MARK)
-		checkBlockLinkSub(x, y)
-	}
+		fun checkBlockLinkSub(x:Int, y:Int) {
+			getBlock(x, y)?.also {
+				if(!it.isEmpty&&!it.getAttribute(ATTRIBUTE.TEMP_MARK)) {
+					it.setAttribute(true, ATTRIBUTE.TEMP_MARK)
 
-	/** Subroutine for checkBlockLink.
-	 * @param x X coord
-	 * @param y Y coord
-	 */
-	private fun checkBlockLinkSub(x:Int, y:Int) {
-		getBlock(x, y)?.also {
-			if(!it.isEmpty&&!it.getAttribute(ATTRIBUTE.TEMP_MARK)) {
-				it.setAttribute(true, ATTRIBUTE.TEMP_MARK)
-
-				if(!it.getAttribute(ATTRIBUTE.IGNORE_LINK)) {
-					if(it.getAttribute(ATTRIBUTE.CONNECT_UP)) checkBlockLinkSub(x, y-1)
-					if(it.getAttribute(ATTRIBUTE.CONNECT_DOWN)) checkBlockLinkSub(x, y+1)
-					if(it.getAttribute(ATTRIBUTE.CONNECT_LEFT)) checkBlockLinkSub(x-1, y)
-					if(it.getAttribute(ATTRIBUTE.CONNECT_RIGHT)) checkBlockLinkSub(x+1, y)
+					if(!it.getAttribute(ATTRIBUTE.IGNORE_LINK)) {
+						if(it.getAttribute(ATTRIBUTE.CONNECT_UP)) checkBlockLinkSub(x, y-1)
+						if(it.getAttribute(ATTRIBUTE.CONNECT_DOWN)) checkBlockLinkSub(x, y+1)
+						if(it.getAttribute(ATTRIBUTE.CONNECT_LEFT)) checkBlockLinkSub(x-1, y)
+						if(it.getAttribute(ATTRIBUTE.CONNECT_RIGHT)) checkBlockLinkSub(x+1, y)
+					}
 				}
 			}
 		}
+		checkBlockLinkSub(x, y)
 	}
 
 	/** Checks the connection of blocks and set the "broken" flag to each block.
@@ -1693,92 +1056,74 @@ import kotlin.random.Random
 	 * @param x X coord
 	 * @param y Y coord
 	 */
-	private fun setBlockLinkBroken(x:Int, y:Int) {
+	fun setBlockLinkBroken(x:Int, y:Int) {
 		setAllAttribute(false, ATTRIBUTE.TEMP_MARK)
+		fun setBlockLinkBrokenSub(x:Int, y:Int) {
+			getBlock(x, y)?.run {
+				if(!isEmpty&&!getAttribute(ATTRIBUTE.TEMP_MARK)&&isNormalBlock) {
+					setAttribute(true, ATTRIBUTE.TEMP_MARK)
+					setAttribute(true, ATTRIBUTE.BROKEN)
+					if(getAttribute(ATTRIBUTE.CONNECT_UP)) setBlockLinkBrokenSub(x, y-1)
+					if(getAttribute(ATTRIBUTE.CONNECT_DOWN)) setBlockLinkBrokenSub(x, y+1)
+					if(getAttribute(ATTRIBUTE.CONNECT_LEFT)) setBlockLinkBrokenSub(x-1, y)
+					if(getAttribute(ATTRIBUTE.CONNECT_RIGHT)) setBlockLinkBrokenSub(x+1, y)
+				}
+			}
+		}
+
 		setBlockLinkBrokenSub(x, y)
 	}
 
-	/** Subroutine for setBlockLinkBrokenSub.
-	 * @param x X coord
-	 * @param y Y coord
-	 */
-	private fun setBlockLinkBrokenSub(x:Int, y:Int) {
-		getBlock(x, y)?.run {
-			if(!isEmpty&&!getAttribute(ATTRIBUTE.TEMP_MARK)&&isNormalBlock) {
-				setAttribute(true, ATTRIBUTE.TEMP_MARK)
-				setAttribute(true, ATTRIBUTE.BROKEN)
-				if(getAttribute(ATTRIBUTE.CONNECT_UP)) setBlockLinkBrokenSub(x, y-1)
-				if(getAttribute(ATTRIBUTE.CONNECT_DOWN)) setBlockLinkBrokenSub(x, y+1)
-				if(getAttribute(ATTRIBUTE.CONNECT_LEFT)) setBlockLinkBrokenSub(x-1, y)
-				if(getAttribute(ATTRIBUTE.CONNECT_RIGHT)) setBlockLinkBrokenSub(x+1, y)
-			}
-		}
-	}
-
-	/** Checks the cint of blocks and set the connection flags to each
-	 * block. */
+	/** Checks the color of all blocks in this Field and set the connection flags to each blocks. */
 	fun setBlockLinkByColor() {
-		for(i in -hiddenHeight..<heightWithoutHurryupFloor)
-			for(j in 0..<width)
-				setBlockLinkByColor(j, i)
+		for(i in -hiddenHeight..<heightWithoutHurryupFloor) for(j in 0..<width) setBlockLinkByColor(j, i)
 	}
 
-	/** Checks the cint of blocks and set the connection flags to each block.
-	 * @param x X coord
-	 * @param y Y coord
-	 */
+	/** Checks the color of block on [x],[y] position and set the connection flags to each block. */
 	fun setBlockLinkByColor(x:Int, y:Int) {
 		setAllAttribute(false, ATTRIBUTE.TEMP_MARK)
+		fun setBlockLinkByColorSub(x:Int, y:Int) {
+			getBlock(x, y)?.run {
+				if(!isEmpty&&!getAttribute(ATTRIBUTE.TEMP_MARK)&&!getAttribute(ATTRIBUTE.GARBAGE)&&isNormalBlock) {
+					setAttribute(true, ATTRIBUTE.TEMP_MARK)
+					if(getBlockColor(x, y-1)==color) {
+						setAttribute(true, ATTRIBUTE.CONNECT_UP)
+						setBlockLinkByColorSub(x, y-1)
+					} else setAttribute(false, ATTRIBUTE.CONNECT_UP)
+					if(getBlockColor(x, y+1)==color) {
+						setAttribute(true, ATTRIBUTE.CONNECT_DOWN)
+						setBlockLinkByColorSub(x, y+1)
+					} else setAttribute(false, ATTRIBUTE.CONNECT_DOWN)
+					if(getBlockColor(x-1, y)==color) {
+						setAttribute(true, ATTRIBUTE.CONNECT_LEFT)
+						setBlockLinkByColorSub(x-1, y)
+					} else setAttribute(false, ATTRIBUTE.CONNECT_LEFT)
+					if(getBlockColor(x+1, y)==color) {
+						setAttribute(true, ATTRIBUTE.CONNECT_RIGHT)
+						setBlockLinkByColorSub(x+1, y)
+					} else setAttribute(false, ATTRIBUTE.CONNECT_RIGHT)
+				}
+			}
+		}
+
 		setBlockLinkByColorSub(x, y)
 	}
 
-	/** Subroutine for setBlockLinkByColorSub.
-	 * @param x X coord
-	 * @param y Y coord
-	 */
-	private fun setBlockLinkByColorSub(x:Int, y:Int) {
-		getBlock(x, y)?.run {
-			if(!isEmpty&&!getAttribute(ATTRIBUTE.TEMP_MARK)&&!getAttribute(ATTRIBUTE.GARBAGE)&&isNormalBlock) {
-				setAttribute(true, ATTRIBUTE.TEMP_MARK)
-				if(getBlockColor(x, y-1)==color) {
-					setAttribute(true, ATTRIBUTE.CONNECT_UP)
-					setBlockLinkByColorSub(x, y-1)
-				} else setAttribute(false, ATTRIBUTE.CONNECT_UP)
-				if(getBlockColor(x, y+1)==color) {
-					setAttribute(true, ATTRIBUTE.CONNECT_DOWN)
-					setBlockLinkByColorSub(x, y+1)
-				} else setAttribute(false, ATTRIBUTE.CONNECT_DOWN)
-				if(getBlockColor(x-1, y)==color) {
-					setAttribute(true, ATTRIBUTE.CONNECT_LEFT)
-					setBlockLinkByColorSub(x-1, y)
-				} else setAttribute(false, ATTRIBUTE.CONNECT_LEFT)
-				if(getBlockColor(x+1, y)==color) {
-					setAttribute(true, ATTRIBUTE.CONNECT_RIGHT)
-					setBlockLinkByColorSub(x+1, y)
-				} else setAttribute(false, ATTRIBUTE.CONNECT_RIGHT)
-			}
-		}
-	}
-
 	/** HURRY UPの地面を一番下に追加
-	 * @param lines 上げるLinescount
+	 * @param lines 上げるLines count
 	 * @param skin 地面の絵柄
 	 */
 	fun addHurryupFloor(lines:Int, skin:Int) {
-		if(lines>0)
-			for(k in 0..<lines) {
-				pushUp(1)
+		if(lines>0) for(k in 0..<lines) {
+			pushUp(1)
 
-				for(j in 0..<width) {
-					val blk = Block(
-						Block.COLOR.BLACK, Block.TYPE.BLOCK, skin,
-						ATTRIBUTE.WALL, ATTRIBUTE.GARBAGE, ATTRIBUTE.VISIBLE
-					)
-					setBlock(j, heightWithoutHurryupFloor-1, blk)
-				}
-
-				hurryUpFloorLines++
+			for(j in 0..<width) {
+				val blk = Block(Block.COLOR.BLACK, Block.TYPE.BLOCK, skin, ATTRIBUTE.WALL, ATTRIBUTE.GARBAGE, ATTRIBUTE.VISIBLE)
+				setBlock(j, heightWithoutHurryupFloor-1, blk)
 			}
+
+			hurryUpFloorLines++
+		}
 		else if(lines<0) {
 			val l = minOf(lines, hurryUpFloorLines)
 			hurryUpFloorLines -= l
@@ -1792,7 +1137,7 @@ import kotlin.random.Random
 	fun rowToString(row:List<Block?>?):String {
 		val strResult = StringBuilder()
 
-		row?.forEach {strResult.append(it ?: " ")}
+		row?.forEach {strResult.append(it?:" ")}
 
 		return "$strResult"
 	}
@@ -1803,12 +1148,10 @@ import kotlin.random.Random
 	fun fieldToString():String {
 		var strResult = StringBuilder()
 
-		for(i in height-1 downTo maxOf(-1, highestBlockY))
-			strResult.append(rowToString(getRow(i)))
+		for(i in height-1 downTo maxOf(-1, highestBlockY)) strResult.append(rowToString(getRow(i)))
 
 		// 終わりの0を取り除く
-		while("$strResult".endsWith("0"))
-			strResult = StringBuilder(strResult.substring(0, strResult.length-1))
+		while("$strResult".endsWith("0")) strResult = StringBuilder(strResult.substring(0, strResult.length-1))
 
 		return "$strResult"
 	}
@@ -1822,8 +1165,7 @@ import kotlin.random.Random
 	@JvmOverloads
 	fun stringToRow(str:String, skin:Int = 0, isGarbage:Boolean = false, isWall:Boolean = false):Array<Block?> {
 		val row = arrayOfNulls<Block>(width)
-		for(j in 0..<width) {
-			/* NullNoname's original approach from the old stringToField: If a
+		for(j in 0..<width) {      /* NullNoname's original approach from the old stringToField: If a
 			 * character outside the row string is referenced, default to an
 			 * empty block by ignoring the exception. */
 			try {
@@ -1851,13 +1193,10 @@ import kotlin.random.Random
 	 * @param highestWallY 最も高いHurryupBlockの位置
 	 */
 	@JvmOverloads
-	fun stringToField(
-		str:String, skin:Int = 0, highestGarbageY:Int = Integer.MAX_VALUE,
-		highestWallY:Int = Integer.MAX_VALUE
-	) {
+	fun stringToField(str:String, skin:Int = 0, highestGarbageY:Int = Integer.MAX_VALUE,
+		highestWallY:Int = Integer.MAX_VALUE) {
 		for(i in -1..<height) {
-			val index = (height-1-i)*width
-			/* Much like NullNoname's try/catch from the old stringToField that
+			val index = (height-1-i)*width      /* Much like NullNoname's try/catch from the old stringToField that
 			 * is now in stringToRow, we need to skip over substrings
 			 * referenced
 			 * outside the field string -- empty rows. */
@@ -1878,8 +1217,8 @@ import kotlin.random.Random
 		val strResult = StringBuilder()
 
 		row?.forEach {
-			strResult.append((it?.cint ?: 0).toString(16)).append("/")
-			strResult.append((it?.aint ?: 0).toString(16)).append(";")
+			strResult.append((it?.cint?:0).toString(16)).append("/")
+			strResult.append((it?.aint?:0).toString(16)).append(";")
 		}
 
 		return "$strResult"
@@ -1891,10 +1230,8 @@ import kotlin.random.Random
 	fun attrFieldToString():String {
 		var strResult = StringBuilder()
 
-		for(i in height-1 downTo maxOf(-1, highestBlockY))
-			strResult.append(attrRowToString(getRow(i)))
-		while("$strResult".endsWith("0/0;"))
-			strResult = StringBuilder(strResult.substring(0, strResult.length-4))
+		for(i in height-1 downTo maxOf(-1, highestBlockY)) strResult.append(attrRowToString(getRow(i)))
+		while("$strResult".endsWith("0/0;")) strResult = StringBuilder(strResult.substring(0, strResult.length-4))
 
 		return "$strResult"
 	}
@@ -1932,11 +1269,9 @@ import kotlin.random.Random
 					if(index+it<strArray.size) strArray[index+it] else ""
 				}
 				val row = attrStringToRow(strArray2, skin)
-				for(j in 0..<width)
-					setBlock(j, i, row[j])
+				for(j in 0..<width) setBlock(j, i, row[j])
 			} catch(e:Exception) {
-				for(j in 0..<width)
-					setBlock(j, i, null)
+				for(j in 0..<width) setBlock(j, i, null)
 			}
 		}
 	}
@@ -1951,12 +1286,10 @@ import kotlin.random.Random
 			for(j in 0..<width) {
 				val blk = getBlock(j, i)
 
-				str.append(
-					when(blk?.color) {
-						null -> "."
-						else -> "${blk.cint}"
-					}
-				)
+				str.append(when(blk?.color) {
+					null -> "."
+					else -> "${blk.cint}"
+				})
 			}
 
 			str.append("\n")
@@ -1965,43 +1298,9 @@ import kotlin.random.Random
 		return "$str"
 	}
 
-	fun checkColor(size:Int, flag:Boolean, garbageClear:Boolean, gemSame:Boolean, ignoreHidden:Boolean):Int {
-		val temp = Field(this)
-		var total = 0
-		val colorsClearedArray = BooleanArray(7)
-		if(flag) {
-			setAllAttribute(false, ATTRIBUTE.ERASE)
-			garbageCleared = 0
-			colorClearExtraCount = 0
-			colorsCleared = 0
-			for(i in 0..6)
-				colorsClearedArray[i] = false
-		}
-
-		for(i in -hiddenHeight..<heightWithoutHurryupFloor)
-			for(j in 0..<width) {
-				val clear = temp.clearColor(j, i, false, garbageClear, gemSame, ignoreHidden)
-				if(clear>=size) {
-					total += clear
-					if(flag) {
-						val blockColor = getBlockColor(j, i, gemSame)
-						clearColor(j, i, true, garbageClear, gemSame, ignoreHidden)
-						colorClearExtraCount += clear-size
-						if(blockColor in 2..8) colorsClearedArray[blockColor-2] = true
-					}
-				}
-			}
-		if(flag)
-			for(i in 0..6)
-				if(colorsClearedArray[i]) colorsCleared++
-		return total
-	}
-
 	@JvmOverloads
-	fun garbageDrop(
-		engine:GameEngine, drop:Int, big:Boolean, hard:Int = 0, countdown:Int = 0, avoidColumn:Int = -1,
-		color:Int = Block.COLOR_WHITE
-	) {
+	fun garbageDrop(engine:GameEngine, drop:Int, big:Boolean, hard:Int = 0, countdown:Int = 0, avoidColumn:Int = -1,
+		color:Int = Block.COLOR_WHITE) {
 		var d = drop
 		var y = -1*hiddenHeight
 		var actualWidth = width
@@ -2020,40 +1319,32 @@ import kotlin.random.Random
 		val placeBlock = BooleanArray(actualWidth)
 		var j:Int
 		if(d>actualWidth shr 1) {
-			for(x in 0..<actualWidth)
-				placeBlock[x] = true
+			for(x in 0..<actualWidth) placeBlock[x] = true
 			var start = actualWidth
 			if(avoidColumn in 0..<actualWidth) {
 				start--
 				placeBlock[avoidColumn] = false
 			}
 			for(i in start downTo d+1) {
-				do
-					j = engine.random.nextInt(actualWidth)
+				do j = engine.random.nextInt(actualWidth)
 				while(!placeBlock[j])
 				placeBlock[j] = false
 			}
 		} else {
-			for(x in 0..<actualWidth)
-				placeBlock[x] = false
+			for(x in 0..<actualWidth) placeBlock[x] = false
 			for(i in 0..<d) {
-				do
-					j = engine.random.nextInt(actualWidth)
+				do j = engine.random.nextInt(actualWidth)
 				while(placeBlock[j]&&j!=avoidColumn)
 				placeBlock[j] = true
 			}
 		}
 
-		for(x in 0..<actualWidth)
-			if(placeBlock[x]) garbageDropPlace(x*bigMove, y, big, hard, color, countdown)
+		for(x in 0..<actualWidth) if(placeBlock[x]) garbageDropPlace(x*bigMove, y, big, hard, color, countdown)
 	}
 
 	@JvmOverloads
-	fun garbageDropPlace(
-		x:Int, y:Int, big:Boolean, hard:Int, color:Int = Block.COLOR_WHITE,
-		countdown:Int = 0
-	):Boolean {
-		val b = getBlock(x, y) ?: return false
+	fun garbageDropPlace(x:Int, y:Int, big:Boolean, hard:Int, color:Int = Block.COLOR_WHITE, countdown:Int = 0):Boolean {
+		val b = getBlock(x, y)?:return false
 		if(big) {
 			garbageDropPlace(x+1, y, false, hard)
 			garbageDropPlace(x, y+1, false, hard)
@@ -2079,42 +1370,9 @@ import kotlin.random.Random
 		return false
 	}
 
-	fun canCascade():Boolean {
-		for(i in heightWithoutHurryupFloor-1 downTo -hiddenHeight)
-			for(j in 0..<width) {
-				val blk = getBlock(j, i)
-
-				if(blk!=null&&!blk.isEmpty&&!blk.getAttribute(ATTRIBUTE.ANTIGRAVITY)) {
-					var fall = true
-					checkBlockLink(j, i)
-
-					for(k in heightWithoutHurryupFloor-1 downTo -hiddenHeight)
-						for(l in 0..<width) {
-							val bTemp = getBlock(l, k)
-
-							if(bTemp!=null&&!bTemp.isEmpty&&bTemp.getAttribute(ATTRIBUTE.TEMP_MARK)
-								&&!bTemp.getAttribute(ATTRIBUTE.CASCADE_FALL)
-							) {
-								val bBelow = getBlock(l, k+1)
-
-								if(getCoordAttribute(l, k+1)==COORD_WALL||(bBelow!=null&&!bBelow.isEmpty
-										&&!bBelow.getAttribute(ATTRIBUTE.TEMP_MARK))
-								)
-									fall = false
-							}
-						}
-
-					if(fall) return true
-				}
-			}
-		return false
-	}
-
 	/** mainly for Physician, generate random maps */
-	fun addRandomHoverBlocks(
-		engine:GameEngine, count:Int, colors:List<Pair<Block.COLOR, Block.TYPE>>,
-		minY:Int, avoidLines:Boolean, flashMode:Boolean = false
-	) {
+	fun addRandomHoverBlocks(engine:GameEngine, count:Int, colors:List<Pair<Block.COLOR, Block.TYPE>>, minY:Int,
+		avoidLines:Boolean, flashMode:Boolean = false) {
 		val posRand = Random(engine.random.nextLong())
 		val colorRand = Random(engine.random.nextLong())
 		val placeHeight = height-minY
@@ -2157,144 +1415,129 @@ import kotlin.random.Random
 		var colorUp:Block.COLOR?
 		var colorLeft:Block.COLOR?
 		var cIndex:Int
-		for(y in minY..<height)
-			for(x in 0..<width)
-				if(placeBlock[x][y-minY]) {
-					colorUp = getBlockColor(x, y-2)
-					colorLeft = getBlockColor(x-2, y)
-					val blockColor = getBlockColor(x, y)
-					if(blockColor!=colorUp&&blockColor!=colorLeft) continue
+		for(y in minY..<height) for(x in 0..<width) if(placeBlock[x][y-minY]) {
+			colorUp = getBlockColor(x, y-2)
+			colorLeft = getBlockColor(x-2, y)
+			val blockColor = getBlockColor(x, y)
+			if(blockColor!=colorUp&&blockColor!=colorLeft) continue
 
-					cIndex = colors.indexOfFirst {it.first==blockColor}
+			cIndex = colors.indexOfFirst {it.first==blockColor}
 
-					if(cIndex!=-1) {
-						val color = colors.map {it.first}
-						if(color.size==2) {
-							if(color[0]==colorUp&&color[1]!=colorLeft||color[0]==colorLeft&&color[1]!=colorUp) {
-								colorCounts[1]++
-								colorCounts[cIndex]--
-								setBlockColor(x, y, color[1])
-							} else if(color[1]==colorUp&&color[0]!=colorLeft||color[1]==colorLeft&&color[0]!=colorUp) {
-								colorCounts[0]++
-								colorCounts[cIndex]--
-								setBlockColor(x, y, color[0])
-							}
-						} else {
-							var newColor:Int
-							do
-								newColor = colorRand.nextInt(color.size)
-							while(color[newColor]==colorUp||color[newColor]==colorLeft)
-							colorCounts[cIndex]--
-							colorCounts[newColor]++
-							setBlockColor(x, y, color[newColor])
-						}
+			if(cIndex!=-1) {
+				val color = colors.map {it.first}
+				if(color.size==2) {
+					if(color[0]==colorUp&&color[1]!=colorLeft||color[0]==colorLeft&&color[1]!=colorUp) {
+						colorCounts[1]++
+						colorCounts[cIndex]--
+						setBlockColor(x, y, color[1])
+					} else if(color[1]==colorUp&&color[0]!=colorLeft||color[1]==colorLeft&&color[0]!=colorUp) {
+						colorCounts[0]++
+						colorCounts[cIndex]--
+						setBlockColor(x, y, color[0])
 					}
+				} else {
+					var newColor:Int
+					do newColor = colorRand.nextInt(color.size)
+					while(color[newColor]==colorUp||color[newColor]==colorLeft)
+					colorCounts[cIndex]--
+					colorCounts[newColor]++
+					setBlockColor(x, y, color[newColor])
 				}
+			}
+		}
 		val minCount = count/colors.size
 		val maxCount = (count+colors.size-1)/colors.size
 		var done = true
-		for(colorCount in colorCounts)
-			if(colorCount>maxCount) {
-				done = false
-				break
-			}
+		for(colorCount in colorCounts) if(colorCount>maxCount) {
+			done = false
+			break
+		}
 		var bestSwitch:Int
 		var bestSwitchCount:Int
 		var excess = 0
 		var fill:Boolean
 		while(!done) {
 			done = true
-			for(y in minY..<height)
-				for(x in 0..<width) {
-					val blockColor = getBlockColor(x, y)
-					fill = getBlock(x, y)==null
-					cIndex = -1
-					if(!fill) {
-						if(!placeBlock[x][y-minY]) continue
-						cIndex = colors.indexOfFirst {it.first==blockColor}
-						if(cIndex==-1) continue
-						if(colorCounts[cIndex]<=maxCount) continue
-					}
-
-					val canSwitch = colorCounts.map {
-						it<maxCount&&!listOf(
-							getBlockColor(x, y-2), getBlockColor(x, y+2),
-							getBlockColor(x-2, y), getBlockColor(x+2, y)
-						).any {c -> !colors.any {(first) -> first==c}}
-					}
-					bestSwitch = -1
-					bestSwitchCount = Integer.MAX_VALUE
-					for(i in colorCounts.indices)
-						if(canSwitch[i]&&colorCounts[i]<bestSwitchCount) {
-							bestSwitch = i
-							bestSwitchCount = colorCounts[i]
-						}
-					if(bestSwitch!=-1) {
-						if(fill) {
-							excess++
-							addHoverBlock(x, y, colors[bestSwitch])
-							placeBlock[x][y-minY] = true
-						} else {
-							colorCounts[cIndex]--
-							setBlockColor(x, y, colors[bestSwitch])
-						}
-						colorCounts[bestSwitch]++
-						done = false
-					}
+			for(y in minY..<height) for(x in 0..<width) {
+				val blockColor = getBlockColor(x, y)
+				fill = getBlock(x, y)==null
+				cIndex = -1
+				if(!fill) {
+					if(!placeBlock[x][y-minY]) continue
+					cIndex = colors.indexOfFirst {it.first==blockColor}
+					if(cIndex==-1) continue
+					if(colorCounts[cIndex]<=maxCount) continue
 				}
+
+				val canSwitch = colorCounts.map {
+					it<maxCount&&!listOf(getBlockColor(x, y-2), getBlockColor(x, y+2), getBlockColor(x-2, y),
+						getBlockColor(x+2, y)).any {c -> !colors.any {(first) -> first==c}}
+				}
+				bestSwitch = -1
+				bestSwitchCount = Integer.MAX_VALUE
+				for(i in colorCounts.indices) if(canSwitch[i]&&colorCounts[i]<bestSwitchCount) {
+					bestSwitch = i
+					bestSwitchCount = colorCounts[i]
+				}
+				if(bestSwitch!=-1) {
+					if(fill) {
+						excess++
+						addHoverBlock(x, y, colors[bestSwitch])
+						placeBlock[x][y-minY] = true
+					} else {
+						colorCounts[cIndex]--
+						setBlockColor(x, y, colors[bestSwitch])
+					}
+					colorCounts[bestSwitch]++
+					done = false
+				}
+			}
 			while(excess>0) {
 				val x = posRand.nextInt(width)
 				val y = posRand.nextInt(placeHeight)+minY
 				if(!placeBlock[x][y-minY]) continue
 				val blockColor = getBlockColor(x, y)
-				for(i in colors.indices)
-					if(colors[i].first==blockColor) {
-						if(colorCounts[i]>minCount) {
-							delBlock(x, y)
-							colorCounts[i]--
-							excess--
-							placeBlock[x][y-minY] = false
-						}
-						break
+				for(i in colors.indices) if(colors[i].first==blockColor) {
+					if(colorCounts[i]>minCount) {
+						delBlock(x, y)
+						colorCounts[i]--
+						excess--
+						placeBlock[x][y-minY] = false
 					}
-			}
-			var balanced = true
-			for(colorCount in colorCounts)
-				if(colorCount>maxCount) {
-					balanced = false
 					break
 				}
+			}
+			var balanced = true
+			for(colorCount in colorCounts) if(colorCount>maxCount) {
+				balanced = false
+				break
+			}
 			if(balanced) done = true
 		}
 		if(!flashMode) return
-		val gemNeeded = colors.mapIndexed {i, (first) -> first.color&&colorCounts[i]>0}
-			.toMutableList()
+		val gemNeeded = colors.mapIndexed {i, (first) -> first.color&&colorCounts[i]>0}.toMutableList()
 		done = !gemNeeded.any()
 		while(!done) {
 			val x = posRand.nextInt(width)
 			val y = posRand.nextInt(placeHeight)+minY
 			if(!placeBlock[x][y-minY]) continue
 			val blockColor = getBlockColor(x, y)
-			for(i in colors.indices)
-				if(colors[i].first==blockColor) {
-					if(gemNeeded[i]) {
-						getBlock(x, y)?.type = Block.TYPE.GEM
-						gemNeeded[i] = false
-					}
-					break
+			for(i in colors.indices) if(colors[i].first==blockColor) {
+				if(gemNeeded[i]) {
+					getBlock(x, y)?.type = Block.TYPE.GEM
+					gemNeeded[i] = false
 				}
+				break
+			}
 			done = true
 			for(i in colors.indices) if(gemNeeded[i]) done = false
 		}
 	}
 
-	fun addHoverBlock(x:Int, y:Int, mode:Pair<Block.COLOR, Block.TYPE>, skin:Int = 0):Boolean = setBlock(
-		x, y,
-		Block(mode, skin, ATTRIBUTE.ANTIGRAVITY, ATTRIBUTE.BROKEN, ATTRIBUTE.VISIBLE).apply {
-			setAttribute(
-				false, ATTRIBUTE.GARBAGE, ATTRIBUTE.ERASE,
-				ATTRIBUTE.CONNECT_UP, ATTRIBUTE.CONNECT_DOWN, ATTRIBUTE.CONNECT_LEFT, ATTRIBUTE.CONNECT_RIGHT
-			)
+	fun addHoverBlock(x:Int, y:Int, mode:Pair<Block.COLOR, Block.TYPE>, skin:Int = 0):Boolean =
+		setBlock(x, y, Block(mode, skin, ATTRIBUTE.ANTIGRAVITY, ATTRIBUTE.BROKEN, ATTRIBUTE.VISIBLE).apply {
+			setAttribute(false, ATTRIBUTE.GARBAGE, ATTRIBUTE.ERASE, ATTRIBUTE.CONNECT_UP, ATTRIBUTE.CONNECT_DOWN,
+				ATTRIBUTE.CONNECT_LEFT, ATTRIBUTE.CONNECT_RIGHT)
 		})
 
 	fun shuffleColors(blockColors:List<Block.COLOR>, numColors:Int, rand:Random) {
@@ -2311,34 +1554,12 @@ import kotlin.random.Random
 				bC[j] = temp
 			}
 		}
-		for(x in 0..<width)
-			for(y in 0..<height) {
-				var temp = getBlockColor(x, y, false)-1
-				if(numColors==3&&temp>=3) temp--
-				if(temp in 0..<maxX) setBlockColor(x, y, bC[temp])
-			}
+		for(x in 0..<width) for(y in 0..<height) {
+			var temp = getBlockColor(x, y, false)-1
+			if(numColors==3&&temp>=3) temp--
+			if(temp in 0..<maxX) setBlockColor(x, y, bC[temp])
+		}
 	}
-
-	fun gemColorCheck(size:Int, flag:Boolean, garbageClear:Boolean, ignoreHidden:Boolean):Int {
-		if(flag) setAllAttribute(false, ATTRIBUTE.ERASE)
-
-		val temp = Field(this)
-		var total = 0
-		var b:Block?
-
-		for(i in -hiddenHeight..<heightWithoutHurryupFloor)
-			for(j in 0..<width) {
-				b = getBlock(j, i)
-				if(b?.isGemBlock!=true) continue
-				val clear = temp.clearColor(j, i, false, garbageClear, true, ignoreHidden)
-				if(clear>=size) {
-					total += clear
-					if(flag) clearColor(j, i, true, garbageClear, true, ignoreHidden)
-				}
-			}
-		return total
-	}
-
 	/** Instant avalanche, skips intermediate (cascade falling animation) steps.
 	 * @return true if it affected the field at all, false otherwise.
 	 */
@@ -2348,19 +1569,16 @@ import kotlin.random.Random
 		var result = false
 		for(x in 0..<width) {
 			y1 = height-1
-			while(!getBlockEmpty(x, y1)&&y1>=-1*hiddenHeight)
-				y1--
+			while(!getBlockEmpty(x, y1)&&y1>=-1*hiddenHeight) y1--
 			y2 = y1
-			while(getBlockEmpty(x, y2)&&y2>=-1*hiddenHeight)
-				y2--
+			while(getBlockEmpty(x, y2)&&y2>=-1*hiddenHeight) y2--
 			while(y2>=-1*hiddenHeight) {
 				setBlock(x, y1, getBlock(x, y2))
 				setBlock(x, y2, Block())
 				y1--
 				y2--
 				result = true
-				while(getBlockEmpty(x, y2)&&y2>=-1*hiddenHeight)
-					y2--
+				while(getBlockEmpty(x, y2)&&y2>=-1*hiddenHeight) y2--
 			}
 		}
 		return result
@@ -2398,12 +1616,10 @@ import kotlin.random.Random
 		var x2:Int
 		for(y in highestBlockY..<height) {
 			x1 = 0
-			while(!getBlockEmpty(x1, y))
-				x1++
+			while(!getBlockEmpty(x1, y)) x1++
 			x2 = x1
 			while(x2<width) {
-				while(getBlockEmpty(x2, y)&&x2<width)
-					x2++
+				while(getBlockEmpty(x2, y)&&x2<width) x2++
 				setBlock(x1, y, getBlock(x2, y))
 				setBlock(x2, y, Block())
 				x1++
@@ -2417,12 +1633,10 @@ import kotlin.random.Random
 		var x2:Int
 		for(y in highestBlockY..<height) {
 			x1 = width-1
-			while(!getBlockEmpty(x1, y))
-				x1--
+			while(!getBlockEmpty(x1, y)) x1--
 			x2 = x1
 			while(x2>=0) {
-				while(getBlockEmpty(x2, y)&&x2>=0)
-					x2--
+				while(getBlockEmpty(x2, y)&&x2>=0) x2--
 				setBlock(x1, y, getBlock(x2, y))
 				setBlock(x2, y, Block())
 				x1--
@@ -2511,5 +1725,10 @@ import kotlin.random.Random
 
 		/** 座標の属性 (壁) */
 		const val COORD_WALL = 3
+
+		/** Twister判定用相対x座標*/
+		private val tx = listOf(listOf(0, 2, 0, 2), listOf(1, 4, 1, 4))
+		/** Twister判定用相対y座標*/
+		private val ty = listOf(listOf(0, 0, 2, 2), listOf(1, 1, 4, 4))
 	}
 }

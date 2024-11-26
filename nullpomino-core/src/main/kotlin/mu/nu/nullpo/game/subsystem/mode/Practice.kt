@@ -30,14 +30,13 @@
  */
 package mu.nu.nullpo.game.subsystem.mode
 
-import mu.nu.nullpo.game.component.BGM
-import mu.nu.nullpo.game.component.Block
-import mu.nu.nullpo.game.component.Controller
-import mu.nu.nullpo.game.component.Field
-import mu.nu.nullpo.game.component.Piece
+import mu.nu.nullpo.game.component.*
 import mu.nu.nullpo.game.event.EventReceiver
 import mu.nu.nullpo.game.event.ScoreEvent
 import mu.nu.nullpo.game.play.GameEngine
+import mu.nu.nullpo.game.play.LineGravity
+import mu.nu.nullpo.game.play.clearRule.LineBomb
+import mu.nu.nullpo.game.play.clearRule.LineSpark
 import mu.nu.nullpo.game.subsystem.mode.menu.BooleanMenuItem
 import mu.nu.nullpo.game.subsystem.mode.menu.DelegateMenuItem
 import mu.nu.nullpo.gui.common.BaseFont
@@ -92,10 +91,10 @@ class Practice:AbstractGrand() {
 	/** BigMode */
 	private var big:Boolean by DelegateMenuItem(itemBig)
 
-	/** BigLateral movement of the unit when */
+	/** Lateral movement of the unit when Big */
 	private var bigmove = false
 
-	/** BigWhenLinescountHalf */
+	/** Lines count Half WhenBig */
 	private var bighalf = false
 
 	/** LevelType */
@@ -637,11 +636,11 @@ class Practice:AbstractGrand() {
 
 		// Another Rule
 		if(cascadeStyle==0)
-			engine.lineGravityType = GameEngine.LineGravity.NATIVE
+			engine.lineGravityType = LineGravity.Native
 		else {
-			engine.lineGravityType = GameEngine.LineGravity.CASCADE
-			if(eraseStyle==1) engine.clearMode = GameEngine.ClearType.LINE_GEM_BOMB
-			if(eraseStyle==2) engine.clearMode = GameEngine.ClearType.LINE_GEM_SPARK
+			engine.lineGravityType = LineGravity.CASCADE
+			if(eraseStyle==1) engine.clearMode = LineBomb
+			if(eraseStyle==2) engine.clearMode = LineSpark
 		}
 
 		return false
@@ -958,7 +957,7 @@ class Practice:AbstractGrand() {
 				if(timelimitResetEveryLevel&&timelimit>0) timelimitTimer = timelimit
 			} else if(engine.statistics.level==nextSecLv-1&&secAlert) engine.playSE("levelstop")
 
-			if(engine.clearMode==GameEngine.ClearType.LINE_GEM_BOMB||engine.clearMode==GameEngine.ClearType.LINE_GEM_SPARK) {
+			if(engine.clearMode is LineBomb||engine.clearMode is LineSpark) {
 				lastScore /= 7+3*engine.chain
 			}
 			engine.statistics.scoreLine += lastScore
