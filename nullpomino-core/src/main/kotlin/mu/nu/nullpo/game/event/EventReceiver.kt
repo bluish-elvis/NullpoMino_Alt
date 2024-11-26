@@ -46,6 +46,7 @@ import mu.nu.nullpo.util.CustomProperties
 import mu.nu.nullpo.util.GeneralUtil.toInt
 import mu.nu.nullpo.util.GeneralUtil.toReplayFilename
 import org.apache.logging.log4j.LogManager
+import zeroxfc.nullpo.custom.libs.MathHelper.almostEqual
 import java.io.File
 import java.io.FileInputStream
 import java.io.FileOutputStream
@@ -797,7 +798,11 @@ open class EventReceiver {
 	open fun startGame(engine:GameEngine) {}
 
 	/** It will be called at the start of each frame.*/
-	open fun onFirst(engine:GameEngine) {}
+	open fun onFirst(engine:GameEngine) {
+		engine.run{
+			if(!frameX.almostEqual(0f, 0.0625f)) frameX *= 0.875f else if(frameX!=0f) frameX = 0f
+			if(!frameY.almostEqual(0f, 0.0625f)) frameY *= 0.875f else if(frameY!=0f) frameY = 0f
+		}}
 
 	/** It will be called at the end of each frame.*/
 	open fun onLast(engine:GameEngine) {}

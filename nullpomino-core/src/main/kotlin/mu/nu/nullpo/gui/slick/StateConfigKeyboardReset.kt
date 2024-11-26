@@ -42,7 +42,7 @@ import org.newdawn.slick.state.StateBasedGame
 internal class StateConfigKeyboardReset:BaseMenuChooseState() {
 	/** Player number */
 	var player = 0
-	override val numChoice = 3
+	override val numChoice = GameKey.defaultKeys.size
 
 	/** Constructor */
 	init {
@@ -67,9 +67,9 @@ internal class StateConfigKeyboardReset:BaseMenuChooseState() {
 
 		FontNormal.printFontGrid(1, 4+cursor, BaseFont.CURSOR, COLOR.RAINBOW)
 
-		FontNormal.printFontGrid(2, 4, "BLOCKBOX STYLE (DEFAULT)", cursor==0)
-		FontNormal.printFontGrid(2, 5, "GUIDELINE STYLE", cursor==1)
-		FontNormal.printFontGrid(2, 6, "NULLPOMINO CLASSIC STYLE", cursor==2)
+		GameKey.defaultKeys.forEachIndexed {i, (name) ->
+			FontNormal.printFontGrid(2, 4+i, "$name Style", cursor==i)
+		}
 	}
 
 	/* Decide */

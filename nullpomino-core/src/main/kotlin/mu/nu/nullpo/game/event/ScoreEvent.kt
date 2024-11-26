@@ -34,8 +34,13 @@ package mu.nu.nullpo.game.event
 import mu.nu.nullpo.game.component.Piece
 import mu.nu.nullpo.util.GeneralUtil.toInt
 
+/**
+ * @param lines cleared lines or blocks
+ * @param extra ClearType.Color: cleared blocks exceeds the colorClearSize,
+ * ClearType.LineBomb,LineSpark: cleared Bomb blocks
+ * */
 data class ScoreEvent(val piece:Piece? = null, val lines:Int = 0, val b2b:Int = -1,
-	val combo:Int = -1, val twistType:Twister? = null, val split:Boolean = false) {
+	val combo:Int = -1, val twistType:Twister? = null, val split:Boolean = false, val extra:Int = 0) {
 	/** True if Twister */
 	val twist get() = twistType!=null
 	/** True if Twister Mini */
@@ -56,8 +61,8 @@ data class ScoreEvent(val piece:Piece? = null, val lines:Int = 0, val b2b:Int = 
 	override fun hashCode():Int {
 		var result = lines
 		result = 31*result+split.hashCode()
-		result = 31*result+(piece?.hashCode() ?: 0)
-		result = 31*result+(twistType?.hashCode() ?: 0)
+		result = 31*result+(piece?.hashCode()?:0)
+		result = 31*result+(twistType?.hashCode()?:0)
 		result = 31*result+combo
 		result = 31*result+b2b
 		return result

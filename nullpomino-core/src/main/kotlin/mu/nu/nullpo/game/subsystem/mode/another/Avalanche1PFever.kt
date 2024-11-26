@@ -32,13 +32,7 @@ package mu.nu.nullpo.game.subsystem.mode.another
 
 import mu.nu.nullpo.game.component.Block
 import mu.nu.nullpo.game.component.Controller
-import mu.nu.nullpo.game.event.EventReceiver.COLOR.BLUE
-import mu.nu.nullpo.game.event.EventReceiver.COLOR.COBALT
-import mu.nu.nullpo.game.event.EventReceiver.COLOR.GREEN
-import mu.nu.nullpo.game.event.EventReceiver.COLOR.ORANGE
-import mu.nu.nullpo.game.event.EventReceiver.COLOR.RED
-import mu.nu.nullpo.game.event.EventReceiver.COLOR.WHITE
-import mu.nu.nullpo.game.event.EventReceiver.COLOR.YELLOW
+import mu.nu.nullpo.game.event.EventReceiver.COLOR.*
 import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.util.CustomProperties
 import mu.nu.nullpo.util.GeneralUtil.toTimeStr

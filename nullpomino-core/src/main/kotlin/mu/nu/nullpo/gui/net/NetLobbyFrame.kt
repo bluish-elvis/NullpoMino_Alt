@@ -40,7 +40,7 @@ import mu.nu.nullpo.game.net.NetRoomInfo
 import mu.nu.nullpo.game.net.NetUtil
 import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.game.play.GameManager
-import mu.nu.nullpo.game.play.GameStyle
+import mu.nu.nullpo.game.play.GameEngine.GameStyle
 import mu.nu.nullpo.game.subsystem.mode.NetDummyMode
 import mu.nu.nullpo.gui.common.ConfigGlobal
 import mu.nu.nullpo.gui.common.ConfigGlobal.RuleConf

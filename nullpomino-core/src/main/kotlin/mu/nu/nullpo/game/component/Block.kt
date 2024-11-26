@@ -35,7 +35,8 @@ import mu.nu.nullpo.util.GeneralUtil.aNum
 import mu.nu.nullpo.util.GeneralUtil.toAlphaNum
 
 /** Block */
-@kotlinx.serialization.Serializable class Block @JvmOverloads constructor(
+@kotlinx.serialization.Serializable
+class Block @JvmOverloads constructor(
 	/** Block color */
 	var color:COLOR? = null,
 	/** Block type */
@@ -43,8 +44,9 @@ import mu.nu.nullpo.util.GeneralUtil.toAlphaNum
 	/** Blockの絵柄 */
 	var skin:Int = 0,
 	/** Blockの属性 */
-	var aint:Int = 0
+	var aint:Int = 3
 ) {
+	var offsetY = 0f
 	/** Block color integer for processing */
 	var cint:Int
 		get() = colorNumber(color, type, getAttribute(ATTRIBUTE.BONE), item)
@@ -93,7 +95,7 @@ import mu.nu.nullpo.util.GeneralUtil.toAlphaNum
 	var item:Item? = null
 	/** アイテム number */
 	var iNum
-		get() = item?.let {it.ordinal+1} ?: 0
+		get() = item?.let {it.ordinal+1}?:0
 		set(value) {
 			item = if(value in 1..items.size) items[value-1] else null
 		}
@@ -140,7 +142,7 @@ import mu.nu.nullpo.util.GeneralUtil.toAlphaNum
 		if(del) color = null
 		type = TYPE.BLOCK
 		skin = 0
-		aint = 0
+		aint = 3
 		elapsedFrames = 0
 		darkness = 0f
 		alpha = 1f
@@ -155,7 +157,7 @@ import mu.nu.nullpo.util.GeneralUtil.toAlphaNum
 	/** Copy constructor
 	 * @param b Copy source
 	 */
-	constructor(b:Block?):this(b?.color, b?.type ?: TYPE.BLOCK, b?.skin ?: 0) {
+	constructor(b:Block?):this(b?.color, b?.type?:TYPE.BLOCK, b?.skin?:0) {
 		replace(b)
 	}
 
@@ -175,7 +177,7 @@ import mu.nu.nullpo.util.GeneralUtil.toAlphaNum
 			countdown = it.countdown
 			secondaryColor = it.secondaryColor
 			bonusValue = it.bonusValue
-		} ?: reset(true)
+		}?:reset(true)
 	}
 
 	/** 指定した属性 stateを調べる
@@ -203,7 +205,7 @@ import mu.nu.nullpo.util.GeneralUtil.toAlphaNum
 	fun toChar():Char = cint.toAlphaNum
 
 	override fun toString():String = "${toChar()}"
-	override fun hashCode():Int = (color?.hashCode() ?: 0)
+	override fun hashCode():Int = (color?.hashCode()?:0)
 		.let {31*it+type.hashCode()}
 		.let {31*it+skin}
 		.let {31*it+aint}
@@ -211,7 +213,7 @@ import mu.nu.nullpo.util.GeneralUtil.toAlphaNum
 		.let {31*it+darkness.hashCode()}
 		.let {31*it+alpha.hashCode()}
 		.let {31*it+placeNum}
-		.let {31*it+(item?.hashCode() ?: 0)}
+		.let {31*it+(item?.hashCode()?:0)}
 		.let {31*it+hard}
 		.let {31*it+countdown}
 		.let {31*it+secondaryColor.hashCode()}
@@ -266,7 +268,9 @@ import mu.nu.nullpo.util.GeneralUtil.toAlphaNum
 		/** Last commit flag -- block was part of last placement or cascade */
 		LAST_COMMIT,
 		/** Ignore block connections (for Avalanche modes) */
-		IGNORE_LINK;
+		IGNORE_LINK,
+		/** Placed with Big Piece, or Combined as Big Bomb*/
+		BIG;
 
 		val bit:Int get() = 1 shl ordinal
 	}
@@ -331,7 +335,7 @@ import mu.nu.nullpo.util.GeneralUtil.toAlphaNum
 				if(type==TYPE.GEM) COLOR_GEM_RAINBOW
 				else COLOR_RAINBOW
 			} else {
-				val ci:Int = (color?.ordinal ?: 0)
+				val ci:Int = (color?.ordinal?:0)
 				when(type) {
 					TYPE.BLOCK -> if(color==COLOR.BLACK&&isBone) COLOR_WHITE
 					else ci
@@ -340,7 +344,7 @@ import mu.nu.nullpo.util.GeneralUtil.toAlphaNum
 					} else ci+COLOR_GEM_RED-COLOR_RED
 					TYPE.SQUARE_SILVER -> ci+COLOR_SQUARE_SILVER_1
 					TYPE.SQUARE_GOLD -> ci+COLOR_SQUARE_GOLD_1
-					TYPE.ITEM -> item?.color?.ordinal ?: 0
+					TYPE.ITEM -> item?.color?.ordinal?:0
 				}
 			}
 

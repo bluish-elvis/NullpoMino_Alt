@@ -35,6 +35,8 @@ import mu.nu.nullpo.game.component.Controller
 import mu.nu.nullpo.game.component.Field
 import mu.nu.nullpo.game.component.Piece
 import mu.nu.nullpo.game.play.GameEngine
+import mu.nu.nullpo.game.play.clearRule.Color.Companion.clearAll
+import mu.nu.nullpo.game.play.clearRule.Color.Companion.clearColor
 import mu.nu.nullpo.game.subsystem.ai.DummyAI
 import org.apache.logging.log4j.LogManager
 import kotlin.math.abs
@@ -177,7 +179,7 @@ class Nohoho:DummyAI(), Runnable {
 				sameStatusTime = 0
 			if(bestHold&&thinkComplete&&engine.isHoldOK)
 			// Hold
-				input =  Controller.BUTTON_BIT_D
+				input = Controller.BUTTON_BIT_D
 			else {
 				if(DEBUG_ALL)
 					log.debug(
@@ -194,7 +196,7 @@ class Nohoho:DummyAI(), Runnable {
 					if(DEBUG_ALL) log.debug("spL = $spL, spR = $spR")
 
 					if(best180&&engine.ruleOpt.spinDoubleKey&&!ctrl.isPress(Controller.BUTTON_E))
-						input =  Controller.BUTTON_BIT_E
+						input = Controller.BUTTON_BIT_E
 					else if(bestRt==spR) spinDir = 1
 					else if(bestRt==spL) spinDir = -1
 					else if(engine.ruleOpt.spinReverseKey&&best180&&rt and 1>0) {
@@ -307,7 +309,7 @@ class Nohoho:DummyAI(), Runnable {
 		val nowX:Int
 		val nowY:Int
 		if(inARE||pieceNow==null) {
-			pieceNow = engine.getNextObjectCopy(engine.nextPieceCount) ?: return
+			pieceNow = engine.getNextObjectCopy(engine.nextPieceCount)?:return
 			nowX = engine.getSpawnPosX(pieceNow, fld)
 			nowY = engine.getSpawnPosY(pieceNow)
 			if(holdOK&&pieceHold==null) pieceHold = engine.getNextObjectCopy(engine.nextPieceCount+1)
@@ -480,17 +482,17 @@ class Nohoho:DummyAI(), Runnable {
 				return Integer.MIN_VALUE
 			}
 			val maxY = fld.getHighestBlockY(maxX)
-			var clear = fld.clearColor(maxX, maxY, true, true, false, true)
+			var clear = fld.clearColor(maxX, maxY, true, true, false, true).size
 			when {
 				clear>=4 -> pts += if(defcon==5) -4 else 4
 				clear==3 -> pts += 2
 				clear==2 -> pts++
 			}
 
-			clear = if(rt and 1>0) {
+			clear = (if(rt and 1>0) {
 				pts++
 				fld.clearColor(maxX, maxY+1, true, true, false, true)
-			} else fld.clearColor(maxX-1, fld.getHighestBlockY(maxX-1), true, true, false, true)
+			} else fld.clearColor(maxX-1, fld.getHighestBlockY(maxX-1), true, true, false, true)).size
 			if(clear>=4) pts += if(defcon==5) -4 else 4
 			else if(clear==3) pts += 2
 			else if(clear==2) pts++
@@ -499,7 +501,7 @@ class Nohoho:DummyAI(), Runnable {
 		// Clear
 		var chain = 1
 		while(true) {
-			val clear = fld.clearColor(4, true, false, true)
+			val clear = fld.clearAll(4, true, false, true).size
 			if(clear<=0)
 				break
 			else if(defcon<=4)
@@ -575,7 +577,8 @@ class Nohoho:DummyAI(), Runnable {
 	private class ThinkRequestMutex:Object() {
 		var active = false
 
-		@Synchronized fun newRequest() {
+		@Synchronized
+		fun newRequest() {
 			active = true
 			notifyAll()
 		}

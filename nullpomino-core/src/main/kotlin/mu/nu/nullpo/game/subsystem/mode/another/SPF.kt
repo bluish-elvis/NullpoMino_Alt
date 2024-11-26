@@ -38,8 +38,11 @@ import mu.nu.nullpo.game.event.EventReceiver
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
 import mu.nu.nullpo.game.event.ScoreEvent
 import mu.nu.nullpo.game.play.GameEngine
+import mu.nu.nullpo.game.play.GameEngine.GameStyle
 import mu.nu.nullpo.game.play.GameManager
-import mu.nu.nullpo.game.play.GameStyle
+import mu.nu.nullpo.game.play.LineGravity
+import mu.nu.nullpo.game.play.LineGravity.CASCADE.canCascade
+import mu.nu.nullpo.game.play.clearRule.ColorGem
 import mu.nu.nullpo.game.subsystem.mode.AbstractMode
 import mu.nu.nullpo.gui.common.BaseFont
 import mu.nu.nullpo.gui.common.GameKeyDummy.Companion.MAX_PLAYERS
@@ -323,9 +326,11 @@ class SPF:AbstractMode() {
 		}
 
 		engine.frameColor = PLAYER_COLOR_FRAME[pid]
-		engine.clearMode = GameEngine.ClearType.GEM_COLOR
+		engine.clearMode = ColorGem(2,true,false)
+		engine.colorClearSize = 2
+		engine.ignoreHidden = false
 		engine.garbageColorClear = true
-		engine.lineGravityType = GameEngine.LineGravity.CASCADE
+		engine.lineGravityType = LineGravity.CASCADE
 		engine.nextPieceEnable = PIECE_ENABLE.map {it==1}
 		engine.blockColors = BLOCK_COLORS
 		engine.gemRate = 0.2f
@@ -640,8 +645,6 @@ class SPF:AbstractMode() {
 		engine.enableSE = enableSE[engine.playerID]
 		if(engine.playerID==1) owner.musMan.bgm = BGM.values[bgmId]
 		//engine.colorClearSize = big[engine.playerID] ? 8 : 2;
-		engine.colorClearSize = 2
-		engine.ignoreHidden = false
 
 		engine.twistAllowKick = false
 		engine.twistEnable = false

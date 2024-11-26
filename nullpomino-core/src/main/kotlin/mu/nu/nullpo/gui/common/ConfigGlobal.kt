@@ -33,7 +33,7 @@ package mu.nu.nullpo.gui.common
 
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
-import mu.nu.nullpo.game.play.GameStyle
+import mu.nu.nullpo.game.play.GameEngine.GameStyle
 import mu.nu.nullpo.gui.common.GameKeyDummy.Companion.MAX_PLAYERS
 import mu.nu.nullpo.gui.net.UpdateChecker.Config as UpdaterConf
 

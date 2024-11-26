@@ -36,13 +36,8 @@ import mu.nu.nullpo.game.component.Piece
 import mu.nu.nullpo.game.event.EventReceiver
 import mu.nu.nullpo.game.event.ScoreEvent
 import mu.nu.nullpo.game.play.GameEngine
-import mu.nu.nullpo.gui.common.fx.Beam
-import mu.nu.nullpo.gui.common.fx.FragAnim
+import mu.nu.nullpo.gui.common.fx.*
 import mu.nu.nullpo.gui.common.fx.FragAnim.ANIM
-import mu.nu.nullpo.gui.common.fx.PopupAward
-import mu.nu.nullpo.gui.common.fx.PopupBravo
-import mu.nu.nullpo.gui.common.fx.PopupCombo
-import mu.nu.nullpo.gui.common.fx.PopupPoint
 import mu.nu.nullpo.gui.common.fx.particles.BlockParticle
 import mu.nu.nullpo.gui.common.fx.particles.Fireworks
 import mu.nu.nullpo.gui.common.fx.particles.LandingParticles
@@ -443,7 +438,8 @@ abstract class AbstractRenderer:EventReceiver() {
 		var g = engine.fpf
 
 		val isRetro = engine.frameColor in GameEngine.FRAME_SKIN_SG..GameEngine.FRAME_SKIN_GB
-		val ys = if(!smoothFall||by>=engine.nowPieceBottomY||isRetro) 0f else engine.gCount*blkSize/engine.speed.denominator%blkSize
+		val ys =
+			if(!smoothFall||by>=engine.nowPieceBottomY||isRetro) 0f else engine.gCount*blkSize/engine.speed.denominator%blkSize
 		//if(engine.harddropFall>0)g+=engine.harddropFall;
 		if(!showLocus||isRetro) g = 0
 
@@ -505,7 +501,8 @@ abstract class AbstractRenderer:EventReceiver() {
 
 				field.getBlock(j, i)?.also {
 					if(it.getAttribute(Block.ATTRIBUTE.WALL))
-						drawBlock(x2, y2, 0, it.skin, it.getAttribute(Block.ATTRIBUTE.BONE), it.darkness, it.alpha, zoom, it.aint)
+						drawBlock(x2, y2+it.offsetY*blkSize, 0, it.skin, it.getAttribute(Block.ATTRIBUTE.BONE),
+							it.darkness, if(it.getAttribute(Block.ATTRIBUTE.ERASE)) it.alpha/2 else it.alpha, zoom, it.aint)
 					else if(it.color!=null) {
 						if(engine.owner.replayMode&&engine.owner.replayShowInvisible)
 							drawBlockForceVisible(x2, y2, it, scale)
@@ -528,7 +525,7 @@ abstract class AbstractRenderer:EventReceiver() {
 									if(!it.getAttribute(Block.ATTRIBUTE.CONNECT_RIGHT)) drawLineSpecific(x2+ls, y2, x2+ls, y2+ls, w = w)
 								}
 								GameEngine.BLOCK_OUTLINE_SAMECOLOR -> {
-									val color = getColorByID(it.color ?: Block.COLOR.WHITE)
+									val color = getColorByID(it.color?:Block.COLOR.WHITE)
 									if(field.getBlockColor(j, i-1)!=it.color) drawLineSpecific(x2, y2, x2+ls, y2, color, w = w)
 									if(field.getBlockColor(j, i+1)!=it.color) drawLineSpecific(x2, y2+ls, x2+ls, y2+ls, color, w = w)
 									if(field.getBlockColor(j-1, i)!=it.color) drawLineSpecific(x2, y2, x2, y2+ls, color, w = w)
@@ -681,7 +678,7 @@ abstract class AbstractRenderer:EventReceiver() {
 	}
 
 	protected open fun drawHintPiece(x:Float, y:Float, engine:GameEngine, scale:Float) {
-		val ai = engine.ai ?: return
+		val ai = engine.ai?:return
 		engine.aiHintPiece?.let {
 			val blkSize = BS*scale
 			val px = (ai.bestX*blkSize+x)
@@ -881,7 +878,8 @@ abstract class AbstractRenderer:EventReceiver() {
 				}
 			})
 //			if(engine.skin==)
-			val btype = engine.skin in GameEngine.FRAME_SKIN_HEBO..GameEngine.FRAME_SKIN_SG||(engine.owner.mode?.gameIntensity ?: 0)<0
+			val btype =
+				engine.skin in GameEngine.FRAME_SKIN_HEBO..GameEngine.FRAME_SKIN_SG||(engine.owner.mode?.gameIntensity?:0)<0
 			efxBG.addAll(
 				BlockParticle.Mapper(
 					engine, this, blk, if(btype) BlockParticle.Type.TGM else BlockParticle.Type.DTET,
@@ -893,7 +891,7 @@ abstract class AbstractRenderer:EventReceiver() {
 
 	/* ラインを消す演出の処理 */
 	override fun calcScore(engine:GameEngine, event:ScoreEvent?) {
-		event ?: return
+		event?:return
 		val w = engine.fieldWidth*engine.blockSize/2
 		val sx = engine.fX+w
 
@@ -1032,8 +1030,11 @@ abstract class AbstractRenderer:EventReceiver() {
 
 	open fun drawBlendAdd(unit:()->Unit) = unit()
 
-	protected abstract fun printFontSpecific(x:Float, y:Float, str:String, font:BaseFont.FONT, color:COLOR, scale:Float, alpha:Float)
-	protected fun printFontSpecific(x:Number, y:Number, str:String, font:BaseFont.FONT, color:COLOR, scale:Float, alpha:Float) =
+	protected abstract fun printFontSpecific(x:Float, y:Float, str:String, font:BaseFont.FONT, color:COLOR, scale:Float,
+		alpha:Float)
+
+	protected fun printFontSpecific(x:Number, y:Number, str:String, font:BaseFont.FONT, color:COLOR, scale:Float,
+		alpha:Float) =
 		printFontSpecific(x.toFloat(), y.toFloat(), str, font, color, scale, alpha)
 
 	protected abstract fun printTTFSpecific(x:Float, y:Float, str:String, color:COLOR, scale:Float, alpha:Float)
@@ -1045,7 +1046,8 @@ abstract class AbstractRenderer:EventReceiver() {
 	 * @param sy BlockSkin grid-Y
 	 * @param sk BlockSkin number
 	 */
-	protected abstract fun drawBlockSpecific(x:Float, y:Float, sx:Int, sy:Int, sk:Int, size:Float, darkness:Float, alpha:Float)
+	protected abstract fun drawBlockSpecific(x:Float, y:Float, sx:Int, sy:Int, sk:Int, size:Float, darkness:Float,
+		alpha:Float)
 
 	abstract fun drawLineSpecific(x:Float, y:Float, sx:Float, sy:Float, color:Int = 0xFFFFFF, alpha:Float = 1f, w:Float = 1f)
 
@@ -1102,12 +1104,15 @@ abstract class AbstractRenderer:EventReceiver() {
 		x:Float, y:Float, w:Float, h:Float, angle:Float, color:Int = 0xFFFFFF, alpha:Float = 1f, bold:Float = 1f
 	)
 
-	private fun drawDiaSpecific(x:Number, y:Number, w:Number, h:Number, angle:Float, color:Int = 0xFFFFFF, alpha:Float = 1f, bold:Int = 0) =
+	private fun drawDiaSpecific(x:Number, y:Number, w:Number, h:Number, angle:Float, color:Int = 0xFFFFFF, alpha:Float = 1f,
+		bold:Int = 0) =
 		drawDiaSpecific(x.toFloat(), y.toFloat(), w.toFloat(), h.toFloat(), angle, color, alpha, bold.toFloat())
 	/** Fiil Diaangle Solid*/
-	protected abstract fun fillDiaSpecific(x:Float, y:Float, w:Float, h:Float, angle:Float, color:Int = 0xFFFFFF, alpha:Float = 1f)
+	protected abstract fun fillDiaSpecific(x:Float, y:Float, w:Float, h:Float, angle:Float, color:Int = 0xFFFFFF,
+		alpha:Float = 1f)
 
-	private fun fillDiaSpecific(x:Number, y:Number, w:Number, h:Number, angle:Float, color:Int = 0xFFFFFF, alpha:Float = 1f) =
+	private fun fillDiaSpecific(x:Number, y:Number, w:Number, h:Number, angle:Float, color:Int = 0xFFFFFF,
+		alpha:Float = 1f) =
 		fillDiaSpecific(x.toFloat(), y.toFloat(), w.toFloat(), h.toFloat(), angle, color, alpha)
 
 	/** draw and Fill Oval */
@@ -1132,7 +1137,8 @@ abstract class AbstractRenderer:EventReceiver() {
 		bold:Float = 1f
 	)
 
-	private fun drawOvalSpecific(x:Number, y:Number, w:Number, h:Number, color:Int = 0xFFFFFF, alpha:Float = 1f, bold:Int = 0) =
+	private fun drawOvalSpecific(x:Number, y:Number, w:Number, h:Number, color:Int = 0xFFFFFF, alpha:Float = 1f,
+		bold:Int = 0) =
 		drawOvalSpecific(x.toFloat(), y.toFloat(), w.toFloat(), h.toFloat(), color, alpha, bold.toFloat())
 	/** Fill Oval Solid*/
 	protected abstract fun fillOvalSpecific(x:Float, y:Float, w:Float, h:Float, color:Int = 0xFFFFFF, alpha:Float = 1f)
@@ -1143,7 +1149,8 @@ abstract class AbstractRenderer:EventReceiver() {
 	/**
 	 * draw outline Piece
 	 */
-	protected open fun drawPieceOutline(x:Float, y:Float, piece:Piece, blksize:Float, alpha:Float = 1f, whiteLine:Boolean = false) {
+	protected open fun drawPieceOutline(x:Float, y:Float, piece:Piece, blksize:Float, alpha:Float = 1f,
+		whiteLine:Boolean = false) {
 		piece.let {
 			val bigmul = blksize*(1+it.big.toInt())
 			it.block.forEachIndexed {i, blk ->
@@ -1154,13 +1161,15 @@ abstract class AbstractRenderer:EventReceiver() {
 		}
 	}
 
-	protected open fun drawBlockOutline(x:Float, y:Float, blk:Block, blksize:Int, alpha:Float = 1f, whiteLine:Boolean = false) {
+	protected open fun drawBlockOutline(x:Float, y:Float, blk:Block, blksize:Int, alpha:Float = 1f,
+		whiteLine:Boolean = false) {
 		blk.let {
 			val x3 = (x)
 			val y3 = (y)
 			val ls = blksize-1
 
-			val color = getColorByID(if(it.getAttribute(Block.ATTRIBUTE.BONE)) Block.COLOR.WHITE else it.color ?: Block.COLOR.WHITE)
+			val color =
+				getColorByID(if(it.getAttribute(Block.ATTRIBUTE.BONE)) Block.COLOR.WHITE else it.color?:Block.COLOR.WHITE)
 			val lC = if(whiteLine) 0xFFFFFF else color
 			fillRectSpecific(x3, y3, blksize.toFloat(), blksize.toFloat(), color, alpha*.5f)
 

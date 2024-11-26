@@ -34,29 +34,23 @@ import kotlinx.serialization.encodeToString
 import mu.nu.nullpo.game.component.*
 import mu.nu.nullpo.game.component.SpeedParam.Companion.SDS_FIXED
 import mu.nu.nullpo.game.event.EventReceiver
+import mu.nu.nullpo.game.event.ReplayData
 import mu.nu.nullpo.game.event.ScoreEvent
 import mu.nu.nullpo.game.event.ScoreEvent.Twister
-import mu.nu.nullpo.game.play.GameEngine.ClearType.COLOR
-import mu.nu.nullpo.game.play.GameEngine.ClearType.GEM_COLOR
-import mu.nu.nullpo.game.play.GameEngine.ClearType.LINE
-import mu.nu.nullpo.game.play.GameEngine.ClearType.LINE_COLOR
-import mu.nu.nullpo.game.play.GameEngine.ClearType.LINE_GEM_BOMB
-import mu.nu.nullpo.game.play.GameEngine.ClearType.LINE_GEM_SPARK
+import mu.nu.nullpo.game.play.clearRule.*
 import mu.nu.nullpo.game.subsystem.ai.AIPlayer
 import mu.nu.nullpo.game.subsystem.wallkick.Wallkick
 import mu.nu.nullpo.gui.common.ConfigGlobal.AIConf
 import mu.nu.nullpo.gui.common.ConfigGlobal.TuneConf
-import mu.nu.nullpo.gui.common.fx.PopupCombo.CHAIN
 import mu.nu.nullpo.util.GeneralUtil
 import mu.nu.nullpo.util.GeneralUtil.Json
 import mu.nu.nullpo.util.GeneralUtil.toInt
 import net.omegaboshi.nullpomino.game.subsystem.randomizer.MemorylessRandomizer
 import net.omegaboshi.nullpomino.game.subsystem.randomizer.Randomizer
 import org.apache.logging.log4j.LogManager
-import zeroxfc.nullpo.custom.libs.MathHelper.almostEqual
+import zeroxfc.nullpo.custom.libs.MathHelper.pythonModulo
 import zeroxfc.nullpo.custom.libs.ProfileProperties
-import java.util.Calendar
-import java.util.Locale
+import java.util.*
 import kotlin.math.absoluteValue
 import kotlin.math.sign
 import kotlin.random.Random
@@ -211,12 +205,12 @@ class GameEngine(
 
 	/** Number of lines currently clearing
 	 * (if [clearMode] isn't [ClearType.LINE], this shows Number of cleared blocks)  */
-	var lineClearing = 0; private set
+	var lineClearing = 0; internal set
 	var garbageClearing = 0; private set
 	/** Line gravity type (Native, Cascade, etc) */
-	var lineGravityType = LineGravity.NATIVE
+	var lineGravityType:LineGravity = LineGravity.Native
 	/** Current number of chains */
-	var chain = 0; private set
+	var chain = 0; internal set
 
 	/** Number of lines cleared for this chains */
 	var lineGravityTotalLines = 0
@@ -281,7 +275,7 @@ class GameEngine(
 	/** Last successful movement */
 	var lastMove = LastMove.NONE; private set
 	/** Last Erased Line's bottom Y-coordinates*/
-	var lastLineY = 0; private set
+	var lastLineY = 0; internal set
 
 	/** True if last placement is Finesse */
 	var finesse = false; private set
@@ -292,10 +286,10 @@ class GameEngine(
 	/** Most recent scoring event type */
 	var lastEvent:ScoreEvent? = null
 
-	var lastLinesY = emptySet<Set<Int>>()
+	var lastLinesY = emptySet<Set<Int>>(); internal set
 
 	/** True if last erased line is Split */
-	var split = false; private set
+	var split = false; internal set
 	/** Last Twister */
 	var twistType:Twister? = null; private set
 	/** True if Twister */
@@ -308,10 +302,10 @@ class GameEngine(
 	/** True if last erasing line is B2B */
 	val b2b get() = b2bCount>0
 	/** B2B counter */
-	var b2bCount = -1; private set
+	var b2bCount = -1; internal set
 
 	/** Number of combos */
-	var combo = -1; private set
+	var combo = -1; internal set
 
 	/** Twister enable flag */
 	var twistEnable = false
@@ -487,7 +481,7 @@ class GameEngine(
 		}
 	/** RollRoll (Auto rotation) interval */
 	var itemRollRollInterval
-		get() = (itemEnable as? Item.ROLL_ROLL)?.interval ?: 0
+		get() = (itemEnable as? Item.ROLL_ROLL)?.interval?:0
 		set(value) {
 			if(itemEnable is Item.ROLL_ROLL) (itemEnable as? Item.ROLL_ROLL)?.interval = value
 		}//; private set
@@ -500,7 +494,7 @@ class GameEngine(
 		}
 	/** X-RAY time counter */
 	private var itemXRayCount
-		get() = (itemEnable as? Item.XRAY)?.time ?: 0
+		get() = (itemEnable as? Item.XRAY)?.time?:0
 		set(value) {
 			if(itemEnable is Item.XRAY) (itemEnable as? Item.XRAY)?.time = value
 		}//; private set
@@ -512,7 +506,7 @@ class GameEngine(
 		}
 	/** Color-block counter */
 	private var itemColorCount
-		get() = (itemEnable as? Item.COLOR)?.time ?: 0
+		get() = (itemEnable as? Item.COLOR)?.time?:0
 		set(value) {
 			if(itemEnable is Item.COLOR) (itemEnable as? Item.COLOR)?.time = value
 		}//; private set
@@ -597,11 +591,26 @@ class GameEngine(
 		}
 
 	/** Clear mode selection */
-	var clearMode:ClearType = LINE
+	var clearMode:ClearType = Line
 	/** Size needed for a cint-group clear */
 	var colorClearSize = 0
+		set(value) {
+			when(clearMode) {
+				is Color -> (clearMode as Color).colorClearSize = value
+				is ColorStraight -> (clearMode as ColorStraight).colorClearSize = value
+				is ColorGem -> (clearMode as ColorGem).colorClearSize = value
+			}
+			field = value
+		}
 	/** If true, cint clears will also clear adjacent garbage blocks. */
 	var garbageColorClear = false
+		set(value) {
+			when(clearMode) {
+				is Color -> (clearMode as Color).garbageColorClear = value
+				is ColorGem -> (clearMode as ColorGem).garbageColorClear = value
+			}
+			field = value
+		}
 	/** If true, each individual block is a random cint. */
 	var randomBlockColor = false
 	/** If true, block in pieces are connected. */
@@ -612,10 +621,19 @@ class GameEngine(
 	var numColors = 0
 	/** If true, line cint clears can be diagonal. */
 	var lineColorDiagonals = false
+		set(value) {
+			if(clearMode is ColorStraight) (clearMode as ColorStraight).lineColorDiagonals = value
+			field = value
+		}
 
 	/** If true, gems count as the same cint as
 	 * their respectively-colored normal blocks */
 	var gemSameColor = false
+		set(value) {
+			if(clearMode is Color) (clearMode as Color).gemSameColor = value
+			else if(clearMode is ColorStraight) (clearMode as ColorStraight).gemSameColor = value
+			field = value
+		}
 
 	/** Delay for each step in cascade animations */
 	var cascadeDelay = 0
@@ -623,6 +641,13 @@ class GameEngine(
 	var cascadeClearDelay = 0
 	/** If true, cint clears will ignore hidden rows */
 	var ignoreHidden = false
+		set(value) {
+			when(clearMode) {
+				is Color -> (clearMode as Color).ignoreHidden = value
+				is ColorGem -> (clearMode as ColorGem).ignoreHidden = value
+			}
+			field = value
+		}
 	/** Set to true to process rainbow block effects, false to skip. */
 	var rainbowAnimate = false
 	/** If true, the game will execute double rotation to I2 piece
@@ -797,7 +822,7 @@ class GameEngine(
 		}
 		quitFlag = false
 
-		owner.musMan.bgm = BGM.Menu(4+(owner.mode?.gameIntensity ?: 0))
+		owner.musMan.bgm = BGM.Menu(4+(owner.mode?.gameIntensity?:0))
 		stat = Status.SETTING
 		statc.fill(0)
 
@@ -829,7 +854,7 @@ class GameEngine(
 
 		lineClearing = 0
 		garbageClearing = 0
-		lineGravityType = LineGravity.NATIVE
+		lineGravityType = LineGravity.Native
 		chain = 0
 		lineGravityTotalLines = 0
 
@@ -957,7 +982,7 @@ class GameEngine(
 
 		interruptItem = null
 
-		clearMode = LINE
+		clearMode = Line
 		colorClearSize = -1
 		garbageColorClear = false
 		ignoreHidden = false
@@ -1012,7 +1037,8 @@ class GameEngine(
 	fun stopSE(name:String) = owner.receiver.stopSE(name)
 
 	/** @return NEXTピース[c]番目のID*/
-	fun getNextID(c:Int):Int = if(nextPieceArrayObject.isEmpty()) Piece.PIECE_NONE else nextPieceArrayID[c%nextPieceArrayID.size]
+	fun getNextID(c:Int):Int =
+		if(nextPieceArrayObject.isEmpty()) Piece.PIECE_NONE else nextPieceArrayID[c%nextPieceArrayID.size]
 
 	/** @return NEXTピース[c]番目のオブジェクト */
 	fun getNextObject(c:Int):Piece? = try {
@@ -1083,8 +1109,8 @@ class GameEngine(
 	 * @param all when false, T-Piece only
 	 */
 	private fun checkTwisted(x:Int, y:Int, p:Piece?, f:Field?, all:Boolean = true):Twister? {
-		p ?: return null
-		f ?: return null
+		p?:return null
+		f?:return null
 		if(!all&&p.type!=Piece.Shape.T) return null
 		if(!twistAllowKick&&kicked) return null
 		val m = if(p.big) 2 else 1
@@ -1095,8 +1121,8 @@ class GameEngine(
 			res = Twister.IMMOBILE
 			val copyField = Field().apply {replace(f)}
 			p.placeToField(x, y, copyField)
-			if(p.height+1!=copyField.checkLineNoFlag()&&kicked) res = Twister.IMMOBILE_MINI
-			if(copyField.checkLineNoFlag()==1&&kicked) res = Twister.IMMOBILE_MINI
+			if(p.height+1!=copyField.checkLine(false)&&kicked) res = Twister.IMMOBILE_MINI
+			if(copyField.checkLine(false)==1&&kicked) res = Twister.IMMOBILE_MINI
 		} else if(twistEnableEZ&&kicked&&p.checkCollision(x, y+m, f))
 			res = Twister.IMMOBILE_EZ
 
@@ -1148,9 +1174,9 @@ class GameEngine(
 
 	/** @return [piece]が[field]に出現するX-coordinate */
 	fun getSpawnPosX(piece:Piece?, fld:Field = field):Int =
-		((fld.width-1-(piece?.width ?: 0))/2).let {x -> x+(big&&bigMove&&x%2!=0).toInt()}+(piece?.let {p ->
+		((fld.width-1-(piece?.width?:0))/2).let {x -> x+(big&&bigMove&&x%2!=0).toInt()}+(piece?.let {p ->
 			if(big) ruleOpt.pieceSpawnXBig[p.id][p.direction] else ruleOpt.pieceSpawnX[p.id][p.direction]
-		} ?: 0)
+		}?:0)
 
 	/** @return [piece]が出現するX-coordinate */
 	fun getSpawnPosX(piece:Piece?):Int = getSpawnPosX(piece, field)
@@ -1183,20 +1209,7 @@ class GameEngine(
 	/** @return rotation buttonを押したあとのピースのDirection
 	 * @param move rotationDirection (-1:左 1:右 2:180度）
 	 */
-	fun getSpinDirection(move:Int):Int {
-		var rt = move
-		nowPieceObject?.let {rt = it.direction+move}
-
-		if(move==2) {
-			if(rt>3) rt -= 4
-			if(rt<0) rt += 4
-		} else {
-			if(rt>3) rt = 0
-			if(rt<0) rt = 3
-		}
-
-		return rt
-	}
+	fun getSpinDirection(move:Int):Int = ((nowPieceObject?.direction?:0)+move).pythonModulo(4)
 
 	/** 先行rotationと先行ホールドの処理 */
 	private fun initialSpin() {
@@ -1216,7 +1229,7 @@ class GameEngine(
 			if(it.isPress(Controller.BUTTON_D)&&ruleOpt.holdInitial&&isHoldOK) {
 				initialHoldFlag = true
 				initialHoldContinuousUse = true
-				playSE("initialhold")
+				if(skin!=FRAME_SKIN_SG) playSE("initialhold")
 			}
 		}
 	}
@@ -1429,7 +1442,7 @@ class GameEngine(
 						if(aiHintReady) {
 							aiHintPiece = null
 							if(a.bestHold) {
-								holdPieceObject?.also {aiHintPiece = Piece(it)} ?: run {
+								holdPieceObject?.also {aiHintPiece = Piece(it)}?:run {
 									getNextObjectCopy(nextPieceCount)?.also {
 										if(!it.offsetApplied) it.applyOffsetArray(ruleOpt.pieceOffsetX[it.id], ruleOpt.pieceOffsetY[it.id])
 									}
@@ -1450,9 +1463,6 @@ class GameEngine(
 		// 最初の処理
 		owner.mode?.onFirst(this)
 		owner.receiver.onFirst(this)
-
-		if(!frameX.almostEqual(0f, 0.0625f)) frameX *= 0.875f else if(frameX!=0f) frameX = 0f
-		if(!frameY.almostEqual(0f, 0.0625f)) frameY *= 0.875f else if(frameY!=0f) frameY = 0f
 
 		if(stat!=Status.SETTING&&stat!=Status.PROFILE&&stat!=Status.NOTHING&&
 			(!owner.replayMode||owner.replayRerecord)
@@ -1676,12 +1686,13 @@ class GameEngine(
 							if(blockColors.size<numColors||numColors<1) numColors = blockColors.size
 							val size = p.maxBlock
 							p.setColor(List(size) {blockColors[random.nextInt(numColors)]})
-							if(clearMode==GEM_COLOR) p.block.forEach {b ->
+							if(clearMode is ColorGem) p.block.forEach {b ->
 								if(random.nextFloat()<=gemRate) b.type = Block.TYPE.GEM
 							}
 						}
-						if(clearMode==LINE_GEM_BOMB||clearMode==LINE_GEM_SPARK)
-							p.block[random.nextInt(p.maxBlock)].type = Block.TYPE.GEM
+						if(clearMode is LineBomb||clearMode is LineSpark)
+							if(random.nextFloat()>=0.1f)
+								p.block[random.nextInt(p.maxBlock)].type = Block.TYPE.GEM
 
 						p.updateConnectData()
 					}
@@ -1706,7 +1717,7 @@ class GameEngine(
 
 		// NEXTスキップ
 		if(statc[0] in 1..<goEnd&&holdButtonNextSkip&&isHoldOK&&ctrl.isPush(Controller.BUTTON_D)) {
-			playSE("initialhold")
+			if(skin!=FRAME_SKIN_SG) playSE("initialhold")
 			holdPieceObject = getNextObjectCopy(nextPieceCount)?.also {
 				it.applyOffsetArray(ruleOpt.pieceOffsetX[it.id], ruleOpt.pieceOffsetY[it.id])
 			}
@@ -1826,7 +1837,7 @@ class GameEngine(
 				if(frameColor !in FRAME_SKIN_SG..FRAME_SKIN_GB)
 					playSE(
 						"piece_${it.type.name.lowercase(Locale.getDefault())}", 1f,
-						if((owner.mode?.players ?: 1)>1) 0.3f else 1f
+						if((owner.mode?.players?:1)>1) 0.3f else 1f
 					)
 			}
 			nowPieceObject?.let {
@@ -1989,7 +2000,7 @@ class GameEngine(
 							LastMove.SPIN_GROUND
 						} else LastMove.SPIN_AIR
 
-						if(skin!=FRAME_SKIN_SG) playSE(if(skin!=FRAME_SKIN_GB) "rotateold" else "rotate")
+						if(skin!=FRAME_SKIN_SG) playSE(if(skin==FRAME_SKIN_GB) "rotateold" else "rotate")
 						val twisting = checkTwisted(nowPieceX, nowPieceY, it, field)
 						if(twisting!=null) playSE("twist")
 						nowPieceSpinCount += spin.absoluteValue
@@ -2070,7 +2081,8 @@ class GameEngine(
 									if(dasDelay==0&&dasCount>0&&
 										!it.checkCollision(nowPieceX+move, nowPieceY, field)
 									) {
-										if(!dasInstant) playSE("move")
+										if(!dasInstant&&skin!=FRAME_SKIN_SG)
+											playSE(if(skin==FRAME_SKIN_GB||skin==FRAME_SKIN_HEBO) "moveold" else "move")
 										dasRepeat = true
 										dasInstant = true
 									}
@@ -2091,7 +2103,8 @@ class GameEngine(
 										extendedMoveCount++
 										LastMove.SLIDE_GROUND
 									} else LastMove.SLIDE_AIR
-									if(!dasInstant) playSE("move")
+									if(!dasInstant&&skin!=FRAME_SKIN_SG)
+										playSE(if(skin==FRAME_SKIN_GB||skin==FRAME_SKIN_HEBO) "moveold" else "move")
 								} else {
 									if(!dasWall) {
 										playSE("movefail")
@@ -2101,7 +2114,7 @@ class GameEngine(
 										dasCount = das
 										dasSpeedCount = dasDelay
 									}
-									frameX += (5f*move.sign).let {(frameX+it).coerceIn(-5f, 5f)-frameX}
+									frameX += 5f.let {(it*move.sign).let {i -> (frameX+i).coerceIn(-it, it)-frameX}}
 								}
 
 							} else dasSpeedCount++
@@ -2122,7 +2135,7 @@ class GameEngine(
 						harddropContinuousUse = !ruleOpt.harddropLock
 						owner.mode?.afterHardDropFall(this, harddropFall)
 						owner.receiver.afterHardDropFall(this, harddropFall)
-						frameY += (4+fpf/4).let {minOf((frameY+it), 15f)-frameY}
+						frameY += (3+fpf/4).let {i -> minOf((frameY+i), 8f)-frameY}
 
 						lastMove = LastMove.FALL_SELF
 						if(ruleOpt.lockResetFall) {
@@ -2177,7 +2190,7 @@ class GameEngine(
 			}
 			if(fpf>0) owner.receiver.afterPieceFall(this, fpf)
 			if(softDropFallNow>0) {
-				playSE("softdrop")
+				if(skin !in FRAME_SKIN_HEBO..FRAME_SKIN_GB) playSE("softdrop")
 				owner.mode?.afterSoftDropFall(this, softDropFallNow)
 				owner.receiver.afterSoftDropFall(this, softDropFallNow)
 			}
@@ -2185,7 +2198,7 @@ class GameEngine(
 			// 接地と固定
 			if(it.checkCollision(nowPieceX, nowPieceY+1, field)&&(statc[0]>0||ruleOpt.moveFirstFrame)) {
 				if(lockDelayNow==0&&lockDelay>0&&lastMove!=LastMove.SLIDE_GROUND&&lastMove!=LastMove.SPIN_GROUND) {
-					playSE(if(skin==FRAME_SKIN_GB) "step_old" else "step")
+					playSE(if(skin==FRAME_SKIN_GB) "stepold" else "step")
 					if(!ruleOpt.softdropLock&&ruleOpt.softdropSurfaceLock&&softDropUsed) softdropContinuousUse = true
 				}
 				if(lockDelayNow<lockDelay) lockDelayNow++
@@ -2240,7 +2253,7 @@ class GameEngine(
 
 					val partialLockOut = it.isPartialLockOut(nowPieceX, nowPieceY)
 					it.setDarkness(.5f)
-					val underRoof = nowPieceObject!!.isUnderRoof(nowPieceX, nowPieceY, field)
+					val underRoof = nowPieceObject?.isUnderRoof(nowPieceX, nowPieceY, field)?:false
 					val put = it.placeToField(nowPieceX, nowPieceY, field)
 
 					if(ruleOpt.lockFlash>0) it.setDarkness(-.8f)
@@ -2268,17 +2281,12 @@ class GameEngine(
 							}
 						}
 					}
-					lineClearing = when(clearMode) {
-						LINE -> field.checkLineNoFlag()
-						COLOR -> field.checkColor(colorClearSize, false, garbageColorClear, gemSameColor, ignoreHidden)
-						LINE_COLOR -> field.checkConnectLine(colorClearSize, false, lineColorDiagonals, gemSameColor)
-						GEM_COLOR -> field.gemColorCheck(colorClearSize, false, garbageColorClear, ignoreHidden)
-						LINE_GEM_BOMB, LINE_GEM_SPARK -> field.checkBombOnLine(true)
-					}
+					val clearNow = clearMode.check(field)
+					lineClearing = clearNow.size
 
 					chain = 0
 					lineGravityTotalLines = 0
-					garbageClearing = field.garbageCleared
+					garbageClearing = clearNow.garbageCleared
 					//if(combo==0 && lastevent!=EVENT_NONE)lastevent=EVENT_NONE;
 					if(lineClearing==0) {
 						val ev = ScoreEvent(it, twistType = twistType)
@@ -2324,7 +2332,7 @@ class GameEngine(
 								statc[0] = lineDelay
 								statLineClear()
 							}
-							lineClearing>0&&(ruleOpt.lockFlash<=0||!ruleOpt.lockFlashBeforeLineClear) -> {
+							clearNow.size>0&&(ruleOpt.lockFlash<=0||!ruleOpt.lockFlashBeforeLineClear) -> {
 								// Line clear
 								stat = Status.LINECLEAR
 								statLineClear()
@@ -2363,7 +2371,7 @@ class GameEngine(
 				dasCount++
 
 			statc[0]++
-		} ?: run {statc[0] = 0}
+		}?:run {statc[0] = 0}
 	}
 
 	/** Block固定直後の光っているときの処理 */
@@ -2408,124 +2416,10 @@ class GameEngine(
 
 		// 最初の frame
 		if(statc[0]==0) {
-			lineClearing = when(clearMode) {
-				LINE -> field.checkLine()
-				COLOR -> field.checkColor(colorClearSize, true, garbageColorClear, gemSameColor, ignoreHidden)
-				LINE_COLOR -> field.checkConnectLine(colorClearSize, true, lineColorDiagonals, gemSameColor)
-				GEM_COLOR -> field.gemColorCheck(colorClearSize, true, garbageColorClear, ignoreHidden)
-				LINE_GEM_BOMB, LINE_GEM_SPARK -> {
-					val ret = field.checkBombIgnited()
-					if(clearMode==LINE_GEM_BOMB) statc[3] = chain
-					val force = statc[3]+field.checkLineNoFlag()
-					if(clearMode==LINE_GEM_SPARK) statc[3] = force
-					field.igniteBomb(explodSize[force][0], explodSize[force][1], explodSize[0][0], explodSize[0][1])
-					ret
-				}
-			}
-			val ingame = ending==0||staffrollEnableStatistics
-			/**
-			 * - LINE: lines
-			 * - else: # blocks*/
-			val li = lineClearing.let {if(big&&bigHalf) it shr 1 else it}
-			when(clearMode) {
-				LINE -> {
-					split = field.lastLinesHeight.size>1
-
-					if(li>0) {
-						playSE(
-							when {
-								split -> "split"
-								li>=(if(twist) 2 else if(combo>0) 3 else 4) -> "erase2"
-								li>=(if(twist) 1 else 2) -> "erase1"
-								else -> "erase0"
-							}
-						)
-						lastLinesY = field.lastLinesY
-						lastLineY = field.lastLinesBottom
-						playSE("line${li.coerceIn(1, 4)}")
-						if(li>=4) playSE("applause${(2+b2bCount).coerceIn(0, 4)}")
-						if(twist) {
-							playSE("twister")
-							if(li>=3||li>=2&&b2b) playSE("crowd1") else playSE("crowd0")
-							if(ingame)
-								when(li) {
-									1 -> if(twistMini) statistics.totalTwistSingleMini++
-									else statistics.totalTwistSingle++
-									2 -> if(split) statistics.totalTwistSplitDouble++ else if(twistMini) statistics.totalTwistDoubleMini++
-									else statistics.totalTwistDouble++
-									3 -> if(split) statistics.totalTwistSplitTriple++ else statistics.totalTwistTriple++
-								}
-						} else if(ingame)
-							when(li) {
-								1 -> statistics.totalSingle++
-								2 -> if(split) statistics.totalSplitDouble++
-								else statistics.totalDouble++
-								3 -> if(split) statistics.totalSplitTriple++
-								else statistics.totalTriple++
-								4 -> statistics.totalQuadruple++
-							}
-					}
-					// B2B bonus
-
-					if(li>=1&&b2bEnable)
-						if(li>=4||(split&&splitB2B)||twist||field.isEmpty) {
-							b2bCount++
-							if(b2bCount>0) {
-								playSE("b2b_combo", minOf(1.5f, 1f+(b2bCount)/13f))
-								if(ingame) {
-									when {
-										li==4 -> statistics.totalB2BQuad++
-										split -> statistics.totalB2BSplit++
-										twist -> statistics.totalB2BTwist++
-									}
-									if(b2bCount>=statistics.maxB2B) statistics.maxB2B = b2bCount
-								}
-								owner.receiver.addCombo(this, nowPieceX, nowPieceBottomY-(combo>0).toInt(), b2bCount, CHAIN.B2B)
-							} else {
-								playSE("b2b_start")
-								b2bCount = 0
-							}
-						} else if(b2bCount>=0&&combo<0) {
-							b2bCount = -b2bCount.absoluteValue
-							playSE("b2b_end")
-						}
-					// Combo
-					if(comboType!=COMBO_TYPE_DISABLE&&chain==0) {
-						if(comboType==COMBO_TYPE_NORMAL||comboType==COMBO_TYPE_DOUBLE&&li>=2) combo++
-						if(combo>0) {
-							playSE("combo", minOf(2f, 1f+(combo-1)/14f))
-							owner.receiver.addCombo(this, nowPieceX, nowPieceBottomY+b2b.toInt(), combo, CHAIN.COMBO)
-							if(ingame) if(combo>=statistics.maxCombo) statistics.maxCombo = combo
-						}
-					}
-
-					lineGravityTotalLines += lineClearing
-					statistics.blocks += li*fieldWidth
-					if(ingame) statistics.lines += li
-				}
-				LINE_GEM_BOMB, LINE_GEM_SPARK -> {
-					playSE("bomb")
-					playSE("erase0")
-				}
-				COLOR -> {
-					playSE(
-						when {
-							li>=8||chain>=5 -> "erase2"
-							li>=5||chain>=2 -> "erase1"
-							else -> "erase0"
-						}
-					)
-					statistics.blocks += li
-					if(chain>0) {
-						playSE("combo", minOf(2f, 1f+(chain-1)/14f))
-						owner.receiver.addCombo(this, nowPieceX, nowPieceBottomY+b2b.toInt(), chain, CHAIN.CHAIN)
-					}
-				}
-				LINE_COLOR, GEM_COLOR -> {
-					statistics.blocks += li
-				}
-			}
-			if(field.howManyGemClears>0) playSE("gem")
+			val check = clearMode.flag(this, field)
+			val li = check.size
+			//lineClearing = li
+			if(check.gemCleared>0) playSE("gem")
 			val ev = ScoreEvent(nowPieceObject, li, b2bCount, combo, twistType, split)
 			lastEvent = ev
 			// All clear
@@ -2535,43 +2429,32 @@ class GameEngine(
 			}
 			// Calculate score
 			owner.mode?.calcScore(this, ev)?.let {
-				if(it>0&&clearMode==LINE)
-					owner.receiver.addScore(this, nowPieceX, field.lastLinesBottom, it)
+				if(it>0) owner.receiver.addScore(this, nowPieceX, field.lastLinesBottom, it)
 			}
 			if(li>0) owner.receiver.calcScore(this, ev)
+
 			if(b2bCount<-1) b2bCount = -1
 
 			// Blockを消す演出を出す (まだ実際には消えていない）
-			(0..<field.height).filter {field.getLineFlag(it)}.toSet().let {row ->
-				if(clearMode==LINE) {
-					owner.mode?.lineClear(this, row)
-					owner.receiver.lineClear(this, row)
-				}
-				row.associateWith {y ->
-					field.getRow(y).mapIndexedNotNull {x, b ->
-						b?.let {if(it.getAttribute(Block.ATTRIBUTE.ERASE)) x to it else null}
-					}.associate {it}
-				}.let {
-					if(owner.mode?.blockBreak(this, it)!=true)
-						owner.receiver.blockBreak(this, it)
-				}
+			if(clearMode===Line) (0..<field.height).filter {field.getLineFlag(it)}.let {
+				owner.mode?.lineClear(this, it)
+				owner.receiver.lineClear(this, it)
 			}
-
+			field.filterAttributeMap(Block.ATTRIBUTE.ERASE).let {
+				if(owner.mode?.blockBreak(this, it)!=true)
+					owner.receiver.blockBreak(this, it)
+			}
 			// Blockを消す
-			when(clearMode) {
-				LINE -> field.clearLine()
-				COLOR -> field.clearColor(colorClearSize, garbageColorClear, gemSameColor, ignoreHidden)
-				LINE_COLOR -> field.clearProceed()
-				GEM_COLOR -> lineClearing = field.gemClearColor(colorClearSize, garbageColorClear, ignoreHidden)
-				LINE_GEM_BOMB -> lineClearing = field.clearProceed(1)
-				LINE_GEM_SPARK -> lineClearing = field.clearProceed(2)
-			}
+			clearMode.clear(field)
 		}
 
+		val fallCheck = lineGravityType.check(field)
+		statc[7] = fallCheck.first
+		statc[8] = fallCheck.second
 // Linesを1段落とす
-		if(lineGravityType==LineGravity.NATIVE&&lineDelay>=lineClearing-1&&statc[0]>=lineDelay-(lineClearing-1)
-			&&ruleOpt.lineFallAnim
-		) field.downFloatingBlocksSingleLine()
+		if(lineGravityType==LineGravity.Native&&ruleOpt.lineFallAnim&&statc[0]>=lineDelay-(fallCheck.first-1).coerceAtLeast
+				(0))
+			lineGravityType.fallSingle(field)//field.downFloatingBlocksSingleLine()
 
 // Line delay cancel check
 		delayCancelMoveLeft = ctrl.isPush(Controller.BUTTON_LEFT)
@@ -2592,20 +2475,19 @@ class GameEngine(
 			if(lineGravityType==LineGravity.CASCADE||lineGravityType==LineGravity.CASCADE_SLOW) // Cascade
 				if(statc[6]<cascadeDelay) {
 					statc[6]++
+					field.filterAttributeBlocks(Block.ATTRIBUTE.CASCADE_FALL).forEach {(_, _, b) ->
+						b.offsetY = statc[6]/cascadeDelay.toFloat()
+					}
 					return
-				} else if(field.doCascadeGravity(lineGravityType)) {
+				} else if(fallCheck.first>0) {
+					statc[9] = lineGravityType.fallSingle(field)
 					statc[6] = 0
+					playSE("softdrop")
 					return
 				} else if(statc[6]<cascadeClearDelay) {
 					statc[6]++
 					return
-				} else if(when(clearMode) {
-						LINE -> field.checkLineNoFlag()
-						COLOR -> field.checkColor(colorClearSize, false, garbageColorClear, gemSameColor, ignoreHidden)
-						LINE_COLOR -> field.checkConnectLine(colorClearSize, false, lineColorDiagonals, gemSameColor)
-						GEM_COLOR -> field.gemColorCheck(colorClearSize, false, garbageColorClear, ignoreHidden)
-						LINE_GEM_BOMB, LINE_GEM_SPARK -> field.checkBombOnLine(true)
-					}>0) {
+				} else if(clearMode.check(field).size>0) {
 					twistType = null
 					chain++
 					if(chain>statistics.maxChain) statistics.maxChain = chain
@@ -2614,15 +2496,14 @@ class GameEngine(
 					return
 				}
 
-			val skip = owner.mode?.lineClearEnd(this) ?: false
+			val skip = owner.mode?.lineClearEnd(this)?:false
 			owner.receiver.lineClearEnd(this)
 			if(sticky>0) field.setBlockLinkByColor()
 			if(sticky==2) field.setAllAttribute(true, Block.ATTRIBUTE.IGNORE_LINK)
 
 			if(!skip) {
-				if(lineGravityType==LineGravity.NATIVE) field.downFloatingBlocks()
-
-				if(clearMode==LINE) lastLinesY.filter {it.max()>=field.highestBlockY}.distinctBy {it.size>=3}.forEach {
+				if(lineGravityType==LineGravity.Native) lineGravityType.fallInstant(field)
+				lastLinesY.filter {it.max()>=field.highestBlockY}.distinctBy {it.size>=3}.forEach {
 					playSE(
 						when {
 							it.size>=4 -> "linefall1"
@@ -2635,7 +2516,6 @@ class GameEngine(
 				}
 //				field.lineColorsCleared = emptyList()
 
-//				if(stat==Status.LINECLEAR) {
 				resetStatc()
 				when {
 					ending==1 -> stat = Status.ENDINGSTART// Ending
@@ -2658,7 +2538,6 @@ class GameEngine(
 						stat = Status.MOVE
 					}
 				}
-//				}
 			}
 		} else statc[0]++
 	}
@@ -3014,7 +2893,7 @@ class GameEngine(
 	/** プレイ中断効果のあるアイテム処理 */
 	private fun statInterruptItem() {
 		// 続行 flag
-		val contFlag = interruptItem?.statInterrupt(this) ?: false
+		val contFlag = interruptItem?.statInterrupt(this)?:false
 
 		if(!contFlag) {
 			interruptItem = null
@@ -3032,13 +2911,9 @@ class GameEngine(
 	enum class LastMove {
 		NONE, FALL_AUTO, FALL_SELF, SLIDE_AIR, SLIDE_GROUND, SPIN_AIR, SPIN_GROUND
 	}
-	/** Line gravity types */
-	enum class LineGravity {
-		NATIVE, CASCADE, CASCADE_SLOW
-	}
-	/** Clear mode settings */
-	enum class ClearType {
-		LINE, COLOR, LINE_COLOR, GEM_COLOR, LINE_GEM_BOMB, LINE_GEM_SPARK
+	/** Game style names */
+	enum class GameStyle {
+		TETROMINO, AVALANCHE, PHYSICIAN, SPF
 	}
 
 	enum class MeterColor(val color:Int) {

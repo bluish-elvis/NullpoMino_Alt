@@ -37,6 +37,7 @@ import mu.nu.nullpo.game.component.Field
 import mu.nu.nullpo.game.event.EventReceiver
 import mu.nu.nullpo.game.event.ScoreEvent
 import mu.nu.nullpo.game.play.GameEngine
+import mu.nu.nullpo.game.play.LineGravity
 import mu.nu.nullpo.util.CustomProperties
 import mu.nu.nullpo.util.GeneralUtil.toTimeStr
 
@@ -223,7 +224,7 @@ class MarathonSquare:AbstractMode() {
 	/* Piece movement */
 	override fun onMove(engine:GameEngine):Boolean {
 		// Disable cascade
-		engine.lineGravityType = GameEngine.LineGravity.NATIVE
+		engine.lineGravityType = LineGravity.Native
 		return false
 	}
 
@@ -365,7 +366,7 @@ class MarathonSquare:AbstractMode() {
 		var pts = li
 
 		if(li>0) {
-			engine.lineGravityType = GameEngine.LineGravity.NATIVE
+			engine.lineGravityType = LineGravity.Native
 			if(engine.field.isEmpty) engine.playSE("bravo")
 
 			if(li>3) pts = 3+(li-3)*2
@@ -432,12 +433,12 @@ class MarathonSquare:AbstractMode() {
 		for(y in -1*hiddenHeight..<height)
 			engine.field.setLineFlag(y, false)
 		// Set cascade flag
-		engine.lineGravityType = GameEngine.LineGravity.CASCADE
+		engine.lineGravityType = LineGravity.CASCADE
 	}
 
 	/* When the line clear ends */
 	override fun lineClearEnd(engine:GameEngine):Boolean {
-		if(engine.lineGravityType==GameEngine.LineGravity.CASCADE&&engine.lineGravityTotalLines>0&&tntAvalanche) {
+		if(engine.lineGravityType==LineGravity.CASCADE&&engine.lineGravityTotalLines>0&&tntAvalanche) {
 			val field = engine.field
 			for(i in field.heightWithoutHurryupFloor-1 downTo field.hiddenHeight*-1)
 				if(field.isEmptyLine(i)) {

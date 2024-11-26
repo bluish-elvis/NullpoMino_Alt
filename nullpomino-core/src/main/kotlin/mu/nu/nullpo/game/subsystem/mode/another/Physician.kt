@@ -31,14 +31,14 @@
 package mu.nu.nullpo.game.subsystem.mode.another
 
 import mu.nu.nullpo.game.component.Block
-import mu.nu.nullpo.game.component.Block.COLOR.BLUE
-import mu.nu.nullpo.game.component.Block.COLOR.RED
-import mu.nu.nullpo.game.component.Block.COLOR.YELLOW
+import mu.nu.nullpo.game.component.Block.COLOR.*
 import mu.nu.nullpo.game.component.Controller
 import mu.nu.nullpo.game.event.EventReceiver
 import mu.nu.nullpo.game.event.ScoreEvent
 import mu.nu.nullpo.game.play.GameEngine
-import mu.nu.nullpo.game.play.GameStyle
+import mu.nu.nullpo.game.play.GameEngine.GameStyle
+import mu.nu.nullpo.game.play.LineGravity
+import mu.nu.nullpo.game.play.clearRule.ColorStraight
 import mu.nu.nullpo.game.subsystem.mode.AbstractMode
 import mu.nu.nullpo.util.CustomProperties
 import mu.nu.nullpo.util.GeneralUtil.toTimeStr
@@ -95,10 +95,10 @@ class Physician:AbstractMode() {
 			loadSetting(engine, owner.replayProp)
 
 		engine.frameColor = GameEngine.FRAME_COLOR_PURPLE
-		engine.clearMode = GameEngine.ClearType.LINE_COLOR
+		engine.clearMode = ColorStraight(4,false,true)
 		engine.garbageColorClear = false
 		engine.colorClearSize = 4
-		engine.lineGravityType = GameEngine.LineGravity.CASCADE
+		engine.lineGravityType = LineGravity.CASCADE
 		engine.nextPieceEnable = PIECE_ENABLE.map {it==1}
 		engine.randomBlockColor = true
 		engine.blockColors = BLOCK_COLORS

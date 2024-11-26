@@ -41,10 +41,10 @@ import mu.nu.nullpo.game.net.NetRoomInfo
 import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.game.play.GameManager
 import mu.nu.nullpo.gui.net.NetLobbyFrame
-import mu.nu.nullpo.util.GeneralUtil as Util
 import mu.nu.nullpo.util.GeneralUtil.toTimeStr
 import java.io.IOException
 import kotlin.random.Random
+import mu.nu.nullpo.util.GeneralUtil as Util
 
 /** Special base class for netplay VS modes. Up to 6 players supported. */
 abstract class NetDummyVSMode:NetDummyMode() {

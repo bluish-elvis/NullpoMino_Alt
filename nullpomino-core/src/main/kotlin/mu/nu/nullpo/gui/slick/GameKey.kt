@@ -34,9 +34,7 @@ import mu.nu.nullpo.gui.common.GameKeyDummy
 import org.lwjgl.input.Keyboard
 import org.newdawn.slick.Input
 
-
-/** Key input state manager (Only use with Slick. Don't use inside game modes!)
-@param player Player number */
+/** Key input state manager (Only use with Slick. Don't use inside game modes!)*/
 internal class GameKey(player:Int):GameKeyDummy(player) {
 
 	/** Update button input status
@@ -78,24 +76,24 @@ internal class GameKey(player:Int):GameKeyDummy(player) {
 	}
 
 	/** Reset in-game keyboard settings to default. Menu keys are unchanged.
-	 * @param type Settings type (0=Blockbox 1=Guideline 2=NullpoMino-Classic 3=ThreshBind)
+	 * @param type Settings type (0=Blockbox 1=Guideline 2=NullpoMino-Classic 3=ThreshBind 4=Southpaw)
 	 */
 	private fun loadDefaultGameKeymap(type:Int) {
-		defaultKeys[0][type].forEachIndexed {i, t -> keymap[i] = mutableListOf(t)}
+		defaultKeys[type].second.first.forEachIndexed {i, t -> keymap[i] = mutableListOf(t)}
 	}
 
 	/** Reset menu keyboard settings to default. In-game keys are unchanged.
-	 * @param type Settings type (0=Blockbox 1=Guideline 2=NullpoMino-Classic 3=ThreshBind)
+	 * @param type Settings type (0=Blockbox 1=Guideline 2=NullpoMino-Classic 3=ThreshBind 4=Southpaw)
 	 */
 	private fun loadDefaultMenuKeymap(type:Int) {
-		defaultKeys[1][type].forEachIndexed {i, t -> keymapNav[i] = mutableListOf(t)}
+		defaultKeys[type].second.second.forEachIndexed {i, t -> keymapNav[i] = mutableListOf(t)}
 	}
 
 	companion object {
 		fun getKeyName(playerID:Int, inGame:Boolean, btnID:Int):String =
 			(if(inGame) gameKey[playerID].keymap else gameKey[playerID].keymapNav).let {keymap ->
 				if(btnID>=0&&btnID<keymap.size)
-					keymap[btnID].joinToString {Keyboard.getKeyName(it) ?: "($it)"}
+					keymap[btnID].joinToString {Keyboard.getKeyName(it)?:"($it)"}
 				else ""
 			}
 
@@ -104,10 +102,9 @@ internal class GameKey(player:Int):GameKeyDummy(player) {
 
 		/** Default key mappings */
 		val defaultKeys = listOf(
-			// Ingame
-			listOf(
-				// Blockbox type
-				listOf(
+
+			"Blockbox" to
+				(listOf(
 					Input.KEY_UP,
 					Input.KEY_DOWN,
 					Input.KEY_LEFT,
@@ -124,8 +121,25 @@ internal class GameKey(player:Int):GameKeyDummy(player) {
 					Input.KEY_F10,
 					Input.KEY_N,
 					Input.KEY_F5
-				),
-				// Guideline games type
+				) to listOf(
+					Input.KEY_UP,
+					Input.KEY_DOWN,
+					Input.KEY_LEFT,
+					Input.KEY_RIGHT,
+					Input.KEY_ENTER,
+					Input.KEY_ESCAPE,
+					Input.KEY_A,
+					Input.KEY_SPACE,
+					Input.KEY_D,
+					Input.KEY_S,
+					Input.KEY_F12,
+					Input.KEY_F1,
+					Input.KEY_F11,
+					Input.KEY_F10,
+					Input.KEY_N,
+					Input.KEY_F5
+				)),
+			"Guideline" to (
 				listOf(
 					Input.KEY_SPACE,
 					Input.KEY_DOWN,
@@ -143,8 +157,26 @@ internal class GameKey(player:Int):GameKeyDummy(player) {
 					Input.KEY_F10,
 					Input.KEY_N,
 					Input.KEY_F5
-				),
-				// NullpoMino classic type
+				) to
+					listOf(
+						Input.KEY_UP,
+						Input.KEY_DOWN,
+						Input.KEY_LEFT,
+						Input.KEY_RIGHT,
+						Input.KEY_ENTER,
+						Input.KEY_ESCAPE,
+						Input.KEY_C,
+						Input.KEY_LSHIFT,
+						Input.KEY_X,
+						Input.KEY_V,
+						Input.KEY_F12,
+						Input.KEY_F1,
+						Input.KEY_F11,
+						Input.KEY_F10,
+						Input.KEY_N,
+						Input.KEY_F5
+					)),
+			"Classic" to (
 				listOf(
 					Input.KEY_UP,
 					Input.KEY_DOWN,
@@ -162,8 +194,26 @@ internal class GameKey(player:Int):GameKeyDummy(player) {
 					Input.KEY_F11,
 					Input.KEY_N,
 					Input.KEY_F10
-				),
-				// Thresh Bind type
+				) to
+					listOf(
+						Input.KEY_UP,
+						Input.KEY_DOWN,
+						Input.KEY_LEFT,
+						Input.KEY_RIGHT,
+						Input.KEY_A,
+						Input.KEY_S,
+						Input.KEY_D,
+						Input.KEY_Z,
+						Input.KEY_X,
+						Input.KEY_C,
+						Input.KEY_ESCAPE,
+						Input.KEY_F1,
+						Input.KEY_F12,
+						Input.KEY_F11,
+						Input.KEY_N,
+						Input.KEY_F10
+					)),
+			"Thresh Bind" to (
 				listOf(
 					Input.KEY_W,
 					Input.KEY_S,
@@ -181,78 +231,36 @@ internal class GameKey(player:Int):GameKeyDummy(player) {
 					Input.KEY_F10,
 					Input.KEY_N,
 					Input.KEY_F5
-				),
-			),
-			// Menu
-			listOf(
-				// Blockbox type
+				) to
+					listOf(
+						Input.KEY_W,
+						Input.KEY_S,
+						Input.KEY_A,
+						Input.KEY_D,
+						Input.KEY_ENTER,
+						Input.KEY_BACK,
+						Input.KEY_LSHIFT,
+						Input.KEY_SPACE,
+						Input.KEY_RSHIFT,
+						Input.KEY_RCONTROL,
+						Input.KEY_F12,
+						Input.KEY_F1,
+						Input.KEY_F11,
+						Input.KEY_F10,
+						Input.KEY_N,
+						Input.KEY_F5
+					)),
+			"Southpaw" to (
 				listOf(
-					Input.KEY_UP,
-					Input.KEY_DOWN,
-					Input.KEY_LEFT,
-					Input.KEY_RIGHT,
-					Input.KEY_ENTER,
-					Input.KEY_ESCAPE,
-					Input.KEY_A,
-					Input.KEY_SPACE,
-					Input.KEY_D,
-					Input.KEY_S,
-					Input.KEY_F12,
-					Input.KEY_F1,
-					Input.KEY_F11,
-					Input.KEY_F10,
-					Input.KEY_N,
-					Input.KEY_F5
-				),
-				// Guideline games type
-				listOf(
-					Input.KEY_UP,
-					Input.KEY_DOWN,
-					Input.KEY_LEFT,
-					Input.KEY_RIGHT,
-					Input.KEY_ENTER,
-					Input.KEY_ESCAPE,
-					Input.KEY_C,
-					Input.KEY_LSHIFT,
-					Input.KEY_X,
-					Input.KEY_V,
-					Input.KEY_F12,
-					Input.KEY_F1,
-					Input.KEY_F11,
-					Input.KEY_F10,
-					Input.KEY_N,
-					Input.KEY_F5
-				),
-				// NullpoMino classic type
-				listOf(
-					Input.KEY_UP,
-					Input.KEY_DOWN,
-					Input.KEY_LEFT,
-					Input.KEY_RIGHT,
+					Input.KEY_I,
+					Input.KEY_K,
+					Input.KEY_J,
+					Input.KEY_L,
 					Input.KEY_A,
 					Input.KEY_S,
 					Input.KEY_D,
-					Input.KEY_Z,
-					Input.KEY_X,
-					Input.KEY_C,
-					Input.KEY_ESCAPE,
-					Input.KEY_F1,
-					Input.KEY_F12,
-					Input.KEY_F11,
-					Input.KEY_N,
-					Input.KEY_F10
-				),
-				// Thresh Bind type
-				listOf(
+					Input.KEY_B,
 					Input.KEY_W,
-					Input.KEY_S,
-					Input.KEY_A,
-					Input.KEY_D,
-					Input.KEY_ENTER,
-					Input.KEY_BACK,
-					Input.KEY_LSHIFT,
-					Input.KEY_SPACE,
-					Input.KEY_RSHIFT,
 					Input.KEY_RCONTROL,
 					Input.KEY_F12,
 					Input.KEY_F1,
@@ -260,8 +268,25 @@ internal class GameKey(player:Int):GameKeyDummy(player) {
 					Input.KEY_F10,
 					Input.KEY_N,
 					Input.KEY_F5
-				),
-			)
+				) to
+					listOf(
+						Input.KEY_I,
+						Input.KEY_K,
+						Input.KEY_J,
+						Input.KEY_L,
+						Input.KEY_A,
+						Input.KEY_S,
+						Input.KEY_D,
+						Input.KEY_B,
+						Input.KEY_W,
+						Input.KEY_RCONTROL,
+						Input.KEY_F12,
+						Input.KEY_F1,
+						Input.KEY_F11,
+						Input.KEY_F10,
+						Input.KEY_N,
+						Input.KEY_F5
+					))
 		)
 
 		/** Init everything */

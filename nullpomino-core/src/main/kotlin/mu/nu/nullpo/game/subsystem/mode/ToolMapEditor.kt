@@ -30,15 +30,18 @@
  */
 package mu.nu.nullpo.game.subsystem.mode
 
-import mu.nu.nullpo.game.component.*
-import mu.nu.nullpo.game.component.Block.COLOR as BCOLOR
-import mu.nu.nullpo.game.event.EventReceiver.COLOR as ECOLOR
+import mu.nu.nullpo.game.component.BGM
+import mu.nu.nullpo.game.component.Block
+import mu.nu.nullpo.game.component.Controller
+import mu.nu.nullpo.game.component.Field
 import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.game.play.GameManager
 import mu.nu.nullpo.gui.common.BaseFont
 import mu.nu.nullpo.util.CustomProperties
-import java.util.LinkedList
+import java.util.*
 import kotlin.random.Random
+import mu.nu.nullpo.game.component.Block.COLOR as BCOLOR
+import mu.nu.nullpo.game.event.EventReceiver.COLOR as ECOLOR
 
 /** TOOL-VS MAP EDIT */
 class ToolMapEditor:AbstractMode() {

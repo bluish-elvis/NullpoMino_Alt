@@ -28,7 +28,7 @@
  ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  POSSIBILITY OF SUCH DAMAGE.
  */
-package mu.nu.nullpo.game.component
+package mu.nu.nullpo.game.event
 
 import kotlinx.serialization.Serializable
 import mu.nu.nullpo.util.CustomProperties

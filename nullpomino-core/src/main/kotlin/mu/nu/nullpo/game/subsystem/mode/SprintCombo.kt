@@ -52,7 +52,7 @@ class SprintCombo:NetDummyMode() {
 	/** BigMode */
 	private var big:Boolean by DelegateMenuItem(itemBig)
 
-	/** HindranceLinescount type (0=5,1=10,2=18) */
+	/** Hindrance Lines type (0=5,1=10,2=18) */
 	private val itemGoal = StringsMenuItem(
 		"goalType", "GOAL", COLOR.BLUE, 0, GOAL_TABLE.map {"$it LINES"}
 	)
@@ -102,7 +102,7 @@ class SprintCombo:NetDummyMode() {
 	/** Rankings' Combo */
 	private val rankingCombo = List(GOAL_TABLE.size) {List(GAMETYPE_MAX) {MutableList(rankingMax) {-1}}}
 
-	/** HindranceLinescount type (0=5,1=10,2=18) */
+	/**  */
 	private val itemShape = StringsMenuItem(
 		"shapetype", "StartShape", COLOR.BLUE, 1, SHAPE_NAME_TABLE, false, true
 	)
@@ -521,7 +521,7 @@ class SprintCombo:NetDummyMode() {
 		/** Number of ranking types */
 		private const val GAMETYPE_MAX = 3
 
-		/** HindranceLinescountConstantcount */
+		/** Hindrance Lines Constant */
 		private val GOAL_TABLE = listOf(21, 41, 101, -1)
 
 		/** Number of starting shapes */

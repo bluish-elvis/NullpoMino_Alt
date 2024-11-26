@@ -35,7 +35,9 @@ import mu.nu.nullpo.game.component.Statistics
 import mu.nu.nullpo.game.event.EventReceiver
 import mu.nu.nullpo.game.event.ScoreEvent
 import mu.nu.nullpo.game.play.GameEngine
-import mu.nu.nullpo.game.play.GameStyle
+import mu.nu.nullpo.game.play.GameEngine.GameStyle
+import mu.nu.nullpo.game.play.LineGravity
+import mu.nu.nullpo.game.play.clearRule.Color
 import mu.nu.nullpo.game.subsystem.mode.AbstractMode
 import mu.nu.nullpo.util.GeneralUtil.toTimeStr
 
@@ -131,7 +133,7 @@ abstract class Avalanche1PDummyMode:AbstractMode() {
 		toNextLevel = blocksPerLevel
 
 		engine.frameColor = GameEngine.FRAME_COLOR_PURPLE
-		engine.clearMode = GameEngine.ClearType.COLOR
+		engine.clearMode = Color(4, true, true, true)
 		engine.garbageColorClear = true
 		engine.colorClearSize = 4
 		engine.ignoreHidden = true
@@ -167,7 +169,7 @@ abstract class Avalanche1PDummyMode:AbstractMode() {
 
 	protected open fun readyInit(engine:GameEngine):Boolean {
 		engine.numColors = numColors
-		engine.lineGravityType = if(cascadeSlow) GameEngine.LineGravity.CASCADE_SLOW else GameEngine.LineGravity.CASCADE
+		engine.lineGravityType = if(cascadeSlow) LineGravity.CASCADE_SLOW else LineGravity.CASCADE
 		engine.displaySize = if(bigDisplay) 1 else 0
 
 		when(outlinetype) {
