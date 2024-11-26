@@ -266,7 +266,9 @@ import mu.nu.nullpo.util.GeneralUtil.toAlphaNum
 		/** Last commit flag -- block was part of last placement or cascade */
 		LAST_COMMIT,
 		/** Ignore block connections (for Avalanche modes) */
-		IGNORE_LINK;
+		IGNORE_LINK,
+		/** Placed with Big Piece, or Combined as Big Bomb*/
+		BIG;
 
 		val bit:Int get() = 1 shl ordinal
 	}

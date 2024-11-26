@@ -256,7 +256,7 @@ class Battler(mode:GameMode, rules:RuleOptions, _ai:DummyAI, _ai2:DummyAI) {
 		private const val RUN_ESP = 1
 		// Each round run for this amount of simulation and then save Qtable
 		private const val RUN_STEP = 100
-		var log:Logger = Logger.getLogger(Battler::class.java)
+		val log:Logger = Logger.getLogger(Battler::class.java)
 		/**
 		 * Log the current game state.
 		 */

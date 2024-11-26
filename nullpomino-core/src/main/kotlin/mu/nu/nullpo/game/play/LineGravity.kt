@@ -1,5 +1,5 @@
 /*
- Copyright (c) 2021-2024, NullNoname
+ Copyright (c) 2024, NullNoname
  All rights reserved.
 
  Converted to Kotlin and modified by Venom_Nhelv as bluish-elvis
@@ -31,7 +31,7 @@
 
 package mu.nu.nullpo.game.play
 
-/** Game style names */
-enum class GameStyle {
-	TETROMINO, AVALANCHE, PHYSICIAN, SPF
+/** Line gravity types */
+enum class LineGravity {
+	NATIVE, CASCADE, CASCADE_SLOW
 }
