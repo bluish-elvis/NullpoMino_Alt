@@ -49,7 +49,7 @@ abstract class ResourceHolder {
 
 	init {
 		try {
-			val originLog = File(ResourceHolder::class.java.getResource("/log4j2.xml")?.toString() ?: "")
+			val originLog = File(ResourceHolder::class.java.getResource("/log4j2.xml")?.toString()?:"")
 			val f = File(logConf)
 			if(!f.parentFile.exists()) f.parentFile.mkdirs()
 			else if(f.isDirectory) f.deleteRecursively()
@@ -84,7 +84,7 @@ abstract class ResourceHolder {
 			File("$skinDir/graphics/blockskin/normal/").listFiles(filterImg)?.sortedWith(nameSort)?.map {
 				ResourceImageStr("blockskin/normal/"+it.nameWithoutExtension)
 //loadImage("blockskin/normal/n$i")
-			} ?: emptyList()
+			}?:emptyList()
 		} catch(e:Exception) {
 			//log.error(e)
 			emptyList()
@@ -99,13 +99,13 @@ abstract class ResourceHolder {
 		File("$skinDir/graphics/blockskin/small/").listFiles(filterImg)?.sortedWith(nameSort)?.map {
 			ResourceImageStr("blockskin/small/"+it.nameWithoutExtension)
 			//loadImage("blockskin/small/s$i")
-		} ?: emptyList()
+		}?:emptyList()
 	}
 	internal open val imgBigBlockList:List<ResourceImage<*>> by lazy {
 		File("$skinDir/graphics/blockskin/big/").listFiles(filterImg)?.sortedWith(nameSort)?.map {
 			ResourceImageStr("blockskin/big/"+it.nameWithoutExtension)
 			//loadImage("blockskin/big/b$i")
-		} ?: emptyList()
+		}?:emptyList()
 	}
 
 	internal open val imgItemBlock:List<ResourceImage<*>> = listOf("s", "n", "b").map {ResourceImageStr("blockskin/item$it")}
@@ -131,7 +131,7 @@ abstract class ResourceHolder {
 		File("$skinDir/graphics/frames/").listFiles(FileFilter {it.isImage&&it.nameWithoutExtension.all {i -> i.isDigit()}})
 			?.sortedWith(nameSort)?.map {
 				ResourceImageStr("frames/"+it.nameWithoutExtension)
-			} ?: emptyList()
+			}?:emptyList()
 	}
 
 	/** Field frame for retro mode */
@@ -181,13 +181,13 @@ abstract class ResourceHolder {
 	internal open val imgPlayBG:List<ResourceImage<*>> by lazy {
 		File("$skinDir/graphics/back/").listFiles(filterImg)?.sortedWith(nameSort)?.map {
 			ResourceImageStr("back/"+it.nameWithoutExtension)
-		} ?: emptyList()
+		}?:emptyList()
 	}
 	/** プレイ中のBackground Animation */
 	internal open val imgPlayBGA:List<ResourceImage<*>> by lazy {
 		File("$skinDir/graphics/back_vis/").listFiles(filterImg)?.sortedWith(nameSort)?.map {
 			ResourceImageStr("back_vis/"+it.nameWithoutExtension)
-		} ?: emptyList()
+		}?:emptyList()
 	}
 	/** BackgroundOfcount */
 	val bgMax get() = imgPlayBG.size
@@ -236,10 +236,10 @@ abstract class ResourceHolder {
 
 	internal val soundSet = setOf(
 		"cursor", "change", "decide", "cancel", "pause",
-		"hold", "initialhold", "holdfail", "move", "movefail",
-		"rotate", "wallkick", "initialrotate", "rotfail",
-		"harddrop", "softdrop", "step", "lock",
-		"erase", "split", "linefall", "linefall0", "linefall1", "cheer", "twist", "twister",
+		"hold", "initialhold", "holdfail", "move", "moveold", "movefail",
+		"rotate", "rotateold", "wallkick", "initialrotate", "initialrotateold", "rotfail",
+		"harddrop", "softdrop", "step", "stepold", "lock",
+		"split", "linefall", "linefallold", "linefall0", "linefall1", "cheer", "twist", "twister",
 		"combo", "combo_pow", "b2b_start", "b2b_combo", "b2b_end",
 
 		"danger", "dead", "dead_last", "shutter",
@@ -251,7 +251,7 @@ abstract class ResourceHolder {
 		"stageclear", "stagefail", "matchend",
 		"gem", "bomb", "square_s", "square_g"
 	)+((0..1).flatMap {setOf("start$it", "crowd$it")}+
-		(0..2).flatMap {setOf("decide$it", "garbage$it", "erase$it", "firecracker$it")}+
+		(0..2).flatMap {setOf("decide$it", "garbage$it", "erase$it", "eraseold$it", "firecracker$it")}+
 		(0..4).map {"grade$it"}+(0..5).map {"applause$it"}+
 		Piece.Shape.names.map {"piece_${it.lowercase()}"}+
 		(1..3).map {"medal$it"}+(1..4).map {"line$it"}).toSet()

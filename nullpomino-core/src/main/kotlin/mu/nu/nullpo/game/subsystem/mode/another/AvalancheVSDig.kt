@@ -37,6 +37,8 @@ import mu.nu.nullpo.game.event.EventReceiver
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
 import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.game.play.GameManager
+import mu.nu.nullpo.game.play.LineGravity
+import mu.nu.nullpo.game.play.clearRule.Color.Companion.clearAll
 import mu.nu.nullpo.gui.common.BaseFont
 import mu.nu.nullpo.gui.common.GameKeyDummy.Companion.MAX_PLAYERS
 import mu.nu.nullpo.util.CustomProperties
@@ -303,9 +305,9 @@ class AvalancheVSDig:AvalancheVSDummyMode() {
 		if(engine.statc[0]==0) {
 			engine.numColors = numColors[pid]
 			engine.lineGravityType = if(cascadeSlow[pid])
-				GameEngine.LineGravity.CASCADE_SLOW
+				LineGravity.CASCADE_SLOW
 			else
-				GameEngine.LineGravity.CASCADE
+				LineGravity.CASCADE
 			engine.rainbowAnimate = true
 			engine.displaySize = if(bigDisplay) 1 else 0
 
@@ -346,7 +348,7 @@ class AvalancheVSDig:AvalancheVSDummyMode() {
 					for(j in 0..<width)
 						if(it.getBlockEmpty(j, y-i))
 							it.setBlockColor(j, y-i, BLOCK_COLORS[rand.nextInt(numColors[engine.playerID])])
-			while(it.clearColor(sizeLimit, false, false, true)>0)
+			while(it.clearAll(sizeLimit, false, false, true).size>0)
 			it.setAllAttribute(true, Block.ATTRIBUTE.VISIBLE)
 			it.setAllSkin(engine.skin)
 		}

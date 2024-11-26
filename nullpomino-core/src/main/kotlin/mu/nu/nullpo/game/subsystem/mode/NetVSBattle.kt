@@ -41,7 +41,7 @@ import mu.nu.nullpo.game.play.GameManager
 import mu.nu.nullpo.gui.net.NetLobbyFrame
 import mu.nu.nullpo.util.GeneralUtil.toTimeStr
 import java.io.IOException
-import java.util.Objects
+import java.util.*
 import kotlin.math.abs
 
 /** NET-VS-BATTLE Mode */
