@@ -73,9 +73,9 @@ object Matrix {
 		return a
 	}
 
-	fun premultiplyInverse(l:Array<DoubleArray>, r:Array<DoubleArray>, result:Array<DoubleArray>, tmp:Array<DoubleArray>):Array<DoubleArray>? {
-		var l = l
-		var result = result
+	fun premultiplyInverse(_l:Array<DoubleArray>, r:Array<DoubleArray>, _res:Array<DoubleArray>, tmp:Array<DoubleArray>):Array<DoubleArray>? {
+		var l = _l
+		var result = _res
 		l = copy(l, tmp)
 		result = copy(r, result)
 		for(col in l.indices) {

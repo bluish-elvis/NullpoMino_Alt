@@ -104,9 +104,9 @@ class Piece(@SerialName("id") private var shape:Int = 0) {
 		}
 
 	/** @return ピース回転軸のX-coordinate */
-	val spinCX get() = dataX.flatten().let {(it.maxOrNull() ?: 0)-(it.minOrNull() ?: 0)}/2f
+	val spinCX get() = dataX.flatten().let {(it.maxOrNull()?:0)-(it.minOrNull()?:0)}/2f
 	/** @return ピース回転軸のY-coordinate */
-	val spinCY get() = dataY.flatten().let {(it.maxOrNull() ?: 0)-(it.minOrNull() ?: 0)}/2f
+	val spinCY get() = dataY.flatten().let {(it.maxOrNull()?:0)-(it.minOrNull()?:0)}/2f
 	/** @return ピースの幅*/
 	val width get() = maximumBlockX-minimumBlockX
 	/** @return ピースの高さ*/
@@ -114,16 +114,16 @@ class Piece(@SerialName("id") private var shape:Int = 0) {
 	val centerX get() = (width/2.0).roundToInt()
 	val centerY get() = (height/2.0).roundToInt()
 	/** @return テトラミノの最も高いBlockのX-coordinate*/
-	val minimumBlockX get() = (dataX[direction].minOrNull() ?: 0)*if(big) 2 else 1
+	val minimumBlockX get() = (dataX[direction].minOrNull()?:0)*if(big) 2 else 1
 
 	/** @return テトラミノの最も低いBlockのX-coordinate */
-	val maximumBlockX get() = (dataX[direction].maxOrNull() ?: 0)*if(big) 2 else 1
+	val maximumBlockX get() = (dataX[direction].maxOrNull()?:0)*if(big) 2 else 1
 
 	/** @return テトラミノの最も高いBlockのY-coordinate */
-	val minimumBlockY get() = (dataY[direction].minOrNull() ?: 0)*if(big) 2 else 1
+	val minimumBlockY get() = (dataY[direction].minOrNull()?:0)*if(big) 2 else 1
 
 	/** @return テトラミノの最も低いBlockのY-coordinate */
-	val maximumBlockY get() = (dataY[direction].maxOrNull() ?: 0)*if(big) 2 else 1
+	val maximumBlockY get() = (dataY[direction].maxOrNull()?:0)*if(big) 2 else 1
 
 	init {
 		resetOffsetArray()
@@ -460,7 +460,7 @@ If the piece is big (size == 2), a 2x2 space is allotted per block. */
 				(x2>=it.width||y2>=it.height||it.getCoordAttribute(x2, y2)==Field.COORD_WALL)
 					||(it.getCoordAttribute(x2, y2)!=Field.COORD_VANISH&&!it.getBlockEmpty(x2, y2))
 			}
-		} ?: false
+		}?:false
 
 	/** ピースの当たり判定 (Big用）
 	 * @param x X-coordinate
@@ -536,18 +536,10 @@ If the piece is big (size == 2), a 2x2 space is allotted per block. */
 	 * @param dir 元のDirection
 	 * @return spin buttonを押したあとのピースのDirection
 	 */
-	fun getSpinDirection(move:Int, dir:Int = direction):Int {
-		var rt = dir+move
-
-		if(move==2) {
-			if(rt>3) rt -= 4
-			if(rt<0) rt += 4
-		} else {
-			if(rt>3) rt = 0
-			if(rt<0) rt = 3
-		}
-
-		return rt
+	fun getSpinDirection(move:Int, dir:Int = direction):Int = (dir+move%DIRECTION_COUNT).let {
+		if(it<0)it+DIRECTION_COUNT
+		else if(it>=DIRECTION_COUNT) it-DIRECTION_COUNT
+		else it
 	}
 
 	/** fieldに置いたPieceが屋根になるかを判定
@@ -558,18 +550,15 @@ If the piece is big (size == 2), a 2x2 space is allotted per block. */
 	 */
 	fun canMakeRoof(x:Int, y:Int, fld:Field?):Boolean = fld?.let {
 		val rt = direction
-		dataX[rt].groupBy({x -> x}, {i -> dataY[rt][i]})
-			.forEach {(px, c) ->
+		dataX[rt].zip(dataY[rt]).groupBy ({it.first}){it.second}.map{(x,y)->x to (y.maxOrNull()?:0)}
+			.any {(px, py) ->
 				val x2 = x+px
-				val y2 = y+c.max()
-
-				if(!it.getCoordVaild(x2, y2)||!it.getBlockEmpty(x2, y2)) return@let false
-				if((it.getCoordVaild(x2, y2+1)||it.getCoordAttribute(x2, y2+1)!=Field.COORD_VANISH)
-					&&it.getBlockEmpty(x2, y2+1, false))
-					return@let true
+				val y2 = y+py
+				it.getCoordVaild(x2, y2)&&!it.getBlockEmpty(x2, y2)&&
+				(it.getCoordVaild(x2, y2+1)||it.getCoordAttribute(x2, y2+1)!=Field.COORD_VANISH)
+					&&it.getBlockEmpty(x2, y2+1, false)
 			}
-		return@let false
-	} ?: false
+	}?:false
 
 	/** Pieceの上にブロックがあるかを判定
 	 * @param x X-coordinate
@@ -579,17 +568,17 @@ If the piece is big (size == 2), a 2x2 space is allotted per block. */
 	 */
 	fun isUnderRoof(x:Int, y:Int, fld:Field?):Boolean = fld?.let {
 		val rt = direction
-		dataX[rt].groupBy({x -> x}, {i -> dataY[rt][i]})
-			.any {(px, c) ->
+		dataX[rt].zip(dataY[rt]).groupBy ({it.first}){it.second}.map{(x,y)->x to (y.minOrNull()?:0)}
+			.any {(px, py) ->
 				val x2 = x+px
-				val y2 = y+c.min()
-				(-it.hiddenHeight..<y2).reversed().any {yc -> !it.getBlockEmpty(x2, yc, true)}
+				val y2 = y+py
+				(y2 downTo -it.hiddenHeight).indexOfFirst {yc -> !it.getBlockEmpty(x2, yc, true)}>=0
 			}
-	} ?: false
+	}?:false
 
 	fun finesseLimit(nowPieceX:Int):Int =
 		FINESSE_LIST.getOrNull(id)?.let {it[direction%(it.size)]}
-			?.let {it[(nowPieceX+minimumBlockX).coerceIn(0, maxOf(0,it.size-1))]} ?: 0
+			?.let {it[(nowPieceX+minimumBlockX).coerceIn(0, maxOf(0, it.size-1))]}?:0
 
 	companion object {
 
@@ -766,7 +755,7 @@ If the piece is big (size == 2), a 2x2 space is allotted per block. */
 		 * @return `true` if enabled piece types are S,Z,O only.
 		 */
 		fun isPieceSZOOnly(pieceEnable:List<Boolean>?):Boolean =
-			pieceEnable?.let {it[PIECE_S]&&it[PIECE_Z]&&it[PIECE_O]} ?: false
+			pieceEnable?.let {it[PIECE_S]&&it[PIECE_Z]&&it[PIECE_O]}?:false
 
 		/** Create piece ID array from a String
 		 * @param strSrc String
@@ -793,7 +782,7 @@ If the piece is big (size == 2), a 2x2 space is allotted per block. */
 		companion object {
 			val all = entries
 			val names:List<String> get() = all.map {it.name}
-			fun name(id:Int):String = all.getOrNull(id)?.name ?: "?"
+			fun name(id:Int):String = all.getOrNull(id)?.name?:"?"
 		}
 	}
 
