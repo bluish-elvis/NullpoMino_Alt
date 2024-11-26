@@ -445,7 +445,7 @@ open class BasicAI:DummyAI(), Runnable {
 		else
 			y*20
 
-		// LinescountAdditional points in
+		// Lines count Additional points in
 		if(lines==1&&!danger&&depth==0&&heightAfter>=16&&holeBefore<3&&!twist&&engine.combo<1) return 0
 		if(!danger&&depth==0) {
 			if(lines==1) pts += 10

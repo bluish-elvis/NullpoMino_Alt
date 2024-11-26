@@ -36,6 +36,7 @@ import mu.nu.nullpo.game.play.GameEngine
 import kotlin.reflect.full.createInstance
 import mu.nu.nullpo.game.component.Block.COLOR as BCOLOR
 
+@Suppress("ClassName")
 @Serializable
 sealed class Item(val id:Int, val showName:String? = null, val color:BCOLOR = BCOLOR.RED, val toSelf:Boolean = false) {
 	open fun statEffect(e:GameEngine):Boolean = false
@@ -77,7 +78,7 @@ sealed class Item(val id:Int, val showName:String? = null, val color:BCOLOR = BC
 		}
 	}
 
-	class ROLL_ROLL(var interval:Int = 30):Item(1, "Forced S")
+	class ROLL_ROLL(var interval:Int = 30):Item(1, "Forced Spin")
 	/** Opponent */
 	data object DEATH:Item(2, "BIG BLOCK") {
 		override fun statInterrupt(e:GameEngine):Boolean {
@@ -404,12 +405,12 @@ sealed class Item(val id:Int, val showName:String? = null, val color:BCOLOR = BC
 
 	companion object {
 		//operator fun get(index: Int): BGM = if(this._idx)
-		val entries:List<Item>
+		val entries
 			get() = Item::class.sealedSubclasses.map {
 				it.objectInstance?:it.createInstance()
 			}.sortedBy {it.id}
 
-		fun values():Array<Item> = entries.toTypedArray()
+		fun values() = entries.toTypedArray()
 		fun valueOf(name:String):Item? = entries.find {name==it.showName||name==it::class.simpleName}
 	}
 }
