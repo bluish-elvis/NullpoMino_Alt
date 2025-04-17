@@ -132,7 +132,7 @@ abstract class Avalanche1PDummyMode:AbstractMode() {
 		level = 5
 		toNextLevel = blocksPerLevel
 
-		engine.frameColor = GameEngine.FRAME_COLOR_PURPLE
+		engine.frameSkin = GameEngine.FRAME_COLOR_PURPLE
 		engine.clearMode = Color(4, true, true, true)
 		engine.garbageColorClear = true
 		engine.colorClearSize = 4

@@ -178,7 +178,7 @@ class Practice:AbstractGrand() {
 		pieceEnable = MutableList(Piece.PIECE_COUNT) {false}
 		fldBackup = null
 		timelimitTimer = 0
-		engine.frameColor = GameEngine.FRAME_COLOR_BRONZE
+		engine.frameSkin = GameEngine.FRAME_COLOR_BRONZE
 
 		if(!engine.owner.replayMode) {
 			version = CURRENT_VERSION
@@ -421,7 +421,7 @@ class Practice:AbstractGrand() {
 					val prop = receiver.loadProperties("config/map/practice/$mapNumber.map")
 					if(prop!=null) {
 						loadMap(engine.field, prop, 0)
-						engine.field.setAllSkin(engine.skin)
+						engine.field.setAllSkin(engine.blkSkin)
 					}
 				} else if(menuCursor==43) {
 					// Map保存
@@ -447,7 +447,7 @@ class Practice:AbstractGrand() {
 						if(prop!=null) {
 							engine.createFieldIfNeeded()
 							loadMap(engine.field, prop, 0)
-							engine.field.setAllSkin(engine.skin)
+							engine.field.setAllSkin(engine.blkSkin)
 						} else
 							useMap = false
 					}
@@ -623,7 +623,7 @@ class Practice:AbstractGrand() {
 						log.debug("Loading values data from replay data")
 						engine.createFieldIfNeeded()
 						loadMap(engine.field, owner.replayProp, 0)
-						engine.field.setAllSkin(engine.skin)
+						engine.field.setAllSkin(engine.blkSkin)
 					} else {
 						log.debug("Backup values data")
 						fldBackup = Field(engine.field)

@@ -455,7 +455,7 @@ class AvalancheVSBomb:AvalancheVSDummyMode() {
 			val drop = minOf(ojama[pid]/6, maxAttack[pid])
 			ojama[pid] -= drop*6
 			engine.field.garbageDrop(engine, drop, false, 0, ojamaCountdown[pid])
-			engine.field.setAllSkin(engine.skin)
+			engine.field.setAllSkin(engine.blkSkin)
 			return true
 		}
 		//Decrement bomb blocks' countdowns and explode those that hit 0.

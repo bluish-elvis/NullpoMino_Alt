@@ -50,6 +50,10 @@ abstract class BaseMenuChooseState:BaseMenuState() {
 	/** Top choice's y-coordinate */
 	protected open var minChoiceY = 3
 
+	override fun enter(container:GameContainer?, game:StateBasedGame?) {
+		super.enter(container, game)
+		emitGrid(cursor+minChoiceY)
+	}
 	@Throws(SlickException::class)
 	override fun updateImpl(container:GameContainer, game:StateBasedGame, delta:Int) {
 

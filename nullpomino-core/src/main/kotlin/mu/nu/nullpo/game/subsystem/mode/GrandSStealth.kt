@@ -132,7 +132,7 @@ class GrandSStealth:AbstractGrand() {
 		engine.b2bEnable = false
 		engine.splitB2B = false
 		engine.comboType = GameEngine.COMBO_TYPE_DOUBLE
-		engine.frameColor = GameEngine.FRAME_COLOR_CYAN
+		engine.frameSkin = GameEngine.FRAME_COLOR_CYAN
 		engine.bigHalf = true
 		engine.bigMove = true
 		engine.staffrollEnable = true

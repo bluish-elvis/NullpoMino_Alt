@@ -52,7 +52,7 @@ class PopupAward(x:Float, y:Float, val event:ScoreEvent, val moveTime:Int, val e
 			y -= 0.5f
 		}
 		event.piece?.setDarkness(0f)
-		return (ticks>=66)
+		return ticks>=66
 	}
 
 	override fun draw(i:Int, r:AbstractRenderer) {

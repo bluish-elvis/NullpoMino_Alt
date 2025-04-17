@@ -72,6 +72,11 @@ class Piece(@SerialName("id") private var shape:Int = 0) {
 	/** ピースを構成するBlock (nBlock) */
 	var block = List(maxBlock) {Block()}
 
+	val map
+		get() = dataY[direction].zip(dataX[direction]).zip(block)
+			.groupBy({it.first.first}) {it.first.second to it.second}
+			.mapValues {it.value.toMap()}
+
 	/** 相対X位置と相対Y位置がオリジナル stateからずらされているならtrue */
 	var offsetApplied = false
 	/** 相対X位置のずれ幅 */
@@ -276,7 +281,7 @@ class Piece(@SerialName("id") private var shape:Int = 0) {
 	}
 
 	/** Blockの繋がり dataを更新 */
-	fun updateConnectData() {
+	fun updateConnectData(x:Int = 0, y:Int = 0, fld:Field? = null) {
 		block.forEachIndexed {j, b ->
 
 			b.setAttribute(
@@ -288,17 +293,24 @@ class Piece(@SerialName("id") private var shape:Int = 0) {
 				// 相対X位置と相対Y位置
 				val bx = dataX[direction][j]
 				val by = dataY[direction][j]
+				val fx = bx+x
+				val fy = by+y
 				b.setAttribute(false, Block.ATTRIBUTE.BROKEN)
 				// 他の3つのBlockとの繋がりを調べる
 				block.forEachIndexed {k, _ ->
 					if(k!=j) {
 						val bx2 = dataX[direction][k]
 						val by2 = dataY[direction][k]
-
 						if(bx==bx2&&by-1==by2) b.setAttribute(true, Block.ATTRIBUTE.CONNECT_UP) // Up
 						if(bx==bx2&&by+1==by2) b.setAttribute(true, Block.ATTRIBUTE.CONNECT_DOWN) // Down
 						if(by==by2&&bx-1==bx2) b.setAttribute(true, Block.ATTRIBUTE.CONNECT_LEFT) // 左
 						if(by==by2&&bx+1==bx2) b.setAttribute(true, Block.ATTRIBUTE.CONNECT_RIGHT) // 右
+					}
+					if(!big) fld?.let {
+						if(!it.getBlockEmpty(fx, fy-1)) b.setAttribute(true, Block.ATTRIBUTE.CONNECT_UP)
+						if(!it.getBlockEmpty(fx, fy+1)) b.setAttribute(true, Block.ATTRIBUTE.CONNECT_DOWN)
+						if(!it.getBlockEmpty(fx-1, fy)) b.setAttribute(true, Block.ATTRIBUTE.CONNECT_LEFT)
+						if(!it.getBlockEmpty(fx+1, fy)) b.setAttribute(true, Block.ATTRIBUTE.CONNECT_RIGHT)
 					}
 				}
 			} else b.setAttribute(true, Block.ATTRIBUTE.BROKEN)
@@ -331,7 +343,7 @@ class Piece(@SerialName("id") private var shape:Int = 0) {
 	 * @return 1つ以上Blockをfield枠内に置けたらtrue, そうでないならfalse
 	 */
 	fun placeToField(x:Int, y:Int, rt:Int = direction, fld:Field?):Boolean {
-		updateConnectData()
+		updateConnectData(x, y)
 
 		//On a Big piece, double its size.
 		val size = if(big) 2 else 1
@@ -427,28 +439,22 @@ If the piece is big (size == 2), a 2x2 space is allotted per block. */
 		return placed
 	}
 
-	/** fieldにピースを置く
+	/** fieldにピースを置く 1つ以上Blockを[fld]枠内に置けたらtrue
 	 * @param x X-coordinate
 	 * @param y Y-coordinate
-	 * @param fld field
-	 * @return 1つ以上Blockをfield枠内に置けたらtrue, そうでないならfalse
 	 */
 	fun placeToField(x:Int, y:Int, fld:Field?):Boolean = placeToField(x, y, direction, fld)
 
-	/** ピースの当たり判定
+	/** ピースの当たり判定 [fld]のBlockに重なっているとtrue
 	 * @param x X-coordinate
 	 * @param y Y-coordinate
-	 * @param fld field
-	 * @return Blockに重なっていたらtrue, 重なっていないならfalse
 	 */
 	fun checkCollision(x:Int, y:Int, fld:Field?):Boolean = checkCollision(x, y, direction, fld)
 
-	/** ピースの当たり判定
+	/** ピースの当たり判定 [fld]のBlockに重なっているとtrue
 	 * @param x X-coordinate
 	 * @param y Y-coordinate
 	 * @param rt Direction
-	 * @param fld field
-	 * @return Blockに重なっていたらtrue, 重なっていないならfalse
 	 */
 	fun checkCollision(x:Int, y:Int, rt:Int = direction, fld:Field?):Boolean =
 		fld?.let {
@@ -537,7 +543,7 @@ If the piece is big (size == 2), a 2x2 space is allotted per block. */
 	 * @return spin buttonを押したあとのピースのDirection
 	 */
 	fun getSpinDirection(move:Int, dir:Int = direction):Int = (dir+move%DIRECTION_COUNT).let {
-		if(it<0)it+DIRECTION_COUNT
+		if(it<0) it+DIRECTION_COUNT
 		else if(it>=DIRECTION_COUNT) it-DIRECTION_COUNT
 		else it
 	}
@@ -550,12 +556,12 @@ If the piece is big (size == 2), a 2x2 space is allotted per block. */
 	 */
 	fun canMakeRoof(x:Int, y:Int, fld:Field?):Boolean = fld?.let {
 		val rt = direction
-		dataX[rt].zip(dataY[rt]).groupBy ({it.first}){it.second}.map{(x,y)->x to (y.maxOrNull()?:0)}
+		dataX[rt].zip(dataY[rt]).groupBy({it.first}) {it.second}.map {(x, y) -> x to (y.maxOrNull()?:0)}
 			.any {(px, py) ->
 				val x2 = x+px
 				val y2 = y+py
 				it.getCoordVaild(x2, y2)&&!it.getBlockEmpty(x2, y2)&&
-				(it.getCoordVaild(x2, y2+1)||it.getCoordAttribute(x2, y2+1)!=Field.COORD_VANISH)
+					(it.getCoordVaild(x2, y2+1)||it.getCoordAttribute(x2, y2+1)!=Field.COORD_VANISH)
 					&&it.getBlockEmpty(x2, y2+1, false)
 			}
 	}?:false
@@ -568,7 +574,7 @@ If the piece is big (size == 2), a 2x2 space is allotted per block. */
 	 */
 	fun isUnderRoof(x:Int, y:Int, fld:Field?):Boolean = fld?.let {
 		val rt = direction
-		dataX[rt].zip(dataY[rt]).groupBy ({it.first}){it.second}.map{(x,y)->x to (y.minOrNull()?:0)}
+		dataX[rt].zip(dataY[rt]).groupBy({it.first}) {it.second}.map {(x, y) -> x to (y.minOrNull()?:0)}
 			.any {(px, py) ->
 				val x2 = x+px
 				val y2 = y+py

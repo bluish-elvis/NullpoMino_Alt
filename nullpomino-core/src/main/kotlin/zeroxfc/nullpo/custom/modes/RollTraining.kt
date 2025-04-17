@@ -171,7 +171,7 @@ class RollTraining:MarathonModeBase() {
 			netPlayerName = engine.owner.replayProp.getProperty("${engine.playerID}.net.netPlayerName", "")
 		}
 		engine.owner.bgMan.bg = startLevel
-		engine.frameColor = if(usedSpeed==SPEED_TAP) GameEngine.FRAME_COLOR_GRAY else GameEngine.FRAME_COLOR_BLUE
+		engine.frameSkin = if(usedSpeed==SPEED_TAP) GameEngine.FRAME_COLOR_GRAY else GameEngine.FRAME_COLOR_BLUE
 	}
 	/**
 	 * Set the gravity rate
@@ -192,7 +192,7 @@ class RollTraining:MarathonModeBase() {
 			// Configuration changes
 			val change = updateMenu(engine)
 			if(change!=0) {
-				engine.frameColor = if(usedSpeed==SPEED_TAP) GameEngine.FRAME_COLOR_GRAY else GameEngine.FRAME_COLOR_BLUE
+				engine.frameSkin = if(usedSpeed==SPEED_TAP) GameEngine.FRAME_COLOR_GRAY else GameEngine.FRAME_COLOR_BLUE
 				engine.owner.bgMan.bg = startLevel
 
 				// NET: Signal options change

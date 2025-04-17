@@ -133,7 +133,7 @@ class Collapse:AbstractMode() {
 			mainClass.contains("Slick") -> HOLDER_SLICK
 			else -> -1
 		}
-		engine.frameColor = GameEngine.FRAME_COLOR_BRONZE
+		engine.frameSkin = GameEngine.FRAME_COLOR_BRONZE
 	}
 
 	private fun resetSTextArr() {
@@ -270,7 +270,7 @@ class Collapse:AbstractMode() {
 			for(i in 0..<lineSpawn) {
 				while(nextEmpty<engine.fieldWidth) {
 					val temp = if(linesLeft<=1) Block.COLOR.WHITE else tableColors[wRandomEngine.nextInt()]
-					nextBlocks.add(Block(temp, engine.skin).apply {
+					nextBlocks.add(Block(temp, engine.blkSkin).apply {
 						setAttribute(true, Block.ATTRIBUTE.VISIBLE, Block.ATTRIBUTE.OUTLINE)
 					})
 				}
@@ -425,7 +425,7 @@ class Collapse:AbstractMode() {
 				var temp = -1
 				if(coeff<=bombChance*(if(engine.field.highestBlockY<4) 3.0 else 1.0)&&enableBombs&&linesLeft!=1) {
 					temp = wRandomEngineBomb.nextInt()
-					nextBlocks.add(Block(tableColors[temp], Block.TYPE.GEM, engine.skin).apply {
+					nextBlocks.add(Block(tableColors[temp], Block.TYPE.GEM, engine.blkSkin).apply {
 						setAttribute(true, Block.ATTRIBUTE.VISIBLE, Block.ATTRIBUTE.OUTLINE)
 					})
 				} else {
@@ -435,7 +435,7 @@ class Collapse:AbstractMode() {
 					if(linesLeft==1) {
 						temp = 5
 					}
-					nextBlocks.add(Block(tableColors[temp], engine.skin).apply {
+					nextBlocks.add(Block(tableColors[temp], engine.blkSkin).apply {
 						setAttribute(true, Block.ATTRIBUTE.VISIBLE, Block.ATTRIBUTE.OUTLINE)
 						setAttribute(bone, Block.ATTRIBUTE.BONE)
 					})
@@ -471,7 +471,7 @@ class Collapse:AbstractMode() {
 					if(linesLeft==1) {
 						temp = 5
 					}
-					nextBlocks.add(Block(tableColors[temp], Block.TYPE.GEM, engine.skin).apply {
+					nextBlocks.add(Block(tableColors[temp], Block.TYPE.GEM, engine.blkSkin).apply {
 						setAttribute(true, Block.ATTRIBUTE.OUTLINE, Block.ATTRIBUTE.VISIBLE)
 					})
 				} else {
@@ -481,7 +481,7 @@ class Collapse:AbstractMode() {
 					if(linesLeft==1) {
 						temp = 5
 					}
-					nextBlocks.add(Block(tableColors[temp], engine.skin).apply {
+					nextBlocks.add(Block(tableColors[temp], engine.blkSkin).apply {
 						setAttribute(true, Block.ATTRIBUTE.OUTLINE, Block.ATTRIBUTE.VISIBLE)
 						setAttribute(bone, Block.ATTRIBUTE.BONE)
 					})
@@ -521,7 +521,7 @@ class Collapse:AbstractMode() {
 					val temp = wRandomEngine.nextInt()
 					val bone = (temp==wRandomEngine.max&&wRandomEngine.max==5)
 
-					nextBlocks.add(Block(if(linesLeft>1) tableColors[temp] else Block.COLOR.WHITE, engine.skin).apply {
+					nextBlocks.add(Block(if(linesLeft>1) tableColors[temp] else Block.COLOR.WHITE, engine.blkSkin).apply {
 						setAttribute(true, Block.ATTRIBUTE.VISIBLE, Block.ATTRIBUTE.OUTLINE)
 						setAttribute(bone, Block.ATTRIBUTE.BONE)
 					})

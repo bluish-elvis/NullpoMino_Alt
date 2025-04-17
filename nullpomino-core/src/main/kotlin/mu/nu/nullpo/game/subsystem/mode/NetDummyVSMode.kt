@@ -246,7 +246,7 @@ abstract class NetDummyVSMode:NetDummyMode() {
 			netVSPlayerPlayCount[i] = 0
 			netVSPlayerName[i] = ""
 			netVSPlayerTeam[i] = ""
-			owner.engine[i].frameColor = GameEngine.FRAME_COLOR_GRAY
+			owner.engine[i].frameSkin = GameEngine.FRAME_COLOR_GRAY
 		}
 
 		val pList = netLobby!!.updateSameRoomPlayerInfoList()
@@ -272,7 +272,7 @@ abstract class NetDummyVSMode:NetDummyMode() {
 
 					// Set frame cint
 					if(pInfo.seatID<NET_PLAYER_COLOR_FRAME.size)
-						owner.engine[playerID].frameColor = NET_PLAYER_COLOR_FRAME[pInfo.seatID]
+						owner.engine[playerID].frameSkin = NET_PLAYER_COLOR_FRAME[pInfo.seatID]
 
 					// Set team cint
 					if(netVSPlayerTeam[playerID].isNotEmpty())
@@ -404,7 +404,7 @@ abstract class NetDummyVSMode:NetDummyMode() {
 
 		// Set frame cint
 		val seatID = netVSPlayerSeatID[engine.playerID]
-		engine.frameColor = if(seatID>=0&&seatID<NET_PLAYER_COLOR_FRAME.size)
+		engine.frameSkin = if(seatID>=0&&seatID<NET_PLAYER_COLOR_FRAME.size)
 			NET_PLAYER_COLOR_FRAME[seatID] else GameEngine.FRAME_COLOR_GRAY
 	}
 
@@ -493,7 +493,7 @@ abstract class NetDummyVSMode:NetDummyMode() {
 
 			engine.createFieldIfNeeded()
 			engine.field.stringToField(netLobby!!.mapList[map])
-			engine.field.setAllSkin(engine.skin)
+			engine.field.setAllSkin(engine.blkSkin)
 			engine.field.setAllAttribute(true, Block.ATTRIBUTE.VISIBLE, Block.ATTRIBUTE.OUTLINE)
 			engine.field.setAllAttribute(false, Block.ATTRIBUTE.SELF_PLACED)
 		}
@@ -607,7 +607,7 @@ abstract class NetDummyVSMode:NetDummyMode() {
 					if(engine.statc[5]>=netLobby!!.mapList.size) engine.statc[5] = 0
 					engine.createFieldIfNeeded()
 					engine.field.stringToField(netLobby!!.mapList[engine.statc[5]])
-					engine.field.setAllSkin(engine.skin)
+					engine.field.setAllSkin(engine.blkSkin)
 					engine.field.setAllAttribute(true, Block.ATTRIBUTE.VISIBLE, Block.ATTRIBUTE.OUTLINE)
 					engine.field.setAllAttribute(false, Block.ATTRIBUTE.SELF_PLACED)
 					menuTime -= 30
@@ -666,7 +666,7 @@ abstract class NetDummyVSMode:NetDummyMode() {
 				engine.createFieldIfNeeded()
 				engine.field.stringToField(netLobby!!.mapList[netVSMapNo])
 				if(engine.playerID==0&&!netVSIsWatch())
-					engine.field.setAllSkin(engine.skin)
+					engine.field.setAllSkin(engine.blkSkin)
 				else if(netCurrentRoomInfo!!.ruleLock&&netLobby!!.ruleOptLock!=null)
 					engine.field.setAllSkin(netLobby!!.ruleOptLock!!.skin)
 				else if(netVSPlayerSkin[engine.playerID]>=0) engine.field.setAllSkin(netVSPlayerSkin[engine.playerID])
@@ -688,7 +688,7 @@ abstract class NetDummyVSMode:NetDummyMode() {
 			if(netVSIsPractice)
 				owner.musMan.bgm = BGM.Silent
 			else {
-				owner.musMan.bgm = BGM.Extra(4)
+				owner.musMan.bgm = BGM.Extra(2)
 				owner.musMan.fadeSW = false
 			}
 

@@ -83,7 +83,7 @@ class NetVSSprintDig:NetDummyVSMode() {
 		val w = field.width
 		val h = field.height
 		var hole = -1
-		var skin = engine.skin
+		var skin = engine.blkSkin
 		if(playerID!=0||netVSIsWatch()) skin = netVSPlayerSkin[playerID]
 		if(skin<0) skin = 0
 

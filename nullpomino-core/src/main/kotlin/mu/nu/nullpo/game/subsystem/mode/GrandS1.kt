@@ -125,7 +125,7 @@ class GrandS1:AbstractGrand() {
 		engine.b2bEnable = true
 		engine.splitB2B = true
 		engine.comboType = GameEngine.COMBO_TYPE_DOUBLE
-		engine.frameColor = GameEngine.FRAME_COLOR_RED
+		engine.frameSkin = GameEngine.FRAME_COLOR_RED
 		engine.bigHalf = true
 		engine.bigMove = true
 		engine.staffrollEnable = true
@@ -345,7 +345,7 @@ class GrandS1:AbstractGrand() {
 		// BGM切り替え
 		if(tableBGMChange.any {it in lb..lA}) {
 			owner.musMan.fadeSW = false
-			owner.musMan.bgm = BGM.GrandM(calcBgmLv(lA))
+			owner.musMan.bgm = BGM.GrandA(calcBgmLv(lA))
 		}
 	}
 

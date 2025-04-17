@@ -131,9 +131,10 @@ data class RuleOptions(
 	/** 上DirectionへのWallkickができる count (-1:無限) */
 	var spinWallkickMaxRise:Int,
 
-	/** TrueにするとA,Cボタンを右回転にする */
+	/** TrueにするとA,Cボタンを右回転にする
+	 * [spinReverseKey]もtrueならB,Fボタンは左回転になる */
 	var spinToRight:Boolean,
-	/** Bボタンでの回転を逆方向にする (falseならA,Cボタンと同じ) */
+	/** B,Fボタンでの回転を逆方向にする (falseならA,Cボタンと同じ) */
 	var spinReverseKey:Boolean,
 	/** Eボタンを180 spinにする (falseならA,Cボタンと同じ) */
 	var spinDoubleKey:Boolean,

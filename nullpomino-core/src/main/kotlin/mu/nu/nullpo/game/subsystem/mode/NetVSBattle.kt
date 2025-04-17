@@ -364,7 +364,7 @@ class NetVSBattle:NetDummyVSMode() {
 							if(newHole>=hole) newHole++
 							hole = newHole
 						}
-						engine.field.addSingleHoleGarbage(hole, garbageColor, engine.skin, garbageEntry.lines/GARBAGE_DENOMINATOR)
+						engine.field.addSingleHoleGarbage(hole, garbageColor, engine.blkSkin, garbageEntry.lines/GARBAGE_DENOMINATOR)
 					} else
 						for(i in garbageEntry.lines/GARBAGE_DENOMINATOR downTo 1) {
 							if(engine.random.nextInt(100)<finalGarbagePercent) {
@@ -373,7 +373,7 @@ class NetVSBattle:NetDummyVSMode() {
 								hole = newHole
 							}
 
-							engine.field.addSingleHoleGarbage(hole, garbageColor, engine.skin, 1)
+							engine.field.addSingleHoleGarbage(hole, garbageColor, engine.blkSkin, 1)
 						}
 				}
 			}
@@ -390,7 +390,7 @@ class NetVSBattle:NetDummyVSMode() {
 							hole = newHole
 						}
 						engine.field.addSingleHoleGarbage(
-							hole, Block.COLOR.WHITE, engine.skin,
+							hole, Block.COLOR.WHITE, engine.blkSkin,
 							smallGarbageCount/GARBAGE_DENOMINATOR
 						)
 					} else
@@ -401,7 +401,7 @@ class NetVSBattle:NetDummyVSMode() {
 								hole = newHole
 							}
 
-							engine.field.addSingleHoleGarbage(hole, Block.COLOR.WHITE, engine.skin, 1)
+							engine.field.addSingleHoleGarbage(hole, Block.COLOR.WHITE, engine.blkSkin, 1)
 						}
 				}
 
@@ -420,7 +420,7 @@ class NetVSBattle:NetDummyVSMode() {
 			if(hurryUpStarted) {
 				hurryUpCount++
 
-				if(hurryUpCount%netCurrentRoomInfo!!.hurryUpInterval==0) engine.field.addHurryupFloor(1, engine.skin)
+				if(hurryUpCount%netCurrentRoomInfo!!.hurryUpInterval==0) engine.field.addHurryupFloor(1, engine.blkSkin)
 			} else
 				hurryUpCount = netCurrentRoomInfo!!.hurryUpInterval-1
 		return 0

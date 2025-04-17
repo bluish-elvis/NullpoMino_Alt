@@ -79,6 +79,7 @@ internal class StateConfigMainMenu:BaseMenuChooseState() {
 				if(player==0) COLOR.BLUE else COLOR.RED
 			)
 		}
+		super.renderImpl(container, game, g)
 
 		FontTTF.print(16, 432, NullpoMinoSlick.getUIText("ConfigMainMenu_${CHOICES[cursor].second}"))
 	}

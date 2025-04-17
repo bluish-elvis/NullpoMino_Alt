@@ -152,7 +152,7 @@ class MarathonShuttle:NetDummyMode() {
 
 		owner.bgMan.bg = startLevel
 		if(owner.bgMan.bg>19) owner.bgMan.bg = 19
-		engine.frameColor = GameEngine.FRAME_COLOR_WHITE
+		engine.frameSkin = GameEngine.FRAME_COLOR_WHITE
 	}
 
 	override fun onSettingChanged(engine:GameEngine) {

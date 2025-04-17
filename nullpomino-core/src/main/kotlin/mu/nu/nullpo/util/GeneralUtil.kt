@@ -42,8 +42,7 @@ import net.omegaboshi.nullpomino.game.subsystem.randomizer.Randomizer
 import org.apache.logging.log4j.LogManager
 import java.io.FileInputStream
 import java.text.SimpleDateFormat
-import java.util.Calendar
-import java.util.TimeZone
+import java.util.*
 import java.util.zip.GZIPInputStream
 
 /** Generic static utils */
@@ -77,6 +76,10 @@ object GeneralUtil {
 
 	/** @return true -> 1 , false -> 0 */
 	fun Boolean.toInt() = if(this) 1 else 0
+
+	operator fun Boolean.plus(x:Int) = if(this) x+1 else x
+	operator fun Boolean.minus(x:Int) = if(this) x-1 else x
+	operator fun Boolean.times(x:Int) = if(this) x else 0
 
 	/** Convert as play time into a String
 	 * @return String for play time

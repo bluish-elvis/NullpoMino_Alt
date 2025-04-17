@@ -133,7 +133,7 @@ class Joker:MarathonModeBase() {
 			netPlayerName = engine.owner.replayProp.getProperty("${engine.playerID}.net.netPlayerName", "")
 		}
 		engine.owner.bgMan.bg = 18
-		engine.frameColor = GameEngine.FRAME_COLOR_PURPLE
+		engine.frameSkin = GameEngine.FRAME_COLOR_PURPLE
 		engine.twistEnable = true
 		engine.comboType = GameEngine.COMBO_TYPE_NORMAL
 		engine.statistics.levelDispAdd = 0

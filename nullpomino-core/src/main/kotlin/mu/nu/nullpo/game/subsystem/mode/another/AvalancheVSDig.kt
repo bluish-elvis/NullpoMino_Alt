@@ -350,7 +350,7 @@ class AvalancheVSDig:AvalancheVSDummyMode() {
 							it.setBlockColor(j, y-i, BLOCK_COLORS[rand.nextInt(numColors[engine.playerID])])
 			while(it.clearAll(sizeLimit, false, false, true).size>0)
 			it.setAllAttribute(true, Block.ATTRIBUTE.VISIBLE)
-			it.setAllSkin(engine.skin)
+			it.setAllSkin(engine.blkSkin)
 		}
 	}
 
@@ -414,7 +414,7 @@ class AvalancheVSDig:AvalancheVSDummyMode() {
 			val drop = minOf(ojama[pid], maxAttack[pid])
 			ojama[pid] -= drop
 			engine.field.garbageDrop(engine, drop, false, ojamaHard[pid])
-			engine.field.setAllSkin(engine.skin)
+			engine.field.setAllSkin(engine.blkSkin)
 			return true
 		}
 		//Check for game over

@@ -8,6 +8,7 @@
   </toc-element>
   <toc-element topic="Instruction.md">
     <toc-element topic="GameModes.md">
+      <toc-element topic="versus.md"/>
       <toc-element topic="AvalancheVSReadme.md"/>
     </toc-element>
   </toc-element>

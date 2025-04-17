@@ -113,7 +113,7 @@ class SprintScore:NetDummyMode() {
 		rankingLines.forEach {it.fill(0)}
 		rankingSPL.forEach {it.fill(0.0)}
 
-		engine.frameColor = GameEngine.FRAME_COLOR_BRONZE
+		engine.frameSkin = GameEngine.FRAME_COLOR_BRONZE
 
 		netPlayerInit(engine)
 

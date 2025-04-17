@@ -290,7 +290,7 @@ class SPF:AbstractMode() {
 			mapMaxNo[playerID] = it.getProperty("values.maxMapNumber", 0)
 			engine.createFieldIfNeeded()
 			loadMap(engine.field, it, id)
-			engine.field.setAllSkin(engine.skin)
+			engine.field.setAllSkin(engine.blkSkin)
 		} ?: engine.field.reset()
 	}
 
@@ -312,7 +312,7 @@ class SPF:AbstractMode() {
 					}
 					patternCol++
 				}
-				setAllSkin(engine.skin)
+				setAllSkin(engine.blkSkin)
 			}
 		} ?: engine.field.reset()
 	}
@@ -325,7 +325,7 @@ class SPF:AbstractMode() {
 			engine.random = Random(owner.engine[0].randSeed)
 		}
 
-		engine.frameColor = PLAYER_COLOR_FRAME[pid]
+		engine.frameSkin = PLAYER_COLOR_FRAME[pid]
 		engine.clearMode = ColorGem(2,true,false)
 		engine.colorClearSize = 2
 		engine.ignoreHidden = false
@@ -602,7 +602,7 @@ class SPF:AbstractMode() {
 				if(owner.replayMode) {
 					engine.createFieldIfNeeded()
 					loadMap(engine.field, owner.replayProp, pid)
-					engine.field.setAllSkin(engine.skin)
+					engine.field.setAllSkin(engine.blkSkin)
 				} else {
 					if(propMap[pid]==null)
 						propMap[pid] = receiver.loadProperties("config/map/spf/${mapSet[pid]}.map")
@@ -619,7 +619,7 @@ class SPF:AbstractMode() {
 						} else
 							loadMap(engine.field, it, mapNumber[pid])
 
-						engine.field.setAllSkin(engine.skin)
+						engine.field.setAllSkin(engine.blkSkin)
 						fldBackup[pid] = Field(engine.field)
 					}
 				}
@@ -1079,7 +1079,7 @@ class SPF:AbstractMode() {
 			ojama[pid] -= drop
 			//engine.field.garbageDrop(engine, drop, big[pid], ojamaHard[pid], 3);
 			engine.field.garbageDrop(engine, drop, false, 0, ojamaCountdown[pid], 3)
-			engine.field.setAllSkin(engine.skin)
+			engine.field.setAllSkin(engine.blkSkin)
 			var patternCol = 0
 			for(x in 0..<engine.field.width) {
 				if(patternCol>=dropPattern[enemyID].size) patternCol = 0

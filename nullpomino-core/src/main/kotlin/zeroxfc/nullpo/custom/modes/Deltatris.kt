@@ -124,7 +124,7 @@ class Deltatris:MarathonModeBase() {
 			netPlayerName = engine.owner.replayProp.getProperty("${engine.playerID}.net.netPlayerName", "")
 		}
 		engine.owner.bgMan.bg = 0
-		engine.frameColor = GameEngine.FRAME_COLOR_GRAY
+		engine.frameSkin = GameEngine.FRAME_COLOR_GRAY
 	}
 	/**
 	 * Set the overall game speed

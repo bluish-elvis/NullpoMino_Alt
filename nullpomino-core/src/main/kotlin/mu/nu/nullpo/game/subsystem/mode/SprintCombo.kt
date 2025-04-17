@@ -164,7 +164,7 @@ class SprintCombo:NetDummyMode() {
 		rankingTime.forEach {it.forEach {p -> p.fill(0)}}
 		rankingCombo.forEach {it.forEach {p -> p.fill(0)}}
 
-		engine.frameColor = GameEngine.FRAME_COLOR_RED
+		engine.frameSkin = GameEngine.FRAME_COLOR_RED
 
 		netPlayerInit(engine)
 
@@ -231,7 +231,7 @@ class SprintCombo:NetDummyMode() {
 						engine.field.setBlock(
 							x, y,
 							Block(
-								STACK_COLOR_TABLE[stackColor%STACK_COLOR_TABLE.size], engine.skin, Block.ATTRIBUTE.VISIBLE,
+								STACK_COLOR_TABLE[stackColor%STACK_COLOR_TABLE.size], engine.blkSkin, Block.ATTRIBUTE.VISIBLE,
 								Block.ATTRIBUTE.GARBAGE
 							)
 						)
@@ -244,7 +244,7 @@ class SprintCombo:NetDummyMode() {
 				if(SHAPE_TABLE[shapetype][i]==1)
 					engine.field.setBlock(
 						i%4, h-1-i/4,
-						Block(SHAPE_COLOR_TABLE[shapetype], engine.skin, Block.ATTRIBUTE.VISIBLE, Block.ATTRIBUTE.GARBAGE)
+						Block(SHAPE_COLOR_TABLE[shapetype], engine.blkSkin, Block.ATTRIBUTE.VISIBLE, Block.ATTRIBUTE.GARBAGE)
 					)
 	}
 
@@ -318,7 +318,7 @@ class SprintCombo:NetDummyMode() {
 							engine.field.setBlock(
 								x, -ceilingAdjust-tmplines,
 								Block(
-									STACK_COLOR_TABLE[stackColor%STACK_COLOR_TABLE.size], engine.skin, Block.ATTRIBUTE.VISIBLE,
+									STACK_COLOR_TABLE[stackColor%STACK_COLOR_TABLE.size], engine.blkSkin, Block.ATTRIBUTE.VISIBLE,
 									Block.ATTRIBUTE.GARBAGE
 								)
 							)

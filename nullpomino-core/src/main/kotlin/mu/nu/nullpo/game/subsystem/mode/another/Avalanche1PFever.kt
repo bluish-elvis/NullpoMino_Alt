@@ -558,7 +558,7 @@ class Avalanche1PFever:Avalanche1PDummyMode() {
 		engine.field.stringToField(propFeverMap.getProperty("${mapSubsets[subset]}.${numColors}colors.${chain}chain"))
 		engine.field.setBlockLinkByColor()
 		engine.field.setAllAttribute(false, Block.ATTRIBUTE.GARBAGE, Block.ATTRIBUTE.ANTIGRAVITY)
-		engine.field.setAllSkin(engine.skin)
+		engine.field.setAllSkin(engine.blkSkin)
 		engine.field.shuffleColors(BLOCK_COLORS, numColors, rand)
 	}
 

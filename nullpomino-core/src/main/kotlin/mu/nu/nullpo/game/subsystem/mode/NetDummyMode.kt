@@ -729,14 +729,14 @@ abstract class NetDummyMode:AbstractMode(), NetLobbyListener {
 				val y = netPrevPieceY+it.dataOffsetY[netPrevPieceDir]
 				netLobby?.netPlayerClient?.send(
 					"game\tpiece\t$netPrevPieceID\t$x\t$y\t$netPrevPieceDir\t${engine.nowPieceBottomY}\t"+
-						"${engine.ruleOpt.pieceColor[netPrevPieceID]}\t${engine.skin}\t${it.big}\n"
+						"${engine.ruleOpt.pieceColor[netPrevPieceID]}\t${engine.blkSkin}\t${it.big}\n"
 				)
 				return@netSendPieceMovement true
 			}
 		} ?: (return if(netPrevPieceID!=Piece.PIECE_NONE||engine.manualLock) {
 			netPrevPieceID = Piece.PIECE_NONE
 			netLobby?.netPlayerClient?.send(
-				"game\tpiece\t$netPrevPieceID\t$netPrevPieceX\t$netPrevPieceY\t$netPrevPieceDir\t0\t${engine.skin}\tfalse\n"
+				"game\tpiece\t$netPrevPieceID\t$netPrevPieceX\t$netPrevPieceY\t$netPrevPieceDir\t0\t${engine.blkSkin}\tfalse\n"
 			)
 			true
 		} else false)
@@ -805,7 +805,7 @@ abstract class NetDummyMode:AbstractMode(), NetLobbyListener {
 				isCompressed = true
 			}
 
-			netLobby?.netPlayerClient?.send("game\tfieldattr\t${engine.skin}\t$strFieldData\t$isCompressed\n")
+			netLobby?.netPlayerClient?.send("game\tfieldattr\t${engine.blkSkin}\t$strFieldData\t$isCompressed\n")
 		} else {
 			// Send without attributes
 			val strSrcFieldData = engine.field.fieldToString()
@@ -822,7 +822,7 @@ abstract class NetDummyMode:AbstractMode(), NetLobbyListener {
 			}
 
 			netLobby?.netPlayerClient?.send(
-				"game\tfield\t${engine.skin}\t${engine.field.heightWithoutHurryupFloor}\t$strFieldData\t$isCompressed\n"
+				"game\tfield\t${engine.blkSkin}\t${engine.field.heightWithoutHurryupFloor}\t$strFieldData\t$isCompressed\n"
 			)
 		}
 	}

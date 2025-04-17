@@ -61,12 +61,6 @@ class GrandBasic:AbstractGrand() {
 	private var halfMinLine = 0
 	private var halfMinBonus = false
 
-	/** Elapsed time from last line clear */
-	private var lastLineTime = 0
-
-	/** Elapsed time from last piece spawns */
-	private var lastSpawnTime = 0
-
 	/** Remaining ending time limit */
 	private var rollTime = 0
 
@@ -143,8 +137,6 @@ class GrandBasic:AbstractGrand() {
 		bgmLv = 0
 		halfMinLine = 0
 		halfMinBonus = false
-		lastLineTime = 0
-		lastSpawnTime = 0
 		sectionHanabi.fill(0)
 		sectionScore.fill(0)
 
@@ -154,7 +146,7 @@ class GrandBasic:AbstractGrand() {
 		bestSectionScore.fill(0)
 		bestSectionTime.fill(DEFAULT_SECTION_TIME)
 
-		engine.frameColor = GameEngine.FRAME_COLOR_GREEN
+		engine.frameSkin = GameEngine.FRAME_COLOR_GREEN
 		engine.twistEnable = true
 		engine.twistEnableEZ = true
 		engine.b2bEnable = true
@@ -347,18 +339,6 @@ class GrandBasic:AbstractGrand() {
 		}
 	}
 
-	/** This function will be called when the piece is active */
-	override fun onMove(engine:GameEngine):Boolean {
-		if(lastSpawnTime<engine.statistics.level) lastSpawnTime++
-		return super.onMove(engine)
-	}
-
-	/** This function will be called during ARE */
-	override fun onARE(engine:GameEngine):Boolean {
-		lastSpawnTime = 0
-		return super.onARE(engine)
-	}
-
 	/** Levelup */
 	override fun levelUp(engine:GameEngine, lu:Int) {
 		super.levelUp(engine, lu)
@@ -422,7 +402,6 @@ class GrandBasic:AbstractGrand() {
 					).toInt()
 			)
 			halfMinBonus = false
-			lastLineTime = 0
 			if(sectionsDone>=0&&sectionsDone<sectionScore.size) sectionScore[sectionsDone] += lastScore.toLong()
 			engine.statistics.scoreLine += lastScore
 			return lastScore
@@ -433,7 +412,6 @@ class GrandBasic:AbstractGrand() {
 	/** This function will be called when the game timer updates */
 	override fun onLast(engine:GameEngine) {
 		super.onLast(engine)
-		if(lastLineTime<100) lastLineTime++
 		if(intHanabi>-100) intHanabi--
 		if(tempHanabi>0&&intHanabi<=0) {
 			receiver.shootFireworks(engine)

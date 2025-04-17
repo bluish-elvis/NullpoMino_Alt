@@ -56,6 +56,8 @@ open class LevelMenuItem(name:String, displayName:String, color:COLOR, defaultVa
 			val g = spd.gravity
 			val d = spd.denominator
 			receiver.drawMenuFont(engine, 0, z, "SPEED", color = COLOR.WHITE)
+			receiver.drawMenuNum(engine, 1, z+1, if(g<0||d<0) engine.field.height*1f else g*1f/d, 7 to 4)
+			receiver.drawMenuNano(engine, 2.5f, z+1,"GRAVITY", color, .5f)
 			receiver.drawMenuNum(engine, 6, z, "%5d".format(g))
 			receiver.drawMenuSpeed(engine, 5.2f, z+.9f, g, d, 5f)
 			receiver.drawMenuNum(engine, 6, z+1, "%5d".format(d))
@@ -73,10 +75,10 @@ open class LevelMenuItem(name:String, displayName:String, color:COLOR, defaultVa
 				val show = when(i) {
 					0 -> "LINE" to spd.lineDelay
 					1 -> "LOCK" to spd.lockDelay
-					else -> "DAS" to spd.das
+					else -> " DAS" to spd.das
 				}
 				receiver.drawMenuNum(engine, 8-i*3, z+1, String.format(if(i==1) "%2d+" else "%2d", show.second))
-				receiver.drawMenuNano(engine, 7f-i*3, z+1f, show.first, color, .5f)
+				receiver.drawMenuNano(engine, 6.5f-i*3, z+1f, show.first, color, .5f)
 			}
 			receiver.drawMenuNano(engine, 0f, z*1f, "DELAYS", color, .75f)
 		}

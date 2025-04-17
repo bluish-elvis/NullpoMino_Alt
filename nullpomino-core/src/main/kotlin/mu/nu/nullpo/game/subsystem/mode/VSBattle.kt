@@ -301,7 +301,7 @@ class VSBattle:AbstractMode() {
 			mapMaxNo[playerID] = it.getProperty("map.maxMapNumber", 0)
 			engine.createFieldIfNeeded()
 			loadMap(engine.field, it, id)
-			engine.field.setAllSkin(engine.skin)
+			engine.field.setAllSkin(engine.blkSkin)
 		} ?: engine.field.reset()
 	}
 
@@ -313,7 +313,7 @@ class VSBattle:AbstractMode() {
 			engine.random = Random(owner.engine[0].randSeed)
 		}
 
-		engine.frameColor = PLAYER_COLOR_FRAME[playerID]
+		engine.frameSkin = PLAYER_COLOR_FRAME[playerID]
 		engine.ruleOpt.lockResetMoveLimit = engine.ruleOpt.lockResetMoveLimit.let {if(it<0) 30 else minOf(it, 30)}
 		engine.ruleOpt.lockResetSpinLimit = engine.ruleOpt.lockResetSpinLimit.let {if(it<0) 20 else minOf(it, 20)}
 		lastHole[playerID] = -1
@@ -513,7 +513,7 @@ class VSBattle:AbstractMode() {
 					if(owner.replayMode) {
 						engine.createFieldIfNeeded()
 						loadMap(engine.field, owner.replayProp, pid)
-						engine.field.setAllSkin(engine.skin)
+						engine.field.setAllSkin(engine.blkSkin)
 					} else {
 						if(propMap[pid]==null)
 							propMap[pid] = receiver.loadProperties("config/map/vsbattle/${mapSet[pid]}.map.gz")
@@ -531,7 +531,7 @@ class VSBattle:AbstractMode() {
 							} else
 								loadMap(engine.field, it, mapNumber[pid])
 
-							engine.field.setAllSkin(engine.skin)
+							engine.field.setAllSkin(engine.blkSkin)
 							fldBackup[pid] = Field(engine.field)
 						}
 					}
@@ -702,7 +702,7 @@ class VSBattle:AbstractMode() {
 							}
 						}
 
-						engine.field.addRandomHoleGarbage(engine, hole, messiness[pid][1]/100f, garbageColor, engine.skin, l)
+						engine.field.addRandomHoleGarbage(engine, hole, messiness[pid][1]/100f, garbageColor, engine.blkSkin, l)
 						gct += l
 						it.lines -= l
 						lastHole[pid] = hole
@@ -722,7 +722,7 @@ class VSBattle:AbstractMode() {
 			if(engine.statistics.time>=hurryUpSeconds[pid]*60) {
 				hurryUpCount[pid]++
 
-				if(hurryUpCount[pid]%hurryUpInterval[pid]==0) engine.field.addHurryupFloor(1, engine.skin)
+				if(hurryUpCount[pid]%hurryUpInterval[pid]==0) engine.field.addHurryupFloor(1, engine.blkSkin)
 			} else hurryUpCount[pid] = hurryUpInterval[pid]-1
 
 		return pts

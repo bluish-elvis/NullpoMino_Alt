@@ -121,30 +121,31 @@ class RetroA:AbstractMode() {
 		rankingLines.forEach {it.fill(0)}
 		rankingLevel.forEach {it.fill(0)}
 
-		engine.twistEnable = false
-		engine.b2bEnable = false
-		engine.splitB2B = false
-		engine.comboType = GameEngine.COMBO_TYPE_DISABLE
-		engine.bigHalf = true
-		engine.bigMove = true
-
-		engine.speed.are = 12
-		engine.speed.areLine = 15
-		engine.speed.das = 12
-		engine.ruleOpt.lockResetMove = false
-		engine.ruleOpt.lockResetSpin = false
-		engine.ruleOpt.lockResetWallkick = false
-		engine.ruleOpt.lockResetFall = true
-		engine.ruleOpt.softdropLock = true
-		engine.ruleOpt.softdropMultiplyNativeSpeed = false
-		engine.ruleOpt.softdropGravitySpeedLimit = false
-		engine.ruleOpt.softdropSpeed = .5f
-		engine.owSDSpd = -1
 		if(!owner.replayMode) version = CURRENT_VERSION
+		engine.run {
+			twistEnable = false
+			b2bEnable = false
+			splitB2B = false
+			comboType = GameEngine.COMBO_TYPE_DISABLE
+			bigHalf = true
+			bigMove = true
 
-		engine.owner.bgMan.bg = if(gameType==GAMETYPE.PRESSURE) 0 else startLevel
-		if(engine.owner.bgMan.bg>19) engine.owner.bgMan.bg = 19
-		engine.frameColor = GameEngine.FRAME_COLOR_GRAY
+			speed.are = 12
+			speed.areLine = 15
+			speed.das = 12
+			ruleOpt.lockResetMove = false
+			ruleOpt.lockResetSpin = false
+			ruleOpt.lockResetWallkick = false
+			ruleOpt.lockResetFall = true
+			ruleOpt.softdropLock = true
+			ruleOpt.nextDisplay = 1
+//			ruleOpt.softdropMultiplyNativeSpeed = false
+//			ruleOpt.softdropGravitySpeedLimit = false
+			owSDSpd = 1
+
+			owner.bgMan.bg = if(gameType==GAMETYPE.PRESSURE) 0 else minOf(startLevel,19)
+			frameSkin = GameEngine.FRAME_SKIN_GB
+		}
 	}
 
 	/** Set the gravity speed
@@ -168,6 +169,7 @@ class RetroA:AbstractMode() {
 	override fun startGame(engine:GameEngine) {
 		engine.big = big
 		engine.statistics.levelDispAdd = 1
+		engine.owSDSpd = 1
 
 		owner.musMan.bgm = BGM.RetroA(0)
 		when(gameType) {

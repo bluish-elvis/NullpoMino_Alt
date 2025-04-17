@@ -133,10 +133,10 @@ Next I*/
 	}
 
 	override fun draw(render:mu.nu.nullpo.gui.common.AbstractRenderer) {
-		if(bg) {
-			img.draw(0f, 0f, 0f, 480-by, 640f, 480f)
-			img.draw(0f, by, 0f, 240f, 640f, 480f)
-			img.draw(0f, 240+by, 0f, 240f, 640f, 480-by)
+		if(bg) drawLite()
+		else {
+			render.drawBlackBG(0.3f)
+			render.drawBlendAdd {drawLite()}
 		}
 		/*LsrSY = LsrSY - 4 - TrM * 3: If LsrSY < 0 Then LsrSY = LsrSY + 240
 		With Src
@@ -171,8 +171,9 @@ Next I*/
 	}
 
 	override fun drawLite() {
-		img.draw(0f, 0f, 0f, 240f, 640f, 480f)
-		img.draw(0f, 240f, 0f, 240f, 640f, 480f)
+		img.draw(0f, 0f, 0f, 480-by, 640f, 480f)
+		img.draw(0f, by, 0f, 240f, 640f, 480f)
+		img.draw(0f, 240+by, 0f, 240f, 640f, 480-by)
 	}
 }
 /*Case 7 '（レーザー）

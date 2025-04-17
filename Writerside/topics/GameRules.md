@@ -6,12 +6,12 @@ switcher-label: Custom label
 ## Primary {switcher-key="Primary"}
 {style="medium"}
 GLOBALSTYLE
-: STANDARDを発展させた。壁登り・180回転も可能
+: STANDARDの発展型。壁登り・180回転も可能
 : ソフトドロップで即固定されず、ハードドロップで即固定
 : A/Cボタンが右回転
 GLOBAL-ADVANCE
 : GLOBALSTYLEとは別方向の発展型。壁登り・180回転も可能
-: A/Cボタンが左回転
+: A/Cボタンが左回転、即固定されないハードドロップが可能。
 : 全モードでのプレイに向く
 
 DTET
@@ -43,7 +43,7 @@ STANDARD-EXP
 
 STANDARD-HARD
 : STANDARDよりも少し難しい。ピースが接地中は15回まで移動・回転可能。
-: Grand Mania、Grand Masteryモードにおすすめ
+: Grand Mania、Grand Masteryモードの想定ルール
 
 STANDARD-HARD128
 : STANDARD-HARDを少し簡単にし、ピースが接地中は128回まで移動・回転可能。
@@ -67,7 +67,7 @@ STANDARD-ZERO
 STANDARD-FRIENDS
 : <tooltip term="ARE">ARE</tooltip>が0、ライン消去時間は12F
 : ただし<tooltip term="DAS">DAS</tooltip>は最低でも16F以上で移動速度も半分遅い
-: **出現位置が他のルールの1マス下**
+: **出現位置＝致命判定が他のルールの1マス下**
 
 STANDARD-GIZA
 : hebo-MAIさん作のルール
@@ -119,13 +119,13 @@ CLASSIC1
 : NEXTは1個だけ。回転2方向、壁蹴りあり
 : ホールドなし、ハードドロップなし、壁登りなし
 : NEXT補正が最大4抽選までかかる
-: Grand Marathonモードにおすすめ
+: Grand Marathonモードの想定ルール
 
 CLASSIC2
 : NEXTは1個だけ。ホールドなし、壁登りなし
 : 即固定されないハードドロップが可能
 : NEXT補正が最大6抽選までかかる
-: Grand Maniaモードにおすすめ
+: Grand Maniaモードの想定ルール
 
 CLASSIC3
 : NEXTが3個、ホールドあり、壁蹴りあり、1回だけ壁登り可能に

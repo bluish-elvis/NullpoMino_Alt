@@ -151,7 +151,7 @@ class VSSprintDig:AbstractMode() {
 			engine.random = Random(owner.engine[0].randSeed)
 		}
 
-		engine.frameColor = PLAYER_COLOR_FRAME[pid]
+		engine.frameSkin = PLAYER_COLOR_FRAME[pid]
 
 		if(!engine.owner.replayMode) {
 			version = CURRENT_VERSION
@@ -317,7 +317,7 @@ class VSSprintDig:AbstractMode() {
 					engine.field.setBlock(
 						x, y, Block(
 							color, if(y==h-1) Block.TYPE.BLOCK else Block.TYPE.GEM,
-							engine.skin, Block.ATTRIBUTE.VISIBLE, Block.ATTRIBUTE.GARBAGE
+							engine.blkSkin, Block.ATTRIBUTE.VISIBLE, Block.ATTRIBUTE.GARBAGE
 						)
 					)
 				}

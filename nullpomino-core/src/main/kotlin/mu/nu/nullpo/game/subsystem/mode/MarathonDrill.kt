@@ -132,7 +132,7 @@ class MarathonDrill:NetDummyMode() {
 
 		rankingRank = -1
 
-		engine.frameColor = GameEngine.FRAME_COLOR_GREEN
+		engine.frameSkin = GameEngine.FRAME_COLOR_GREEN
 		engine.statistics.levelDispAdd = 1
 
 		netPlayerInit(engine)
@@ -390,7 +390,7 @@ class MarathonDrill:NetDummyMode() {
 
 			for(x in 0..<w) if(x!=garbageHole) field.setBlock(
 				x, h-1, Block(
-					Block.COLOR.WHITE, engine.skin, Block.ATTRIBUTE.VISIBLE, Block.ATTRIBUTE.GARBAGE, Block.ATTRIBUTE.CONNECT_DOWN
+					Block.COLOR.WHITE, engine.blkSkin, Block.ATTRIBUTE.VISIBLE, Block.ATTRIBUTE.GARBAGE, Block.ATTRIBUTE.CONNECT_DOWN
 				)
 			)
 

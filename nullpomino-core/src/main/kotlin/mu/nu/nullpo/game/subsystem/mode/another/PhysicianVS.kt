@@ -261,7 +261,7 @@ class PhysicianVS:AbstractMode() {
 			mapMaxNo[playerID] = it.getProperty("values.maxMapNumber", 0)
 			engine.createFieldIfNeeded()
 			loadMap(engine.field, it, id)
-			engine.field.setAllSkin(engine.skin)
+			engine.field.setAllSkin(engine.blkSkin)
 		}
 	}
 
@@ -273,7 +273,7 @@ class PhysicianVS:AbstractMode() {
 			engine.random = Random(owner.engine[0].randSeed)
 		}
 
-		engine.frameColor = PLAYER_COLOR_FRAME[pid]
+		engine.frameSkin = PLAYER_COLOR_FRAME[pid]
 		engine.clearMode = ColorStraight(4,false,true)
 		engine.garbageColorClear = false
 		engine.colorClearSize = 4
@@ -454,7 +454,7 @@ class PhysicianVS:AbstractMode() {
 				if(owner.replayMode) {
 					engine.createFieldIfNeeded()
 					loadMap(engine.field, owner.replayProp, pid)
-					engine.field.setAllSkin(engine.skin)
+					engine.field.setAllSkin(engine.blkSkin)
 				} else {
 					if(propMap[pid]==null) {
 						propMap[pid] = receiver.loadProperties("config/map/vsbattle/${mapSet[pid]}.map")
@@ -469,7 +469,7 @@ class PhysicianVS:AbstractMode() {
 							}
 						} else loadMap(engine.field, it, mapNumber[pid])
 
-						engine.field.setAllSkin(engine.skin)
+						engine.field.setAllSkin(engine.blkSkin)
 						fldBackup[pid] = Field(engine.field)
 					}
 				}
@@ -661,7 +661,7 @@ class PhysicianVS:AbstractMode() {
 		for(x in 0..3)
 			if(colors[x]!=-1) {
 				engine.field.garbageDropPlace(2*x+shift, y, false, 0, colors[x])
-				engine.field.getBlock(2*x+shift, y)!!.skin = engine.skin
+				engine.field.getBlock(2*x+shift, y)!!.skin = engine.blkSkin
 			}
 		garbageColors[pid].clear()
 		return true

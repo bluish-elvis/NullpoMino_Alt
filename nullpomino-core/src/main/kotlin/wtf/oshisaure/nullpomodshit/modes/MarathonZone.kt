@@ -127,7 +127,7 @@ class MarathonZone:NetDummyMode() {
 		lastzonebonus = getZoneBonus3(lastzonelines, engine.statistics.level+1)
 		engine.statistics.scoreBonus += lastzonebonus
 		inzone = false
-		engine.frameColor = GameEngine.FRAME_COLOR_CYAN
+		engine.frameSkin = GameEngine.FRAME_COLOR_CYAN
 		setSpeed(engine)
 		engine.playSE("applause${maxOf(lastzonelines/5, 20)}")
 		engine.playSE("cool")
@@ -174,7 +174,7 @@ class MarathonZone:NetDummyMode() {
 			netPlayerName = engine.owner.replayProp.getProperty("${engine.playerID}.net.netPlayerName", "")
 		}
 		engine.owner.bgMan.bg = startLevel
-		engine.frameColor = GameEngine.FRAME_COLOR_CYAN
+		engine.frameSkin = GameEngine.FRAME_COLOR_CYAN
 	}
 	/**
 	 * Set the gravity rate
@@ -353,7 +353,7 @@ class MarathonZone:NetDummyMode() {
 		if(engine.ctrl.isPush(mu.nu.nullpo.game.component.Controller.BUTTON_F)&&(zoneframes>MAX_ZONE_TIME/4)&&!inzone) {
 			inzone = true
 			lastzonelines = 0
-			engine.frameColor = GameEngine.FRAME_COLOR_YELLOW
+			engine.frameSkin = GameEngine.FRAME_COLOR_YELLOW
 			engine.playSE("medal")
 		}
 		if(inzone) {

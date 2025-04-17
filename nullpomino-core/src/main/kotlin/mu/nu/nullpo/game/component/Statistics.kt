@@ -129,6 +129,9 @@ class Statistics {
 	/** Back to Back Twister clear count */
 	var totalB2BTwist = 0
 
+	/** All clear count */
+	var bravos = 0
+
 	/** Longest combo */
 	var maxCombo = 0
 	/** Longest Avalanche-chain */
@@ -263,6 +266,7 @@ class Statistics {
 		totalB2BQuad = 0
 		totalB2BSplit = 0
 		totalB2BTwist = 0
+		bravos = 0
 		totalHoldUsed = 0
 		maxCombo = 0
 		gameRate = 0f
@@ -314,6 +318,7 @@ class Statistics {
 			totalB2BQuad = b.totalB2BQuad
 			totalB2BSplit = b.totalB2BSplit
 			totalB2BTwist = b.totalB2BTwist
+			bravos = b.bravos
 			maxCombo = b.maxCombo
 			maxB2B = b.maxB2B
 			gameRate = b.gameRate
@@ -328,7 +333,7 @@ class Statistics {
 
 			pieces = b.pieces
 			randSeed = b.randSeed
-		} ?: reset()
+		}?:reset()
 	}
 
 	/** 他のStatisticsの値を合成
@@ -371,6 +376,7 @@ class Statistics {
 			totalB2BQuad += b.totalB2BQuad
 			totalB2BSplit += b.totalB2BSplit
 			totalB2BTwist += b.totalB2BTwist
+			bravos += b.bravos
 			maxCombo = maxOf(maxCombo, b.maxCombo)
 			maxB2B = maxOf(maxB2B, b.maxB2B)
 			gameRate = (gameRate+b.gameRate)/2f
@@ -428,6 +434,7 @@ class Statistics {
 			"$id.statistics.totalB2BSplit" to totalB2BSplit,
 			"$id.statistics.totalB2BTwist" to totalB2BTwist,
 			"$id.statistics.totalHoldUsed" to totalHoldUsed,
+			"$id.statistics.bravos" to bravos,
 			"$id.statistics.maxCombo" to maxCombo,
 			"$id.statistics.maxB2B" to maxB2B,
 			"$id.statistics.gamerate" to gameRate,
@@ -483,6 +490,7 @@ class Statistics {
 		totalB2BQuad = p.getProperty("$id.statistics.totalB2BFour", 0)
 		totalB2BSplit = p.getProperty("$id.statistics.totalB2BSplit", 0)
 		totalB2BTwist = p.getProperty("$id.statistics.totalB2BTwist", 0)
+		bravos = p.getProperty("$id.statistics.bravos", 0)
 		totalHoldUsed = p.getProperty("$id.statistics.totalHoldUsed", 0)
 		maxCombo = p.getProperty("$id.statistics.maxCombo", 0)
 		maxB2B = p.getProperty("$id.statistics.maxB2B", 0)
@@ -537,6 +545,7 @@ class Statistics {
 			{totalB2BQuad = it.toInt()},
 			{totalB2BSplit = it.toInt()},
 			{totalB2BTwist = it.toInt()},
+			{bravos = it.toInt()},
 			{totalHoldUsed = it.toInt()},
 			{maxCombo = it.toInt()},
 			{maxB2B = it.toInt()},
@@ -565,14 +574,13 @@ class Statistics {
 	 * @return String List (String[38])
 	 */
 	fun exportStringArray():List<String> = listOf(
-		"$scoreLine", "$scoreSD", "$scoreHD", "$scoreBonus", "$attacksLine", "$attacksTwist", "$attacksBonus",
-		"$lines", "$blocks", "$time", "$level", "$levelDispAdd", "$totalPieceLocked", "$totalPieceActiveTime",
-		"$totalPieceMove", "$totalPieceSpin", "$totalSingle", "$totalDouble", "$totalSplitDouble",
-		"$totalTriple", "$totalSplitTriple", "$totalQuadruple", "$totalTwistZeroMini", "$totalTwistZero",
-		"$totalTwistSingleMini", "$totalTwistSingle", "$totalTwistDoubleMini", "$totalTwistDouble", "$totalTwistSplitDouble",
-		"$totalTwistTriple", "$totalTwistSplitTriple", "$totalB2BQuad", "$totalB2BSplit", "$totalB2BTwist", "$totalHoldUsed",
-		"$maxCombo", "$maxB2B", "$gameRate", "$maxChain", "$finesse", "$maxFinesseCombo", "$finessePts", "$finesseFault",
-		"$rollClear", "$randSeed"
+		"$scoreLine", "$scoreSD", "$scoreHD", "$scoreBonus", "$attacksLine", "$attacksTwist", "$attacksBonus", "$lines",
+		"$blocks", "$time", "$level", "$levelDispAdd", "$totalPieceLocked", "$totalPieceActiveTime", "$totalPieceMove",
+		"$totalPieceSpin", "$totalSingle", "$totalDouble", "$totalSplitDouble", "$totalTriple", "$totalSplitTriple",
+		"$totalQuadruple", "$totalTwistZeroMini", "$totalTwistZero", "$totalTwistSingleMini", "$totalTwistSingle",
+		"$totalTwistDoubleMini", "$totalTwistDouble", "$totalTwistSplitDouble", "$totalTwistTriple", "$totalTwistSplitTriple",
+		"$totalB2BQuad", "$totalB2BSplit", "$totalB2BTwist", "$bravos", "$totalHoldUsed", "$maxCombo", "$maxB2B", "$gameRate",
+		"$maxChain", "$finesse", "$maxFinesseCombo", "$finessePts", "$finesseFault", "$rollClear", "$randSeed"
 	)+(pieces.map {"$it"})
 
 	/** Export to String
@@ -581,6 +589,7 @@ class Statistics {
 	fun exportString():String = exportStringArray().joinToString(";")
 
 	override fun toString():String = exportString()
+
 	companion object {
 		const val HISTORY_MAX = 100
 	}

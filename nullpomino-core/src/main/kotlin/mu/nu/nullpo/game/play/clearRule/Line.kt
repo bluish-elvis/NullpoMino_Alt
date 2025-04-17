@@ -37,6 +37,7 @@ import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.game.play.GameEngine.Companion.COMBO_TYPE_DISABLE
 import mu.nu.nullpo.game.play.GameEngine.Companion.COMBO_TYPE_DOUBLE
 import mu.nu.nullpo.game.play.GameEngine.Companion.COMBO_TYPE_NORMAL
+import mu.nu.nullpo.game.play.GameEngine.Companion.FRAME_SKIN_SG
 import mu.nu.nullpo.game.play.clearRule.ClearType.ClearResult
 import mu.nu.nullpo.gui.common.fx.PopupCombo.CHAIN
 import mu.nu.nullpo.util.GeneralUtil.filterNotNullIndexed
@@ -48,7 +49,6 @@ import kotlin.math.absoluteValue
 data object Line:ClearType {
 	override fun check(field:Field) = field.checkLines(false)
 	override fun flag(engine:GameEngine, field:Field) = field.checkLines().also {check ->
-
 		engine.run {
 			val inGame = ending==0||staffrollEnableStatistics
 			val li = check.size.let {if(big&&bigHalf) it shr 1 else it}
@@ -65,7 +65,7 @@ data object Line:ClearType {
 				)
 				lastLinesY = check.linesYfolded
 				lastLineY = check.linesY.maxOrNull()?:0
-				playSE("line${li.coerceIn(1, 4)}")
+				if(frameSkin!=FRAME_SKIN_SG)playSE("line${li.coerceIn(1, 4)}")
 				if(li>=4) playSE("applause${(2+b2bCount).coerceIn(0, 4)}")
 				if(twist) {
 					playSE("twister")

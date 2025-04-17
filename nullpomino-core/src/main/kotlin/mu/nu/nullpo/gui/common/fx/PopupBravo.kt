@@ -39,10 +39,7 @@ import kotlin.math.sin
 
 class PopupBravo(x:Float, y:Float, val w:Int, val h:Int):SpriteSheet(x, y) {
 
-	override fun update(r:AbstractRenderer):Boolean {
-		ticks++
-		return ticks>=100
-	}
+	override fun update(r:AbstractRenderer):Boolean = ++ticks>=100
 
 	override val dx2:Float get() = x+w
 	override val dy2:Float get() = y+h

@@ -40,7 +40,7 @@ import mu.nu.nullpo.game.component.Block
 import mu.nu.nullpo.game.component.Field
 import mu.nu.nullpo.game.event.EventReceiver
 import mu.nu.nullpo.game.play.GameEngine
-import java.util.Random
+import kotlin.random.Random
 
 /**
 Deletes blocks with any of the colors in the given array.

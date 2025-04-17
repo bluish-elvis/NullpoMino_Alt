@@ -6,53 +6,39 @@
  <entry key="music.filename.Menu.0">res/bgm/beats/title_technika3.ogg</entry>
  <entry key="music.filename.Menu.1">res/bgm/beats/sm-ssc_evo.ogg</entry>
  <entry key="music.filename.Menu.2">res/bgm/beats/cbr_menu3.ogg</entry>
- <entry key="music.filename.Menu.3">res/bgm/beats/xx_collon0.ogg</entry>
- <entry key="music.filename.Menu.4">res/bgm/beats/cbr_prepare1.ogg</entry>
+ <entry key="music.filename.Menu.3">res/bgm/beats/cbr_prepare1.ogg</entry>
+ <entry key="music.filename.Menu.4">res/bgm/beats/cbr_prepare2.ogg</entry>
  <entry key="music.filename.Menu.5">res/bgm/ddp/select_blue.ogg</entry>
  <entry key="music.filename.Menu.6">res/bgm/beats/xx_collon0.ogg</entry>
  <entry key="music.filename.Menu.7">res/bgm/ddp/select_cyan.ogg</entry>
 
- <entry key="music.filename.Generic.0">res/bgm/dova/102_natuiro.ogg</entry>
- <entry key="music.filename.Generic.1">res/bgm/dova/117_gardenfarm.ogg</entry>
- <entry key="music.filename.Generic.2">res/bgm/dova/128_iwillalways.ogg</entry>
- <entry key="music.filename.Generic.3">res/bgm/dova/138_killerRoll.ogg</entry>
- <entry key="music.filename.Generic.4">res/bgm/dova/145_TrickStyle.ogg</entry>
- <entry key="music.filename.Generic.5">res/bgm/dova/155_virusentry.ogg</entry>
- <entry key="music.filename.Generic.6">res/bgm/dova/160_planetarium.ogg</entry>
- <entry key="music.filename.Generic.7">res/bgm/dova/165_JumpingtotheMoon.ogg</entry>
- <entry key="music.filename.Generic.8">res/bgm/dova/170_reflect.ogg</entry>
- <entry key="music.filename.Generic.9">res/bgm/dova/180_controlstation.ogg</entry>
+ <entry key="music.filename.Generic.0">res/bgm/dova/138_killerRoll.ogg</entry>
+ <entry key="music.filename.Generic.1">res/bgm/dova/143_ObjectivePoint.ogg</entry>
+ <entry key="music.filename.Generic.2">res/bgm/dova/145_LEDS.ogg</entry>
+ <entry key="music.filename.Generic.3">res/bgm/dova/150_engram.ogg</entry>
+ <entry key="music.filename.Generic.4">res/bgm/dova/155_virusentry.ogg</entry>
+ <entry key="music.filename.Generic.5">res/bgm/dova/160_planetarium.ogg</entry>
+ <entry key="music.filename.Generic.6">res/bgm/dova/170_reflect.ogg</entry>
  <entry key="music.filename.Rush.0">res/bgm/dova/160_party.ogg</entry>
  <entry key="music.filename.Rush.1">res/bgm/dova/170_spacehopper.ogg</entry>
  <entry key="music.filename.Rush.2">res/bgm/dova/182_noesis.ogg</entry>
  <entry key="music.filename.Rush.3">res/bgm/beats/cxb_190Cbrandom.ogg</entry>
- <entry key="music.filename.Puzzle.0">res/bgm/dova/95_myosotis.ogg</entry>
+ <entry key="music.filename.Rush.4">res/bgm/beats/po4_212omega-xii.ogg</entry>
+ <entry key="music.filename.Puzzle.0">res/bgm/dova/130_angoras.ogg</entry>
  <entry key="music.filename.Puzzle.1">res/bgm/dova/138_9Jack.ogg</entry>
- <entry key="music.filename.Puzzle.2">res/bgm/dova/143_ObjectivePoint.ogg</entry>
- <entry key="music.filename.Puzzle.3">res/bgm/dova/145_LEDS.ogg</entry>
- <entry key="music.filename.Puzzle.4">res/bgm/dova/150_engram.ogg</entry>
-
+ <entry key="music.filename.Puzzle.2">res/bgm/dova/145_TrickStyle.ogg</entry>
+ <entry key="music.filename.Puzzle.3">res/bgm/steam/bztwist_puzzle0.ogg</entry>
+ <entry key="music.filename.Zen.0">res/bgm/dova/95_myosotis.ogg</entry>
+ <entry key="music.filename.Zen.1">res/bgm/dova/102_natuiro.ogg</entry>
+ <entry key="music.filename.Zen.2">res/bgm/dova/117_gardenfarm.ogg</entry>
+ <entry key="music.filename.Zen.3">res/bgm/dova/128_iwillalways.ogg</entry>
+ <entry key="music.filename.Zen.4">res/bgm/dova/140_kagura.ogg</entry>
+ <entry key="music.filename.Zen.5">res/bgm/dova/165_JumpingtotheMoon.ogg</entry>
+ <entry key="music.filename.Zen.6">res/bgm/dova/180_controlstation.ogg</entry>
  <entry key="music.filename.Extra.0">res/bgm/Doki_Doki_Tetris_Club_99.ogg</entry>
- <entry key="music.filename.Extra.1">res/bgm/dova/130_angoras.ogg</entry>
- <entry key="music.filename.Extra.2">res/bgm/dova/135_canariaSkip.ogg</entry>
- <entry key="music.filename.Extra.3">res/bgm/steam/bztwist_puzzle0.ogg</entry>
- <entry key="music.filename.Extra.4">res/bgm/dova/148_katharsis.ogg</entry>
+ <entry key="music.filename.Extra.1">res/bgm/dova/135_canariaSkip.ogg</entry>
+ <entry key="music.filename.Extra.2">res/bgm/dova/148_katharsis.ogg</entry>
 
- <entry key="music.filename.RetroN.0">res/bgm/retro/nes1.ogg</entry>
- <entry key="music.filename.RetroN.1">res/bgm/retro/nes2.ogg</entry>
- <entry key="music.filename.RetroN.2">res/bgm/retro/nes3.ogg</entry>
- <entry key="music.filename.RetroN.3">res/bgm/retro/bps_technotris_1of4.ogg</entry>
- <entry key="music.filename.RetroA.0">res/bgm/retro/rus_Loginska.ogg</entry>
- <entry key="music.filename.RetroA.1">res/bgm/retro/rus_Kalinka_a.ogg</entry>
- <entry key="music.filename.RetroA.2">res/bgm/retro/rus_Bradinsky.ogg</entry>
- <entry key="music.filename.RetroA.3">res/bgm/retro/rus_Kalinka_b.ogg</entry>
- <entry key="music.filename.RetroA.4">res/bgm/retro/rus_Troika.ogg</entry>
- <entry key="music.filename.RetroS.0">res/bgm/retro/sega_Tetremix.ogg</entry>
- <entry key="music.filename.RetroS.1">res/bgm/retro/sega_1_BackTo1988.ogg</entry>
- <entry key="music.filename.RetroS.2">res/bgm/retro/sega_2_milky.ogg</entry>
- <entry key="music.filename.RetroS.3">res/bgm/retro/sega_Tetremix_mbm.ogg</entry>
- <entry key="music.filename.RetroS.4">res/bgm/retro/sega_3_Pliocene.ogg</entry>
- <entry key="music.filename.RetroS.5">res/bgm/retro/sega_4_crux.ogg</entry>
 
  <entry key="music.filename.GrandM.0">res/bgm/A_MIDSUMMERS_BLISS.ogg</entry>
  <entry key="music.filename.GrandM.1">res/bgm/tex1.ogg</entry>
@@ -81,11 +67,28 @@
  <entry key="music.filename.GrandTS.3">res/bgm/ddp/finale_blue.ogg</entry>
  <entry key="music.filename.Ending.2">res/bgm/blitz/gm3_roll_m.ogg</entry>
 
- <entry key="music.filename.Finale.0">res/bgm/beats/finale_dreadnought.ogg</entry>
- <entry key="music.filename.Finale.1">res/bgm/ddp/sudden_cyan.ogg</entry>
- <entry key="music.filename.Finale.2">res/bgm/ddp/play_cyan5.ogg</entry>
+ <entry key="music.filename.RetroN.0">res/bgm/retro/nes1.ogg</entry>
+ <entry key="music.filename.RetroN.1">res/bgm/retro/nes2.ogg</entry>
+ <entry key="music.filename.RetroN.2">res/bgm/retro/nes3.ogg</entry>
+ <entry key="music.filename.RetroN.3">res/bgm/retro/bps_technotris_1of4.ogg</entry>
+ <entry key="music.filename.RetroA.0">res/bgm/retro/rus_Loginska.ogg</entry>
+ <entry key="music.filename.RetroA.1">res/bgm/retro/rus_Kalinka_a.ogg</entry>
+ <entry key="music.filename.RetroA.2">res/bgm/retro/rus_Bradinsky.ogg</entry>
+ <entry key="music.filename.RetroA.3">res/bgm/retro/rus_Kalinka_b.ogg</entry>
+ <entry key="music.filename.RetroA.4">res/bgm/retro/rus_Troika.ogg</entry>
+ <entry key="music.filename.RetroS.0">res/bgm/retro/sega_Tetremix.ogg</entry>
+ <entry key="music.filename.RetroS.1">res/bgm/retro/sega_1_BackTo1988.ogg</entry>
+ <entry key="music.filename.RetroS.2">res/bgm/retro/sega_2_milky.ogg</entry>
+ <entry key="music.filename.RetroS.3">res/bgm/retro/sega_Tetremix_mbm.ogg</entry>
+ <entry key="music.filename.RetroS.4">res/bgm/retro/sega_3_Pliocene.ogg</entry>
+ <entry key="music.filename.RetroS.5">res/bgm/retro/sega_4_crux.ogg</entry>
  <entry key="music.filename.Ending.3">res/bgm/blitz/fb_kaerezunochi.ogg</entry>
- <entry key="music.filename.Ending.4">res/bgm/blitz/fb_HelloBPM2024.ogg</entry>
+ <entry key="music.filename.Ending.4">res/bgm/blitz/fb_VillainVirus.ogg</entry>
+ <entry key="music.filename.Ending.5">res/bgm/blitz/fb_HelloBPM2024.ogg</entry>
+
+ <entry key="music.filename.Finale.0">res/bgm/beats/po4_110omegaremix.ogg</entry>
+ <entry key="music.filename.Finale.1">res/bgm/beats/po4_212omega-xii.ogg</entry>
+ <entry key="music.filename.Finale.2">res/bgm/beats/po4_199helion.ogg</entry>
 
  <entry key="music.filename.Blitz.0">res/bgm/blitz/blitz3_octo.ogg</entry>
  <entry key="music.filename.Blitz.1">res/bgm/blitz/bztwist_blitz5.ogg</entry>
@@ -97,11 +100,12 @@
  <entry key="music.filename.Result.2">res/bgm/beats/cbr_result1.ogg</entry>
  <entry key="music.filename.Result.3">res/bgm/beats/cbr_result3.ogg</entry>
 
- <entry key="music.noloop.Ending.0">false</entry>
+ <entry key="music.noloop.Ending.0">true</entry>
  <entry key="music.noloop.Ending.1">true</entry>
  <entry key="music.noloop.Ending.2">true</entry>
  <entry key="music.noloop.Ending.3">true</entry>
  <entry key="music.noloop.Ending.4">true</entry>
+ <entry key="music.noloop.Ending.5">true</entry>
  <entry key="music.noloop.Extra.0">false</entry>
  <entry key="music.noloop.Extra.1">false</entry>
  <entry key="music.noloop.Extra.2">false</entry>
@@ -151,5 +155,9 @@
  <entry key="music.noloop.Blitz.1">true</entry>
  <entry key="music.noloop.Blitz.2">true</entry>
  <entry key="music.noloop.Blitz.3">true</entry>
+ <entry key="music.noloop.Zen.0">false</entry>
+ <entry key="music.noloop.Zen.1">false</entry>
+ <entry key="music.noloop.Zen.2">false</entry>
+ <entry key="music.noloop.Zen.3">false</entry>
 
 </properties>

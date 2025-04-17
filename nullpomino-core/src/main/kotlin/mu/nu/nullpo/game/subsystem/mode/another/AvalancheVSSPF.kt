@@ -124,7 +124,7 @@ class AvalancheVSSPF:AvalancheVSDummyMode() {
 				}
 				patternCol++
 			}
-			engine.field.setAllSkin(engine.skin)
+			engine.field.setAllSkin(engine.blkSkin)
 		}
 	}
 
@@ -621,7 +621,7 @@ class AvalancheVSSPF:AvalancheVSDummyMode() {
 			val drop = minOf(ojama[pid], maxAttack[pid])
 			ojama[pid] -= drop
 			engine.field.garbageDrop(engine, drop, false, 4, ojamaCountdown[pid])
-			engine.field.setAllSkin(engine.skin)
+			engine.field.setAllSkin(engine.blkSkin)
 			var patternCol = 0
 			for(x in 0..<engine.field.width) {
 				if(patternCol>=dropPattern[enemyID].size) patternCol = 0

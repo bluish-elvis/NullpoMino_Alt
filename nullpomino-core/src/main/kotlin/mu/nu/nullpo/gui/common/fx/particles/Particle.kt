@@ -39,14 +39,10 @@ package mu.nu.nullpo.gui.common.fx.particles
 
 import mu.nu.nullpo.gui.common.AbstractRenderer
 import mu.nu.nullpo.gui.common.fx.SpriteSheet
-import mu.nu.nullpo.gui.common.fx.particles.Particle.ParticleShape.AOval
-import mu.nu.nullpo.gui.common.fx.particles.Particle.ParticleShape.ARect
-import mu.nu.nullpo.gui.common.fx.particles.Particle.ParticleShape.ASprite
-import mu.nu.nullpo.gui.common.fx.particles.Particle.ParticleShape.Oval
-import mu.nu.nullpo.gui.common.fx.particles.Particle.ParticleShape.Rect
-import zeroxfc.nullpo.custom.libs.Vector
+import mu.nu.nullpo.gui.common.fx.particles.Particle.ParticleShape.*
 import zeroxfc.nullpo.custom.libs.Interpolation.lerp
 import zeroxfc.nullpo.custom.libs.Interpolation.smoothStep
+import zeroxfc.nullpo.custom.libs.Vector
 
 /**
 Create an instance of a particle.
@@ -58,10 +54,10 @@ Create an instance of a particle.
 @param vel     Vector velocity of the particle.
 @param acc Vector acceleration of the particle.
 @param friction Vector deceleration of the particle
-@param size        size of the particle.
-@param red          Red component of color.
-@param green        Green component of color.
-@param blue         Blue component of color.
+@param size of the particle.
+@param red component of color.
+@param green component of color.
+@param blue component of color.
 @param alphaI        Alpha component of color.
 @param redEnd       Red component of color at particle death.
 @param greenEnd     Green component of color at particle death.
@@ -114,11 +110,16 @@ open class Particle @JvmOverloads constructor(
 	/** Used colors 0-255*/
 	var ua = alphaI
 		protected set
-	/** used scale*/
+	/** used scale 0-1*/
 	var us = size.toFloat()
 		protected set
 	/** Draw the particle.*/
 	override fun draw(i:Int, r:AbstractRenderer) {
+		fun line(dim:Boolean) = r.drawLineSpecific(
+			x, y, x+vel.x*us, y+vel.y*us,
+			if(dim)(ur*us).toInt()*0x10000+(ug*us).toInt()*0x100+(ub*us).toInt()
+				else ur*0x10000+ug*0x100+ub, if(dim)ua*us/255f else ua/255f, 1f
+		)
 		fun rect() = r.drawRect(
 			x-us/2, y-us/2, us, us,
 			ur*0x10000+ug*0x100+ub, ua/255f, 0f
@@ -129,22 +130,23 @@ open class Particle @JvmOverloads constructor(
 			ur*0x10000+ug*0x100+ub, ua/255f, 0f
 		)
 
-		when(shape) {
-			Rect -> rect()
-			ARect -> r.drawBlendAdd {rect()}
-			Oval -> oval()
-			AOval -> r.drawBlendAdd {oval()}
-			ASprite -> r.drawBlendAdd {
-				rect()
-				val sx = 16*us
-				val sy = 16*us
-				r.resources.imgFrags.let {
-					it[2].draw(
-						x-sx/2, y-sy/2, x+sx/2, y+sy/2,
-						ua/255f, Triple(ur/255f, ug/255f, ub/255f)
-					)
-				}
+		fun sprite() {
+			val sx = 16*us
+			val sy = 16*us
+			r.resources.imgFrags.let {
+				it[2].draw(
+					x-sx/2, y-sy/2, x+sx/2, y+sy/2,
+					ua/255f, Triple(ur/255f, ug/255f, ub/255f)
+				)
 			}
+		}
+		when(shape) {
+			Rect -> {rect();line(false)}
+			ARect -> r.drawBlendAdd {line(false);rect()}
+			Oval -> {oval();line(false)}
+			AOval -> r.drawBlendAdd {line(true);oval()}
+			ASprite -> r.drawBlendAdd {line(true);oval();sprite()}
+			ASpark -> r.drawBlendAdd {line(false);oval();sprite()}
 			else -> ticks=maxLifetime
 		}
 	}
@@ -173,7 +175,11 @@ open class Particle @JvmOverloads constructor(
 	 * Warning: you cannot use circular & Light particles with SDL.
 	 */
 	enum class ParticleShape {
-		Rect, Oval, ARect, AOval,  ASprite
+		Rect, Oval, ARect, AOval,
+		ASprite, ASpark
+	}
+	enum class ParticleMovement {
+		Frag
 	}
 
 	companion object {

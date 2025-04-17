@@ -73,8 +73,8 @@ class BlockParticle(block:Block?, x:Float, y:Float, velocity:Vector, accelerate:
 		tex.darkness = if(isFlashing&&ticks/2%2==0) -0.8f*tex.alpha else (1-tex.alpha)*-.24f
 
 		if(animType==Type.TGM)
-			r.drawBlock(x+blockSize/4, y+blockSize/4, tex, .6f, 1f, size*blockSize/BS)
-		r.drawBlock(x, y, tex, 0f, 1f, size*blockSize/BS)
+			r.drawBlock(x+blockSize/4, y+blockSize/4, tex, .6f, scale = size*blockSize/BS)
+		r.drawBlock(x, y, tex, scale = size*blockSize/BS)
 	}
 
 	enum class Type { DTET, TGM }

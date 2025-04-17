@@ -118,28 +118,31 @@ class RetroS:AbstractMode() {
 		rankingLevel.forEach {it.fill(0)}
 		rankingTime.forEach {it.fill(-1)}
 
-		engine.twistEnable = false
-		engine.b2bEnable = false
-		engine.splitB2B = false
-		engine.comboType = GameEngine.COMBO_TYPE_DISABLE
-		engine.bigHalf = false
-		engine.bigMove = false
+		engine.run {
+			twistEnable = false
+			b2bEnable = false
+			splitB2B = false
+			comboType = GameEngine.COMBO_TYPE_DISABLE
+			bigHalf = false
+			bigMove = false
 
-		engine.speed.are = 30
-		engine.speed.areLine = 30
-		engine.speed.lineDelay = 42
-		engine.speed.lockDelay = 30
-		engine.speed.das = 20
-		engine.owMinDAS = -1
-		engine.owMaxDAS = -1
-		engine.owARR = 1
-		engine.owSDSpd = 2
-		engine.owDelayCancel = 0
+			speed.are = 30
+			speed.areLine = 30
+			speed.lineDelay = 42
+			speed.lockDelay = 30
+			speed.das = 20
 
+			owMinDAS = -1
+			owMaxDAS = 20
+			owARR = 1
+			owSDSpd = 2
+			owDelayCancel = 0
+
+			frameSkin = GameEngine.FRAME_SKIN_SG
+		}
 		if(!owner.replayMode) version = CURRENT_VERSION
 		owner.bgMan.bg = startLevel/2
 		if(owner.bgMan.bg>19) owner.bgMan.bg = 19
-		engine.frameColor = GameEngine.FRAME_SKIN_SG
 	}
 
 	/** Set the gravity speed
@@ -172,8 +175,10 @@ class RetroS:AbstractMode() {
 				softdropMultiplyNativeSpeed = false
 				softdropGravitySpeedLimit = true
 				spinInitial = false
+				spinReverseKey = false
+				spinDoubleKey = false
 				holdEnable = false
-				dasInARE = false
+				dasInARE = true
 				dasInReady = false
 				nextDisplay = 1
 			}

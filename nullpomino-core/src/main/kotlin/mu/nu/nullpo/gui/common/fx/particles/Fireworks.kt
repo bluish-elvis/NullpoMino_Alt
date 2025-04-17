@@ -40,8 +40,8 @@ package mu.nu.nullpo.gui.common.fx.particles
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
 import mu.nu.nullpo.gui.common.AbstractRenderer
 import mu.nu.nullpo.gui.common.fx.Effect
-import zeroxfc.nullpo.custom.libs.Vector
 import zeroxfc.nullpo.custom.libs.Interpolation.lerp
+import zeroxfc.nullpo.custom.libs.Vector
 import kotlin.math.PI
 import kotlin.math.cos
 import kotlin.math.sin
@@ -106,10 +106,7 @@ class Fireworks @JvmOverloads constructor(
 		}
 	}
 
-	override fun update(r:AbstractRenderer):Boolean {
-		++ticks
-		return ticks>=10
-	}
+	override fun update(r:AbstractRenderer):Boolean = ++ticks>=10
 
 	companion object {
 		/** Default max velocity*/

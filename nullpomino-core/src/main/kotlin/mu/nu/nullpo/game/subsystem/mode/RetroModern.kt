@@ -135,7 +135,7 @@ class RetroModern:AbstractMode() {
 		engine.statistics.level = startLevel
 		setSpeed(engine)
 		owner.bgMan.bg = levelBG[startLevel]
-		engine.frameColor = GameEngine.FRAME_SKIN_HEBO
+		engine.frameSkin = GameEngine.FRAME_SKIN_HEBO
 	}
 
 	/** Set the gravity speed
@@ -309,6 +309,7 @@ class RetroModern:AbstractMode() {
 					engine.statistics.level++
 					engine.gameEnded()
 					engine.resetStatc()
+					owner.bgMan.nextBg = -16
 					engine.stat = GameEngine.Status.EXCELLENT
 					if(special) {
 						lastScore = 10000000

@@ -41,7 +41,7 @@ import org.newdawn.slick.state.StateBasedGame
 /** 全般の設定画面のステート */
 internal class StateConfigGeneral:BaseMenuConfigState() {
 	override val title = "GENERAL OPTIONS"
-	override val mouseEnabled = false
+	override val mouseEnabled = true
 	private var confGeneral = ConfigGlobal.GeneralConf()
 	private var confVisual = ConfigGlobal.VisualConf()
 	private var confRender = ConfigGlobal.RenderConf()

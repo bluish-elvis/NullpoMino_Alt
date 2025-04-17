@@ -154,7 +154,7 @@ class GrandS2:AbstractGrand() {
 		engine.b2bEnable = true
 		engine.splitB2B = true
 		engine.comboType = GameEngine.COMBO_TYPE_DOUBLE
-		engine.frameColor = GameEngine.FRAME_COLOR_RED
+		engine.frameSkin = GameEngine.FRAME_COLOR_RED
 		engine.bigHalf = true
 		engine.bigMove = true
 		engine.staffrollEnable = true
@@ -357,7 +357,7 @@ class GrandS2:AbstractGrand() {
 			if(garbageCount>=tableGarbage[engine.statistics.level/100]&&tableGarbage[engine.statistics.level/100]!=0) {
 				engine.playSE("garbage0")
 				engine.field.addBottomCopyGarbage(
-					engine.skin, 1,
+					engine.blkSkin, 1,
 					Block.ATTRIBUTE.GARBAGE, Block.ATTRIBUTE.VISIBLE, Block.ATTRIBUTE.OUTLINE
 				)
 				garbageCount = 0

@@ -106,7 +106,7 @@ class MarathonSquare:AbstractMode() {
 		} else
 			loadSetting(engine, owner.replayProp)
 
-		engine.frameColor = GameEngine.FRAME_COLOR_PURPLE
+		engine.frameSkin = GameEngine.FRAME_COLOR_PURPLE
 	}
 
 	/** Set the gravity speed

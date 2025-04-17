@@ -1,5 +1,5 @@
 /*
- Copyright (c) 2022-2024, NullNoname
+ Copyright (c) 2025, NullNoname
  All rights reserved.
 
  Converted to Kotlin and modified by Venom_Nhelv as bluish-elvis
@@ -29,26 +29,14 @@
  POSSIBILITY OF SUCH DAMAGE.
  */
 
-package mu.nu.nullpo.gui.common.fx
+package mu.nu.nullpo.game.subsystem.mode.menu
 
-import mu.nu.nullpo.gui.common.AbstractRenderer
+import mu.nu.nullpo.game.event.EventReceiver.COLOR
 
-/** imgLine
- del_h.png del_v.png */
-class Beam(x:Float, y:Float, val w:Int, val h:Int, alpha:Float = 1f):SpriteSheet(x, y, alpha = alpha) {
-	val isV = (h>=w*5)
-	override fun update(r:AbstractRenderer):Boolean = ++ticks>=16
+class BooleanStrMenuItem(name:String, label:String, color:COLOR, defaultValue:Boolean,
+	val choiceNames:Pair<String, String>, compact:Boolean = label.length<8, perRule:Boolean = false):
+	BooleanMenuItem(name, label, color, defaultValue, compact, perRule) {
+	override val valueString:String
+		get() = if(value)choiceNames.first else choiceNames.second
 
-	override fun draw(i:Int, r:AbstractRenderer) {
-		r.drawBlendAdd {
-			r.resources.imgLine[if(isV) 1 else 0].draw(x, y, dx2, dy2, srcX, srcY, srcX2, srcY2, alpha)
-		}
 	}
-
-	override val dx2:Float get() = x+w
-	override val dy2:Float get() = y+h
-	override val srcX:Int get() = if(isV) (ticks-1)*8 else 0
-	override val srcX2:Int get() = srcX+if(isV) 16 else 80
-	override val srcY:Int get() = if(isV) 0 else (ticks/2-1)*8
-	override val srcY2:Int get() = srcY+if(isV) 160 else 8
-}

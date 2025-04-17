@@ -135,7 +135,7 @@ class ScoreTrial:MarathonModeBase() {
 			netPlayerName = engine.owner.replayProp.getProperty("${engine.playerID}.net.netPlayerName", "")
 		}
 		engine.owner.bgMan.bg = startLevel
-		engine.frameColor = GameEngine.FRAME_COLOR_GRAY
+		engine.frameSkin = GameEngine.FRAME_COLOR_GRAY
 		engine.twistEnable = false
 		engine.comboType = GameEngine.COMBO_TYPE_NORMAL
 		engine.statistics.levelDispAdd = 0

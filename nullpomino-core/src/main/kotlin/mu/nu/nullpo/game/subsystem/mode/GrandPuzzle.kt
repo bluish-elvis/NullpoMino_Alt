@@ -287,7 +287,7 @@ class GrandPuzzle:AbstractMode() {
 		engine.twistEnable = false
 		engine.b2bEnable = false
 		engine.splitB2B = false
-		engine.frameColor = GameEngine.FRAME_COLOR_PINK
+		engine.frameSkin = GameEngine.FRAME_COLOR_PINK
 		engine.comboType = GameEngine.COMBO_TYPE_DISABLE
 		engine.bigHalf = true
 		engine.bigMove = false
@@ -340,7 +340,7 @@ class GrandPuzzle:AbstractMode() {
 		//  stage Map読み込み
 		engine.createFieldIfNeeded()
 		propStageSet[mapSet-1]?.let {loadMap(engine.field, it, stage)}
-		engine.field.setAllSkin(engine.skin)
+		engine.field.setAllSkin(engine.blkSkin)
 
 		//  stage Timeなどを設定
 		cleartime = 0
@@ -521,7 +521,7 @@ class GrandPuzzle:AbstractMode() {
 						1 ->
 							propStageSet[mapSet+1]?.let {
 								loadMap(engine.field, it, startStage)
-								engine.field.setAllSkin(engine.skin)
+								engine.field.setAllSkin(engine.blkSkin)
 							}
 						2 -> propStageSet[mapSet]?.let {saveMap(engine.field, it, startStage)}
 						3 -> loadStageSet(mapSet)
@@ -614,7 +614,7 @@ class GrandPuzzle:AbstractMode() {
 
 					loadStageSet(mapSet)
 					propStageSet[mapSet]?.let {loadMap(engine.field, it, startStage)}
-					engine.field.setAllSkin(engine.skin)
+					engine.field.setAllSkin(engine.blkSkin)
 
 					editModeScreen = Stats.EDIT_MAIN
 					menuCursor = 0
@@ -634,7 +634,7 @@ class GrandPuzzle:AbstractMode() {
 				if(startStage>MAX_STAGE_TOTAL-1) startStage = 0
 
 				propStageSet[mapSet-1]?.let {loadMap(engine.field, it, startStage)}
-				engine.field.setAllSkin(engine.skin)
+				engine.field.setAllSkin(engine.blkSkin)
 			}
 		}
 	}

@@ -34,6 +34,7 @@ package mu.nu.nullpo.gui.common
 import mu.nu.nullpo.game.component.Block
 import mu.nu.nullpo.game.component.Piece
 import mu.nu.nullpo.game.event.EventReceiver
+import mu.nu.nullpo.game.event.EventReceiver.COLOR.*
 import mu.nu.nullpo.game.event.ScoreEvent
 import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.gui.common.fx.*
@@ -41,6 +42,7 @@ import mu.nu.nullpo.gui.common.fx.FragAnim.ANIM
 import mu.nu.nullpo.gui.common.fx.particles.BlockParticle
 import mu.nu.nullpo.gui.common.fx.particles.Fireworks
 import mu.nu.nullpo.gui.common.fx.particles.LandingParticles
+import mu.nu.nullpo.gui.slick.NullpoMinoSlick.Companion.rainbow
 import mu.nu.nullpo.util.GeneralUtil.toInt
 
 abstract class AbstractRenderer:EventReceiver() {
@@ -107,10 +109,9 @@ abstract class AbstractRenderer:EventReceiver() {
 	/* 1マスBlockを描画 */
 	override fun drawBlock(
 		x:Float, y:Float, color:Int, skin:Int, bone:Boolean, darkness:Float, alpha:Float, scale:Float,
-		attr:Int, outline:Float
+		attr:Int
 	) {
 		val sk = skin%resources.imgBlockListSize
-
 		if(color<0) return
 
 		val isSpecialBlocks = color>=Block.COLOR.COUNT
@@ -126,18 +127,7 @@ abstract class AbstractRenderer:EventReceiver() {
 		else color+(bone).toInt()*9-(Block.COLOR.COUNT+18)*isSpecialBlocks.toInt()
 		val sy = if(isSticky) if(isSpecialBlocks) 18 else color+(bone).toInt()*9 else 0
 
-		val ls = BS*scale
-		drawBlockSpecific(x, y, sx, sy, sk, ls, darkness, alpha)
-		if(outline>0) {
-			if(attr and Block.ATTRIBUTE.CONNECT_UP.bit==0)
-				drawLineSpecific(x, y, x+ls, y, w = outline)
-			if(attr and Block.ATTRIBUTE.CONNECT_DOWN.bit==0)
-				drawLineSpecific(x, y+ls, x+ls, y+ls, w = outline)
-			if(attr and Block.ATTRIBUTE.CONNECT_LEFT.bit==0)
-				drawLineSpecific(x, y, x, y+ls, w = outline)
-			if(attr and Block.ATTRIBUTE.CONNECT_RIGHT.bit==0)
-				drawLineSpecific(x+ls, y, x+ls, y+ls, w = outline)
-		}
+		drawBlockSpecific(x, y, sx, sy, sk, BS*scale, darkness, alpha)
 	}
 
 	/* 勲章を描画 */
@@ -248,7 +238,7 @@ abstract class AbstractRenderer:EventReceiver() {
 		inside()
 		drawFrameSpecific(lX, tY, engine)
 
-		when(engine.frameColor) {
+		when(engine.frameSkin) {
 			GameEngine.FRAME_SKIN_GB -> {
 				drawRect(lX.toInt(), tY.toInt(), fW, fH, 0x888888)
 				val fi = resources.imgFrameOld[0]
@@ -398,22 +388,23 @@ abstract class AbstractRenderer:EventReceiver() {
 //			engine.playerID
 			val g = spd.gravity
 			val d = spd.denominator
-			drawMenuNum(engine, 0, zy, if(g<0||d<0) fieldH*1f else g*1f/d, 3 to 4)
+			drawMenuNum(engine, 0, zy, if(g<0||d<0) fieldH*1f else g*1f/d, 7 to 4)
+			drawMenuNano(engine, 1.5f, zy, "GRAVITY", scale = .5f)
 			drawMenuSpeed(engine, 1, zy, g, d, 5)
 
 			for(i in 0..1) {
 				val show = if(i==0) "ARE" to spd.are else "LINE" to spd.areLine
 				drawMenuNum(engine, 6+i*3, zy, String.format(if(i==0) "%2d/" else "%2d", show.second))
-				drawMenuNano(engine, 5+i*2.5f, zy+.5f, show.first, COLOR.WHITE, .5f)
+				drawMenuNano(engine, 5+i*2.5f, zy+.5f, show.first, scale = .5f)
 			}
 			for(i in 0..2) {
 				val show = when(i) {
 					0 -> "LINE" to spd.lineDelay; 1 -> "LOCK" to spd.lockDelay;else -> "DAS" to spd.das
 				}
 				drawMenuNum(engine, 8-i*3, zy+1, String.format(if(i==1) "%2d+" else "%2d", show.second))
-				drawMenuNano(engine, 6.5f-i*3, zy+1f, show.first, COLOR.WHITE, .5f)
+				drawMenuNano(engine, 6.5f-i*3, zy+1f, show.first, scale = .5f)
 			}
-			drawMenuNano(engine, 0f, zy+1.5f, "DELAYS", COLOR.WHITE, .5f)
+			drawMenuNano(engine, 0f, zy+1.5f, "DELAYS", scale = .5f)
 		}
 
 		for(i in 0..engine.lives)
@@ -433,36 +424,52 @@ abstract class AbstractRenderer:EventReceiver() {
 	 */
 	protected fun drawCurrentPiece(x:Float, y:Float, engine:GameEngine, scale:Float) {
 		val blkSize = (engine.blockSize*scale)
-		val bx = engine.nowPieceX
-		val by = engine.nowPieceY
+		val pX = engine.nowPieceX
+		val pY = engine.nowPieceY
 		var g = engine.fpf
 
-		val isRetro = engine.frameColor in GameEngine.FRAME_SKIN_SG..GameEngine.FRAME_SKIN_GB
+		val isRetro = engine.isRetroSkin
 		val ys =
-			if(!smoothFall||by>=engine.nowPieceBottomY||isRetro) 0f else engine.gCount*blkSize/engine.speed.denominator%blkSize
+			if(!smoothFall||pY>=engine.nowPieceBottomY||isRetro) 0f else engine.gCount*blkSize/engine.speed.denominator%blkSize
 		//if(engine.harddropFall>0)g+=engine.harddropFall;
 		if(!showLocus||isRetro) g = 0
 
+		val dX = x+pX*blkSize
+		val dY = y+pY*blkSize+ys
 		engine.nowPieceObject?.let {p ->
 			p.dataX[p.direction].zip(p.dataY[p.direction].withIndex()).groupBy({it.first}, {it.second})
 				.forEach {(x2, c) ->
 					val (i, y2) = c.minBy {it.value}
 					val b = Block(p.block[i]).apply {darkness = 0f}
 					for(z in 0..g) drawBlock(
-						x+((x2+bx)*blkSize), y+((y2+by-z)*blkSize), b,
+						x+((x2+pX)*blkSize), y+((y2+pY-z)*blkSize), b,
 						-.1f, .4f, scale*if(engine.big) 2 else 1
 					)
 				}
-			drawPiece(
-				x+bx*blkSize, y+by*blkSize+ys, p, scale*if(engine.big) 2 else 1, -.25f,
-				ow = if(engine.statc[0]%2==0||engine.holdDisable) if(edgeBold) 2f else 1f else 0f
-			)
+			drawPiece(dX, dY, p, scale*if(engine.big) 2 else 1, -.25f)
+			val outline = if(engine.statc[0]%2==0||!engine.holdDisable) if(edgeBold) 2f else 1f else 0f
+			if(outline>0) p.block.forEachIndexed {i, blk ->
+				val oColor=if(engine.statc[0]%2==1) 0xFFFFFF else
+					getColorByID(engine.holdPieceObject?.block[i]?.color?:Block.COLOR.BLACK)
+				val bX = pX+p.dataX[p.direction][i]
+				val bY = pY+p.dataY[p.direction][i]
+				val x = x+bX*blkSize
+				val y = y+bY*blkSize+ys
+				if(!blk.getAttribute(Block.ATTRIBUTE.CONNECT_UP)&&engine.field.getBlockEmpty(bX, bY-1, false))
+					drawLineSpecific(x, y, x+blkSize, y,oColor, w = outline)
+				if(!blk.getAttribute(Block.ATTRIBUTE.CONNECT_DOWN)&&engine.field.getBlockEmpty(bX, bY+1, false))
+					drawLineSpecific(x, y+blkSize, x+blkSize, y+blkSize,oColor, w = outline)
+				if(!blk.getAttribute(Block.ATTRIBUTE.CONNECT_LEFT)&&engine.field.getBlockEmpty(bX-1, bY, false))
+					drawLineSpecific(x, y, x, y+blkSize,oColor, w = outline)
+				if(!blk.getAttribute(Block.ATTRIBUTE.CONNECT_RIGHT)&&engine.field.getBlockEmpty(bX+1, bY, false))
+					drawLineSpecific(x+blkSize, y, x+blkSize, y+blkSize,oColor, w = outline)
+			}
 			if(engine.nowPieceSteps<10) drawDirectNano(
-				x+(bx+p.spinCX-.1f)*blkSize, y+by*blkSize+ys,
+				x+(pX+p.spinCX-.1f)*blkSize, dY,
 				"${engine.nowPieceSteps}/${p.finesseLimit(engine.nowPieceX)}", COLOR.WHITE, .5f
 			)
-			if(showCenter) drawDia(
-				x+(bx+p.spinCX+.5f)*blkSize, y+(by+p.spinCY+.5f)*blkSize+ys, blkSize*2/3, blkSize*2/3,
+			if(showCenter&&engine.ghost&&engine.ruleOpt.ghost) drawDia(
+				x+(pX+p.spinCX+.5f)*blkSize, y+(pY+p.spinCY+.5f)*blkSize+ys, blkSize*2/3, blkSize*2/3,
 				engine.statc[0]/(14f-engine.speed.rank*10f), alpha = .75f,
 				outlineColor = getColorByID(p.block[engine.statc[0]%p.block.size].run {
 					if(getAttribute(Block.ATTRIBUTE.BONE)) Block.COLOR.WHITE else color
@@ -477,6 +484,7 @@ abstract class AbstractRenderer:EventReceiver() {
 	 * @param engine GameEngineのインスタンス
 	 */
 	protected fun drawField(x:Float, y:Float, engine:GameEngine, size:Int, scale:Float = 1f) {
+		class Connected(val u:Boolean, val d:Boolean, val l:Boolean, val r:Boolean)
 		val (blkSize, zoom) = (engine.blockSize to scale).let {
 			when {
 				size<=-1 -> it.first/2 to it.second/2
@@ -510,28 +518,35 @@ abstract class AbstractRenderer:EventReceiver() {
 
 						if(it.getAttribute(Block.ATTRIBUTE.OUTLINE)&&!it.getAttribute(Block.ATTRIBUTE.BONE)) {
 							val ls = blkSize-1
-							val w = if(edgeBold) 3f else 2f
-							when(outlineType) {
-								GameEngine.BLOCK_OUTLINE_NORMAL -> {
-									if(field.getBlockEmpty(j, i-1)) drawLineSpecific(x2, y2, x2+ls, y2, w = w)
-									if(field.getBlockEmpty(j, i+1)) drawLineSpecific(x2, y2+ls, x2+ls, y2+ls, w = w)
-									if(field.getBlockEmpty(j-1, i)) drawLineSpecific(x2, y2, x2, y2+ls, w = w)
-									if(field.getBlockEmpty(j+1, i)) drawLineSpecific(x2+ls, y2, x2+ls, y2+ls, w = w)
-								}
-								GameEngine.BLOCK_OUTLINE_CONNECT -> {
-									if(!it.getAttribute(Block.ATTRIBUTE.CONNECT_UP)) drawLineSpecific(x2, y2, x2+ls, y2, w = w)
-									if(!it.getAttribute(Block.ATTRIBUTE.CONNECT_DOWN)) drawLineSpecific(x2, y2+ls, x2+ls, y2+ls, w = w)
-									if(!it.getAttribute(Block.ATTRIBUTE.CONNECT_LEFT)) drawLineSpecific(x2, y2, x2, y2+ls, w = w)
-									if(!it.getAttribute(Block.ATTRIBUTE.CONNECT_RIGHT)) drawLineSpecific(x2+ls, y2, x2+ls, y2+ls, w = w)
-								}
-								GameEngine.BLOCK_OUTLINE_SAMECOLOR -> {
-									val color = getColorByID(it.color?:Block.COLOR.WHITE)
-									if(field.getBlockColor(j, i-1)!=it.color) drawLineSpecific(x2, y2, x2+ls, y2, color, w = w)
-									if(field.getBlockColor(j, i+1)!=it.color) drawLineSpecific(x2, y2+ls, x2+ls, y2+ls, color, w = w)
-									if(field.getBlockColor(j-1, i)!=it.color) drawLineSpecific(x2, y2, x2, y2+ls, color, w = w)
-									if(field.getBlockColor(j+1, i)!=it.color) drawLineSpecific(x2+ls, y2, x2+ls, y2+ls, color, w = w)
-								}
+							val w = if(edgeBold) 2f else 1f
+
+							val color = getColorByID(
+								if(outlineType==GameEngine.BLOCK_OUTLINE_SAMECOLOR&&it.color!=null) it.color
+								else Block.COLOR.WHITE)
+							val side = when(outlineType) {
+								GameEngine.BLOCK_OUTLINE_NORMAL -> Connected(
+									field.getBlockEmpty(j, i-1, false),
+									field.getBlockEmpty(j, i+1, false),
+									field.getBlockEmpty(j-1, i, false),
+									field.getBlockEmpty(j+1, i, false))
+								GameEngine.BLOCK_OUTLINE_CONNECT -> Connected(
+									field.getCoordVaild(j, i-1)&&!it.getAttribute(Block.ATTRIBUTE.CONNECT_UP),
+									field.getCoordVaild(j, i+1)&&!it.getAttribute(Block.ATTRIBUTE.CONNECT_DOWN),
+									field.getCoordVaild(j-1, i)&&!it.getAttribute(Block.ATTRIBUTE.CONNECT_LEFT),
+									field.getCoordVaild(j+1, i)&&!it.getAttribute(Block.ATTRIBUTE.CONNECT_RIGHT))
+								GameEngine.BLOCK_OUTLINE_SAMECOLOR -> Connected(
+									field.getCoordVaild(j, i-1)&&field.getBlockColor(j, i-1)!=it.color,
+									field.getCoordVaild(j, i+1)&&field.getBlockColor(j, i+1)!=it.color,
+									field.getCoordVaild(j-1, i)&&field.getBlockColor(j-1, i)!=it.color,
+									field.getCoordVaild(j+1, i)&&field.getBlockColor(j+1, i)!=it.color)
+								else -> Connected(false, false, false, false)
 							}
+							if(side.u) drawLineSpecific(x2-w/2*side.l.toInt(), y2-w/2, x2+ls+w/2*side.r.toInt(), y2-w/2, color, w = w)
+							if(side.d) drawLineSpecific(x2-w/2*side.l.toInt(), y2+ls+w/2, x2+ls+w/2*side.r.toInt(), y2+ls+w/2, color,
+								w = w)
+							if(side.l) drawLineSpecific(x2-w/2, y2-w/2*side.u.toInt(), x2-w/2, y2+ls+w/2*side.d.toInt(), color, w = w)
+							if(side.r) drawLineSpecific(x2+ls+w/2, y2-w/2*side.u.toInt(), x2+ls+w/2, y2+ls+w/2*side.d.toInt(), color,
+								w = w)
 						}
 					}
 				}
@@ -545,7 +560,7 @@ abstract class AbstractRenderer:EventReceiver() {
 				if(maxY>height) maxY = height
 				for(i in 0..<maxY)
 					for(j in 0..<width)
-						drawBlock(x+j*blkSize, y+(height-1-i)*blkSize, (x+y).toInt()%2, 0, false, 0f, 1f, zoom)
+						drawBlock(x+j*blkSize, y+(height-1-i)*blkSize, (x+y).toInt()%2, 0, scale = zoom)
 			}
 		}
 	}
@@ -622,13 +637,12 @@ abstract class AbstractRenderer:EventReceiver() {
 			}
 		}
 
-		if(engine.isHoldVisible) {
+		if(engine.isHoldVisible&&engine.ruleOpt.holdEnable) {
 			// HOLD
 			val holdRemain = engine.ruleOpt.holdLimit-engine.holdUsedCount
 			val x2 = if(sideNext) x-fbs*3 else x+fbs
 			val y2 = if(sideNext) y else y-fbs*3
-
-			if(engine.ruleOpt.holdEnable&&(engine.ruleOpt.holdLimit<0||holdRemain>0)) {
+			if(engine.ruleOpt.holdLimit<0||holdRemain>0) {
 				var str = "SWAP"
 				var tempColor = if(engine.holdDisable) COLOR.WHITE else COLOR.GREEN
 				if(engine.ruleOpt.holdLimit>=0) {
@@ -647,14 +661,14 @@ abstract class AbstractRenderer:EventReceiver() {
 						2 -> {
 							val centerX = ((4-it.width-1)*fbs)/2-it.minimumBlockX*fbs
 							val centerY = ((4-it.height-1)*fbs)/2-it.minimumBlockY*fbs
-							drawPiece(x-64+centerX, y+centerY, it, 1f, dark, ow = 1f)
+							drawPiece(x-64+centerX, y+centerY, it, 1f, dark, outline = 1f)
 						}
 						1 -> {
 							val centerX = ((4-it.width-1)*fbs)/4-it.minimumBlockX*fbs/2
 							val centerY = ((4-it.height-1)*fbs)/4-it.minimumBlockY*fbs/2
-							drawPiece(x2+centerX, y+centerY, it, .5f, dark, ow = 1f)
+							drawPiece(x2+centerX, y+centerY, it, .5f, dark, outline = 1f)
 						}
-						else -> drawPiece(x2, y-fbs-(it.maximumBlockY+1)*8, it, .5f, dark, ow = 1f)
+						else -> drawPiece(x2, y-fbs-(it.maximumBlockY+1)*8, it, .5f, dark, outline = 1f)
 					}
 				}
 			}
@@ -775,7 +789,7 @@ abstract class AbstractRenderer:EventReceiver() {
 	}
 
 	private fun locusParticle(engine:GameEngine, fall:Int, alpha:Int = 225, lifetime:IntRange, vel:Float = alpha*0.0072f) {
-		if(particle) engine.nowPieceObject?.let {p ->
+		if(particle&&!engine.isRetroSkin) engine.nowPieceObject?.let {p ->
 			p.dataX[p.direction].zip(p.dataY[p.direction].withIndex()).groupBy({it.first}, {it.second})
 				.mapValues {it.value.filterNot {(i, _) -> p.block[i].getAttribute(Block.ATTRIBUTE.BONE)}}
 				.filterNot {it.value.isEmpty()}.forEach {(x2, c) ->
@@ -810,8 +824,25 @@ abstract class AbstractRenderer:EventReceiver() {
 		super.afterHardDropFall(engine, fall)
 	}
 
+	override fun pieceFlicked(engine:GameEngine, pX:Int, pY:Int, p:Piece) {
+		if(particle&&!engine.isRetroSkin) efxFG.addAll(
+			p.dataX[p.direction].zip(p.dataY[p.direction].withIndex()).groupBy({it.first}, {it.second})
+				.filterNot {it.value.isEmpty()}.flatMap {(x2, c) ->
+					val (i, y2) = c.maxBy {it.value}
+					val col = Fireworks.colorBy(getBlockColor(p.block[i]))
+					val px = engine.fX+(pX+x2)*engine.blockSize
+					val prx = engine.fX+(pX+x2+1)*engine.blockSize
+					val py = engine.fY+(pY+y2+1)*engine.blockSize
+					LandingParticles(
+						3, px, prx, py, 0f, col[0], col[1], col[2],
+						235, 45, .44f, .66f
+					).let {it.particles+it}
+				}
+		)
+	}
+
 	override fun pieceLocked(engine:GameEngine, pX:Int, pY:Int, p:Piece, lines:Int, finesse:Boolean) {
-		if(particle) efxFG.addAll(
+		if(particle&&!engine.isRetroSkin) efxFG.addAll(
 			p.dataX[p.direction].zip(p.dataY[p.direction].withIndex()).groupBy({it.first}, {it.second})
 				.mapValues {it.value.filterNot {(i, _) -> p.block[i].getAttribute(Block.ATTRIBUTE.BONE)}}
 				.filterNot {it.value.isEmpty()}.flatMap {(x2, c) ->
@@ -844,13 +875,13 @@ abstract class AbstractRenderer:EventReceiver() {
 	}
 
 	override fun blockBreak(engine:GameEngine, blk:Map<Int, Map<Int, Block>>) {
-		if(showLineEffect&&engine.displaySize!=-1&&engine.skin!=GameEngine.FRAME_SKIN_GB) {
+		if(showLineEffect&&engine.displaySize!=-1&&engine.blkSkin!=GameEngine.FRAME_SKIN_GB) {
 			val s = engine.blockSize
 			efxFG.addAll(blk.flatMap {(y, row) ->
 				row.flatMap a@{(x, blk) ->
 					val sx = engine.fX+x*s
 					val sy = engine.fY+y*s
-					if(particle) {
+					if(particle&&engine.blkSkin!=GameEngine.FRAME_SKIN_GB) {
 						if(blk.getAttribute(Block.ATTRIBUTE.BONE)) Fireworks.colorBy(COLOR.GREEN).let {col ->
 							LandingParticles(
 								5, sx, sx+s, sy+s/2f, s*.5f, col[0], col[1], col[2],
@@ -879,7 +910,7 @@ abstract class AbstractRenderer:EventReceiver() {
 			})
 //			if(engine.skin==)
 			val btype =
-				engine.skin in GameEngine.FRAME_SKIN_HEBO..GameEngine.FRAME_SKIN_SG||(engine.owner.mode?.gameIntensity?:0)<0
+				engine.blkSkin in GameEngine.FRAME_SKIN_HEBO..GameEngine.FRAME_SKIN_SG||(engine.owner.mode?.gameIntensity?:0)<0
 			efxBG.addAll(
 				BlockParticle.Mapper(
 					engine, this, blk, if(btype) BlockParticle.Type.TGM else BlockParticle.Type.DTET,
@@ -981,7 +1012,7 @@ abstract class AbstractRenderer:EventReceiver() {
 		val x = engine.fX+engine.mapEditX*bs
 		val y = engine.fY+engine.mapEditY*bs
 		val bright = if(engine.mapEditFrames%6>=3) -.5f else -.2f
-		drawBlock(x, y, engine.mapEditColor, engine.skin, false, bright, 1f, 1f)
+		drawBlock(x, y, engine.mapEditColor, engine.blkSkin, darkness = bright)
 		val z = (engine.mapEditFrames/4)%8
 		resources.imgCursor.draw(
 			x-bs/2, y-bs/2, x-bs/2+32, y-bs/2+32,
@@ -1236,7 +1267,7 @@ abstract class AbstractRenderer:EventReceiver() {
 		else fillRectSpecific(x, y, minOf(1f, s-1)*w, 2f, 0xFFFFFF)
 	}
 
-	fun drawBlackBG() = fillRectSpecific(0, 0, 640, 480, 0)
+	fun drawBlackBG(alpha:Float = 1f) = fillRectSpecific(0, 0, 640, 480, 0, alpha)
 
 	companion object {
 		/** Block colorIDに応じてColor Hexを作成
@@ -1244,15 +1275,18 @@ abstract class AbstractRenderer:EventReceiver() {
 		 * @return color Hex
 		 */
 		fun getColorByID(color:COLOR?):Int = when(color) {
-			COLOR.WHITE -> 0xFFFFFF
-			COLOR.RED -> 0xFF0000
-			COLOR.ORANGE -> 0xFF8000
-			COLOR.YELLOW -> 0xFFFF00
-			COLOR.GREEN -> 0x00FF00
-			COLOR.CYAN -> 0x00FFFF
-			COLOR.BLUE -> 0x0040FF
-			COLOR.PURPLE -> 0xAA00FF
-			else -> 0
+			WHITE -> 0xFFFFFF
+			RED -> 0xFF0000
+			ORANGE -> 0xFF8000
+			YELLOW -> 0xFFFF00
+			GREEN -> 0x00FF00
+			CYAN -> 0x00FFFF
+			BLUE -> 0x0040FF
+			COBALT -> 0x4000FF
+			PURPLE -> 0xAA00FF
+			PINK -> 0xFF00AA
+			RAINBOW -> getColorByID(getRainbowColor(rainbow))
+			null -> TODO()
 		}
 		/** Block colorIDに応じてColor Hexを作成
 		 * @param color Block colorID
