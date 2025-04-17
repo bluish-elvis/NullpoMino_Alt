@@ -150,7 +150,7 @@ class GrandZ:AbstractGrand() {
 		engine.b2bEnable = true
 		engine.splitB2B = true
 		engine.comboType = GameEngine.COMBO_TYPE_DOUBLE
-		engine.frameColor = GameEngine.FRAME_COLOR_GRAY
+		engine.frameSkin = GameEngine.FRAME_COLOR_GRAY
 		engine.bigHalf = true
 		engine.bigMove = true
 		engine.staffrollEnable = true

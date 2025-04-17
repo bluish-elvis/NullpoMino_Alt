@@ -134,7 +134,7 @@ class ToolMapEditor:AbstractMode() {
 
 	/* Initialization for each player */
 	override fun playerInit(engine:GameEngine) {
-		engine.frameColor = GameEngine.FRAME_COLOR_GRAY
+		engine.frameSkin = GameEngine.FRAME_COLOR_GRAY
 		engine.createFieldIfNeeded()
 		loadAllMaps(nowMapSetID)
 	}
@@ -187,7 +187,7 @@ class ToolMapEditor:AbstractMode() {
 				// LOAD
 				if(nowMapID>=0&&nowMapID<listFields!!.size) {
 					engine.field.replace(listFields!![nowMapID])
-					engine.field.setAllSkin(engine.skin)
+					engine.field.setAllSkin(engine.blkSkin)
 				} else
 					engine.field.reset()
 			} else if(menuCursor==5) {

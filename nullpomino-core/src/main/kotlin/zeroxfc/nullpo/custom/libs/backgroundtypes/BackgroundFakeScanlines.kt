@@ -78,7 +78,7 @@ class BackgroundFakeScanlines<T>(img:ResourceImage<T>):AbstractBG<T>(img) {
 		update()
 	}
 
-	override fun draw(render:AbstractRenderer) {
+	override fun draw(render:AbstractRenderer, bg:Boolean) {
 		for(id in chunks.indices) {
 			val col = (1f-BASE_LUMINANCE_OFFSET).let {
 				it-BASE_LUMINANCE_OFFSET*(id and 2==0).toInt()+

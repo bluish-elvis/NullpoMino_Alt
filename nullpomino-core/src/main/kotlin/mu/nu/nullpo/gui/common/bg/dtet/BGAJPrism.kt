@@ -31,6 +31,7 @@
 
 package mu.nu.nullpo.gui.common.bg.dtet
 
+import mu.nu.nullpo.gui.common.AbstractRenderer
 import kotlin.math.sign
 import kotlin.random.Random
 
@@ -59,7 +60,7 @@ class BGAJPrism<T>(bg:mu.nu.nullpo.gui.common.ResourceImage<T>):mu.nu.nullpo.gui
 		children.forEach {it.init()}
 	}
 
-	override fun draw(render:mu.nu.nullpo.gui.common.AbstractRenderer) {
+	override fun draw(render:AbstractRenderer, bg:Boolean) {
 		img.draw(0f, 0f, 0f, 240-by, 640f, 240f)
 		img.draw(0f, 0+by, 0f, 0f, 640f, 240f)
 		img.draw(0f, 240+by, 0f, 0f, 640f, 240-by)

@@ -31,6 +31,7 @@
 
 package mu.nu.nullpo.game.component
 
+import kotlin.collections.List
 import kotlin.reflect.full.createInstance
 import kotlin.reflect.full.primaryConstructor
 
@@ -76,54 +77,58 @@ sealed class BGM(
 	override fun toString():String = fullName
 
 	object Silent:BGM(0, _long = "Silent")
-	class Generic(idx:Int = 0):BGM(1, idx, "Guidelines Modes", sn = List(10) {"Level:${it+1}"})
-	class Rush(idx:Int = 0):BGM(2, idx, "Trial Rush", sn = List(4) {"Level:${it+1}"})
-	class Extra(idx:Int = 0):BGM(3, idx, 5, "Extra Modes")
-	class Puzzle(idx:Int = 0):BGM(4, idx, "Strategy Mode/Grand Blossom", "SAKURA", "SAKURA", "TOMOYO", "CELBERUS", "EXTRA")
-	class RetroN(idx:Int = 0):BGM(5, idx, 4, "Retro Classic:N.")
-	class RetroA(idx:Int = 0):BGM(6, idx, 5, "Retro Marathon:AT")
-	class RetroS(idx:Int = 0):BGM(7, idx, 6, "Retro Mania:S")
+	class Generic(idx:Int = 0):BGM(1, idx, "Guidelines Modes", sn = List(7) {"Level:${it+1}"})
+	class Rush(idx:Int = 0):BGM(2, idx, "Trial Rush", sn = List(5) {"Level:${it+1}"})
+	class Puzzle(idx:Int = 0):BGM(3, idx, "Strategy Mode/Grand Blossom", "SAKURA", "TOMOYO", "CELBERUS", "KONOHA")
+	class Zen(idx:Int = 0):BGM(4, idx,  "Zen/Low Speeds Modes", sn = List(7) {"Level:${it+1}"})
+	class Extra(idx:Int = 0):BGM(5, idx, 3, "Extra Modes")
 
-	class GrandM(idx:Int = 0):BGM(8, idx, "Grand Marathon", "Lv 0", "Lv 500")
+	class RetroN(idx:Int = 0):BGM(6, idx, 4, "Retro Classic:N.")
+	class RetroA(idx:Int = 0):BGM(7, idx, 5, "Retro Marathon:AT")
+	class RetroS(idx:Int = 0):BGM(8, idx, 6, "Retro Mania:S")
+
+	class GrandM(idx:Int = 0):BGM(9, idx, "Grand Marathon", "Lv 0", "Lv 500")
 	class GrandA(idx:Int = 0):BGM(
-		9, idx, "Grand Mania", "Lv 0", "Lv200", "Lv500", "Lv500 mRoll/SLv0",
+		10, idx, "Grand Mania", "Lv 0", "Lv200", "Lv500", "Lv500 mRoll/SLv0",
 		"Lv700/SLv300", "Lv700 with mRoll/SLv500", "Lv900/SLv800"
 	)
 
 	class GrandT(idx:Int = 0):BGM(
-		10, idx,
+		11, idx,
 		"Grand Mastery", "NORMAL", "rank 200", "rank 500", "rank 800 on NORMAL",
 		"rank 800 on Lv400-500", "rank 1000 on NORMAL", "rank 1000 on Lv500-700", "Lv900 mRoll"
 	)
 
 	class GrandTS(idx:Int = 0):BGM(
-		11, idx,
+		12, idx,
 		"Grand Lightning", "LLv0", "LLv500", "LLv700", "LLv 1000"
 	)
 
 	class Menu(idx:Int = 0):BGM(
-		12, idx,
+		13, idx,
 		"Select BGM", "Title Menu/Replay", "Mode Select", "General Config",
 		"Mode Config(Retro/Puzzle)", "Mode Config(Generic)",
 		"Mode Config(Unique)", "Mode Config(Trial)", "Mode Config(Grand 20G)", hidden = true
 	)
 
 	class Ending(idx:Int = 0):BGM(
-		13, idx, "Ending Challenge",
-		"Marathon", "Mania (60sec)", "Mastery (55sec)", "Modern (200Sec)", "Modern-Hard (200Sec)",
+		14, idx, "Ending Challenge",
+		"Marathon", "Mania (60sec)", "Mastery (55sec)", "Modern-Easy (200Sec)","Modern-Medium (200Sec)", "Modern-Hard " +
+			"(200Sec)",
 		hidden = true
 	)
 
 	class Result(idx:Int = 0):BGM(
-		14, idx, "Play Result",
+		15, idx, "Play Result",
 		"Failure", "Done Sprint", "Done Enduro", "Cleared Game", hidden = true
 	)
 
-	class Finale(idx:Int = 0):BGM(15, idx, "Grand Finale", "Genuine", "Joker", "Further", hidden = true)
-	class Blitz(idx:Int = 0):BGM(16, idx, "Blitz", "3-min", "5-min", "3-min EXTREME", "5-min EXTREME", hidden = true)
+	class Finale(idx:Int = 0):BGM(16, idx, "Grand Finale", "Genuine", "Joker", "Further", hidden = true)
+	class Blitz(idx:Int = 0):BGM(17, idx, "Blitz", "3-min", "5-min", "3-min EXTREME", "5-min EXTREME", hidden = true)
 
 	//operator fun get(index: Int): BGM = if(this._idx)
 	companion object {
+
 		val all:List<List<BGM>>
 			get() = BGM::class.sealedSubclasses.map {bg ->
 				bg.objectInstance?.let {listOf(it)}

@@ -389,7 +389,9 @@ class GameEngine(
 	var staffrollEnableStatistics = false
 
 	/** Field's Frame color-int */
-	var frameColor = 0
+	var frameSkin = 0
+
+	val isRetroSkin get() = frameSkin==FRAME_SKIN_GB||frameSkin==FRAME_SKIN_SG
 
 	/** Duration of Ready->Go */
 	var readyStart = 0
@@ -559,7 +561,7 @@ class GameEngine(
 		}
 	/** Reverse roles of up/down keys in-game */
 	var owReverseUpDown
-		get() = owTune.reverseUpDown
+		get() = owTune.reverseUpDown xor itemQueue.any {it is Item.REV_CTRL_V}
 		set(value) {
 			owTune.reverseUpDown = value
 		}
@@ -724,7 +726,7 @@ class GameEngine(
 	/** @return Current 横移動速度を取得*/
 	val dasDelay get() = if(owARR>=0) owARR else ruleOpt.dasARR
 	/** 現在使用中のBlockスキン numberを取得*/
-	val skin get() = if(owSkin>=0) owSkin else ruleOpt.skin
+	val blkSkin get() = if(owSkin>=0) owSkin else ruleOpt.skin
 
 	/** @return A buttonを押したときに左rotationするならfalse, 右rotationするならtrue*/
 	val spinDirection get() = if(owSpinDir>=0) owSpinDir!=0 else ruleOpt.spinToRight
@@ -736,7 +738,8 @@ class GameEngine(
 	 * @return -1:左 0:なし 1:右
 	 */
 	val moveDirection
-		get() =
+		get() = (if(itemQueue.any {it is Item.REV_CTRL_H}) -1 else 1)*
+
 			if(ruleOpt.moveLeftAndRightAllow&&ctrl.isPress(Controller.BUTTON_LEFT)&&ctrl.isPress(Controller.BUTTON_RIGHT)) {
 				when {
 					ctrl.buttonTime[Controller.BUTTON_LEFT]>ctrl.buttonTime[Controller.BUTTON_RIGHT] ->
@@ -941,7 +944,7 @@ class GameEngine(
 		staffrollNoDeath = false
 		staffrollEnableStatistics = false
 
-		frameColor = FRAME_COLOR_WHITE
+		frameSkin = FRAME_COLOR_WHITE
 
 		readyStart = 0
 		readyEnd = READY_GO_TIME.first-1
@@ -1067,19 +1070,12 @@ class GameEngine(
 	/** ソフト・Hard drop・先行ホールド・同方向への先行rotationの使用制限解除 */
 	private fun checkDropContinuousUse() {
 		if(gameActive) {
-			if(!ctrl.isPress(down)||!ruleOpt.softdropLimit) softdropContinuousUse = false
-			if(!ctrl.isPress(up)||!ruleOpt.harddropLimit) harddropContinuousUse = false
+			if(!ctrl.isPress(down)||ruleOpt.softdropLimit<0) softdropContinuousUse = false
+			if(!ctrl.isPress(up)||ruleOpt.harddropLimit<0) harddropContinuousUse = false
 			if(!ctrl.isPress(Controller.BUTTON_D)||!ruleOpt.holdInitialLimit) initialHoldContinuousUse = false
-			if(!ruleOpt.spinInitialLimit) initialSpinContinuousUse = false
-
 			if(initialSpinContinuousUse) {
-				var dir = 0
-				if(ctrl.isPress(Controller.BUTTON_A)||ctrl.isPress(Controller.BUTTON_C))
-					dir = -1
-				else if(ctrl.isPress(Controller.BUTTON_B)) dir = 1
-				else if(ctrl.isPress(Controller.BUTTON_E)) dir = 2
-
-				if(initialSpinLastDirection!=dir||dir==0) initialSpinContinuousUse = false
+				val dir = getSpinOperation()
+				if(!ruleOpt.spinInitialLimit||initialSpinLastDirection!=dir||dir==0) initialSpinContinuousUse = false
 			}
 		}
 	}
@@ -1211,28 +1207,34 @@ class GameEngine(
 	 */
 	fun getSpinDirection(move:Int):Int = ((nowPieceObject?.direction?:0)+move).pythonModulo(4)
 
+	/** @return rotation buttonによる回転方向
+	 */
+	fun getSpinOperation(it:Controller = ctrl):Int =
+		(if(ruleOpt.spinReverseKey) -1 else 1).let {rev ->
+			(if(owSpinDir==1||owSpinDir<0&&ruleOpt.spinToRight) 1 else -1)*if(ruleOpt.spinDoubleKey) {
+				(it.isPress(Controller.BUTTON_E).toInt()*2)+
+					(it.isPressCount(Controller.BUTTON_B, Controller.BUTTON_F)*rev)+
+					it.isPressCount(Controller.BUTTON_A, Controller.BUTTON_C)
+			} else if(it.isPressAny(Controller.BUTTON_A, Controller.BUTTON_C, Controller.BUTTON_E)) 1
+			else if(it.isPressAny(Controller.BUTTON_B, Controller.BUTTON_F)) rev
+			else 0
+		}
+
 	/** 先行rotationと先行ホールドの処理 */
-	private fun initialSpin() {
-		initialSpinDirection = 0
-		initialHoldFlag = false
-
+	private fun initialSpin():Int =
 		ctrl.let {
-			if(ruleOpt.spinInitial&&!initialSpinContinuousUse) {
-				var dir = 0
-				if(it.isPress(Controller.BUTTON_A)||it.isPress(Controller.BUTTON_C)) dir = -1
-				else if(it.isPress(Controller.BUTTON_B)) dir = 1
-				else if(it.isPress(Controller.BUTTON_E)) dir = 2
-				if(dir!=0) spun = false
-				initialSpinDirection = dir
-			}
-
 			if(it.isPress(Controller.BUTTON_D)&&ruleOpt.holdInitial&&isHoldOK) {
 				initialHoldFlag = true
 				initialHoldContinuousUse = true
-				if(skin!=FRAME_SKIN_SG) playSE("initialhold")
+				if(frameSkin!=FRAME_SKIN_SG) playSE("initialhold")
 			}
+			if(ruleOpt.spinInitial&&(!ruleOpt.spinInitialLimit||!initialSpinContinuousUse)) {
+				val dir = getSpinOperation(it)
+				if(dir!=0) spun = false
+				initialSpinDirection = dir
+				dir
+			} else 0
 		}
-	}
 
 	/** fieldのBlock stateを更新 */
 	private fun fieldUpdate() {
@@ -1677,7 +1679,7 @@ class GameEngine(
 						p.connectBlocks = connectBlocks
 						p.setColor(ruleOpt.pieceColor[p.id])
 						p.setDarkness(0f)
-						p.setSkin(skin)
+						p.setSkin(blkSkin)
 						p.setAttribute(true, Block.ATTRIBUTE.VISIBLE)
 						p.setAttribute(bone, Block.ATTRIBUTE.BONE)
 						p.placeNum = it
@@ -1717,7 +1719,7 @@ class GameEngine(
 
 		// NEXTスキップ
 		if(statc[0] in 1..<goEnd&&holdButtonNextSkip&&isHoldOK&&ctrl.isPush(Controller.BUTTON_D)) {
-			if(skin!=FRAME_SKIN_SG) playSE("initialhold")
+			if(frameSkin!=FRAME_SKIN_SG) playSE("initialhold")
 			holdPieceObject = getNextObjectCopy(nextPieceCount)?.also {
 				it.applyOffsetArray(ruleOpt.pieceOffsetX[it.id], ruleOpt.pieceOffsetY[it.id])
 			}
@@ -1833,12 +1835,11 @@ class GameEngine(
 				initialHoldFlag = false
 				holdDisable = true
 			}
-			getNextObject(nextPieceCount)?.let {
-				if(frameColor !in FRAME_SKIN_SG..FRAME_SKIN_GB)
-					playSE(
-						"piece_${it.type.name.lowercase(Locale.getDefault())}", 1f,
-						if((owner.mode?.players?:1)>1) 0.3f else 1f
-					)
+			if(!isRetroSkin) getNextObject(nextPieceCount)?.let {
+				playSE(
+					"piece_${it.type.name.lowercase(Locale.getDefault())}", 1f,
+					if((owner.mode?.players?:1)>1) 0.3f else 1f
+				)
 			}
 			nowPieceObject?.let {
 				if(!it.offsetApplied)
@@ -1917,17 +1918,14 @@ class GameEngine(
 					initialSpinLastDirection = initialSpinDirection
 					initialSpinContinuousUse = true
 					if(nowPieceSpinFailCount>0) nowPieceSpinFailCount--
-					else if(spin!=0) playSE(if(skin==FRAME_SKIN_GB) "initialrotateold" else "initialrotate")
+					else playSE(if(frameSkin==FRAME_SKIN_GB) "initialrotateold" else "initialrotate")
 				} else if(statc[0]>0||ruleOpt.moveFirstFrame) {
 					if(itemRollRollEnable&&replayTimer%itemRollRollInterval==0) spin = 1 // Roll Roll
 
 					//  button input
-					when {
-						ctrl.isPress(Controller.BUTTON_A)||ctrl.isPress(Controller.BUTTON_C) -> spin = -1
-						ctrl.isPress(Controller.BUTTON_B) -> spin = 1
-						ctrl.isPress(Controller.BUTTON_E) -> spin = 2
-						else -> spun = false
-					}
+					spin = getSpinOperation(ctrl)
+					if(spin==0) spun = false
+
 
 
 					if(spin!=0) {
@@ -1935,10 +1933,6 @@ class GameEngine(
 						initialSpinContinuousUse = true
 					}
 				}
-
-				if(!ruleOpt.spinDoubleKey&&spin==2) spin = -1
-				if(!ruleOpt.spinReverseKey&&spin==1) spin = -1
-				if(spinDirection&&spin!=2) spin *= -1
 
 				if(spin!=0&&!spun) {
 					// Direction after rotationを決める
@@ -1950,7 +1944,7 @@ class GameEngine(
 						spun = true
 						kicked = false
 						it.direction = rt
-						it.updateConnectData()
+						it.updateConnectData(nowPieceX, nowPieceY)
 					} else if(ruleOpt.spinWallkick&&wallkick!=null&&(initialSpinDirection==0||ruleOpt.spinInitialWallkick)
 						&&(ruleOpt.lockResetLimitOver!=RuleOptions.LOCKRESET_LIMIT_OVER_NO_KICK||!isSpinCountExceed)
 					) {
@@ -1961,11 +1955,11 @@ class GameEngine(
 							?.let {kick ->
 								spun = true
 								kicked = true
-								playSE("wallkick")
+								if(!isRetroSkin) playSE("wallkick")
 								nowWallkickCount++
 								if(kick.isUpward) nowWallkickRiseCount++
 								it.direction = kick.direction
-								it.updateConnectData()
+								it.updateConnectData(nowPieceX, nowPieceY)
 								nowPieceX += kick.offsetX
 								nowPieceY += kick.offsetY
 
@@ -1979,7 +1973,7 @@ class GameEngine(
 						rt = getSpinDirection(2)
 						spun = true
 						it.direction = rt
-						it.updateConnectData()
+						it.updateConnectData(nowPieceX, nowPieceY)
 						nowPieceSpinFailCount = 0
 
 						if(it.checkCollision(nowPieceX, nowPieceY, rt, field)) nowPieceY--
@@ -2000,16 +1994,16 @@ class GameEngine(
 							LastMove.SPIN_GROUND
 						} else LastMove.SPIN_AIR
 
-						if(skin!=FRAME_SKIN_SG) playSE(if(skin==FRAME_SKIN_GB) "rotateold" else "rotate")
+						if(frameSkin!=FRAME_SKIN_SG) playSE(if(frameSkin==FRAME_SKIN_GB) "rotateold" else "rotate")
 						val twisting = checkTwisted(nowPieceX, nowPieceY, it, field)
-						if(twisting!=null) playSE("twist")
+						if(!isRetroSkin&&twisting!=null) playSE("twist")
 						nowPieceSpinCount += spin.absoluteValue
 						if(nowPieceObject?.type!=Piece.Shape.O) nowPieceSteps += spin.absoluteValue
 						if(ending==0||staffrollEnableStatistics) statistics.totalPieceSpin += spin.absoluteValue
 					} else if(ctrl.isPush(Controller.BUTTON_A)||ctrl.isPush(Controller.BUTTON_C)||
 						ctrl.isPush(Controller.BUTTON_B)||ctrl.isPush(Controller.BUTTON_E)) {
 						// rotation失敗
-						playSE("rotfail")
+						/*if(!isRetroSkin)*/playSE("rotfail")
 						nowPieceSpinFailCount++
 						if(ruleOpt.spinHoldBuffer) initialSpin()
 					}
@@ -2081,8 +2075,8 @@ class GameEngine(
 									if(dasDelay==0&&dasCount>0&&
 										!it.checkCollision(nowPieceX+move, nowPieceY, field)
 									) {
-										if(!dasInstant&&skin!=FRAME_SKIN_SG)
-											playSE(if(skin==FRAME_SKIN_GB||skin==FRAME_SKIN_HEBO) "moveold" else "move")
+										if(!dasInstant&&frameSkin!=FRAME_SKIN_SG)
+											playSE(if(frameSkin==FRAME_SKIN_GB||frameSkin==FRAME_SKIN_HEBO) "moveold" else "move")
 										dasRepeat = true
 										dasInstant = true
 									}
@@ -2100,21 +2094,23 @@ class GameEngine(
 									nowPieceBottomY = it.getBottom(nowPieceX, nowPieceY, field)
 
 									lastMove = if(onGroundBeforeMove) {
+										//it.updateConnectData(nowPieceX, nowPieceY, field)
+										owner.receiver.pieceFlicked(this, nowPieceX, nowPieceY, it)
 										extendedMoveCount++
 										LastMove.SLIDE_GROUND
 									} else LastMove.SLIDE_AIR
-									if(!dasInstant&&skin!=FRAME_SKIN_SG)
-										playSE(if(skin==FRAME_SKIN_GB||skin==FRAME_SKIN_HEBO) "moveold" else "move")
+									if(!dasInstant&&frameSkin!=FRAME_SKIN_SG)
+										playSE(if(frameSkin==FRAME_SKIN_GB||frameSkin==FRAME_SKIN_HEBO) "moveold" else "move")
 								} else {
 									if(!dasWall) {
-										playSE("movefail")
+										if(!isRetroSkin) playSE("movefail")
 										dasWall = true
 									}
 									if(ruleOpt.dasChargeOnBlockedMove) {
 										dasCount = das
 										dasSpeedCount = dasDelay
 									}
-									frameX += 5f.let {(it*move.sign).let {i -> (frameX+i).coerceIn(-it, it)-frameX}}
+									frameX += 5f.let {f -> (f*move.sign).let {i -> (frameX+i).coerceIn(-f, f)-frameX}}
 								}
 
 							} else dasSpeedCount++
@@ -2128,10 +2124,8 @@ class GameEngine(
 					) {
 						harddropFall += nowPieceBottomY-nowPieceY
 						fpf = nowPieceBottomY-nowPieceY
-						if(nowPieceY!=nowPieceBottomY) {
-							nowPieceY = nowPieceBottomY
-							playSE("harddrop", 1f, (fpf*2f/field.height).coerceIn(.75f, 1f))
-						}
+						nowPieceY = nowPieceBottomY
+						if(!isRetroSkin) playSE("harddrop", 1f, (fpf*2f/field.height).coerceIn(.75f, 1f))
 						harddropContinuousUse = !ruleOpt.harddropLock
 						owner.mode?.afterHardDropFall(this, harddropFall)
 						owner.receiver.afterHardDropFall(this, harddropFall)
@@ -2190,7 +2184,7 @@ class GameEngine(
 			}
 			if(fpf>0) owner.receiver.afterPieceFall(this, fpf)
 			if(softDropFallNow>0) {
-				if(skin !in FRAME_SKIN_HEBO..FRAME_SKIN_GB) playSE("softdrop")
+				if(!isRetroSkin) playSE("softdrop")
 				owner.mode?.afterSoftDropFall(this, softDropFallNow)
 				owner.receiver.afterSoftDropFall(this, softDropFallNow)
 			}
@@ -2198,7 +2192,9 @@ class GameEngine(
 			// 接地と固定
 			if(it.checkCollision(nowPieceX, nowPieceY+1, field)&&(statc[0]>0||ruleOpt.moveFirstFrame)) {
 				if(lockDelayNow==0&&lockDelay>0&&lastMove!=LastMove.SLIDE_GROUND&&lastMove!=LastMove.SPIN_GROUND) {
-					playSE(if(skin==FRAME_SKIN_GB) "stepold" else "step")
+					//it.updateConnectData(nowPieceX, nowPieceY, field)
+					owner.receiver.pieceFlicked(this, nowPieceX, nowPieceY, it)
+					playSE(if(frameSkin==FRAME_SKIN_GB) "stepold" else "step")
 					if(!ruleOpt.softdropLock&&ruleOpt.softdropSurfaceLock&&softDropUsed) softdropContinuousUse = true
 				}
 				if(lockDelayNow<lockDelay) lockDelayNow++
@@ -2351,6 +2347,10 @@ class GameEngine(
 							}
 							interruptItem!=null -> {
 								// 中断効果のあるアイテム処理
+								nowPieceObject?.let {b ->
+									owner.receiver.blockBreak(this,
+										b.map.mapValues {(_, col) -> col.mapKeys {(x, _) -> x+nowPieceX}}.mapKeys {(row, _) -> row+nowPieceY})
+								}
 								nowPieceObject = null
 								interruptItemPreviousStat = Status.MOVE
 								stat = Status.INTERRUPTITEM
@@ -2424,6 +2424,7 @@ class GameEngine(
 			lastEvent = ev
 			// All clear
 			if(li>=1&&field.isEmpty) {
+				statistics.bravos++
 				owner.receiver.bravo(this)
 				tempHanabi += 6
 			}
@@ -2463,7 +2464,7 @@ class GameEngine(
 		val moveCancel = canLineCancelMove&&(ctrl.isPush(up)||ctrl.isPush(down)
 			||delayCancelMoveLeft||delayCancelMoveRight)
 		val spinCancel = canLineCancelSpin&&(ctrl.isPush(Controller.BUTTON_A)||ctrl.isPush(Controller.BUTTON_B)
-			||ctrl.isPush(Controller.BUTTON_C)||ctrl.isPush(Controller.BUTTON_E))
+			||ctrl.isPush(Controller.BUTTON_C)||ctrl.isPush(Controller.BUTTON_E)||ctrl.isPush(Controller.BUTTON_F))
 		val holdCancel = canLineCancelHold&&ctrl.isPush(Controller.BUTTON_D)
 
 		delayCancel = moveCancel||spinCancel||holdCancel
@@ -2482,7 +2483,7 @@ class GameEngine(
 				} else if(fallCheck.first>0) {
 					statc[9] = lineGravityType.fallSingle(field)
 					statc[6] = 0
-					playSE("softdrop")
+					if(!isRetroSkin) playSE("softdrop")
 					return
 				} else if(statc[6]<cascadeClearDelay) {
 					statc[6]++
@@ -2567,7 +2568,7 @@ class GameEngine(
 
 		val moveCancel = canARECancelMove&&(ctrl.isPush(up)||ctrl.isPush(down)||delayCancelMoveLeft||delayCancelMoveRight)
 		val spinCancel = canARECancelSpin&&(ctrl.isPush(Controller.BUTTON_A)||ctrl.isPush(Controller.BUTTON_B)
-			||ctrl.isPush(Controller.BUTTON_C)||ctrl.isPush(Controller.BUTTON_E))
+			||ctrl.isPush(Controller.BUTTON_C)||ctrl.isPush(Controller.BUTTON_E)||ctrl.isPush(Controller.BUTTON_F))
 		val holdCancel = canARECancelHold&&ctrl.isPush(Controller.BUTTON_D)
 
 		delayCancel = moveCancel||spinCancel||holdCancel
@@ -2699,7 +2700,7 @@ class GameEngine(
 					if(topOut) playSE("dead_last")
 					gameEnded()
 					blockShowOutlineOnly = false
-					if(owner.players<2) owner.musMan.bgm = BGM.Silent
+					if(!owner.isGameActive) owner.musMan.fadeSW = true
 
 					if(field.isEmpty) statc[0] = statc[1]
 					else {
@@ -2732,8 +2733,8 @@ class GameEngine(
 						statc[0]++
 					}
 					statc[0]==statc[1] -> {
-						if(topOut) playSE("gamelost")
-						else if(ending==2&&field.isEmpty) playSE("gamewon")
+						if(ending==2&&field.isEmpty) playSE("gamewon") else
+							playSE("gamelost")
 						statc[0]++
 					}
 					statc[0]<statc[1]+180 -> {
@@ -2789,7 +2790,7 @@ class GameEngine(
 		owner.musMan.fadeSW = false
 		owner.musMan.bgm = BGM.Result(
 			when {
-				ending==2 -> if(owner.mode?.gameIntensity==1) (if(statistics.time<10800) 1 else 2) else 3
+				ending==2 -> if(owner.mode?.gameIntensity in 1..2) (if(statistics.time<10800) 1 else 2) else 3
 				ending!=0 -> if(statistics.time<10800) 1 else 2
 				else -> 0
 			}
@@ -2867,7 +2868,7 @@ class GameEngine(
 					if(field.getBlock(mapEditX, mapEditY)?.cint!=mapEditColor) {
 						field.setBlock(
 							mapEditX, mapEditY,
-							Block(mapEditColor, skin, Block.ATTRIBUTE.VISIBLE, Block.ATTRIBUTE.OUTLINE)
+							Block(mapEditColor, blkSkin, Block.ATTRIBUTE.VISIBLE, Block.ATTRIBUTE.OUTLINE)
 						)
 						playSE("change")
 					}
@@ -2899,6 +2900,32 @@ class GameEngine(
 			interruptItem = null
 			resetStatc()
 			stat = interruptItemPreviousStat
+		}
+	}
+
+	sealed class FrameSkin {
+		class COLOR(cid:Int):FrameSkin() {
+			val color = cid%FRAME_COLOR_ALL
+		}
+
+		data object GB:FrameSkin()
+		data object SG:FrameSkin()
+		data object HEBO:FrameSkin()
+		data object GRADE:FrameSkin()
+		data object METAL:FrameSkin()
+		companion object {
+			fun values():Array<FrameSkin> = arrayOf(COLOR(0), GB, SG, HEBO, GRADE, METAL)
+
+			fun valueOf(value:Int):FrameSkin {
+				return when(value) {
+					FRAME_SKIN_GB -> GB
+					FRAME_SKIN_SG -> SG
+					FRAME_SKIN_HEBO -> HEBO
+					FRAME_SKIN_GRADE -> GRADE
+					FRAME_SKIN_METAL -> METAL
+					else -> COLOR(value)
+				}
+			}
 		}
 	}
 

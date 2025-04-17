@@ -80,9 +80,10 @@ data class Controller(
 	 * @return buttonを押している状態ならtrue
 	 */
 	fun isPress(btn:Int):Boolean = buttonTime[btn]>=1
+
 	fun isPressAll(vararg btn:Int):Boolean = btn.all {isPress(it)}
 	fun isPressAny(vararg btn:Int):Boolean = btn.any {isPress(it)}
-
+	fun isPressCount(vararg btn:Int):Int = btn.count {isPress(it)}
 	/** Menu でカーソルが動くかどうか判定
 	 * @param key Button number
 	 * @param enableCButton C buttonでの高速移動許可
@@ -155,7 +156,7 @@ data class Controller(
 		/** E (180-degree spin) button */
 		const val BUTTON_E = 8
 
-		/** F (Use inum, staff roll fast-forward, etc.) button */
+		/** F (Reverse spin, Use inum, staff roll fast-forward, etc.) button */
 		const val BUTTON_F = 9
 
 		/** Number of buttons */

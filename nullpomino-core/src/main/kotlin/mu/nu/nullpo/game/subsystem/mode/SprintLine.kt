@@ -126,7 +126,7 @@ class SprintLine:NetDummyMode() {
 //		rankingPPS = Array(GOALTYPE_MAX) {FloatArray(RANKING_MAX)}
 
 		owner.bgMan.bg = -14
-		engine.frameColor = GameEngine.FRAME_COLOR_RED
+		engine.frameSkin = GameEngine.FRAME_COLOR_RED
 
 		netPlayerInit(engine)
 

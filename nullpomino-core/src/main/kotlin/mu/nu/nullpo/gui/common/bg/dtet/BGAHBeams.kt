@@ -31,11 +31,12 @@
 
 package mu.nu.nullpo.gui.common.bg.dtet
 
+import mu.nu.nullpo.gui.common.AbstractRenderer
 import kotlin.math.cos
 import kotlin.math.sin
 import kotlin.random.Random
 
-class BGAHBeams<T>(res:mu.nu.nullpo.gui.common.ResourceImage<T>, private val bg:Boolean = true):
+class BGAHBeams<T>(res:mu.nu.nullpo.gui.common.ResourceImage<T>):
 	mu.nu.nullpo.gui.common.bg.AbstractBG<T>(res) {
 	/*（レーザー）
 LsrSY = Rnd * 240
@@ -132,11 +133,11 @@ Next I*/
 		children.forEach {it.reset()}
 	}
 
-	override fun draw(render:mu.nu.nullpo.gui.common.AbstractRenderer) {
-		if(bg) {
-			img.draw(0f, 0f, 0f, 480-by, 640f, 480f)
-			img.draw(0f, by, 0f, 240f, 640f, 480f)
-			img.draw(0f, 240+by, 0f, 240f, 640f, 480-by)
+	override fun draw(render:AbstractRenderer, bg:Boolean) {
+		if(bg) drawLite()
+		else {
+			render.drawBlackBG(0.3f)
+			render.drawBlendAdd {drawLite()}
 		}
 		/*LsrSY = LsrSY - 4 - TrM * 3: If LsrSY < 0 Then LsrSY = LsrSY + 240
 		With Src
@@ -171,8 +172,9 @@ Next I*/
 	}
 
 	override fun drawLite() {
-		img.draw(0f, 0f, 0f, 240f, 640f, 480f)
-		img.draw(0f, 240f, 0f, 240f, 640f, 480f)
+		img.draw(0f, 0f, 0f, 480-by, 640f, 480f)
+		img.draw(0f, by, 0f, 240f, 640f, 480f)
+		img.draw(0f, 240+by, 0f, 240f, 640f, 480-by)
 	}
 }
 /*Case 7 '（レーザー）

@@ -421,7 +421,7 @@ class GrandM2G:AbstractGrand() {
 										for(k in 0..1)
 											field.setBlock(
 												x*2+k, h-1-j,
-												Block(Block.COLOR.WHITE, engine.skin, Block.ATTRIBUTE.VISIBLE, Block.ATTRIBUTE.GARBAGE)
+												Block(Block.COLOR.WHITE, engine.blkSkin, Block.ATTRIBUTE.VISIBLE, Block.ATTRIBUTE.GARBAGE)
 											)
 
 							//int prevHole=garbagePos;do
@@ -435,16 +435,16 @@ class GrandM2G:AbstractGrand() {
 										for(k in 0..1)
 											field.setBlock(
 												i*2+k, h-1-j,
-												Block(Block.COLOR.WHITE, engine.skin, Block.ATTRIBUTE.VISIBLE, Block.ATTRIBUTE.GARBAGE)
+												Block(Block.COLOR.WHITE, engine.blkSkin, Block.ATTRIBUTE.VISIBLE, Block.ATTRIBUTE.GARBAGE)
 											)
 							garbagePos++
 							field.addBottomCopyGarbage(
-								engine.skin, 2, Block.ATTRIBUTE.GARBAGE, Block.ATTRIBUTE.VISIBLE,
+								engine.blkSkin, 2, Block.ATTRIBUTE.GARBAGE, Block.ATTRIBUTE.VISIBLE,
 								Block.ATTRIBUTE.OUTLINE
 							)
 						}
 						GOALTYPE_COPY -> field.addBottomCopyGarbage(
-							engine.skin, 2, Block.ATTRIBUTE.GARBAGE,
+							engine.blkSkin, 2, Block.ATTRIBUTE.GARBAGE,
 							Block.ATTRIBUTE.VISIBLE, Block.ATTRIBUTE.OUTLINE
 						)
 					}//					while(garbagePos==prevHole);
@@ -466,7 +466,7 @@ class GrandM2G:AbstractGrand() {
 								if(x!=garbagePos)
 									field.setBlock(
 										x, h-1,
-										Block(Block.COLOR.WHITE, engine.skin, Block.ATTRIBUTE.VISIBLE, Block.ATTRIBUTE.GARBAGE)
+										Block(Block.COLOR.WHITE, engine.blkSkin, Block.ATTRIBUTE.VISIBLE, Block.ATTRIBUTE.GARBAGE)
 									)
 							// Set connections
 							if(receiver.isStickySkin(engine))
@@ -486,12 +486,12 @@ class GrandM2G:AbstractGrand() {
 								if(tableGarbagePattern[garbagePos][i]!=0)
 									field.setBlock(
 										i, h-1,
-										Block(Block.COLOR.WHITE, engine.skin, Block.ATTRIBUTE.VISIBLE, Block.ATTRIBUTE.GARBAGE)
+										Block(Block.COLOR.WHITE, engine.blkSkin, Block.ATTRIBUTE.VISIBLE, Block.ATTRIBUTE.GARBAGE)
 									)
 							garbagePos++
 						}
 						GOALTYPE_COPY -> field.addBottomCopyGarbage(
-							engine.skin, 1,
+							engine.blkSkin, 1,
 							Block.ATTRIBUTE.GARBAGE, Block.ATTRIBUTE.VISIBLE, Block.ATTRIBUTE.OUTLINE
 						)
 					}//while(garbagePos==prevHole);

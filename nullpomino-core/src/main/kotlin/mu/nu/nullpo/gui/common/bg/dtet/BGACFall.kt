@@ -31,6 +31,7 @@
 
 package mu.nu.nullpo.gui.common.bg.dtet
 
+import mu.nu.nullpo.gui.common.AbstractRenderer
 import kotlin.random.Random
 
 class BGACFall<T>(bg:mu.nu.nullpo.gui.common.ResourceImage<T>):mu.nu.nullpo.gui.common.bg.AbstractBG<T>(bg) {
@@ -65,7 +66,7 @@ PSkP = Rnd*/
 		py = Random.nextFloat()
 	}
 
-	override fun draw(render:mu.nu.nullpo.gui.common.AbstractRenderer) {
+	override fun draw(render:AbstractRenderer, bg:Boolean) {
 		dy.zip(dh).forEachIndexed {i, (d, second) ->
 			val r = ((i%2)+py*2).let {it+if(it<0) 2 else 0}%2
 			val s1 = second.first

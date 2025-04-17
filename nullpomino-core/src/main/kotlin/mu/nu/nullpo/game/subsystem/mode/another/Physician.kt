@@ -94,7 +94,7 @@ class Physician:AbstractMode() {
 		} else
 			loadSetting(engine, owner.replayProp)
 
-		engine.frameColor = GameEngine.FRAME_COLOR_PURPLE
+		engine.frameSkin = GameEngine.FRAME_COLOR_PURPLE
 		engine.clearMode = ColorStraight(4,false,true)
 		engine.garbageColorClear = false
 		engine.colorClearSize = 4

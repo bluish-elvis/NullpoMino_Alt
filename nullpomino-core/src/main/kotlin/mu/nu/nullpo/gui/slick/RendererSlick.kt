@@ -35,25 +35,18 @@ import mu.nu.nullpo.game.play.GameEngine.Companion.FRAME_SKIN_GRADE
 import mu.nu.nullpo.game.play.GameManager
 import mu.nu.nullpo.gui.common.AbstractRenderer
 import mu.nu.nullpo.gui.common.BaseFont
-import mu.nu.nullpo.gui.common.bg.AbstractBG
-import mu.nu.nullpo.gui.common.bg.dtet.*
-import mu.nu.nullpo.gui.slick.img.FontGrade
-import mu.nu.nullpo.gui.slick.img.FontMedal
-import mu.nu.nullpo.gui.slick.img.FontNano
-import mu.nu.nullpo.gui.slick.img.FontNormal
-import mu.nu.nullpo.gui.slick.img.FontNumber
-import mu.nu.nullpo.gui.slick.img.FontTTF
-import mu.nu.nullpo.gui.slick.img.RenderStaffRoll
+import mu.nu.nullpo.gui.common.ResourceImage
+import mu.nu.nullpo.gui.slick.img.*
+import mu.nu.nullpo.gui.slick.img.bg.AbstractBG
 import mu.nu.nullpo.gui.slick.img.bg.SpinBG
 import mu.nu.nullpo.util.CustomProperties
+import org.apache.logging.log4j.LogManager
 import org.newdawn.slick.Color
 import org.newdawn.slick.Graphics
-import org.newdawn.slick.Image
 import org.newdawn.slick.geom.Polygon
 import zeroxfc.nullpo.custom.libs.Vector
 import kotlin.math.PI
 import kotlin.math.absoluteValue
-import kotlin.random.Random
 
 /** ゲームの event 処理と描画処理 (Slick版） */
 class RendererSlick(
@@ -68,13 +61,14 @@ class RendererSlick(
 
 	override val skinMax get() = resources.imgBigBlockList.size
 
+	override val rainbowCount get() = NullpoMinoSlick.rainbow
 	/** Constructor */
 	init {
 		conf = NullpoMinoSlick.propConfig.visual
 	}
 
 	override fun drawBlendAdd(unit:()->Unit) {
-		val g = graphics ?: return super.drawBlendAdd(unit)
+		val g = graphics?:return super.drawBlendAdd(unit)
 		g.setDrawMode(Graphics.MODE_ADD)
 		unit()
 		g.setDrawMode(Graphics.MODE_NORMAL)
@@ -137,7 +131,7 @@ class RendererSlick(
 	}
 
 	override fun drawBlockSpecific(x:Float, y:Float, sx:Int, sy:Int, sk:Int, size:Float, darkness:Float, alpha:Float) {
-		val g = graphics ?: return
+		val g = graphics?:return
 		val img = when {
 			size*2<=BS -> resources.imgSmallBlockList[sk]
 			size>=BS*2 -> resources.imgBigBlockList[sk]
@@ -182,7 +176,7 @@ class RendererSlick(
 	}
 
 	override fun drawLineSpecific(x:Float, y:Float, sx:Float, sy:Float, color:Int, alpha:Float, w:Float) {
-		val g = graphics ?: return
+		val g = graphics?:return
 		val lw = g.lineWidth
 		g.lineWidth = w
 		g.color = Color(color).apply {a = alpha}
@@ -192,7 +186,7 @@ class RendererSlick(
 
 	override fun drawRectSpecific(x:Float, y:Float, w:Float, h:Float, color:Int, alpha:Float, bold:Float) {
 		if(w>0f) {
-			val g = graphics ?: return
+			val g = graphics?:return
 			val c = g.color
 			g.color = Color(color).apply {a = alpha}
 			val lw = g.lineWidth
@@ -204,7 +198,7 @@ class RendererSlick(
 	}
 
 	override fun fillRectSpecific(x:Float, y:Float, w:Float, h:Float, color:Int, alpha:Float) {
-		val g = graphics ?: return
+		val g = graphics?:return
 		val c = g.color
 		g.color = Color(color).apply {a = alpha}
 		g.fillRect(x, y, w, h)
@@ -213,7 +207,7 @@ class RendererSlick(
 
 	override fun drawDiaSpecific(x:Float, y:Float, w:Float, h:Float, angle:Float, color:Int, alpha:Float, bold:Float) {
 		if(w>0f) {
-			val g = graphics ?: return
+			val g = graphics?:return
 			val c = g.color
 			g.color = Color(color).apply {a = alpha}
 			val lw = g.lineWidth
@@ -229,7 +223,7 @@ class RendererSlick(
 	}
 
 	override fun fillDiaSpecific(x:Float, y:Float, w:Float, h:Float, angle:Float, color:Int, alpha:Float) {
-		val g = graphics ?: return
+		val g = graphics?:return
 		val c = g.color
 		g.color = Color(color).apply {a = alpha}
 		val pi = PI.toFloat()
@@ -242,7 +236,7 @@ class RendererSlick(
 
 	override fun drawOvalSpecific(x:Float, y:Float, w:Float, h:Float, color:Int, alpha:Float, bold:Float) {
 		if(w>0f) {
-			val g = graphics ?: return
+			val g = graphics?:return
 			val c = g.color
 			g.color = Color(color).apply {a = alpha}
 			val lw = g.lineWidth
@@ -254,7 +248,7 @@ class RendererSlick(
 	}
 
 	override fun fillOvalSpecific(x:Float, y:Float, w:Float, h:Float, color:Int, alpha:Float) {
-		val g = graphics ?: return
+		val g = graphics?:return
 		val c = g.color
 		g.color = Color(color).apply {a = alpha}
 		g.fillOval(x, y, w, h)
@@ -271,7 +265,7 @@ class RendererSlick(
 	}
 
 	override fun drawFieldSpecific(x:Float, y:Float, width:Int, viewHeight:Int, blksize:Int, scale:Float, outlineType:Int) {
-		val g = graphics ?: return
+		val g = graphics?:return
 	}
 
 	/** Field frameを描画
@@ -280,13 +274,13 @@ class RendererSlick(
 	 * @param engine GameEngineのインスタンス
 	 */
 	override fun drawFrameSpecific(x:Float, y:Float, engine:GameEngine) {
-		val g = graphics ?: return
+		val g = graphics?:return
 		val size = engine.blockSize
 		val width = engine.field.width//?: Field.DEFAULT_WIDTH
 		val height = engine.field.height//?: Field.DEFAULT_HEIGHT
 
-		if(engine.frameColor>=0) {
-			val fi = resources.imgFrame[engine.frameColor].res
+		if(engine.frameSkin>=0) {
+			val fi = resources.imgFrame[engine.frameSkin].res
 			val rX = x+width*size
 			val bY = y+height*size
 
@@ -314,49 +308,29 @@ class RendererSlick(
 				Polygon(floatArrayOf(rX+size, y-size, rX, y, rX, bY, rX+size, bY+size)),
 				fi.getSubImage(16, 96, 16, 32), 1f, 1f, true
 			)
-		} else if(engine.frameColor==FRAME_SKIN_GRADE) {
+		} else if(engine.frameSkin==FRAME_SKIN_GRADE) {
 			val fi = resources.imgFrameOld[3]
 		}
 	}
 
-	val bgType:List<AbstractBG<Image>> by lazy {
-		resources.imgPlayBG.map {i ->
-			SpinBG(
-				i, when(Random.Default.nextInt(10)) {
-					0 -> BGADNightClock(resources.imgPlayBGA.first {it.name.endsWith("_n")}, false)
-					in 1..4 -> BGAHBeams(resources.imgPlayBGA.first {it.name.endsWith("_b")}, false)
-					else -> null
-				}
-			)
+	override val bgType by lazy {
+		super.bgType.map {
+			if(it is mu.nu.nullpo.gui.common.bg.SpinBG)
+				SpinBG(ResourceImageSlick(it.img, true), it.addBGFX)
+			else it::class.java.getDeclaredConstructor(ResourceImage::class.java)
+				.newInstance(ResourceImageSlick(it.img)) as AbstractBG
 		}
 	}
 
-	val bgaType:List<AbstractBG<Image>> by lazy {
-		resources.imgPlayBGA.map {
-			when {
-				it.name.endsWith("_o") -> BGAAOcean(it)
-				it.name.endsWith("_c") -> BGABCircleLoop(it)
-				it.name.endsWith("_f") -> BGACFall(it)
-				it.name.endsWith("_n") -> BGADNightClock(it)
-				it.name.endsWith("_d") -> BGAEDeep(it)
-				it.name.endsWith("_k") -> BGAFKaleidSq(it)
-				it.name.endsWith("_t") -> BGAGTexture(it)
-				it.name.endsWith("_b") -> BGAHBeams(it)
-				it.name.endsWith("_m") -> BGAIMist(it)
-				it.name.endsWith("_p") -> BGAJPrism(it)
-				it.name.endsWith("_x") -> BGALExTrans(it)
-				it.name.endsWith("_r") -> BGAMRush(it)
-				else -> BGAKVWave(it)
-			}
+	/*@Suppress("UNCHECKED_CAST")
+	override val bgaType:List<AbstractBG<Image>> by lazy {
+		super.bgaType.map{
+			log.debug(it::class.java.name)
+			log.debug(it::class.java.getDeclaredConstructor(ResourceImage::class.java))
+			it::class.java.getDeclaredConstructor(ResourceImage::class.java).newInstance(ResourceImageSlick(it.img)) as
+				AbstractBG<Image>
 		}
-	}
-
-	override fun modeInit(manager:GameManager) {
-		super.modeInit(manager)
-		bgType.forEach {it.reset()}
-		bgaType.forEach {it.reset()}
-//		engine.owner.bgMan.fadeEnabled=heavyEffect
-	}
+	}*/
 
 	override fun onFirst(engine:GameEngine) {
 		super.onFirst(engine)
@@ -373,7 +347,7 @@ class RendererSlick(
 	}
 
 	override fun drawBG(engine:GameEngine) {
-		val graphics = graphics ?: return
+		val graphics = graphics?:return
 		if(engine.owner.menuOnly) {
 			graphics.color = Color.white
 			graphics.drawImage(resources.imgMenuBG[1], 0f, 0f)
@@ -447,19 +421,6 @@ Exit Sub
 		}
 	}
 
-	override fun setBGSpd(owner:GameManager, spd:Number, id:Int?) {
-		val bgMax = resources.bgMax
-		val bgaMax = resources.bgaMax
-		val sp = spd.toFloat()
-		if(!owner.menuOnly&&showBG&&animBG)
-			if(id==null) {
-				bgType.forEach {it.speed = sp}
-				bgaType.forEach {it.speed = sp}
-			} else if(id in 0..<bgMax)
-				bgType[id].speed = sp
-			else if(id<0&&id.absoluteValue in 1..bgaMax+1)
-				bgaType[id.absoluteValue-1].speed = sp
-	}
 	/*override fun effectRender() {
 	_	effects.forEachIndexed {i, it ->
 			when(it) {
@@ -489,5 +450,8 @@ Exit Sub
 			}
 		}
 	}*/
-
+	companion object {
+		/** Log */
+		internal val log = LogManager.getLogger()
+	}
 }

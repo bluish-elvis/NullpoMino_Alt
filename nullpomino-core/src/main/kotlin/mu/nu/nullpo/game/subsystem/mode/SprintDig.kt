@@ -116,7 +116,7 @@ class SprintDig:NetDummyMode() {
 		rankingLines.forEach {it.fill(0)}
 		rankingPiece.forEach {it.fill(0)}
 
-		engine.frameColor = GameEngine.FRAME_COLOR_GREEN
+		engine.frameSkin = GameEngine.FRAME_COLOR_GREEN
 
 		netPlayerInit(engine)
 
@@ -199,7 +199,7 @@ class SprintDig:NetDummyMode() {
 					engine.field.setBlock(
 						x, y, Block(
 							color, if(y==h-1) TYPE.BLOCK else TYPE.GEM,
-							engine.skin, ATTRIBUTE.VISIBLE, ATTRIBUTE.GARBAGE
+							engine.blkSkin, ATTRIBUTE.VISIBLE, ATTRIBUTE.GARBAGE
 						)
 					)
 				}

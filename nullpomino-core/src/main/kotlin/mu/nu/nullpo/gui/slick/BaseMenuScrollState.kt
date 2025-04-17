@@ -55,11 +55,11 @@ abstract class BaseMenuScrollState:BaseMenuChooseState() {
 	protected var emptyError = ""
 
 	/** Y-coordinates of dark sections of scroll bar */
-	private var pUpMinY = 0
-	private var pUpMaxY = 0
-	private var pDownMinY = 0
-	private var pDownMaxY = 0
-	private val sbHeight get() = 16*(pageHeight-1)-(LINE_WIDTH shl 1)
+	private var pUpMinY = 0f
+	private var pUpMaxY = 0f
+	private var pDownMinY = 0f
+	private var pDownMaxY = 0f
+	private val sbHeight get() = 16*(pageHeight-1)-LINE_D
 
 	override fun updateImpl(container:GameContainer, game:StateBasedGame, delta:Int) {
 		super.updateImpl(container, game, delta)
@@ -80,7 +80,6 @@ abstract class BaseMenuScrollState:BaseMenuChooseState() {
 		when {
 			list.isEmpty() -> FontNormal.printFontGrid(2, 10, emptyError, COLOR.RED)
 			else -> {
-
 				drawMenuList(g)
 				onRenderSuccess(container, game, g)
 			}
@@ -111,7 +110,7 @@ abstract class BaseMenuScrollState:BaseMenuChooseState() {
 					minEntry++
 				}
 				numChoice>pageHeight ->
-					maxOf(0, (MouseInput.mouseY-32)*(numChoice+1-pageHeight)/sbHeight).let {
+					maxOf(0, (MouseInput.mouseY-32)*(numChoice+1-pageHeight)/sbHeight.toInt()).let {
 						if(it!=minEntry) {
 							ResourceHolder.soundManager.play("cursor")
 							minEntry = it
@@ -148,14 +147,14 @@ abstract class BaseMenuScrollState:BaseMenuChooseState() {
 		FontNormal.printFontGrid(SB_TEXT_X, 2+pageHeight, "\u008e", SB_TEXT_COLOR)
 		//Draw shadow
 		graphics.color = SB_SHADOW_COLOR
-		graphics.fillRect((SB_MIN_X+SB_WIDTH).toFloat(), (SB_MIN_Y+LINE_WIDTH).toFloat(), LINE_WIDTH.toFloat(), sbHeight.toFloat())
-		graphics.fillRect((SB_MIN_X+LINE_WIDTH).toFloat(), (SB_MIN_Y+sbHeight).toFloat(), SB_WIDTH.toFloat(), LINE_WIDTH.toFloat())
+		graphics.fillRect((SB_MIN_X+SB_WIDTH), (SB_MIN_Y+LINE_WIDTH), LINE_WIDTH, sbHeight)
+		graphics.fillRect((SB_MIN_X+LINE_WIDTH), (SB_MIN_Y+sbHeight), SB_WIDTH, LINE_WIDTH)
 		//Draw border
 		graphics.color = SB_BORDER_COLOR
-		graphics.fillRect(SB_MIN_X.toFloat(), SB_MIN_Y.toFloat(), SB_WIDTH.toFloat(), sbHeight.toFloat())
+		graphics.fillRect(SB_MIN_X.toFloat(), SB_MIN_Y.toFloat(), SB_WIDTH, sbHeight)
 		//Draw inside
-		val insideHeight = sbHeight-(LINE_WIDTH shl 1)
-		val insideWidth = SB_WIDTH-(LINE_WIDTH shl 1)
+		val insideHeight = sbHeight-LINE_D
+		val insideWidth = SB_WIDTH-LINE_D
 		var fillMinY = insideHeight*minEntry/list.size
 		var fillHeight = ((maxEntry-minEntry)*insideHeight+list.size)/list.size
 		if(fillHeight<LINE_WIDTH) {
@@ -163,19 +162,9 @@ abstract class BaseMenuScrollState:BaseMenuChooseState() {
 			fillMinY = (insideHeight-fillHeight)*minEntry/(list.size-pageHeight)
 		}
 		graphics.color = SB_BACK_COLOR
-		graphics.fillRect(
-			(SB_MIN_X+LINE_WIDTH).toFloat(),
-			(SB_MIN_Y+LINE_WIDTH).toFloat(),
-			insideWidth.toFloat(),
-			insideHeight.toFloat()
-		)
+		graphics.fillRect((SB_MIN_X+LINE_WIDTH), (SB_MIN_Y+LINE_WIDTH), insideWidth, insideHeight)
 		graphics.color = SB_FILL_COLOR
-		graphics.fillRect(
-			(SB_MIN_X+LINE_WIDTH).toFloat(),
-			(SB_MIN_Y+LINE_WIDTH+fillMinY).toFloat(),
-			insideWidth.toFloat(),
-			fillHeight.toFloat()
-		)
+		graphics.fillRect((SB_MIN_X+LINE_WIDTH), (SB_MIN_Y+LINE_WIDTH+fillMinY), insideWidth, fillHeight)
 		graphics.color = Color.white
 
 		//Update coordinates
@@ -224,17 +213,17 @@ abstract class BaseMenuScrollState:BaseMenuChooseState() {
 
 	companion object {
 		/** Scroll bar attributes */
-		protected const val SB_TEXT_X = 38
-		protected val SB_TEXT_COLOR = COLOR.BLUE
-		protected const val SB_MIN_X = SB_TEXT_X shl 4
-		protected const val SB_MIN_Y = 49
-		protected const val LINE_WIDTH = 2
-		protected const val SB_WIDTH = 14
-
+		internal const val SB_TEXT_X = 38
+		internal val SB_TEXT_COLOR = COLOR.BLUE
+		internal const val SB_MIN_X = SB_TEXT_X shl 4
+		internal const val SB_MIN_Y = 49
+		internal const val LINE_WIDTH = 2f
+		internal const val LINE_D = LINE_WIDTH*2
+		internal const val SB_WIDTH = 14f
 		/** Scroll bar colors */
-		protected val SB_SHADOW_COLOR = Color(12, 78, 156)
-		protected val SB_BORDER_COLOR = Color(52, 150, 252)
-		protected val SB_FILL_COLOR:Color = Color.white
-		protected val SB_BACK_COLOR:Color = Color.black
+		internal val SB_SHADOW_COLOR = Color(12, 78, 156)
+		internal val SB_BORDER_COLOR = Color(52, 150, 252)
+		internal val SB_FILL_COLOR:Color = Color.white
+		internal val SB_BACK_COLOR:Color = Color.black
 	}
 }

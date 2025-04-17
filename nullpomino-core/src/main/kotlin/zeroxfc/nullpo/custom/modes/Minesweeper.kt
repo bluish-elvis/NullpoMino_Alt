@@ -88,7 +88,7 @@ class Minesweeper:AbstractMode() {
 		timeLimit = 0
 		currentLimit = 0
 		numberOfCover = 0
-		engine.frameColor = GameEngine.FRAME_COLOR_BLUE
+		engine.frameSkin = GameEngine.FRAME_COLOR_BLUE
 		engine.blockOutlineType = GameEngine.BLOCK_OUTLINE_SAMECOLOR
 		mainGrid = GameGrid()
 		blockGrid = emptyArray()
@@ -273,7 +273,7 @@ class Minesweeper:AbstractMode() {
 				engine.statc[0]<field.height+1 -> {
 					for(i in 0..<field.width)
 						field.getBlock(i, field.height-engine.statc[0])?.let {blk ->
-							val covered = Block(Block.COLOR.BLUE, engine.skin, Block.ATTRIBUTE.VISIBLE, Block.ATTRIBUTE.OUTLINE)
+							val covered = Block(Block.COLOR.BLUE, engine.blkSkin, Block.ATTRIBUTE.VISIBLE, Block.ATTRIBUTE.OUTLINE)
 							if(blk.toChar()==covered.toChar()) {
 								if(!blk.getAttribute(Block.ATTRIBUTE.GARBAGE)) {
 									blk.color = Block.COLOR.WHITE
@@ -554,11 +554,11 @@ class Minesweeper:AbstractMode() {
 
 	private fun updateBlockGrid(engine:GameEngine) {
 		val covered = Block(
-			Block.COLOR.BLUE, engine.skin,
+			Block.COLOR.BLUE, engine.blkSkin,
 			Block.ATTRIBUTE.VISIBLE, Block.ATTRIBUTE.OUTLINE
 		)
-		val open = Block(Block.COLOR.WHITE, engine.skin, Block.ATTRIBUTE.VISIBLE)
-		val mine = Block(Block.COLOR.RED, Block.TYPE.GEM, engine.skin, Block.ATTRIBUTE.VISIBLE)
+		val open = Block(Block.COLOR.WHITE, engine.blkSkin, Block.ATTRIBUTE.VISIBLE)
+		val mine = Block(Block.COLOR.RED, Block.TYPE.GEM, engine.blkSkin, Block.ATTRIBUTE.VISIBLE)
 		for(y in blockGrid.indices) {
 			for(x in 0..<blockGrid[y].size) {
 				if(mainGrid.getSquareAt(x, y).uncovered) {

@@ -67,6 +67,7 @@
   <Mode class="GrandBasic"/>
   <Mode class="GrandM1"/>
   <Mode class="GrandRoads"/>
+  <Mode class="GrandCleaner"/>
   <Mode class="GrandPuzzle"/>
   <Mode class="GrandM2G"/>
   <Mode class="GrandM2"/>
@@ -96,6 +97,7 @@
  <!-- mu.nu.nullpo.game.subsystem.mode.RetroS-->
  <!-- mu.nu.nullpo.game.subsystem.mode.RetroModern-->
  <!-- mu.nu.nullpo.game.subsystem.mode.GrandBasic-->
+ <!-- mu.nu.nullpo.game.subsystem.mode.GrandCleaner-->
  <!-- mu.nu.nullpo.game.subsystem.mode.GrandPuzzle-->
  <!-- mu.nu.nullpo.game.subsystem.mode.GrandM1-->
  <!-- mu.nu.nullpo.game.subsystem.mode.GrandM2-->

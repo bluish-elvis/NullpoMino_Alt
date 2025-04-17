@@ -37,9 +37,11 @@
 
 package mu.nu.nullpo.gui.common.fx.particles
 
+import mu.nu.nullpo.gui.common.AbstractRenderer
+import mu.nu.nullpo.gui.common.fx.Effect
 import mu.nu.nullpo.gui.common.fx.particles.Particle.ParticleShape
+import zeroxfc.nullpo.custom.libs.Interpolation.lerp
 import zeroxfc.nullpo.custom.libs.Vector
-import zeroxfc.nullpo.custom.libs.Interpolation
 import kotlin.random.Random
 
 class LandingParticles(
@@ -57,7 +59,7 @@ class LandingParticles(
 	upChance:Float,
 	/** Randomizer*/
 	randomizer:Random = Random
-) {
+):Effect {
 	/**
 	 * Adds a number of landing particles.<br></br>
 	 * Parameters are min start x, max start x, start y, start y variance,
@@ -70,19 +72,49 @@ class LandingParticles(
 		val ublue:Int = blue+(2*randomizer.nextFloat()*variance-variance).toInt()
 		val ualpha:Int = alpha+(2*randomizer.nextFloat()*variance-variance).toInt()
 		val p = Vector(
-			Interpolation.lerp(minX, maxX, randomizer.nextFloat()),
-			Interpolation.lerp(startY-yVar, startY+yVar, randomizer.nextFloat())
+			lerp(minX, maxX, randomizer.nextFloat()),
+			lerp(startY-yVar, startY+yVar, randomizer.nextFloat())
 		)
 		val v = Vector(
 			0f,
-			Interpolation.lerp(0f, maxVel, randomizer.nextFloat())*if(randomizer.nextFloat()<upChance) -.5f else 1f
+			lerp(0f, maxVel, randomizer.nextFloat())*if(randomizer.nextFloat()<upChance) -.5f else 1f
 		)
 		Particle(
-			ParticleShape.Rect, Interpolation.lerp(DEF_MIN_LIFE, DEF_MAX_LIFE, randomizer.nextFloat()),
+			ParticleShape.Rect, lerp(DEF_MIN_LIFE, DEF_MAX_LIFE, randomizer.nextFloat()),
 			p.x, p.y, v, Vector.zero(), .98f, 2, 6f,
 			ured, ugreen, ublue, ualpha,
 			ured*2/3, ugreen*2/3, ublue*2/3, 64
 		)
+	}
+	val width = maxX-minX
+	/** X-coordinate */
+	override var x:Float = lerp(minX, maxX, .5f)
+	/** Y-coordinate */
+	override var y:Float  = startY
+
+
+	private var ticks = 0
+	/** @return true if it's expired */
+	override fun update(r:AbstractRenderer):Boolean = ++ticks>=10
+
+	private val cColor = Triple(
+		lerp(red, 255, .75f)/255f, lerp(green, 255, .75f)/255f, lerp(blue, 255, .75f)/255f
+	)
+	private val cAlpha = lerp(alpha, 255, .5f)/255f
+	/**
+	 * Draw the particles to the current renderer.
+	 * @param i
+	 * @param r Renderer to use
+	 */
+	override fun draw(i:Int, r:AbstractRenderer) {
+		((10-ticks)*width/7f).let {s ->
+			if(s>0)
+				r.drawBlendAdd {
+					r.resources.imgFrags[1].draw(
+						x-10-s/5f, y-s/3f, x+10+s/5f, y+s/3f, maxOf(0f, 1f-ticks*.1f)*cAlpha, cColor
+					)
+				}
+		}
 	}
 
 	companion object {

@@ -31,7 +31,10 @@
 
 package mu.nu.nullpo.gui.common.bg.dtet
 
-class BGAMRush<T>(bg:mu.nu.nullpo.gui.common.ResourceImage<T>):mu.nu.nullpo.gui.common.bg.AbstractBG<T>(bg) {
+import mu.nu.nullpo.gui.common.AbstractRenderer
+
+class BGAMRush<T>(res:mu.nu.nullpo.gui.common.ResourceImage<T>):mu.nu.nullpo.gui.common.bg
+.AbstractBG<T>(res) {
 	private var tickY = 0f
 	override fun update() {
 		tick -= 73
@@ -45,12 +48,21 @@ class BGAMRush<T>(bg:mu.nu.nullpo.gui.common.ResourceImage<T>):mu.nu.nullpo.gui.
 		tickY = 0f
 	}
 
-	override fun draw(render:mu.nu.nullpo.gui.common.AbstractRenderer) {
+	override fun draw(render:AbstractRenderer, bg:Boolean) {
+		if(bg) drawLite()
+		else {
+			render.drawBlackBG(0.3f)
+			render.drawBlendAdd {drawLite()}
+		}
+	}
+
+	override fun drawLite() {
 		val tickX = tick.toFloat()
 		img.draw(0f, 0f, tickX, tickY, 640f, 480f)
 		img.draw(640f-tickX, 0f, 0f, tickY, tickX, 480f)
 		img.draw(0f, 480f-tickY, tickX, 0f, 640f, tickY)
 		img.draw(640f-tickX, 480f-tickY, 0f, 0f, tickX, tickY)
+
 	}
 }
 /*Case 11 'レベル200（電流）

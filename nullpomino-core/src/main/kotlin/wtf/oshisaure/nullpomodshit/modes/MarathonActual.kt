@@ -92,7 +92,7 @@ class MarathonActual:AbstractMode() {
 			version = 1
 		}
 		engine.owner.bgMan.bg = 0
-		engine.frameColor = 0
+		engine.frameSkin = 0
 	}
 
 	override fun setSpeed(engine:GameEngine) {

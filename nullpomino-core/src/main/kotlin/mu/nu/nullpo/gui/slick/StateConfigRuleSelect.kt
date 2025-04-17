@@ -30,17 +30,19 @@
  */
 package mu.nu.nullpo.gui.slick
 
+import mu.nu.nullpo.game.component.RuleOptions
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
 import mu.nu.nullpo.gui.common.ConfigGlobal.RuleConf
 import mu.nu.nullpo.gui.slick.img.FontNormal
-import mu.nu.nullpo.util.CustomProperties
+import mu.nu.nullpo.util.GeneralUtil.Json
 import org.newdawn.slick.GameContainer
 import org.newdawn.slick.Graphics
 import org.newdawn.slick.state.StateBasedGame
 import java.io.File
 import java.io.FileInputStream
-import java.util.LinkedList
+import java.util.*
 import java.util.zip.GZIPInputStream
+import java.util.zip.ZipException
 
 /** Rule selector state */
 internal class StateConfigRuleSelect:BaseMenuScrollState() {
@@ -73,7 +75,7 @@ internal class StateConfigRuleSelect:BaseMenuScrollState() {
 		get() {
 			val dir = File("config/rule")
 
-			val list = dir.list {_, name -> name.endsWith(".rul")}
+			val list = dir.list {_, name -> name.endsWith(".rul")||name.endsWith(".rul.gz")}
 
 			if(!System.getProperty("os.name").startsWith("Windows"))
 				list?.sort()
@@ -103,14 +105,15 @@ internal class StateConfigRuleSelect:BaseMenuScrollState() {
 			val file = File("config/rule/$element")
 			entry.file = element
 			entry.path = file.path
-
-			val prop = CustomProperties()
 			try {
-				val fin = GZIPInputStream(FileInputStream("config/rule/$element"))
-				prop.load(fin)
-				fin.close()
-				entry.name = prop.getProperty("0.ruleOpt.strRuleName", "")
-				entry.style = prop.getProperty("0.ruleOpt.style", 0)
+				val rf = try {
+					GZIPInputStream(FileInputStream(file))
+				}catch(_:ZipException){
+					FileInputStream(file)
+				}
+				val ret = Json.decodeFromString<RuleOptions>(rf.bufferedReader().use {it.readText()})
+				entry.name = ret.strRuleName
+				entry.style = ret.style
 			} catch(e:Exception) {
 				entry.name = ""
 				entry.style = -1

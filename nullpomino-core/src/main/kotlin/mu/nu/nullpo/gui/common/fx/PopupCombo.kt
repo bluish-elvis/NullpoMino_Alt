@@ -47,8 +47,7 @@ class PopupCombo(x:Int, y:Int, val pts:Int, val type:CHAIN, val ex:Int = 0):Spri
 	override fun update(r:AbstractRenderer):Boolean {
 		x += vel.x
 		vel.x = (ox+ex-x)*0.1f
-		ticks++
-		return ticks>=60
+		return ++ticks>=60
 	}
 
 	override fun draw(i:Int, r:AbstractRenderer) {

@@ -153,7 +153,7 @@ class ScoreAttackRun:AbstractMode() {
 			version = 1
 		}
 		engine.owner.bgMan.bg = 0
-		engine.frameColor = 7
+		engine.frameSkin = 7
 	}
 
 	override fun setSpeed(engine:GameEngine) {

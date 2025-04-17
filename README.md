@@ -83,8 +83,6 @@ java -cp bin:NullpoMino.jar:lib/log4j-1.2.15.jar:lib/slick.jar:lib/lwjgl.jar:lib
     - hebo.png
     - sa.png
   - badge.png
-  - blank_black.png
-  - blank_white.png
   - fieldbg.png
   - fieldbg2.png
   - fieldbg2_big.png

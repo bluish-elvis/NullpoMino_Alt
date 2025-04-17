@@ -377,7 +377,7 @@ abstract class AvalancheVSDummyMode:AbstractMode() {
 			mapMaxNo[playerID] = it.getProperty("values.maxMapNumber", 0)
 			engine.createFieldIfNeeded()
 			loadMap(engine.field, it, id)
-			engine.field.setAllSkin(engine.skin)
+			engine.field.setAllSkin(engine.blkSkin)
 		}
 	}
 
@@ -402,7 +402,7 @@ abstract class AvalancheVSDummyMode:AbstractMode() {
 			engine.random = Random(owner.engine[0].randSeed)
 		}
 
-		engine.frameColor = PLAYER_COLOR_FRAME[playerID]
+		engine.frameSkin = PLAYER_COLOR_FRAME[playerID]
 		engine.clearMode = Color(4,true,true,true)
 		engine.ignoreHidden = true
 		engine.garbageColorClear = true
@@ -457,7 +457,7 @@ abstract class AvalancheVSDummyMode:AbstractMode() {
 			if(owner.replayMode) {
 				engine.createFieldIfNeeded()
 				loadMap(engine.field, owner.replayProp, playerID)
-				engine.field.setAllSkin(engine.skin)
+				engine.field.setAllSkin(engine.blkSkin)
 			} else {
 				if(propMap[playerID].isNullOrEmpty())
 					propMap[playerID] = receiver.loadProperties(
@@ -476,7 +476,7 @@ abstract class AvalancheVSDummyMode:AbstractMode() {
 					} else
 						loadMap(engine.field, it, mapNumber[playerID])
 
-					engine.field.setAllSkin(engine.skin)
+					engine.field.setAllSkin(engine.blkSkin)
 					fldBackup[playerID] = Field(engine.field)
 				}
 			}
@@ -629,7 +629,7 @@ abstract class AvalancheVSDummyMode:AbstractMode() {
 			)
 			setBlockLinkByColor()
 			setAllAttribute(false, Block.ATTRIBUTE.GARBAGE, Block.ATTRIBUTE.ANTIGRAVITY)
-			setAllSkin(engine.skin)
+			setAllSkin(engine.blkSkin)
 			shuffleColors(BLOCK_COLORS, numColors[pid], Random(rand!!.nextLong()))
 		}
 	}

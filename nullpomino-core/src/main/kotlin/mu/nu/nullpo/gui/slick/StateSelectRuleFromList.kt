@@ -31,10 +31,11 @@
 
 package mu.nu.nullpo.gui.slick
 
+import mu.nu.nullpo.game.component.RuleOptions
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
 import mu.nu.nullpo.gui.slick.img.FontNano
 import mu.nu.nullpo.gui.slick.img.FontNormal
-import mu.nu.nullpo.util.CustomProperties
+import mu.nu.nullpo.util.GeneralUtil.Json
 import org.apache.logging.log4j.LogManager
 import org.newdawn.slick.GameContainer
 import org.newdawn.slick.Graphics
@@ -45,7 +46,7 @@ import java.io.File
 import java.io.FileInputStream
 import java.io.FileReader
 import java.io.IOException
-import java.util.Locale
+import java.util.*
 import java.util.zip.GZIPInputStream
 import mu.nu.nullpo.gui.slick.NullpoMinoSlick.Companion.propGlobal as pG
 
@@ -96,12 +97,10 @@ internal class StateSelectRuleFromList:BaseMenuScrollState() {
 						if(file.exists()&&file.isFile)
 							try {
 								log.debug("${strMode.ifEmpty {"(top-level)"}} $r")
-								val ruleIn = GZIPInputStream(FileInputStream(file))
-								val propRule = CustomProperties()
-								propRule.load(ruleIn)
-								ruleIn.close()
-								val ruleMode = propRule.getProperty("0.ruleOpt.style", 0)
-								val strRuleName = propRule.getProperty("0.ruleOpt.strRuleName", "")
+								val rf = GZIPInputStream(FileInputStream(file))
+								val ret = Json.decodeFromString<RuleOptions>(rf.bufferedReader().use {it.readText()})
+								val ruleMode = ret.style
+								val strRuleName = ret.strRuleName
 								if(strRuleName.isNotEmpty())
 									mapRuleEntries[strMode]?.add(RuleEntry(r, strRuleName, ruleMode))
 

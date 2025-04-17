@@ -78,6 +78,7 @@ internal class StateConfigAISelect:BaseMenuConfigState() {
 
 	/* Called when entering this state */
 	override fun enter(container:GameContainer?, game:StateBasedGame?) {
+		super.enter(container, game)
 		ai = NullpoMinoSlick.propGlobal.ai.getOrElse(player) {AIConf()}
 		aiID = -1
 		for(i in aiPathList.indices)
@@ -125,6 +126,31 @@ internal class StateConfigAISelect:BaseMenuConfigState() {
 		}
 		return@List "(INVALID)"
 	}
+	override val columns:List<Pair<String, List<Column>>>
+		 = listOf(
+			"ai" to listOf(
+				Column({"AI type:"+if(aiID<0) "(disable)" else aiNameList[aiID]}, {
+					aiID += it
+					if(aiID<-1) aiID = aiNameList.size-1
+					if(aiID>aiNameList.size-1) aiID = -1
+					ai.name = if(aiID>=0) aiPathList[aiID] else ""
+				}),
+				Column({"AI move delay:"+ai.moveDelay}, {
+					ai.moveDelay += it
+					if(ai.moveDelay<-1) ai.moveDelay = 99
+					if(ai.moveDelay>99) ai.moveDelay = -1
+				}),
+				Column({"AI think delay:"+ai.thinkDelay}, {
+					ai.thinkDelay += it*10
+					if(ai.thinkDelay<0) ai.thinkDelay = 1000
+					if(ai.thinkDelay>1000) ai.thinkDelay = 0
+				}),
+				Column({"AI use thread:"+ai.useThread.getONorOFF()}, {ai.useThread=!ai.useThread}),
+				Column({"AI show hint:"+ai.showHint.getONorOFF()}, {ai.showHint=!ai.showHint}),
+				Column({"AI pre-think:"+ai.preThink.getONorOFF()}, {ai.preThink=!ai.preThink}),
+				Column({"AI show info:"+ai.showState.getONorOFF()}, {ai.showState=!ai.showState}),
+			)
+		)
 
 	/* Draw the screen */
 	override fun renderImpl(container:GameContainer, game:StateBasedGame, g:Graphics) {
@@ -148,31 +174,6 @@ internal class StateConfigAISelect:BaseMenuConfigState() {
 		return true
 	}
 
-	override val columns:List<Pair<String, List<Column>>>
-		get() = listOf(
-			"" to listOf(
-				Column({"AI type:"+if(aiID<0) "(disable)" else aiNameList[aiID]}, {
-					aiID += it
-					if(aiID<-1) aiID = aiNameList.size-1
-					if(aiID>aiNameList.size-1) aiID = -1
-					ai.name = if(aiID>=0) aiPathList[aiID] else ""
-				}),
-				Column({"AI move delay:"+ai.moveDelay}, {
-					ai.moveDelay += it
-					if(ai.moveDelay<-1) ai.moveDelay = 99
-					if(ai.moveDelay>99) ai.moveDelay = -1
-				}),
-				Column({"AI think delay:"+ai.thinkDelay}, {
-					ai.thinkDelay += it*10
-					if(ai.thinkDelay<0) ai.thinkDelay = 1000
-					if(ai.thinkDelay>1000) ai.thinkDelay = 0
-				}),
-				Column({"AI use thread:"+ai.useThread.getONorOFF()}, {!ai.useThread}),
-				Column({"AI show hint:"+ai.showHint.getONorOFF()}, {!ai.showHint}),
-				Column({"AI pre-think:"+ai.preThink.getONorOFF()}, {!ai.preThink}),
-				Column({"AI show info:"+ai.showState.getONorOFF()}, {!ai.showState}),
-			)
-		)
 
 	companion object {
 		/** This state's ID */

@@ -31,11 +31,12 @@
 
 package mu.nu.nullpo.gui.common.bg.dtet
 
+import mu.nu.nullpo.gui.common.AbstractRenderer
 import kotlin.math.cos
 import kotlin.math.sin
 import kotlin.random.Random
 
-class BGADNightClock<T>(img:mu.nu.nullpo.gui.common.ResourceImage<T>, private val bg:Boolean = true):
+class BGADNightClock<T>(img:mu.nu.nullpo.gui.common.ResourceImage<T>):
 	mu.nu.nullpo.gui.common.bg.AbstractBG<T>(img) {
 	/*'（キラキラ振り子）
 FSX = Rnd * 640
@@ -115,17 +116,17 @@ FX = Sin(Sin(FC * Rg) * 35 * Rg): FY = Cos(Sin(FC * Rg) * 35 * Rg)
 KrI = KrI + 1 + (KrI = 35) * 36*/
 	}
 
-	override fun draw(render:mu.nu.nullpo.gui.common.AbstractRenderer) {
-		if(bg) {
-			img.draw(0f, 0f, bx, 0f, 640f, 240f)
-			img.draw(0f, 240f, bx, 0f, 640f, 240f)
-			img.draw(640-bx, 0f, 0f, 0f, bx, 240f)
-			img.draw(640-bx, 240f, 0f, 0f, bx, 240f)
+	override fun draw(render:AbstractRenderer, bg:Boolean) {
+		if(bg) drawLite()
+		else {
+			render.drawBlackBG(0.3f)
+			render.drawBlendAdd {drawLite()}
 		}
-		children.filter {it.tick>=0}.forEach {
-			val sx = 16f+it.tick*16
-			img.draw(it.x+Random.nextFloat()*20-10, it.y+Random.nextFloat()*20-10, sx, 368f, sx+16, 384f)
-			/* For I = 0 To 35
+		render.drawBlendAdd {
+			children.filter {it.tick>=0}.forEach {
+				val sx = 16f+it.tick*16
+				img.draw(it.x+Random.nextFloat()*20-10, it.y+Random.nextFloat()*20-10, sx, 368f, sx+16, 384f)
+				/* For I = 0 To 35
 If Kr(I).V Then
 With Src
 .Left = 16 + Kr(I).A * 16: .Top = 368: .Right = .Left + 16: .Bottom = .Top + 16
@@ -134,6 +135,7 @@ BltClip Kr(I).X + (Rnd * 20 - 10) * TrM, Kr(I).Y + (Rnd * 20 - 10) * TrM, BGSf, 
 End If
 			 */
 
+			}
 		}
 		for(it in (11..30)+(38..50)) {
 			val ch = it*16-bx/4%16
@@ -156,8 +158,10 @@ BltClip 256 + FX * 540, -244 + FY * 540, BGSf, Src, DDBLTFAST_SRCCOLORKEY Or DDB
 	}
 
 	override fun drawLite() {
-		img.draw(0f, 0f, 0f, 0f, 640f, 240f)
-		img.draw(0f, 240f, 0f, 0f, 640f, 240f)
+		img.draw(0f, 0f, bx, 0f, 640f, 240f)
+		img.draw(0f, 240f, bx, 0f, 640f, 240f)
+		img.draw(640-bx, 0f, 0f, 0f, bx, 240f)
+		img.draw(640-bx, 240f, 0f, 0f, bx, 240f)
 	}
 }
 

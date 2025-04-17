@@ -115,7 +115,7 @@ class SprintUltra:NetDummyMode() {
 		rankingPower.forEach {it.forEach {p -> p.fill(0)}}
 
 		owner.bgMan.bg = -14
-		engine.frameColor = if(is20g(engine.speed)) GameEngine.FRAME_COLOR_RED else GameEngine.FRAME_COLOR_BLUE
+		engine.frameSkin = if(is20g(engine.speed)) GameEngine.FRAME_COLOR_RED else GameEngine.FRAME_COLOR_BLUE
 
 		netPlayerInit(engine)
 
@@ -144,7 +144,7 @@ class SprintUltra:NetDummyMode() {
 
 	override fun onSettingChanged(engine:GameEngine) {
 		super.onSettingChanged(engine)
-		engine.frameColor = if(is20g(engine.speed)) GameEngine.FRAME_COLOR_RED else GameEngine.FRAME_COLOR_BLUE
+		engine.frameSkin = if(is20g(engine.speed)) GameEngine.FRAME_COLOR_RED else GameEngine.FRAME_COLOR_BLUE
 
 	}
 

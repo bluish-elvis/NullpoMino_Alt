@@ -138,7 +138,7 @@ class RetroN:AbstractMode() {
 			owSDSpd = 1
 			ruleOpt.nextDisplay = 1
 			ruleOpt.harddropEnable = false
-
+			ruleOpt.strWallkick=""
 			owSkin = if(speedType==2!=startLevel>=10) 8 else 9
 			owDelayCancel = 0
 		}
@@ -146,7 +146,7 @@ class RetroN:AbstractMode() {
 		owner.bgMan.bg = startLevel
 		if(owner.bgMan.bg>19) owner.bgMan.bg = 19
 		lvLines = ((startLevel-5)*10).coerceIn(minOf((startLevel+1)*10,100), 100)
-		engine.frameColor = GameEngine.FRAME_SKIN_GB
+		engine.frameSkin = GameEngine.FRAME_SKIN_GB
 	}
 
 	/** Set the gravity speed
@@ -182,17 +182,19 @@ class RetroN:AbstractMode() {
 				randomizer = NintendoRandomizer()
 				ruleOpt.run {
 					spinInitial = false
+					spinReverseKey = true
 					lockResetMove = false
 					softdropLock = true
 					softdropMultiplyNativeSpeed = false
 					softdropGravitySpeedLimit = false
 					holdEnable = false
-					dasInARE = false
+					dasInARE = true
 					dasInReady = false
 					dasChargeOnBlockedMove = true
 					dasStoreChargeOnNeutral = true
 					dasRedirectInDelay = true
 				}
+				ghost = false
 				createFieldIfNeeded()
 			}
 			fillGarbage(engine, startHeight)
@@ -388,7 +390,7 @@ class RetroN:AbstractMode() {
 			receiver.drawMenuFont(engine, 0, 8, strLevel)
 			drawResultStats(engine, receiver, 9, COLOR.BLUE, Statistic.SPL)
 			drawResultRank(engine, receiver, 15, COLOR.BLUE, rankingRank)
-			drawResult(engine, receiver, 11, COLOR.BLUE, "QUAD%", String.format("%3d%%", engine.statistics.run {
+			drawResult(engine, receiver, 11, COLOR.BLUE, "QUAD%", "%3d%%".format( engine.statistics.run {
 				totalQuadruple*100/maxOf(1, totalQuadruple+totalSingle+totalDouble+totalTriple+totalSplitDouble+totalSplitTriple)
 			}))
 		} else {
@@ -475,7 +477,7 @@ class RetroN:AbstractMode() {
 			for(x in 0..<engine.field.width) {
 				f = engine.random.nextFloat()
 				if(f<0.5)
-					engine.field.setBlock(x, y, Block((f*14).toInt()+2, engine.skin, Block.ATTRIBUTE.VISIBLE, Block.ATTRIBUTE.GARBAGE))
+					engine.field.setBlock(x, y, Block((f*14).toInt()+2, engine.blkSkin, Block.ATTRIBUTE.VISIBLE, Block.ATTRIBUTE.GARBAGE))
 			}
 	}
 

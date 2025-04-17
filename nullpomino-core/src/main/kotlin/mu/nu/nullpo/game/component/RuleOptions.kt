@@ -102,15 +102,14 @@ data class RuleOptions(
 	var harddropEnable:Boolean,
 	/** Hard drop即固定 */
 	var harddropLock:Boolean,
-	/** Hard dropの使いまわし不可 (trueならピースごとにHardDrop方向を入れ直す必要がある) */
-	var harddropLimit:Boolean,
-
+	/** Hard dropの使いまわし不可フレーム (-1以下:使いまわし可能、0:ピースごとにHardDrop方向を入れ直す必要があり、1以上:時間接着時にHardDrop無効化状態フレームが発生) */
+	var harddropLimit:Int,
 	/** Soft drop使用可否 */
 	var softdropEnable:Boolean,
 	/** Soft drop即固定 */
 	var softdropLock:Boolean,
-	/** Soft dropの使いまわし不可 (trueならピースごとにHardDrop方向を入れ直す必要がある) */
-	var softdropLimit:Boolean,
+	/** Soft dropの使いまわし不可 (-1以下:使いまわし可能、0:ピースごとにHardDrop方向を入れ直す必要があり、1以上:時間接着時にHardDrop無効化状態フレームが発生)) */
+	var softdropLimit:Int,
 	/** 接地状態でSoft dropすると即固定 (falseだと20Gのみ即固定) */
 	var softdropSurfaceLock:Boolean,
 	/** Soft drop速度 (1f=1G, .5f=0.5G) */
@@ -131,9 +130,10 @@ data class RuleOptions(
 	/** 上DirectionへのWallkickができる count (-1:無限) */
 	var spinWallkickMaxRise:Int,
 
-	/** TrueにするとA,Cボタンを右回転にする */
+	/** TrueにするとA,Cボタンを右回転にする
+	 * [spinReverseKey]もtrueならB,Fボタンは左回転になる */
 	var spinToRight:Boolean,
-	/** Bボタンでの回転を逆方向にする (falseならA,Cボタンと同じ) */
+	/** B,Fボタンでの回転を逆方向にする (falseならA,Cボタンと同じ) */
 	var spinReverseKey:Boolean,
 	/** Eボタンを180 spinにする (falseならA,Cボタンと同じ) */
 	var spinDoubleKey:Boolean,
@@ -256,8 +256,8 @@ data class RuleOptions(
 		PieceColor.ARS.array, List(Piece.PIECE_COUNT) {0},
 		true, 0, Field.DEFAULT_WIDTH, Field.DEFAULT_HEIGHT, Field.DEFAULT_HIDDEN_HEIGHT, false, true, false,
 		3, true, true, false, true, -1,
-		true, true, true,
-		true, false, false, false, .5f, false, false,
+		true, true, 0,
+		true, false, -1, false, .5f, false, false,
 		true, false, true, true, -1, true, true, true, true,
 		true, true, true, false, 15, 15, true,
 		LOCKRESET_LIMIT_OVER_INSTANT, 2, true, false,
@@ -336,11 +336,11 @@ data class RuleOptions(
 
 		harddropEnable = true
 		harddropLock = true
-		harddropLimit = true
+		harddropLimit = 0
 
 		softdropEnable = true
 		softdropLock = false
-		softdropLimit = false
+		softdropLimit = -1
 		softdropSurfaceLock = false
 		softdropSpeed = .5f
 		softdropMultiplyNativeSpeed = false

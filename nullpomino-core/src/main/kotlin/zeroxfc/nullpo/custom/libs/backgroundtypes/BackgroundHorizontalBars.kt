@@ -114,7 +114,7 @@ class BackgroundHorizontalBars<T>(img:ResourceImage<T>, pulseFrames:Int, sliceSi
 		update()
 	}
 
-	override fun draw(render:AbstractRenderer) {
+	override fun draw(render:AbstractRenderer, bg:Boolean) {
 		val priorityList = chunks.sortedBy {it.scale[1]}.toMutableList()
 		val baseScale = pulseBaseScale ?: BASE_SCALE
 		if(baseScale.toDouble().almostEqual(1.0, 0.005)) {

@@ -110,7 +110,7 @@ class BackgroundInterlaceVertical<T>(img:ResourceImage<T>, columnWidth:Int = DEF
 		update()
 	}
 
-	override fun draw(render:AbstractRenderer) {
+	override fun draw(render:AbstractRenderer, bg:Boolean) {
 		chunks.forEach {i ->
 			val pos = i.drawLocation
 			val ddim = i.drawDimensions

@@ -291,7 +291,7 @@ class GrandM3:AbstractGrand() {
 		engine.twistEnableEZ = true
 		engine.b2bEnable = true
 		engine.splitB2B = true
-		engine.frameColor = GameEngine.FRAME_COLOR_SILVER
+		engine.frameSkin = GameEngine.FRAME_COLOR_SILVER
 		engine.comboType = GameEngine.COMBO_TYPE_DOUBLE
 		engine.bigHalf = true
 		engine.bigMove = true
@@ -688,7 +688,7 @@ class GrandM3:AbstractGrand() {
 			}
 		}
 		if(promotionFlag) {
-			engine.frameColor = GameEngine.FRAME_SKIN_GRADE
+			engine.frameSkin = GameEngine.FRAME_SKIN_GRADE
 
 			if(readyFrame==100) engine.playSE("item_spawn")
 
@@ -699,7 +699,7 @@ class GrandM3:AbstractGrand() {
 				return true
 			}
 		} else if(demotionFlag) {
-			engine.frameColor = GameEngine.FRAME_COLOR_WHITE
+			engine.frameSkin = GameEngine.FRAME_COLOR_WHITE
 			engine.playSE("item_trigger")
 		}
 

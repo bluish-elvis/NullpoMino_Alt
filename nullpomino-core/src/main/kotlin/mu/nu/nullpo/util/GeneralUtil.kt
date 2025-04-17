@@ -42,9 +42,9 @@ import net.omegaboshi.nullpomino.game.subsystem.randomizer.Randomizer
 import org.apache.logging.log4j.LogManager
 import java.io.FileInputStream
 import java.text.SimpleDateFormat
-import java.util.Calendar
-import java.util.TimeZone
+import java.util.*
 import java.util.zip.GZIPInputStream
+import java.util.zip.ZipException
 
 /** Generic static utils */
 object GeneralUtil {
@@ -78,6 +78,28 @@ object GeneralUtil {
 	/** @return true -> 1 , false -> 0 */
 	fun Boolean.toInt() = if(this) 1 else 0
 
+	operator fun Int.plus(x:Boolean) = if(x) this+1 else this
+	operator fun Float.plus(x:Boolean) = if(x) this+1 else this
+	operator fun Boolean.plus(x:Int) = if(this) x+1 else x
+	operator fun Boolean.minus(x:Int) = if(this) x-1 else x
+	operator fun Boolean.times(x:Int) = if(this) x else 0
+
+	fun Triple<Float, Float, Float>.HSBtoRGB():Triple<Float, Float, Float> {
+		val (h, s, b) = this
+		val i = (h*6).toInt()
+		val f = h*6-i
+		val p = b*(1-s)
+		val q = b*(1-f*s)
+		val t = b*(1-(1-f)*s)
+		return when(i%6) {
+			0 -> Triple(b, t, p)
+			1 -> Triple(q, b, p)
+			2 -> Triple(p, b, t)
+			3 -> Triple(p, q, b)
+			4 -> Triple(t, p, b)
+			else -> Triple(b, p, q)
+		}
+	}
 	/** Convert as play time into a String
 	 * @return String for play time
 	 */
@@ -195,10 +217,18 @@ object GeneralUtil {
 		if(filename.isNullOrEmpty()) return RuleOptions()
 		log.info("Load rule options from $filename")
 		return try {
-			val rf = GZIPInputStream(FileInputStream(filename))
+			val rf = try {
+				GZIPInputStream(FileInputStream(filename))
+			} catch(_:ZipException) {
+				FileInputStream(filename)
+			}
 			Json.decodeFromString<RuleOptions>(rf.bufferedReader().use {it.readText()})
 		} catch(_:Exception) {
-			val rf = GZIPInputStream(FileInputStream(filename))
+			val rf = try {
+				GZIPInputStream(FileInputStream(filename))
+			} catch(_:ZipException) {
+				FileInputStream(filename)
+			}
 			val prop = CustomProperties()
 			prop.load(rf)
 			rf.close()

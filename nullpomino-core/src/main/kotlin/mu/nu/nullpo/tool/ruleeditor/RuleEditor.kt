@@ -162,7 +162,7 @@ class RuleEditor:JFrame, ActionListener {
 	private val chkBoxDropHardDropLock = JCheckBox()
 
 	/** Hard drop連続使用不可 */
-	private val chkBoxDropHardDropLimit = JCheckBox()
+	private val txtFldDropHardDropLimit = JTextField("", 3)
 
 	/** Soft drop使用可否 */
 	private val chkBoxDropSoftDropEnable = JCheckBox()
@@ -171,7 +171,7 @@ class RuleEditor:JFrame, ActionListener {
 	private val chkBoxDropSoftDropLock = JCheckBox()
 
 	/** Soft drop連続使用不可 */
-	private val chkBoxDropSoftDropLimit = JCheckBox()
+	private val txtFldDropSoftDropLimit = JTextField("", 3)
 
 	/** 接地状態でSoft dropすると即固定 */
 	private val chkBoxDropSoftDropSurfaceLock = JCheckBox()
@@ -463,7 +463,8 @@ class RuleEditor:JFrame, ActionListener {
 		propConfig.load("config/setting/swing.properties")
 
 		// 言語ファイル読み込み
-		if(propLangDefault.loadXML("config/lang/ruleeditor_default.xml")==null) log.error("Couldn't load default UI language file")
+		if(propLangDefault.loadXML("config/lang/ruleeditor_default.xml")==null) log.error(
+			"Couldn't load default UI language file")
 
 		propLang.loadXML("config/lang/ruleeditor_${Locale.getDefault().country}.xml")
 
@@ -700,8 +701,11 @@ class RuleEditor:JFrame, ActionListener {
 		panelDrop.add(chkBoxDropHardDropLock)
 
 		// Hard drop連続使用不可
-		chkBoxDropHardDropLimit.text = getUIText("Drop_HardDropLimit")
-		panelDrop.add(chkBoxDropHardDropLimit)
+		txtFldDropHardDropLimit.columns = 3
+		panelDrop.add(JPanel().apply{
+			add(JLabel(getUIText("Drop_HardDropLimit")))
+			add(txtFldDropHardDropLimit)
+		})
 
 		// Soft drop使用可否
 		chkBoxDropSoftDropEnable.text = getUIText("Drop_SoftDropEnable")
@@ -712,8 +716,11 @@ class RuleEditor:JFrame, ActionListener {
 		panelDrop.add(chkBoxDropSoftDropLock)
 
 		// Soft drop連続使用不可
-		chkBoxDropSoftDropLimit.text = getUIText("Drop_SoftDropLimit")
-		panelDrop.add(chkBoxDropSoftDropLimit)
+		txtFldDropSoftDropLimit.columns = 3
+		panelDrop.add(JPanel().apply{
+			add(JLabel(getUIText("Drop_SoftDropLimit")))
+			add(txtFldDropSoftDropLimit)
+		})
 
 		// 接地状態でSoft dropすると即固定
 		chkBoxDropSoftDropSurfaceLock.text = getUIText("Drop_SoftDropSurfaceLock")
@@ -728,12 +735,12 @@ class RuleEditor:JFrame, ActionListener {
 		panelDrop.add(chkBoxDropSoftDropGravitySpeedLimit)
 
 		// Soft drop速度
-		val pDropSoftDropSpeed = JPanel()
-		panelDrop.add(pDropSoftDropSpeed)
-		pDropSoftDropSpeed.add(JLabel(getUIText("Drop_SoftDropSpeed")))
+		txtFldDropSoftDropSpeed.columns = 5
+		panelDrop.add(JPanel().apply{
+			add(JLabel(getUIText("Drop_SoftDropSpeed")))
+			add(txtFldDropSoftDropSpeed)
+		})
 
-		txtFldDropSoftDropSpeed.columns = (5)
-		pDropSoftDropSpeed.add(txtFldDropSoftDropSpeed)
 
 		// rotationタブ --------------------------------------------------
 		val panelSpin = JPanel()
@@ -1304,7 +1311,7 @@ class RuleEditor:JFrame, ActionListener {
 			img = ImageIO.read(url!!)
 			log.debug("Loaded image from {}", url)
 		} catch(e:IOException) {
-			log.error("Failed to load image from ${url ?: ""}", e)
+			log.error("Failed to load image from ${url?:""}", e)
 		}
 
 		return img
@@ -1367,7 +1374,7 @@ class RuleEditor:JFrame, ActionListener {
 		chkBoxGhost.isSelected = r.ghost
 		chkBoxEnterAboveField.isSelected = r.pieceEnterAboveField
 		txtFldEnterMaxDistanceY.text = r.pieceEnterMaxDistanceY.toString()
-		comboBoxRandomizer?.selectedIndex = vectorRandomizer?.indexOf(r.strRandomizer) ?: 0
+		comboBoxRandomizer?.selectedIndex = vectorRandomizer?.indexOf(r.strRandomizer)?:0
 
 		txtFldFieldWidth.text = r.fieldWidth.toString()
 		txtFldFieldHeight.text = r.fieldHeight.toString()
@@ -1384,10 +1391,10 @@ class RuleEditor:JFrame, ActionListener {
 
 		chkBoxDropHardDropEnable.isSelected = r.harddropEnable
 		chkBoxDropHardDropLock.isSelected = r.harddropLock
-		chkBoxDropHardDropLimit.isSelected = r.harddropLimit
+		txtFldDropHardDropLimit.text = r.harddropLimit.toString()
 		chkBoxDropSoftDropEnable.isSelected = r.softdropEnable
 		chkBoxDropSoftDropLock.isSelected = r.softdropLock
-		chkBoxDropSoftDropLimit.isSelected = r.softdropLimit
+		txtFldDropSoftDropLimit.text = r.softdropLimit.toString()
 		chkBoxDropSoftDropSurfaceLock.isSelected = r.softdropSurfaceLock
 		txtFldDropSoftDropSpeed.text = r.softdropSpeed.toString()
 		chkBoxDropSoftDropMultiplyNativeSpeed.isSelected = r.softdropMultiplyNativeSpeed
@@ -1401,7 +1408,7 @@ class RuleEditor:JFrame, ActionListener {
 		chkBoxSpinToRight.isSelected = r.spinToRight
 		chkBoxSpinReverseKey.isSelected = r.spinReverseKey
 		chkBoxSpinDoubleKey.isSelected = r.spinDoubleKey
-		comboBoxWallkickSystem.selectedIndex = vectorWallkickSystem?.indexOf(r.strWallkick) ?: 0
+		comboBoxWallkickSystem.selectedIndex = vectorWallkickSystem?.indexOf(r.strWallkick)?:0
 		txtFldLockDelayMin.text = r.minLockDelay.toString()
 		txtFldLockDelayMax.text = r.maxLockDelay.toString()
 		chkBoxLockDelayLockResetFall.isSelected = r.lockResetFall
@@ -1494,10 +1501,10 @@ class RuleEditor:JFrame, ActionListener {
 
 		r.harddropEnable = chkBoxDropHardDropEnable.isSelected
 		r.harddropLock = chkBoxDropHardDropLock.isSelected
-		r.harddropLimit = chkBoxDropHardDropLimit.isSelected
+		r.harddropLimit = getIntTextField(txtFldDropHardDropLimit)
 		r.softdropEnable = chkBoxDropSoftDropEnable.isSelected
 		r.softdropLock = chkBoxDropSoftDropLock.isSelected
-		r.softdropLimit = chkBoxDropSoftDropLimit.isSelected
+		r.softdropLimit = getIntTextField(txtFldDropSoftDropLimit)
 		r.softdropSurfaceLock = chkBoxDropSoftDropSurfaceLock.isSelected
 		r.softdropSpeed = getFloatTextField(txtFldDropSoftDropSpeed)
 		r.softdropMultiplyNativeSpeed = chkBoxDropSoftDropMultiplyNativeSpeed.isSelected
@@ -1605,7 +1612,11 @@ class RuleEditor:JFrame, ActionListener {
 		val ruleOpt = RuleOptions().apply {
 			writeRuleFromUI(this)
 		}
-		GZIPOutputStream(FileOutputStream(filename, false)).bufferedWriter().use {
+		if(filename.endsWith(".gz"))
+			GZIPOutputStream(FileOutputStream(filename, false)).bufferedWriter().use {
+				it.write(Json.encodeToString(ruleOpt))
+			}
+		else FileOutputStream(filename, false).bufferedWriter().use {
 			it.write(Json.encodeToString(ruleOpt))
 		}
 
@@ -1650,18 +1661,18 @@ class RuleEditor:JFrame, ActionListener {
 	 * @param txtFld テキストfield
 	 * @return テキストfieldから値を取得できた場合はその値, 失敗したら0
 	 */
-	private fun getIntTextField(txtFld:JTextField):Int = txtFld.text.toIntOrNull() ?: 0
+	private fun getIntTextField(txtFld:JTextField):Int = txtFld.text.toIntOrNull()?:0
 
 	/** テキストfieldからfloat型の値を取得
 	 * @param txtFld テキストfield
 	 * @return テキストfieldから値を取得できた場合はその値, 失敗したら0f
 	 */
-	private fun getFloatTextField(txtFld:JTextField):Float = txtFld.text.toFloatOrNull() ?: 0f
+	private fun getFloatTextField(txtFld:JTextField):Float = txtFld.text.toFloatOrNull()?:0f
 
 	/** アクション発生時の処理 */
 	override fun actionPerformed(e:ActionEvent) {
 		fun saveAs() {
-			val c1 = JFileChooser(strNowFile ?: "${System.getProperty("user.dir")}/config/rule")
+			val c1 = JFileChooser(strNowFile?:"${System.getProperty("user.dir")}/config/rule")
 			c1.fileFilter = FileFilterRUL()
 			c1.selectedFile = strNowFile?.let {File(it)}
 			if(c1.showSaveDialog(this)==JFileChooser.APPROVE_OPTION) {
@@ -1692,7 +1703,7 @@ class RuleEditor:JFrame, ActionListener {
 			}
 			"Open" -> {
 				// 開く
-				val c = JFileChooser(strNowFile ?: "${System.getProperty("user.dir")}/config/rule")
+				val c = JFileChooser(strNowFile?:"${System.getProperty("user.dir")}/config/rule")
 				c.fileFilter = FileFilterRUL()
 
 				if(c.showOpenDialog(this)==JFileChooser.APPROVE_OPTION) {
@@ -1756,15 +1767,15 @@ class RuleEditor:JFrame, ActionListener {
 				}
 			}
 			"ResetRandomizer" // NEXT順生成アルゴリズムの選択リセット
-			-> comboBoxRandomizer!!.setSelectedItem(null)
+				-> comboBoxRandomizer!!.setSelectedItem(null)
 			"Exit" // 終了
-			-> dispose()
+				-> dispose()
 		}
 	}
 
 	/** ファイル選択画面のフィルタ */
 	private inner class FileFilterRUL:FileFilter() {
-		override fun accept(f:File):Boolean = if(f.isDirectory) true else f.name.endsWith(".rul")
+		override fun accept(f:File):Boolean = if(f.isDirectory) true else f.name.endsWith(".rul")||f.name.endsWith(".rul.gz")
 
 		override fun getDescription():String = getUIText("FileChooser_RuleFile")
 	}

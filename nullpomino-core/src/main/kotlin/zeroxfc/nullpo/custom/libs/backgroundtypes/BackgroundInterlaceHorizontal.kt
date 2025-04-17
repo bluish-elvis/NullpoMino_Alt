@@ -106,7 +106,7 @@ class BackgroundInterlaceHorizontal<T>(img:ResourceImage<T>, rowHeight:Int = DEF
 		update()
 	}
 
-	override fun draw(render:AbstractRenderer) {
+	override fun draw(render:AbstractRenderer, bg:Boolean) {
 		chunks.forEach {i ->
 			val pos = i.drawLocation
 			val ddim = i.drawDimensions

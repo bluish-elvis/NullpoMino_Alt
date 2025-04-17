@@ -33,6 +33,6 @@ package mu.nu.nullpo.game.subsystem.mode.menu
 
 import mu.nu.nullpo.game.event.EventReceiver
 
-abstract class EnumMenuItem<T:Enum<T>>(name:String, displayName:String, color:EventReceiver.COLOR, default:T, all:Iterable<T>,
+class EnumMenuItem<T:Enum<T>>(name:String, displayName:String, color:EventReceiver.COLOR, default:T, all:Iterable<T>,
 	compact:Boolean = false, perRule:Boolean = false)
 	:StringsMenuItem(name, displayName, color, default.ordinal, all.map {it.name}, compact, perRule)

@@ -155,7 +155,7 @@ class GrandRoads:NetDummyMode() {
 		engine.b2bEnable = false
 		engine.splitB2B = false
 		engine.comboType = GameEngine.COMBO_TYPE_DISABLE
-		engine.frameColor = GameEngine.FRAME_COLOR_WHITE
+		engine.frameSkin = GameEngine.FRAME_COLOR_WHITE
 		engine.bigHalf = true
 		engine.bigMove = true
 		engine.staffrollEnable = false

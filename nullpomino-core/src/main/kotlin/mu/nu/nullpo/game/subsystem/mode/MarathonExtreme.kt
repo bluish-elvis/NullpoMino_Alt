@@ -112,7 +112,7 @@ class MarathonExtreme:NetDummyMode() {
 		engine.staffrollEnableStatistics = true
 
 		engine.owner.bgMan.bg = startLevel
-		engine.frameColor = GameEngine.FRAME_COLOR_RED
+		engine.frameSkin = GameEngine.FRAME_COLOR_RED
 	}
 
 	/** Set the gravity rate

@@ -125,7 +125,7 @@ abstract class ExamSpinnerBase private constructor(private val gradeText:String,
 		val baseX = receiver.fieldX(engine)+4f
 		val baseY = receiver.fieldY(engine)+52f
 		val size = 16
-		HUGE_O.setSkin(engine.skin)
+		HUGE_O.setSkin(engine.blkSkin)
 		val b = if(flag) 0f else 1f
 		val color = if(flag) COLOR.YELLOW else COLOR.WHITE
 		if(custom) {

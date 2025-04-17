@@ -156,7 +156,7 @@ class MarathonPlus:NetDummyMode() {
 		engine.staffrollNoDeath = false
 		engine.staffrollEnableStatistics = true
 		owner.bgMan.bg = if(startLevel) 36 else -1
-		engine.frameColor = GameEngine.FRAME_COLOR_WHITE
+		engine.frameSkin = GameEngine.FRAME_COLOR_WHITE
 	}
 
 	/** Set the gravity rate
@@ -463,7 +463,6 @@ class MarathonPlus:NetDummyMode() {
 					goalType==3&&lv>=50 -> 11
 					else -> lv/5
 				}//if(lv<20) lv/2 else if(lv<50) 10+(lv-20)/3 else 20+(lv-50)/15
-
 				if(lv>=tableGameClearLevel[goalType]) {
 					// Bonus level unlocked
 					bonusTime = 0
@@ -493,8 +492,12 @@ class MarathonPlus:NetDummyMode() {
 					nextsec += normMax
 					norm -= normMax
 					bonusTime += (80+engine.speed.lockDelay+engine.speed.are)*normMax
+					receiver.setBGSpd(owner, .5f+goalType*.4f+turbo*.5f+lv*.01f,owner.bgMan.nextBg)
 					engine.playSE("levelup")
 				} else {
+					if(lv==50) engine.playSE("levelup_section")
+
+					engine.meterValue = 0f
 					norm = engine.statistics.lines
 					nextsec = norm+1
 					bonusTime += (engine.speed.lockDelay+engine.speed.are+36+ev.lines*15)*ev.lines//65,230,390,580
@@ -861,11 +864,11 @@ class MarathonPlus:NetDummyMode() {
 			listOf(listOf(100, 150), listOf(80, 180), listOf(130, 300), listOf(140, 280, 350))
 		private val tableBGM =
 			listOf(
-				listOf(BGM.Puzzle(0), BGM.Generic(0), BGM.Extra(2), BGM.GrandM(0)),
-				listOf(BGM.Generic(0), BGM.Generic(1), BGM.Generic(2), BGM.Puzzle(2)), //30levels
-				listOf(BGM.Puzzle(2), BGM.Generic(3), BGM.Generic(4), BGM.Generic(5)), //50levels
-				listOf(BGM.Puzzle(3), BGM.Generic(6), BGM.Generic(7), BGM.Generic(8), BGM.Generic(9)), //200levels
-				listOf(BGM.Puzzle(4), BGM.Rush(1), BGM.Rush(2), BGM.Rush(3))
+				listOf(BGM.Zen(0), BGM.Zen(1), BGM.Zen(6), BGM.Zen(0)),
+				listOf(BGM.Puzzle(0), BGM.Generic(1), BGM.Generic(2), BGM.Puzzle(2)), //30levels
+				listOf(BGM.Puzzle(1), BGM.Generic(3), BGM.Generic(4), BGM.Generic(5)), //50levels
+				listOf(BGM.Puzzle(2), BGM.Generic(4), BGM.Generic(5), BGM.Generic(6), BGM.Rush(4)), //200levels
+				listOf(BGM.Puzzle(3), BGM.Rush(1), BGM.Rush(2), BGM.Rush(3))
 			)//challenge mode
 
 		/** Ending time */

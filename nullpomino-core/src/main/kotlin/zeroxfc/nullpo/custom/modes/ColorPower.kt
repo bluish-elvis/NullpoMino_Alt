@@ -148,7 +148,7 @@ class ColorPower:MarathonModeBase() {
 			netPlayerName = engine.owner.replayProp.getProperty("${engine.playerID}.net.netPlayerName", "")
 		}
 		engine.owner.bgMan.bg = startLevel
-		engine.frameColor = GameEngine.FRAME_COLOR_GREEN
+		engine.frameSkin = GameEngine.FRAME_COLOR_GREEN
 	}
 	/*
 		 * Called at settings screen

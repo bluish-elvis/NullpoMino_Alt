@@ -43,7 +43,7 @@ import mu.nu.nullpo.gui.common.bg.AbstractBG
 
 class BackgroundImageSequenceAnim(private val imgs:List<ResourceImage<*>>,
 	private val frameTime:Int, private val pingPong:Boolean)
-	:AbstractBG<Nothing?>(ResourceImage.ResourceImageBlank) {
+	:AbstractBG<Nothing?>(ResourceImage.Blank) {
 
 	private val frameCount:Int = imgs.size
 	private var currentTick = 0
@@ -86,7 +86,7 @@ class BackgroundImageSequenceAnim(private val imgs:List<ResourceImage<*>>,
 		setup()
 	}
 
-	override fun draw(render:AbstractRenderer) {
+	override fun draw(render:AbstractRenderer, bg:Boolean) {
 		val i = "frame$currentFrame"
 		imgs[currentFrame].draw(0, 0, 640, 480, 0, 0, 640, 480)
 	}

@@ -77,7 +77,7 @@ interface ResourceImage<T:Any?> {
 		override fun toString() = name
 	}
 
-	object ResourceImageBlank:ResourceImage<Nothing?> {
+	object Blank:ResourceImage<Nothing?> {
 		override var res = null
 		/** 画像 Filename */
 		override val name = ""

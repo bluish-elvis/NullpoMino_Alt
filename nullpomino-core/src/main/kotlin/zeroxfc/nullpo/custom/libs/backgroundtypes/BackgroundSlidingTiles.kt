@@ -45,7 +45,7 @@ import kotlin.math.abs
 import kotlin.random.Random
 
 class BackgroundSlidingTiles(private val custom:ResourceImage<*>?, directionRandomizer:Random = Random.Default):
-	AbstractBG<Nothing?>(ResourceImage.ResourceImageBlank) {
+	AbstractBG<Nothing?>(ResourceImage.Blank) {
 	private var darkness:Float = 0f
 	private var directionRandomizer:Random = directionRandomizer
 		set(value) {
@@ -205,7 +205,7 @@ class BackgroundSlidingTiles(private val custom:ResourceImage<*>?, directionRand
 		currentMovement = 0
 	}
 
-	override fun draw(render:AbstractRenderer) {
+	override fun draw(render:AbstractRenderer, bg:Boolean) {
 		for(y in gridChunks.indices) for(x in 0..<gridChunks[y].size) {
 			val i = gridChunks[y][x]
 			val pos = i.drawLocation

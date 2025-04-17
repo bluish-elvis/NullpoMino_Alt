@@ -493,7 +493,7 @@ class AvalancheVSFever:AvalancheVSDummyMode() {
 			val drop = minOf(ojama[pid], maxAttack[pid])
 			ojama[pid] -= drop
 			engine.field.garbageDrop(engine, drop, false, ojamaHard[pid])
-			engine.field.setAllSkin(engine.skin)
+			engine.field.setAllSkin(engine.blkSkin)
 			return true
 		}
 		//Check for game over
