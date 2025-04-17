@@ -1070,16 +1070,9 @@ class GameEngine(
 			if(!ctrl.isPress(down)||!ruleOpt.softdropLimit) softdropContinuousUse = false
 			if(!ctrl.isPress(up)||!ruleOpt.harddropLimit) harddropContinuousUse = false
 			if(!ctrl.isPress(Controller.BUTTON_D)||!ruleOpt.holdInitialLimit) initialHoldContinuousUse = false
-			if(!ruleOpt.spinInitialLimit) initialSpinContinuousUse = false
-
 			if(initialSpinContinuousUse) {
-				var dir = 0
-				if(ctrl.isPress(Controller.BUTTON_A)||ctrl.isPress(Controller.BUTTON_C))
-					dir = -1
-				else if(ctrl.isPress(Controller.BUTTON_B)) dir = 1
-				else if(ctrl.isPress(Controller.BUTTON_E)) dir = 2
-
-				if(initialSpinLastDirection!=dir||dir==0) initialSpinContinuousUse = false
+				val dir = getSpinOperation(ctrl)
+				if(!ruleOpt.spinInitialLimit||initialSpinLastDirection!=dir||dir==0) initialSpinContinuousUse = false
 			}
 		}
 	}
@@ -1211,28 +1204,34 @@ class GameEngine(
 	 */
 	fun getSpinDirection(move:Int):Int = ((nowPieceObject?.direction?:0)+move).pythonModulo(4)
 
+	/** @return rotation buttonによる回転方向
+	 */
+	fun getSpinOperation(it:Controller):Int =
+		(if(ruleOpt.spinReverseKey) -1 else 1).let {rev ->
+			(if(owSpinDir==1||owSpinDir<0&&ruleOpt.spinToRight) 1 else -1)*if(ruleOpt.spinDoubleKey) {
+				(it.isPress(Controller.BUTTON_E).toInt()*2)+
+					(it.isPressCount(Controller.BUTTON_B, Controller.BUTTON_F)*rev)+
+					it.isPressCount(Controller.BUTTON_A, Controller.BUTTON_C)
+			} else if(it.isPressAny(Controller.BUTTON_A, Controller.BUTTON_C, Controller.BUTTON_E)) 1
+			else if(it.isPressAny(Controller.BUTTON_B, Controller.BUTTON_F)) rev
+			else 0
+		}
+
 	/** 先行rotationと先行ホールドの処理 */
-	private fun initialSpin() {
-		initialSpinDirection = 0
-		initialHoldFlag = false
-
+	private fun initialSpin():Int =
 		ctrl.let {
-			if(ruleOpt.spinInitial&&!initialSpinContinuousUse) {
-				var dir = 0
-				if(it.isPress(Controller.BUTTON_A)||it.isPress(Controller.BUTTON_C)) dir = -1
-				else if(it.isPress(Controller.BUTTON_B)) dir = 1
-				else if(it.isPress(Controller.BUTTON_E)) dir = 2
-				if(dir!=0) spun = false
-				initialSpinDirection = dir
-			}
-
 			if(it.isPress(Controller.BUTTON_D)&&ruleOpt.holdInitial&&isHoldOK) {
 				initialHoldFlag = true
 				initialHoldContinuousUse = true
 				if(skin!=FRAME_SKIN_SG) playSE("initialhold")
 			}
+			if(ruleOpt.spinInitial&&(!ruleOpt.spinInitialLimit||!initialSpinContinuousUse)) {
+				val dir = getSpinOperation(it)
+				if(dir!=0) spun = false
+				initialSpinDirection = dir
+				dir
+			} else 0
 		}
-	}
 
 	/** fieldのBlock stateを更新 */
 	private fun fieldUpdate() {
@@ -1587,7 +1586,7 @@ class GameEngine(
 		}
 
 		if(owner.showInput) {
-			owner.receiver.renderInput(this)
+			owner.receiver.renderInput(this, getSpinOperation(ctrl))
 			owner.mode?.renderInput(this)
 		}
 		ai?.also {
@@ -1917,17 +1916,14 @@ class GameEngine(
 					initialSpinLastDirection = initialSpinDirection
 					initialSpinContinuousUse = true
 					if(nowPieceSpinFailCount>0) nowPieceSpinFailCount--
-					else if(spin!=0) playSE(if(skin==FRAME_SKIN_GB) "initialrotateold" else "initialrotate")
+					else playSE(if(skin==FRAME_SKIN_GB) "initialrotateold" else "initialrotate")
 				} else if(statc[0]>0||ruleOpt.moveFirstFrame) {
 					if(itemRollRollEnable&&replayTimer%itemRollRollInterval==0) spin = 1 // Roll Roll
 
 					//  button input
-					when {
-						ctrl.isPress(Controller.BUTTON_A)||ctrl.isPress(Controller.BUTTON_C) -> spin = -1
-						ctrl.isPress(Controller.BUTTON_B) -> spin = 1
-						ctrl.isPress(Controller.BUTTON_E) -> spin = 2
-						else -> spun = false
-					}
+					spin = getSpinOperation(ctrl)
+					if(spin==0) spun = false
+
 
 
 					if(spin!=0) {
@@ -1935,10 +1931,6 @@ class GameEngine(
 						initialSpinContinuousUse = true
 					}
 				}
-
-				if(!ruleOpt.spinDoubleKey&&spin==2) spin = -1
-				if(!ruleOpt.spinReverseKey&&spin==1) spin = -1
-				if(spinDirection&&spin!=2) spin *= -1
 
 				if(spin!=0&&!spun) {
 					// Direction after rotationを決める
@@ -1950,7 +1942,7 @@ class GameEngine(
 						spun = true
 						kicked = false
 						it.direction = rt
-						it.updateConnectData()
+						it.updateConnectData(nowPieceX, nowPieceY, field)
 					} else if(ruleOpt.spinWallkick&&wallkick!=null&&(initialSpinDirection==0||ruleOpt.spinInitialWallkick)
 						&&(ruleOpt.lockResetLimitOver!=RuleOptions.LOCKRESET_LIMIT_OVER_NO_KICK||!isSpinCountExceed)
 					) {
@@ -1965,7 +1957,7 @@ class GameEngine(
 								nowWallkickCount++
 								if(kick.isUpward) nowWallkickRiseCount++
 								it.direction = kick.direction
-								it.updateConnectData()
+								it.updateConnectData(nowPieceX, nowPieceY, field)
 								nowPieceX += kick.offsetX
 								nowPieceY += kick.offsetY
 
@@ -1979,7 +1971,7 @@ class GameEngine(
 						rt = getSpinDirection(2)
 						spun = true
 						it.direction = rt
-						it.updateConnectData()
+						it.updateConnectData(nowPieceX, nowPieceY, field)
 						nowPieceSpinFailCount = 0
 
 						if(it.checkCollision(nowPieceX, nowPieceY, rt, field)) nowPieceY--
@@ -2100,6 +2092,8 @@ class GameEngine(
 									nowPieceBottomY = it.getBottom(nowPieceX, nowPieceY, field)
 
 									lastMove = if(onGroundBeforeMove) {
+										it.updateConnectData(nowPieceX, nowPieceY, field)
+										owner.receiver.pieceFlicked(this, nowPieceX, nowPieceY, it)
 										extendedMoveCount++
 										LastMove.SLIDE_GROUND
 									} else LastMove.SLIDE_AIR
@@ -2128,10 +2122,8 @@ class GameEngine(
 					) {
 						harddropFall += nowPieceBottomY-nowPieceY
 						fpf = nowPieceBottomY-nowPieceY
-						if(nowPieceY!=nowPieceBottomY) {
-							nowPieceY = nowPieceBottomY
-							playSE("harddrop", 1f, (fpf*2f/field.height).coerceIn(.75f, 1f))
-						}
+						nowPieceY = nowPieceBottomY
+						playSE("harddrop", 1f, (fpf*2f/field.height).coerceIn(.75f, 1f))
 						harddropContinuousUse = !ruleOpt.harddropLock
 						owner.mode?.afterHardDropFall(this, harddropFall)
 						owner.receiver.afterHardDropFall(this, harddropFall)
@@ -2198,6 +2190,8 @@ class GameEngine(
 			// 接地と固定
 			if(it.checkCollision(nowPieceX, nowPieceY+1, field)&&(statc[0]>0||ruleOpt.moveFirstFrame)) {
 				if(lockDelayNow==0&&lockDelay>0&&lastMove!=LastMove.SLIDE_GROUND&&lastMove!=LastMove.SPIN_GROUND) {
+					it.updateConnectData(nowPieceX, nowPieceY, field)
+					owner.receiver.pieceFlicked(this, nowPieceX, nowPieceY, it)
 					playSE(if(skin==FRAME_SKIN_GB) "stepold" else "step")
 					if(!ruleOpt.softdropLock&&ruleOpt.softdropSurfaceLock&&softDropUsed) softdropContinuousUse = true
 				}
@@ -2463,7 +2457,7 @@ class GameEngine(
 		val moveCancel = canLineCancelMove&&(ctrl.isPush(up)||ctrl.isPush(down)
 			||delayCancelMoveLeft||delayCancelMoveRight)
 		val spinCancel = canLineCancelSpin&&(ctrl.isPush(Controller.BUTTON_A)||ctrl.isPush(Controller.BUTTON_B)
-			||ctrl.isPush(Controller.BUTTON_C)||ctrl.isPush(Controller.BUTTON_E))
+			||ctrl.isPush(Controller.BUTTON_C)||ctrl.isPush(Controller.BUTTON_E)||ctrl.isPush(Controller.BUTTON_F))
 		val holdCancel = canLineCancelHold&&ctrl.isPush(Controller.BUTTON_D)
 
 		delayCancel = moveCancel||spinCancel||holdCancel
@@ -2567,7 +2561,7 @@ class GameEngine(
 
 		val moveCancel = canARECancelMove&&(ctrl.isPush(up)||ctrl.isPush(down)||delayCancelMoveLeft||delayCancelMoveRight)
 		val spinCancel = canARECancelSpin&&(ctrl.isPush(Controller.BUTTON_A)||ctrl.isPush(Controller.BUTTON_B)
-			||ctrl.isPush(Controller.BUTTON_C)||ctrl.isPush(Controller.BUTTON_E))
+			||ctrl.isPush(Controller.BUTTON_C)||ctrl.isPush(Controller.BUTTON_E)||ctrl.isPush(Controller.BUTTON_F))
 		val holdCancel = canARECancelHold&&ctrl.isPush(Controller.BUTTON_D)
 
 		delayCancel = moveCancel||spinCancel||holdCancel

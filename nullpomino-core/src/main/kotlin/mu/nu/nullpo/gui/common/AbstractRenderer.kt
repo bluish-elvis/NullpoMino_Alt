@@ -477,6 +477,7 @@ abstract class AbstractRenderer:EventReceiver() {
 	 * @param engine GameEngineのインスタンス
 	 */
 	protected fun drawField(x:Float, y:Float, engine:GameEngine, size:Int, scale:Float = 1f) {
+		class Connected(val u:Boolean, val d:Boolean, val l:Boolean, val r:Boolean)
 		val (blkSize, zoom) = (engine.blockSize to scale).let {
 			when {
 				size<=-1 -> it.first/2 to it.second/2
@@ -510,28 +511,33 @@ abstract class AbstractRenderer:EventReceiver() {
 
 						if(it.getAttribute(Block.ATTRIBUTE.OUTLINE)&&!it.getAttribute(Block.ATTRIBUTE.BONE)) {
 							val ls = blkSize-1
-							val w = if(edgeBold) 3f else 2f
-							when(outlineType) {
-								GameEngine.BLOCK_OUTLINE_NORMAL -> {
-									if(field.getBlockEmpty(j, i-1)) drawLineSpecific(x2, y2, x2+ls, y2, w = w)
-									if(field.getBlockEmpty(j, i+1)) drawLineSpecific(x2, y2+ls, x2+ls, y2+ls, w = w)
-									if(field.getBlockEmpty(j-1, i)) drawLineSpecific(x2, y2, x2, y2+ls, w = w)
-									if(field.getBlockEmpty(j+1, i)) drawLineSpecific(x2+ls, y2, x2+ls, y2+ls, w = w)
-								}
-								GameEngine.BLOCK_OUTLINE_CONNECT -> {
-									if(!it.getAttribute(Block.ATTRIBUTE.CONNECT_UP)) drawLineSpecific(x2, y2, x2+ls, y2, w = w)
-									if(!it.getAttribute(Block.ATTRIBUTE.CONNECT_DOWN)) drawLineSpecific(x2, y2+ls, x2+ls, y2+ls, w = w)
-									if(!it.getAttribute(Block.ATTRIBUTE.CONNECT_LEFT)) drawLineSpecific(x2, y2, x2, y2+ls, w = w)
-									if(!it.getAttribute(Block.ATTRIBUTE.CONNECT_RIGHT)) drawLineSpecific(x2+ls, y2, x2+ls, y2+ls, w = w)
-								}
-								GameEngine.BLOCK_OUTLINE_SAMECOLOR -> {
-									val color = getColorByID(it.color?:Block.COLOR.WHITE)
-									if(field.getBlockColor(j, i-1)!=it.color) drawLineSpecific(x2, y2, x2+ls, y2, color, w = w)
-									if(field.getBlockColor(j, i+1)!=it.color) drawLineSpecific(x2, y2+ls, x2+ls, y2+ls, color, w = w)
-									if(field.getBlockColor(j-1, i)!=it.color) drawLineSpecific(x2, y2, x2, y2+ls, color, w = w)
-									if(field.getBlockColor(j+1, i)!=it.color) drawLineSpecific(x2+ls, y2, x2+ls, y2+ls, color, w = w)
-								}
+							val w = if(edgeBold) 2f else 1f
+
+							val color = getColorByID(
+								if(outlineType==GameEngine.BLOCK_OUTLINE_SAMECOLOR&&it.color!=null) it.color
+								else Block.COLOR.WHITE)
+							val side = when(outlineType) {
+								GameEngine.BLOCK_OUTLINE_NORMAL -> Connected(
+									field.getBlockEmpty(j, i-1),
+									field.getBlockEmpty(j, i+1),
+									field.getBlockEmpty(j-1, i),
+									field.getBlockEmpty(j+1, i))
+								GameEngine.BLOCK_OUTLINE_CONNECT -> Connected(
+									!it.getAttribute(Block.ATTRIBUTE.CONNECT_UP),
+									!it.getAttribute(Block.ATTRIBUTE.CONNECT_DOWN),
+									!it.getAttribute(Block.ATTRIBUTE.CONNECT_LEFT),
+									!it.getAttribute(Block.ATTRIBUTE.CONNECT_RIGHT))
+								GameEngine.BLOCK_OUTLINE_SAMECOLOR -> Connected(
+									field.getBlockColor(j, i-1)!=it.color,
+									field.getBlockColor(j, i+1)!=it.color,
+									field.getBlockColor(j-1, i)!=it.color,
+									field.getBlockColor(j+1, i)!=it.color)
+								else-> Connected(false, false, false, false)
 							}
+							if(side.u)drawLineSpecific(x2-w/2*side.l.toInt(), y2-w/2, x2+ls+w/2*side.r.toInt(), y2-w/2, color, w = w)
+							if(side.d)drawLineSpecific(x2-w/2*side.l.toInt(), y2+ls+w/2, x2+ls+w/2*side.r.toInt(), y2+ls+w/2, color, w = w)
+							if(side.l)drawLineSpecific(x2-w/2, y2-w/2*side.u.toInt(), x2-w/2, y2+ls+w/2*side.d.toInt(), color, w = w)
+							if(side.r)drawLineSpecific(x2+ls+w/2, y2-w/2*side.u.toInt(), x2+ls+w/2, y2+ls+w/2*side.d.toInt(), color, w = w)
 						}
 					}
 				}
@@ -808,6 +814,24 @@ abstract class AbstractRenderer:EventReceiver() {
 	override fun afterHardDropFall(engine:GameEngine, fall:Int) {
 		locusParticle(engine, fall, 200, 24..36)
 		super.afterHardDropFall(engine, fall)
+	}
+
+	override fun pieceFlicked(engine:GameEngine, pX:Int, pY:Int, p:Piece) {
+		if(particle) efxFG.addAll(
+			p.dataX[p.direction].zip(p.dataY[p.direction].withIndex()).groupBy({it.first}, {it.second})
+				.mapValues {it.value.filterNot {(i, _) -> p.block[i].getAttribute(Block.ATTRIBUTE.BONE)}}
+				.filterNot {it.value.isEmpty()}.flatMap {(x2, c) ->
+					val (i, y2) = c.maxBy {it.value}
+					val col = Fireworks.colorBy(getBlockColor(p.block[i]))
+					val px = engine.fX+(pX+x2)*engine.blockSize
+					val prx = engine.fX+(pX+x2+1)*engine.blockSize
+					val py = engine.fY+(pY+y2+1)*engine.blockSize
+					LandingParticles(
+						3, px, prx, py, 0f, col[0], col[1], col[2],
+						235, 45, .44f, .66f
+					).particles
+				}
+		)
 	}
 
 	override fun pieceLocked(engine:GameEngine, pX:Int, pY:Int, p:Piece, lines:Int, finesse:Boolean) {
