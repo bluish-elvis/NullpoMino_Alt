@@ -31,6 +31,7 @@
 
 package mu.nu.nullpo.gui.common.bg.dtet
 
+import mu.nu.nullpo.gui.common.AbstractRenderer
 import kotlin.math.cos
 import kotlin.math.sin
 import kotlin.random.Random
@@ -64,7 +65,7 @@ class BGAFKaleidSq<T>(bg:mu.nu.nullpo.gui.common.ResourceImage<T>):mu.nu.nullpo.
 		y = Random.nextFloat()*480
 	}
 
-	override fun draw(render:mu.nu.nullpo.gui.common.AbstractRenderer) {
+	override fun draw(render:AbstractRenderer, bg:Boolean) {
 		img.draw(0f, 0f, x, y, 320f, 240f)
 		img.draw(320-x, 0f, 0f, y, x, 240f)
 		img.draw(0f, 240-y, x, 0f, 320f, y)

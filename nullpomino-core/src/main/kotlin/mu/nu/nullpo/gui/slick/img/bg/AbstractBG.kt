@@ -31,14 +31,15 @@
 
 package mu.nu.nullpo.gui.slick.img.bg
 
-import mu.nu.nullpo.gui.common.ResourceImage
 import mu.nu.nullpo.gui.common.bg.AbstractBG
+import mu.nu.nullpo.gui.slick.ResourceImageSlick
 import org.newdawn.slick.Image
 
-abstract class AbstractBG(bg:ResourceImage<Image>):AbstractBG<Image>(bg) {
-	final override val res:Image = img.res.copy() ?: run {
+abstract class AbstractBG(bg:ResourceImageSlick, addBGFX:AbstractBG<*>?):
+	AbstractBG<Image>(bg, addBGFX) {
+	final override val res:Image = run {
 		img.load()
-		img.res.copy() ?: Image(img.width, img.height)
+		img.res.copy()?:Image(img.width, img.height)
 	}
 
 }

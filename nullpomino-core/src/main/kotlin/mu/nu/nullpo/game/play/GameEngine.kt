@@ -1070,8 +1070,8 @@ class GameEngine(
 	/** ソフト・Hard drop・先行ホールド・同方向への先行rotationの使用制限解除 */
 	private fun checkDropContinuousUse() {
 		if(gameActive) {
-			if(!ctrl.isPress(down)||!ruleOpt.softdropLimit) softdropContinuousUse = false
-			if(!ctrl.isPress(up)||!ruleOpt.harddropLimit) harddropContinuousUse = false
+			if(!ctrl.isPress(down)||ruleOpt.softdropLimit<0) softdropContinuousUse = false
+			if(!ctrl.isPress(up)||ruleOpt.harddropLimit<0) harddropContinuousUse = false
 			if(!ctrl.isPress(Controller.BUTTON_D)||!ruleOpt.holdInitialLimit) initialHoldContinuousUse = false
 			if(initialSpinContinuousUse) {
 				val dir = getSpinOperation()

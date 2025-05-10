@@ -31,26 +31,31 @@
 
 package mu.nu.nullpo.gui.common.bg
 
-import org.apache.logging.log4j.LogManager
-import org.apache.logging.log4j.Logger
+import zeroxfc.nullpo.custom.libs.Interpolation
+import zeroxfc.nullpo.custom.libs.Vector.Companion.almostEqual
 
-abstract class AbstractBG<T:Any?>(val img:mu.nu.nullpo.gui.common.ResourceImage<T>) {
+abstract class AbstractBG<T:Any?>(val img:mu.nu.nullpo.gui.common.ResourceImage<T>,val addBGFX:AbstractBG<*>? = null) {
 	open val res:T get() = img.res
 	/** Speed Multiplier: Recommended .5f-1f-2f*/
 	open var speed = 1f
+	protected var spdN = 0f
 	open var tick = 0
 	/** Performs an update tick on the background. Advisably used in onLast.*/
-	abstract fun update()
+	open fun update(){
+		addBGFX?.update()
+		if(spdN!=speed)
+			spdN = if(almostEqual(spdN, speed, .001f/100)) speed else Interpolation.lerp(spdN, speed, .05f)
+	}
 	/** Resets the background to its base state.*/
 	abstract fun reset()
 	/** Draws the background to the game screen.*/
-	abstract fun draw(render:mu.nu.nullpo.gui.common.AbstractRenderer) /*{
+	abstract fun draw(render:mu.nu.nullpo.gui.common.AbstractRenderer,bg:Boolean = true) /*{
 		bufI.draw()
 	}*/
 	open fun drawLite() =
 		img.draw(0, 0, 640, 480, 0, 0, img.width, img.height)
 
-	protected val log:Logger = LogManager.getLogger()
+	protected val log:org.apache.logging.log4j.Logger = org.apache.logging.log4j.LogManager.getLogger()
 
 	init {
 		log.debug("${this::class.java.name} created: ${img.name}")

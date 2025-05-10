@@ -174,7 +174,7 @@ open class BackgroundTGM3StyleNoRotation<T>(img:ResourceImage<T>):AbstractBG<T>(
 	}
 
 
-	override fun draw(render:AbstractRenderer) {
+	override fun draw(render:AbstractRenderer, bg:Boolean) {
 		//customHolder.drawImage("blackBG", 0, 0)
 		val imgDim = listOf(sizeX,sizeY).map {it*currentValues.scale}
 

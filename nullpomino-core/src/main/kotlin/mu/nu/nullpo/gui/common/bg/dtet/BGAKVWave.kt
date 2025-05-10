@@ -31,6 +31,7 @@
 
 package mu.nu.nullpo.gui.common.bg.dtet
 
+import mu.nu.nullpo.gui.common.AbstractRenderer
 import kotlin.math.sin
 
 class BGAKVWave<T>(bg:mu.nu.nullpo.gui.common.ResourceImage<T>):mu.nu.nullpo.gui.common.bg.AbstractBG<T>(bg) {
@@ -55,7 +56,7 @@ class BGAKVWave<T>(bg:mu.nu.nullpo.gui.common.ResourceImage<T>):mu.nu.nullpo.gui
 		tick = 0
 	}
 
-	override fun draw(render:mu.nu.nullpo.gui.common.AbstractRenderer) {
+	override fun draw(render:AbstractRenderer, bg:Boolean) {
 		for(i in 0..59) {
 			val y = 30f+i*7+sin((t*1.7f+i*6)*RG)*28
 			img.draw(0f, i*8f, 0f, y, 640f, y+8)

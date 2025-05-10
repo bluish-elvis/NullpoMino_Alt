@@ -31,13 +31,11 @@
 
 package mu.nu.nullpo.gui.slick.img.bg
 
-import mu.nu.nullpo.gui.common.AbstractRenderer
-import mu.nu.nullpo.gui.common.bg.AbstractBG as BaseBG
-import mu.nu.nullpo.gui.slick.ResourceImageSlick
 import kotlin.math.absoluteValue
 import kotlin.math.sin
 
-class SpinBG(bgi:ResourceImageSlick, private val addBGFX:BaseBG<*>? = null):AbstractBG(bgi) {
+class SpinBG(bgi:mu.nu.nullpo.gui.slick.ResourceImageSlick, addBGFX:mu.nu.nullpo.gui.common.bg.AbstractBG<*>? = null):
+	AbstractBG(bgi,addBGFX) {
 	val sc get() = ((1+sin(res.rotation*RG*2).absoluteValue/3)*640/minOf(res.width, res.height))
 	val cx get() = res.width/2*sc
 	val cy get() = res.height/2*sc
@@ -53,29 +51,24 @@ class SpinBG(bgi:ResourceImageSlick, private val addBGFX:BaseBG<*>? = null):Abst
 		val fact = speed*.1f
 		a += fact
 		a %= 360f
+		res.rotation = a
 		res.setCenterOfRotation(cx, cy)
 		addBGFX?.update()
 	}
 
 	override fun reset() {
+		img.load()
 		a = 0f
+		res.rotation = a
+		res.setCenterOfRotation(cx, cy)
 		log.debug("SpinBG reset")
 		addBGFX?.reset()
 	}
 
-	override fun draw(render:AbstractRenderer) {
+	override fun draw(render:mu.nu.nullpo.gui.common.AbstractRenderer, bg:Boolean) {
 		render.drawBlackBG()
-		res.rotation = a
 		res.draw(320f-cx, 240f-cy, sc)
-		/*render.drawFont(0, 0, "${res.width}x${res.height} $sc", BaseFont.FONT.NANO, scale = .5f)
-		render.drawFont(
-			0,
-			8,
-			"${640f/minOf(this.res.width, this.res.height)} x ${sin(PI+this.res.rotation*RG*4)}",
-			BaseFont.FONT.NANO,
-			scale = .5f
-		)*/
-		addBGFX?.draw(render)
+		addBGFX?.draw(render, false)
 	}
 
 }

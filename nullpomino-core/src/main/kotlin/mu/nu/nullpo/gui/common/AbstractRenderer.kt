@@ -37,6 +37,13 @@ import mu.nu.nullpo.game.event.EventReceiver
 import mu.nu.nullpo.game.event.EventReceiver.COLOR.*
 import mu.nu.nullpo.game.event.ScoreEvent
 import mu.nu.nullpo.game.play.GameEngine
+import mu.nu.nullpo.game.play.GameManager
+import mu.nu.nullpo.gui.common.bg.AbstractBG
+import mu.nu.nullpo.gui.common.bg.SpinBG
+import mu.nu.nullpo.gui.common.bg.dtet.*
+import mu.nu.nullpo.gui.common.bg.tech.Galaxy
+import mu.nu.nullpo.gui.common.bg.tech.Snow
+import mu.nu.nullpo.gui.common.bg.tech.Space
 import mu.nu.nullpo.gui.common.fx.*
 import mu.nu.nullpo.gui.common.fx.FragAnim.ANIM
 import mu.nu.nullpo.gui.common.fx.particles.BlockParticle
@@ -44,9 +51,43 @@ import mu.nu.nullpo.gui.common.fx.particles.Fireworks
 import mu.nu.nullpo.gui.common.fx.particles.LandingParticles
 import mu.nu.nullpo.gui.slick.NullpoMinoSlick.Companion.rainbow
 import mu.nu.nullpo.util.GeneralUtil.toInt
+import kotlin.random.Random
 
 abstract class AbstractRenderer:EventReceiver() {
 	internal abstract val resources:ResourceHolder
+	open val bgType:List<AbstractBG<*>> by lazy {
+		resources.imgPlayBG.map {i ->
+			SpinBG(i, when(Random.nextInt(13)) {
+				in 0..1 -> BGADNightClock(resources.imgPlayBGA.first {it.name.endsWith("_n")})
+				in 2..3 -> BGAHBeams(resources.imgPlayBGA.first {it.name.endsWith("_b")})
+				in 4..5 -> BGAMRush(resources.imgPlayBGA.first {it.name.endsWith("_r")})
+				in 6..7 -> Galaxy()
+				in 8..9 -> Space()
+				in 10..11 -> Snow()
+				else -> null
+			})
+		}
+	}
+
+	open val bgaType:List<AbstractBG<*>> by lazy {
+		resources.imgPlayBGA.map {
+			when {
+				it.name.endsWith("_o") -> BGAAOcean(it)
+				it.name.endsWith("_c") -> BGABCircleLoop(it)
+				it.name.endsWith("_f") -> BGACFall(it)
+				it.name.endsWith("_n") -> BGADNightClock(it)
+				it.name.endsWith("_d") -> BGAEDeep(it)
+				it.name.endsWith("_k") -> BGAFKaleidSq(it)
+				it.name.endsWith("_t") -> BGAGTexture(it)
+				it.name.endsWith("_b") -> BGAHBeams(it)
+				it.name.endsWith("_m") -> BGAIMist(it)
+				it.name.endsWith("_p") -> BGAJPrism(it)
+				it.name.endsWith("_x") -> BGALExTrans(it)
+				it.name.endsWith("_r") -> BGAMRush(it)
+				else -> BGAKVWave(it)
+			}
+		}
+	}
 
 	protected val showLineEffect get() = heavyEffect>0
 	protected val animBG get() = heavyEffect>1
@@ -449,20 +490,20 @@ abstract class AbstractRenderer:EventReceiver() {
 			drawPiece(dX, dY, p, scale*if(engine.big) 2 else 1, -.25f)
 			val outline = if(engine.statc[0]%2==0||!engine.holdDisable) if(edgeBold) 2f else 1f else 0f
 			if(outline>0) p.block.forEachIndexed {i, blk ->
-				val oColor=if(engine.statc[0]%2==1) 0xFFFFFF else
+				val oColor = if(engine.statc[0]%2==1) 0xFFFFFF else
 					getColorByID(engine.holdPieceObject?.block[i]?.color?:Block.COLOR.BLACK)
 				val bX = pX+p.dataX[p.direction][i]
 				val bY = pY+p.dataY[p.direction][i]
 				val x = x+bX*blkSize
 				val y = y+bY*blkSize+ys
 				if(!blk.getAttribute(Block.ATTRIBUTE.CONNECT_UP)&&engine.field.getBlockEmpty(bX, bY-1, false))
-					drawLineSpecific(x, y, x+blkSize, y,oColor, w = outline)
+					drawLineSpecific(x, y, x+blkSize, y, oColor, w = outline)
 				if(!blk.getAttribute(Block.ATTRIBUTE.CONNECT_DOWN)&&engine.field.getBlockEmpty(bX, bY+1, false))
-					drawLineSpecific(x, y+blkSize, x+blkSize, y+blkSize,oColor, w = outline)
+					drawLineSpecific(x, y+blkSize, x+blkSize, y+blkSize, oColor, w = outline)
 				if(!blk.getAttribute(Block.ATTRIBUTE.CONNECT_LEFT)&&engine.field.getBlockEmpty(bX-1, bY, false))
-					drawLineSpecific(x, y, x, y+blkSize,oColor, w = outline)
+					drawLineSpecific(x, y, x, y+blkSize, oColor, w = outline)
 				if(!blk.getAttribute(Block.ATTRIBUTE.CONNECT_RIGHT)&&engine.field.getBlockEmpty(bX+1, bY, false))
-					drawLineSpecific(x+blkSize, y, x+blkSize, y+blkSize,oColor, w = outline)
+					drawLineSpecific(x+blkSize, y, x+blkSize, y+blkSize, oColor, w = outline)
 			}
 			if(engine.nowPieceSteps<10) drawDirectNano(
 				x+(pX+p.spinCX-.1f)*blkSize, dY,
@@ -742,6 +783,13 @@ abstract class AbstractRenderer:EventReceiver() {
 				drawPiece(x+(blkSize*shadowX-nextCenter).toInt(), y+(blkSize*shadowY).toInt(), hold, blkSize/2f/BS, .25f, .25f)
 			}
 		}
+	}
+
+	override fun modeInit(manager:GameManager) {
+		super.modeInit(manager)
+		bgType.forEach {it.reset()}
+		bgaType.forEach {it.reset()}
+//		manager.bgMan.fadeEnabled=heavyEffect>0
 	}
 
 	/* Ready画面の描画処理 */

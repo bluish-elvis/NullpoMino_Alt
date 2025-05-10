@@ -41,6 +41,7 @@ import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.game.subsystem.mode.menu.*
 import mu.nu.nullpo.gui.common.BaseFont
 import mu.nu.nullpo.util.CustomProperties
+import mu.nu.nullpo.util.GeneralUtil.plus
 import mu.nu.nullpo.util.GeneralUtil.toTimeStr
 
 /** RETRO MODERN mode (Based from NAOMI, build by Venom_Nhelv 20180131-2020 */
@@ -182,7 +183,7 @@ class RetroModern:AbstractMode() {
 		owner.musMan.bgm = when(lv) {
 //			MAX_LEVEL -> BGM.GrandM(1)
 			MAX_LEVEL+1 -> BGM.Silent
-			MAX_LEVEL+2 -> BGM.Ending(if(gameType<3) 3 else 4)
+			MAX_LEVEL+2 -> BGM.Ending(3+(gameType>0)+(gameType>2))
 			else -> BGM.RetroS(1+tableBGMLevel.count {it<=lv})
 		}
 	}

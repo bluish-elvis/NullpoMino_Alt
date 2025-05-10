@@ -42,6 +42,7 @@ import java.io.File
 import java.io.FileInputStream
 import java.util.*
 import java.util.zip.GZIPInputStream
+import java.util.zip.ZipException
 
 /** Rule selector state */
 internal class StateConfigRuleSelect:BaseMenuScrollState() {
@@ -74,7 +75,7 @@ internal class StateConfigRuleSelect:BaseMenuScrollState() {
 		get() {
 			val dir = File("config/rule")
 
-			val list = dir.list {_, name -> name.endsWith(".rul")}
+			val list = dir.list {_, name -> name.endsWith(".rul")||name.endsWith(".rul.gz")}
 
 			if(!System.getProperty("os.name").startsWith("Windows"))
 				list?.sort()
@@ -105,7 +106,11 @@ internal class StateConfigRuleSelect:BaseMenuScrollState() {
 			entry.file = element
 			entry.path = file.path
 			try {
-				val rf = GZIPInputStream(FileInputStream(file))
+				val rf = try {
+					GZIPInputStream(FileInputStream(file))
+				}catch(_:ZipException){
+					FileInputStream(file)
+				}
 				val ret = Json.decodeFromString<RuleOptions>(rf.bufferedReader().use {it.readText()})
 				entry.name = ret.strRuleName
 				entry.style = ret.style

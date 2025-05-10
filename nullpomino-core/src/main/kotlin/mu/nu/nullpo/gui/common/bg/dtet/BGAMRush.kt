@@ -31,7 +31,9 @@
 
 package mu.nu.nullpo.gui.common.bg.dtet
 
-class BGAMRush<T>(res:mu.nu.nullpo.gui.common.ResourceImage<T>, private val bg:Boolean = true):mu.nu.nullpo.gui.common.bg
+import mu.nu.nullpo.gui.common.AbstractRenderer
+
+class BGAMRush<T>(res:mu.nu.nullpo.gui.common.ResourceImage<T>):mu.nu.nullpo.gui.common.bg
 .AbstractBG<T>(res) {
 	private var tickY = 0f
 	override fun update() {
@@ -46,7 +48,7 @@ class BGAMRush<T>(res:mu.nu.nullpo.gui.common.ResourceImage<T>, private val bg:B
 		tickY = 0f
 	}
 
-	override fun draw(render:mu.nu.nullpo.gui.common.AbstractRenderer) {
+	override fun draw(render:AbstractRenderer, bg:Boolean) {
 		if(bg) drawLite()
 		else {
 			render.drawBlackBG(0.3f)

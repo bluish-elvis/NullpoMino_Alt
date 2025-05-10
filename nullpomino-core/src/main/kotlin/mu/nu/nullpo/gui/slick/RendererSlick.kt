@@ -35,19 +35,18 @@ import mu.nu.nullpo.game.play.GameEngine.Companion.FRAME_SKIN_GRADE
 import mu.nu.nullpo.game.play.GameManager
 import mu.nu.nullpo.gui.common.AbstractRenderer
 import mu.nu.nullpo.gui.common.BaseFont
-import mu.nu.nullpo.gui.common.bg.AbstractBG
-import mu.nu.nullpo.gui.common.bg.dtet.*
+import mu.nu.nullpo.gui.common.ResourceImage
 import mu.nu.nullpo.gui.slick.img.*
+import mu.nu.nullpo.gui.slick.img.bg.AbstractBG
 import mu.nu.nullpo.gui.slick.img.bg.SpinBG
 import mu.nu.nullpo.util.CustomProperties
+import org.apache.logging.log4j.LogManager
 import org.newdawn.slick.Color
 import org.newdawn.slick.Graphics
-import org.newdawn.slick.Image
 import org.newdawn.slick.geom.Polygon
 import zeroxfc.nullpo.custom.libs.Vector
 import kotlin.math.PI
 import kotlin.math.absoluteValue
-import kotlin.random.Random
 
 /** ゲームの event 処理と描画処理 (Slick版） */
 class RendererSlick(
@@ -314,45 +313,24 @@ class RendererSlick(
 		}
 	}
 
-	val bgType:List<AbstractBG<Image>> by lazy {
-		resources.imgPlayBG.map {i ->
-			SpinBG(
-				i, when(Random.Default.nextInt(10)) {
-					in 0..1 -> BGADNightClock(resources.imgPlayBGA.first {it.name.endsWith("_n")}, false)
-					in 2..4 -> BGAHBeams(resources.imgPlayBGA.first {it.name.endsWith("_b")}, false)
-					in 5..7 -> BGAMRush(resources.imgPlayBGA.first {it.name.endsWith("_r")}, false)
-					else -> null
-				}
-			)
+	override val bgType by lazy {
+		super.bgType.map {
+			if(it is mu.nu.nullpo.gui.common.bg.SpinBG)
+				SpinBG(ResourceImageSlick(it.img, true), it.addBGFX)
+			else it::class.java.getDeclaredConstructor(ResourceImage::class.java)
+				.newInstance(ResourceImageSlick(it.img)) as AbstractBG
 		}
 	}
 
-	val bgaType:List<AbstractBG<Image>> by lazy {
-		resources.imgPlayBGA.map {
-			when {
-				it.name.endsWith("_o") -> BGAAOcean(it)
-				it.name.endsWith("_c") -> BGABCircleLoop(it)
-				it.name.endsWith("_f") -> BGACFall(it)
-				it.name.endsWith("_n") -> BGADNightClock(it)
-				it.name.endsWith("_d") -> BGAEDeep(it)
-				it.name.endsWith("_k") -> BGAFKaleidSq(it)
-				it.name.endsWith("_t") -> BGAGTexture(it)
-				it.name.endsWith("_b") -> BGAHBeams(it)
-				it.name.endsWith("_m") -> BGAIMist(it)
-				it.name.endsWith("_p") -> BGAJPrism(it)
-				it.name.endsWith("_x") -> BGALExTrans(it)
-				it.name.endsWith("_r") -> BGAMRush(it)
-				else -> BGAKVWave(it)
-			}
+	/*@Suppress("UNCHECKED_CAST")
+	override val bgaType:List<AbstractBG<Image>> by lazy {
+		super.bgaType.map{
+			log.debug(it::class.java.name)
+			log.debug(it::class.java.getDeclaredConstructor(ResourceImage::class.java))
+			it::class.java.getDeclaredConstructor(ResourceImage::class.java).newInstance(ResourceImageSlick(it.img)) as
+				AbstractBG<Image>
 		}
-	}
-
-	override fun modeInit(manager:GameManager) {
-		super.modeInit(manager)
-		bgType.forEach {it.reset()}
-		bgaType.forEach {it.reset()}
-//		engine.owner.bgMan.fadeEnabled=heavyEffect
-	}
+	}*/
 
 	override fun onFirst(engine:GameEngine) {
 		super.onFirst(engine)
@@ -485,5 +463,9 @@ Exit Sub
 			}
 		}
 	}*/
+	companion object {
 
+		/** Log */
+		internal val log = LogManager.getLogger()
+	}
 }

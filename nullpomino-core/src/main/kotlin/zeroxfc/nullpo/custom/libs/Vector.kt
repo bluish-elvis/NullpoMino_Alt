@@ -36,13 +36,7 @@
  */
 package zeroxfc.nullpo.custom.libs
 
-import kotlin.math.PI
-import kotlin.math.abs
-import kotlin.math.atan2
-import kotlin.math.cos
-import kotlin.math.pow
-import kotlin.math.sin
-import kotlin.math.sqrt
+import kotlin.math.*
 
 /**
 Generate a vector for handling directions.
@@ -51,7 +45,7 @@ Generate a vector for handling directions.
 @param isDir true: Use (Mag., Rad.), false: use (X, Y).
  */
 class Vector @JvmOverloads constructor(sx:Float = 0f, sy:Float = 0f, isDir:Boolean = false) {
-	constructor(sx:Int, sy:Int = 0, isDir:Boolean = false):this(sx.toFloat(), sy.toFloat(), isDir)
+	constructor(sx:Number, sy:Number = 0, isDir:Boolean = false):this(sx.toFloat(), sy.toFloat(), isDir)
 
 	/** X-coordinate */
 	var x = 0f
@@ -98,6 +92,7 @@ class Vector @JvmOverloads constructor(sx:Float = 0f, sy:Float = 0f, isDir:Boole
 	operator fun plus(e:Vector):Vector = Vector(x+e.x, y+e.y)
 	/** Subtracts [e] from this vector.*/
 	operator fun minus(e:Vector):Vector = Vector(x-e.x, y-e.y)
+
 	/** Multiplies the magnitude of this vector by [e].*/
 	operator fun times(e:Int):Vector = Vector(magnitude*e, direction, true)
 	/** Multiplies the magnitude of this vector by [e].*/
@@ -109,6 +104,14 @@ class Vector @JvmOverloads constructor(sx:Float = 0f, sy:Float = 0f, isDir:Boole
 	/** Spins this vector by PI radians.*/
 	operator fun unaryMinus():Vector = Vector(-x, -y)
 
+	fun set(e:Vector) {
+		x = e.x
+		y = e.y
+	}
+	fun set(e:Pair<Float, Float>) {
+		x = e.first
+		y = e.second
+	}
 	companion object {
 		/** Gives a zero vector. For use in blank initialisations.*/
 		fun zero():Vector = Vector(0f, 0f)

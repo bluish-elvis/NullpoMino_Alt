@@ -144,7 +144,7 @@ class BackgroundFrameAnim<T>(img:ResourceImage<T>, private val type:Int, frameTi
 		currentTick = 0
 	}
 
-	override fun draw(render:AbstractRenderer) {
+	override fun draw(render:AbstractRenderer, bg:Boolean) {
 		val i = chunkSequence[currentFrame]
 		val pos = i.drawLocation
 		val ddim = i.drawDimensions

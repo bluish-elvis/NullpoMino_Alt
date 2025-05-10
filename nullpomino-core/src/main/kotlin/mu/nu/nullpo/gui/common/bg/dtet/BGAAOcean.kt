@@ -31,8 +31,7 @@
 
 package mu.nu.nullpo.gui.common.bg.dtet
 
-import zeroxfc.nullpo.custom.libs.Vector.Companion.almostEqual
-import zeroxfc.nullpo.custom.libs.Interpolation
+import mu.nu.nullpo.gui.common.AbstractRenderer
 import kotlin.math.pow
 import kotlin.math.sin
 import kotlin.random.Random
@@ -42,13 +41,12 @@ class BGAAOcean<T>(bg:mu.nu.nullpo.gui.common.ResourceImage<T>):mu.nu.nullpo.gui
 For I = 0 To 29: Sea(I) = Rnd * 640: Next I*/
 	private val rasterX = MutableList(31) {Random.nextFloat()*640}
 	private val waveX = MutableList(31) {0f}
-	/** Speed 0f-2f*/
-	private var spdN = 0f
+
 	private var waveH = 0f; private set
 	private fun waveMag(i:Int) = maxOf(0.1f, (1.15f.pow(i)-spdN/2)*(1.4f-spdN*.2f))
 	override fun update() {
 		tick++
-		if(tick>=180) tick = 0
+		if(tick>=180) tick -= 180
 		rasterX.forEachIndexed {i, _ ->
 			if(i==0) {
 				rasterX[i] += spdN
@@ -62,8 +60,7 @@ For I = 0 To 29: Sea(I) = Rnd * 640: Next I*/
 			if(rasterX[i]>640) rasterX[i] -= 640f
 			if(rasterX[i]<0) rasterX[i] += 640f
 		}
-		if(spdN!=speed)
-			spdN = if(almostEqual(spdN, speed, .001f/100)) speed else Interpolation.lerp(spdN, speed, .05f)
+		super.update()
 	}
 
 	override fun reset() {
@@ -73,7 +70,7 @@ For I = 0 To 29: Sea(I) = Rnd * 640: Next I*/
 		waveH = 0f
 	}
 
-	override fun draw(render:mu.nu.nullpo.gui.common.AbstractRenderer) {
+	override fun draw(render:AbstractRenderer, bg:Boolean) {
 		rasterX.zip(waveX).forEachIndexed {i, (x, s) ->
 			if(i==0) {
 				//sky

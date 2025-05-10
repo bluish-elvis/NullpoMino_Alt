@@ -65,9 +65,7 @@ internal class StateConfigRuleStyleSelect :BaseMenuChooseState() {
 		FontNormal.printFontGrid(1, 1, "SELECT ${player+1}P STYLE", COLOR.ORANGE)
 
 		FontNormal.printFontGrid(1, 3+cursor, BaseFont.CURSOR, COLOR.RAINBOW)
-
-		for(i in 0..<GameEngine.MAX_GAMESTYLE)
-			FontNormal.printFontGrid(2, 3+i, GameEngine.GAMESTYLE_NAMES[i], cursor==i)
+		renderChoices(2,3,GameEngine.GAMESTYLE_NAMES)
 	}
 
 	/* Decide */

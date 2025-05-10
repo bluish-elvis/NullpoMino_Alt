@@ -43,5 +43,5 @@ import mu.nu.nullpo.gui.common.bg.AbstractBG
 class BackgroundNoAnim<T>(img:ResourceImage<T>):AbstractBG<T>(img) {
 	override fun update() {}
 	override fun reset() {}
-	override fun draw(render: AbstractRenderer) =	drawLite()
+	override fun draw(render:AbstractRenderer, bg:Boolean) =	drawLite()
 }

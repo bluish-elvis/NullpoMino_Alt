@@ -110,8 +110,8 @@ class LandingParticles(
 		((10-ticks)*width/7f).let {s ->
 			if(s>0)
 				r.drawBlendAdd {
-					r.resources.imgFrags[0].draw(
-						x-s, y-s/3f, x+s, y+s/3f, maxOf(0f, 1f-ticks*.1f)*cAlpha, cColor
+					r.resources.imgFrags[1].draw(
+						x-10-s/5f, y-s/3f, x+10+s/5f, y+s/3f, maxOf(0f, 1f-ticks*.1f)*cAlpha, cColor
 					)
 				}
 		}

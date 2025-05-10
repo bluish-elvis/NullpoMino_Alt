@@ -8,7 +8,7 @@
   <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
   <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
   <lwjgl.version>2.9.3</lwjgl.version>
-  <kotlin.version>2.2.0-Beta1</kotlin.version>
+  <kotlin.version>2.2.0-Beta2</kotlin.version>
   <log4j.version>3.0.0-beta2</log4j.version>
   <java.version>23</java.version>
   <maven.compiler.source>${java.version}</maven.compiler.source>
@@ -309,6 +309,12 @@
    <groupId>black.ninia</groupId>
    <artifactId>jep</artifactId>
    <version>4.1.1</version>
+  </dependency>
+  <dependency>
+   <groupId>org.junit.jupiter</groupId>
+   <artifactId>junit-jupiter</artifactId>
+   <version>RELEASE</version>
+   <scope>test</scope>
   </dependency>
   <!-- https://mvnrepository.com/artifact/org.openjdk.jmh/jmh-core
   <dependency>

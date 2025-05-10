@@ -31,11 +31,12 @@
 
 package mu.nu.nullpo.gui.common.bg.dtet
 
+import mu.nu.nullpo.gui.common.AbstractRenderer
 import kotlin.math.cos
 import kotlin.math.sin
 import kotlin.random.Random
 
-class BGADNightClock<T>(img:mu.nu.nullpo.gui.common.ResourceImage<T>, private val bg:Boolean = true):
+class BGADNightClock<T>(img:mu.nu.nullpo.gui.common.ResourceImage<T>):
 	mu.nu.nullpo.gui.common.bg.AbstractBG<T>(img) {
 	/*'（キラキラ振り子）
 FSX = Rnd * 640
@@ -115,7 +116,7 @@ FX = Sin(Sin(FC * Rg) * 35 * Rg): FY = Cos(Sin(FC * Rg) * 35 * Rg)
 KrI = KrI + 1 + (KrI = 35) * 36*/
 	}
 
-	override fun draw(render:mu.nu.nullpo.gui.common.AbstractRenderer) {
+	override fun draw(render:AbstractRenderer, bg:Boolean) {
 		if(bg) drawLite()
 		else {
 			render.drawBlackBG(0.3f)

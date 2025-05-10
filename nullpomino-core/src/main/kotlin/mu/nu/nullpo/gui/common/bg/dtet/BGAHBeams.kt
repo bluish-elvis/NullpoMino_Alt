@@ -31,11 +31,12 @@
 
 package mu.nu.nullpo.gui.common.bg.dtet
 
+import mu.nu.nullpo.gui.common.AbstractRenderer
 import kotlin.math.cos
 import kotlin.math.sin
 import kotlin.random.Random
 
-class BGAHBeams<T>(res:mu.nu.nullpo.gui.common.ResourceImage<T>, private val bg:Boolean = true):
+class BGAHBeams<T>(res:mu.nu.nullpo.gui.common.ResourceImage<T>):
 	mu.nu.nullpo.gui.common.bg.AbstractBG<T>(res) {
 	/*（レーザー）
 LsrSY = Rnd * 240
@@ -132,7 +133,7 @@ Next I*/
 		children.forEach {it.reset()}
 	}
 
-	override fun draw(render:mu.nu.nullpo.gui.common.AbstractRenderer) {
+	override fun draw(render:AbstractRenderer, bg:Boolean) {
 		if(bg) drawLite()
 		else {
 			render.drawBlackBG(0.3f)

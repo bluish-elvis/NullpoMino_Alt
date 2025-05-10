@@ -31,8 +31,7 @@
 
 package mu.nu.nullpo.gui.common.bg.dtet
 
-import zeroxfc.nullpo.custom.libs.Interpolation
-import zeroxfc.nullpo.custom.libs.Vector
+import mu.nu.nullpo.gui.common.AbstractRenderer
 import kotlin.math.sin
 import kotlin.random.Random
 
@@ -44,7 +43,6 @@ CrsFF = Rnd * 360*/
 	private var a = Random.nextFloat()*360
 	private var b = Random.nextFloat()*640
 	override var tick = Random.nextInt(7200)
-	private var spdN = 0f
 
 	override fun update() {
 		a += 2.1f+spdN
@@ -65,9 +63,7 @@ If TrM >= 2 Then
 	If CrsF >= 640 Then CrsF = CrsF - 640
 	CrsFF = CrsFF + 0.2: If CrsFF >= 360 Then CrsFF = CrsFF - 360
 End If*/
-		if(spdN!=speed)
-			spdN = if(Vector.almostEqual(spdN, speed, .001f/100)) speed else
-				Interpolation.lerp(spdN, speed, .05f)
+		super.update()
 	}
 
 	override fun reset() {
@@ -78,7 +74,7 @@ End If*/
 		spdN = 0f
 	}
 
-	override fun draw(render:mu.nu.nullpo.gui.common.AbstractRenderer) {
+	override fun draw(render:AbstractRenderer, bg:Boolean) {
 		for(i in 0..79) {
 			for(j in 0..7) {
 				val ww = 5+3*(.5f+spdN)

@@ -125,7 +125,7 @@ class BackgroundDiagonalRipple<T>(img:ResourceImage<T>, cellWidth:Int? = DEF_GRI
 		update()
 	}
 
-	override fun draw(render:AbstractRenderer) {
+	override fun draw(render:AbstractRenderer, bg:Boolean) {
 		val priorityList = chunkGrid.flatten().sortedBy {it.scale[0]}.toMutableList()
 		val baseScale = pulseBaseScale
 		if(baseScale.toDouble().almostEqual(1.0, 0.005)) {

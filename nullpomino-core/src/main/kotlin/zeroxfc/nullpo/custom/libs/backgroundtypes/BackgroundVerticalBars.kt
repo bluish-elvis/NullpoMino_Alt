@@ -113,7 +113,7 @@ class BackgroundVerticalBars<T>(img:ResourceImage<T>, pulseFrames:Int, sliceSize
 		update()
 	}
 
-	override fun draw(render:AbstractRenderer) {
+	override fun draw(render:AbstractRenderer, bg:Boolean) {
 		val priorityList = ArrayList<ImageChunk>()
 		priorityList.addAll(chunks)
 		priorityList.sortWith {c1:ImageChunk, c2:ImageChunk ->

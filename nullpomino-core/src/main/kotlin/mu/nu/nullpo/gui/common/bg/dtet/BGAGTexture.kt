@@ -31,6 +31,7 @@
 
 package mu.nu.nullpo.gui.common.bg.dtet
 
+import mu.nu.nullpo.gui.common.AbstractRenderer
 import kotlin.random.Random
 
 class BGAGTexture<T>(bg:mu.nu.nullpo.gui.common.ResourceImage<T>):mu.nu.nullpo.gui.common.bg.AbstractBG<T>(bg) {
@@ -51,7 +52,7 @@ class BGAGTexture<T>(bg:mu.nu.nullpo.gui.common.ResourceImage<T>):mu.nu.nullpo.g
 		y = Random.nextFloat()*480
 	}
 
-	override fun draw(render:mu.nu.nullpo.gui.common.AbstractRenderer) {
+	override fun draw(render:AbstractRenderer, bg:Boolean) {
 		img.draw(0f, 0f, x, y, 640f, 480f)
 		img.draw(640-x, 0f, 0f, y, x, 480f)
 		img.draw(0f, 480-y, x, 0f, 640f, y)
