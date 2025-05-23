@@ -158,16 +158,14 @@ abstract class NetDummyVSMode:NetDummyMode() {
 	/* Mode Name */
 	override val name = "NET-VS-DUMMY"
 
-	override val isVSMode:Boolean
-		get() = true
+	override val isVSMode = true
 
 	/** NET-VS: Number of players */
 	override val players:Int
 		get() = NET_MAX_PLAYERS
 
 	/** NET-VS: This is netplay-only mode */
-	override val isOnlineMode:Boolean
-		get() = true
+	override val isOnlineMode = true
 
 	/** NET-VS: Mode Initialization */
 	override fun modeInit(manager:GameManager) {

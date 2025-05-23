@@ -1178,8 +1178,9 @@ class GameEngine(
 	fun getSpawnPosX(piece:Piece?):Int = getSpawnPosX(piece, field)
 
 	/** @return [piece]が[field]に出現するY-coordinate */
-	fun getSpawnPosY(piece:Piece?, fld:Field = field):Int {
+	fun getSpawnPosY(piece:Piece?, fld:Field? = field):Int {
 		val y = getSpawnPosY(piece)
+		if (fld==null) return y
 		var p = 0
 		while(piece?.checkCollision(getSpawnPosX(piece, fld), y-p, fld)==true&&p<ruleOpt.pieceEnterMaxDistanceY) {
 			p++
