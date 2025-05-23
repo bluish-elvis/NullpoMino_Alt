@@ -396,11 +396,15 @@ class GrandM2:AbstractGrand() {
 
 			// medal
 			receiver.drawScoreMedal(engine, 0, 20, "AC", medalAC)
-			receiver.drawScoreMedal(engine, 3, 20, "ST", medalST)
+			receiver.drawScoreNum(engine, 2, 20, "%3d".format(engine.statistics.bravos))
+			receiver.drawScoreMedal(engine, 5, 20, "ST", medalST)
+			receiver.drawScoreNum(engine, 7, 20, medalsST.joinToString("."))
 			receiver.drawScoreMedal(engine, 0, 21, "SK", medalSK)
-			receiver.drawScoreMedal(engine, 3, 21, "RE", medalRE)
-			receiver.drawScoreMedal(engine, 0, 22, "SK", medalRO)
-			receiver.drawScoreMedal(engine, 3, 22, "CO", medalCO)
+			receiver.drawScoreNum(engine, 2, 21, "%3d".format(engine.statistics.totalQuadruple))
+			receiver.drawScoreMedal(engine, 5, 21, "RE", medalRE)
+			receiver.drawScoreMedal(engine, 0, 22, "RO", medalRO)
+			receiver.drawScoreMedal(engine, 5, 22, "CO", medalCO)
+			receiver.drawScoreNum(engine, 7, 22, "%3d".format(engine.statistics.maxCombo))
 
 			// Section Time
 			if(showST&&sectionTime.isNotEmpty()) {

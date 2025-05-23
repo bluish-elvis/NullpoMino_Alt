@@ -49,7 +49,7 @@ import kotlin.random.Random
 
 /** GRADE MANIA 3 Mode */
 class GrandM3:AbstractGrand() {
-	override val sectionMax = tableSectionMax.max()
+	override val sectionMax get() = tableSectionMax.max()
 
 	/** 内部 level */
 	private var internalLevel = 0
@@ -201,7 +201,7 @@ class GrandM3:AbstractGrand() {
 				rankingTime.mapIndexed {a, x -> "$a.time" to x}+
 				rankingRollClear.mapIndexed {a, x -> "$a.rollClear" to x}+
 				bestSectionTime.mapIndexed {a, x -> "$a.section.time" to x}+
-				gradeHistory.mapIndexed {a, x -> "$a.exam.history" to x}
+				gradeHistory.mapIndexed {a, x -> "exam.history.$a" to x}
 		)+rankMapOf("exam.record" to recordGrade, "exam.flaws" to demotionPoints)
 	/*override val rankPersMap:Map<String, IntArray>
 		get() = rankMap("grade" to rankingGrade, "level" to rankingLevel, "time" to rankingTime, "rollClear" to rankingRollClear,
@@ -509,19 +509,24 @@ class GrandM3:AbstractGrand() {
 							i==rankingRank
 						)
 					}
-
-					receiver.drawScoreNano(engine, 0, 18, "NEXT QUALIFY PREDICATE", COLOR.YELLOW)
+					receiver.drawScoreNano(engine, 0, 18, "CERTIFIED GRADE", COLOR.YELLOW)
+					receiver.drawScoreGrade(engine, 0, 19, getGradeName(recordGrade[goalType]), scale = 2f,
+						alpha = if(enableExam) 1f else .5f)
 					if(promotionalExam>recordGrade[goalType]) {
-						receiver.drawScoreFont(engine, 4, 19, BaseFont.CURSOR)
-						receiver.drawScoreGrade(engine, 5, 19, getGradeName(promotionalExam), scale = 1.67f)
+						receiver.drawScoreNano(engine, 4, 19, "NEXT QUALIFY", COLOR.YELLOW)
+						receiver.drawScoreFont(engine, 4, 20, BaseFont.CURSOR, alpha = if(enableExam) 1f else .5f)
+						receiver.drawScoreGrade(engine, 5, 20, getGradeName(promotionalExam), scale = 1.67f,
+							alpha = if(enableExam) 1f else .5f)
 					}
-					receiver.drawScoreGrade(engine, 0, 19, getGradeName(recordGrade[goalType]), scale = 2f)
 					for(i in 0..<GRADE_HISTORY_SIZE)
 						if(gradeHistory[goalType][i]>=0)
 							receiver.drawScoreGrade(
 								engine, -2, 15+i, getGradeName(gradeHistory[goalType][i]),
-								if(gradeHistory[goalType][i]>recordGrade[goalType]) COLOR.YELLOW else COLOR.WHITE
+								if(gradeHistory[goalType][i]>recordGrade[goalType]) COLOR.YELLOW else COLOR.WHITE,
+								alpha = if(enableExam) 1f else .5f
 							)
+					receiver.drawScoreNum(engine, -2, 16+GRADE_HISTORY_SIZE, "-${demotionPoints[goalType]}", COLOR.RED,
+						alpha = if(enableExam) 1f else .5f)
 
 					receiver.drawScoreFont(engine, 0, 17, "F:VIEW SECTION TIME", COLOR.GREEN)
 				} else {
@@ -619,15 +624,19 @@ class GrandM3:AbstractGrand() {
 			// COOL表示
 				receiver.drawMenuFont(
 					engine, 2, 21, "COOL!!", when {
-						coolDispFrame%4==0 -> COLOR.BLUE;coolDispFrame%2==0 -> COLOR.GREEN;else -> COLOR.CYAN
+						coolDispFrame%4==0 -> COLOR.BLUE; coolDispFrame%2==0 -> COLOR.GREEN; else -> COLOR.CYAN
 					}
 				)
 
 			// medal
 			receiver.drawScoreMedal(engine, 0, 20, "AC", medalAC)
-			receiver.drawScoreMedal(engine, 3, 20, "ST", medalST)
+			receiver.drawScoreNum(engine, 2, 20, "%3d".format(engine.statistics.bravos))
+			receiver.drawScoreMedal(engine, 5, 20, "ST", medalST)
+			receiver.drawScoreNum(engine, 7, 20, medalsST.joinToString("."))
 			receiver.drawScoreMedal(engine, 0, 21, "SK", medalSK)
-			receiver.drawScoreMedal(engine, 3, 21, "CO", medalCO)
+			receiver.drawScoreNum(engine, 2, 21, "%3d".format(engine.statistics.totalQuadruple))
+			receiver.drawScoreMedal(engine, 5, 21, "CO", medalCO)
+			receiver.drawScoreNum(engine, 7, 21, "%3d".format(engine.statistics.maxCombo))
 
 			// Section Time
 			if(showST&&sectionTime.isNotEmpty()) {
@@ -920,10 +929,10 @@ class GrandM3:AbstractGrand() {
 		if(li>=1&&goalType==1) {
 			gradeBasicPoint += maxOf(
 				li*10, when(li) {
-					1 -> 2;2 -> 6;3 -> 12;else -> 24
+					1 -> 2; 2 -> 6; 3 -> 12; else -> 24
 				}*(1+internalLevel/200),
 				when(li) {
-					1 -> 1;2 -> 4;3 -> 9;else -> 20
+					1 -> 1; 2 -> 4; 3 -> 9; else -> 20
 				}*(internalLevel/100-2),
 				if(engine.statistics.level>=1000&&li>=4) gradeBasicInternal*30 else 0
 			)
@@ -1035,7 +1044,9 @@ class GrandM3:AbstractGrand() {
 			if(time>41100) decTemp -= 1+(time-41100)/1800
 			if(enableExam) {
 				log.debug("** Exam result log START **")
-				log.debug("Grade Result/Record:${getGradeName(grade)} ($grade) / ${getGradeName(recordGrade[goalType])} (${recordGrade[goalType]})")
+				log.debug("Grade Result/Record:${getGradeName(grade)} ($grade) / ${
+					getGradeName(recordGrade[goalType])
+				} (${recordGrade[goalType]})")
 				log.debug(
 					"Promotional Exam: {}",
 					if(promotionFlag) "${getGradeName(promotionalExam)} ($promotionalExam)" else "disabled"
@@ -1276,7 +1287,7 @@ class GrandM3:AbstractGrand() {
 			if(enableExam) updateGradeHistory(grade, goalType)
 
 			/** Update best section time records */
-			if(medalST==3&&!isAnyExam)
+			if(medalST==3)
 				for(i in 0..<tableSectionMax[goalType])
 					if(sectionIsNewRecord[i]) bestSectionTime[goalType][i] = sectionTime[i]
 
@@ -1332,12 +1343,11 @@ class GrandM3:AbstractGrand() {
 	 * @param gr 段位
 	 */
 	private fun updateGradeHistory(gr:Int, gt:Int) {
-		if(gradeHistory.size>=GRADE_HISTORY_SIZE) gradeHistory[gt].removeAt(0)
-		gradeHistory[gt] += gr
-
+		gradeHistory[gt].add(gr)
+		if(gradeHistory[gt].size>=GRADE_HISTORY_SIZE) gradeHistory[gt].removeFirst()
 		// Debug log
 		log.debug("** Exam grade history START **")
-		for(i in gradeHistory.indices)
+		for(i in gradeHistory[gt].indices)
 			log.debug("$i: ${getGradeName(gradeHistory[gt][i])} (${gradeHistory[gt][i]})")
 
 		log.debug("*** Exam grade history END ***")

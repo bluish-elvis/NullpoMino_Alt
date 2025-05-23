@@ -84,6 +84,8 @@ class GrandSStealth:AbstractGrand() {
 	/** Your place on leaderboard (-1: out of rank) */
 	private var rankingRank = 0
 
+	private var lineInFilter = 0
+
 	/** Grade records */
 	private val rankingGrade = MutableList(rankingMax) {0}
 	/** Level records */
@@ -109,6 +111,7 @@ class GrandSStealth:AbstractGrand() {
 		super.playerInit(engine)
 		grade = 0
 		gradeFlash = 0
+		lineInFilter = 0
 		rollTime = 0
 		rollClear = 0
 		rollStarted = false
@@ -117,7 +120,7 @@ class GrandSStealth:AbstractGrand() {
 		medals.reset()
 		isShowBestSectionTime = false
 		startLevel = 0
-		secAlert = false
+		secAlert = true
 		big = false
 		showST = true
 
@@ -128,9 +131,9 @@ class GrandSStealth:AbstractGrand() {
 		rankingRollClear.fill(0)
 		bestSectionTime.fill(DEFAULT_SECTION_TIME)
 
-		engine.twistEnable = false
-		engine.b2bEnable = false
-		engine.splitB2B = false
+		engine.twistEnable = true
+		engine.b2bEnable = true
+		engine.splitB2B = true
 		engine.comboType = GameEngine.COMBO_TYPE_DOUBLE
 		engine.frameSkin = GameEngine.FRAME_COLOR_CYAN
 		engine.bigHalf = true
@@ -318,7 +321,7 @@ class GrandSStealth:AbstractGrand() {
 							receiver.drawScoreFont(
 								engine, 3, topY+i, tableGradeName[rankingGrade[i]],
 								when {
-									rankingRollClear[i]==1 -> COLOR.GREEN;rankingRollClear[i]==2 -> COLOR.ORANGE;else -> COLOR.WHITE
+									rankingRollClear[i]==1 -> COLOR.GREEN; rankingRollClear[i]==2 -> COLOR.ORANGE; else -> COLOR.WHITE
 								}
 							)
 						receiver.drawScoreNum(engine, 5, topY+i, "%03d".format(rankingLevel[i]), i==rankingRank)
@@ -349,8 +352,9 @@ class GrandSStealth:AbstractGrand() {
 				receiver.drawScoreFont(engine, 0, 2, tableGradeName[grade], gradeFlash>0&&gradeFlash%4==0, 2f)
 
 			// Score
-			receiver.drawScoreFont(engine, 0, 5, "Score", COLOR.PURPLE)
-			receiver.drawScoreNum(engine, 0, 6, "$scDisp"+"\n"+lastScore)
+			receiver.drawScoreFont(engine, 0, 4, "Score", COLOR.PURPLE)
+			receiver.drawScoreNum(engine, 5, 4, "+$lastScore")
+			receiver.drawScoreNum(engine, 0, 5, "$scDisp", 2f)
 
 			receiver.drawScoreFont(engine, 0, 9, "Level", COLOR.PURPLE)
 			receiver.drawScoreNum(engine, 1, 10, "%3d".format(maxOf(engine.statistics.level, 0)))
@@ -361,18 +365,22 @@ class GrandSStealth:AbstractGrand() {
 			receiver.drawScoreNum(engine, 0, 15, engine.statistics.time.toTimeStr, 2f)
 
 			if(engine.gameActive&&engine.ending==2) {
-				var time = ROLLTIMELIMIT-rollTime
-				if(time<0) time = 0
+				val time = maxOf(0, ROLLTIMELIMIT-rollTime)
 				receiver.drawScoreFont(engine, 0, 17, "ROLL TIME", COLOR.PURPLE)
 				receiver.drawScoreNum(engine, 0, 18, time.toTimeStr, time>0&&time<10*60, 2f)
 			}
 
 			receiver.drawScoreMedal(engine, 0, 20, "AC", medalAC)
-			receiver.drawScoreMedal(engine, 3, 20, "ST", medalST)
+			receiver.drawScoreNum(engine, 2, 20, "%3d".format(engine.statistics.bravos))
+			receiver.drawScoreMedal(engine, 5, 20, "ST", medalST)
+			receiver.drawScoreNum(engine, 7, 20, medalsST.joinToString("."))
 			receiver.drawScoreMedal(engine, 0, 21, "SK", medalSK)
-			receiver.drawScoreMedal(engine, 3, 21, "RE", medalRE)
+			receiver.drawScoreNum(engine, 2, 21, "%3d".format(engine.statistics.totalQuadruple))
+			receiver.drawScoreMedal(engine, 5, 21, "RE", medalRE)
+			receiver.drawScoreNum(engine, 7, 21, "%3d".format(lineInFilter))
 			receiver.drawScoreMedal(engine, 0, 22, "RO", medalRO)
-			receiver.drawScoreMedal(engine, 3, 22, "CO", medalCO)
+			receiver.drawScoreMedal(engine, 5, 22, "CO", medalCO)
+			receiver.drawScoreNum(engine, 7, 22, "%3d".format(engine.statistics.maxCombo))
 
 			if(showST&&sectionTime.isNotEmpty()) {
 				val x = if(receiver.nextDisplayType==2) 8 else 12
@@ -416,9 +424,15 @@ class GrandSStealth:AbstractGrand() {
 			val levelb = engine.statistics.level
 			val section = levelb/100
 			if(li>=4) sectionQuads[section]++
+			val res=engine.lastLinesY.flatten().count {it>=engine.fieldHeight-engine.heboHiddenYNow}
+			lineInFilter += res
+			engine.heboHiddenYNow-=res
+			val bonus =
+				engine.statistics.totalQuadruple/10+engine.statistics.totalTwistsLine/16+engine.statistics.bravos/6+lineInFilter/28
+			levelUp(engine, li.let {it+maxOf(0, it-2)}+bonus)
 
-			levelUp(engine, li)
-
+			val bonusTime =
+				engine.statistics.totalQuadruple*3+engine.statistics.totalTwistsLine*2+engine.statistics.bravos*10+lineInFilter*5
 			if(engine.statistics.level>=999) {
 				if(engine.timerActive) sectionsDone++
 
@@ -435,7 +449,7 @@ class GrandSStealth:AbstractGrand() {
 					grade = 6
 					gradeFlash = 180
 				}
-			} else if(nextSecLv==300&&engine.statistics.level>=300&&engine.statistics.time>LV300TORIKAN) {
+			} else if(nextSecLv==300&&engine.statistics.level>=300&&engine.statistics.time>(LV300TORIKAN+bonusTime*3)) {
 				if(engine.timerActive) sectionsDone++
 
 				engine.playSE("endingstart")
@@ -450,9 +464,8 @@ class GrandSStealth:AbstractGrand() {
 				}
 
 				stMedalCheck(engine, section)
-			} else if(nextSecLv==500&&engine.statistics.level>=500&&engine.statistics.time>LV500TORIKAN) {
+			} else if(nextSecLv==500&&engine.statistics.level>=500&&engine.statistics.time>(LV500TORIKAN+bonusTime*5)) {
 				if(engine.timerActive) sectionsDone++
-
 
 				engine.playSE("endingstart")
 				engine.statistics.level = 500
@@ -466,7 +479,7 @@ class GrandSStealth:AbstractGrand() {
 				}
 
 				stMedalCheck(engine, section)
-			} else if(nextSecLv==800&&engine.statistics.level>=800&&engine.statistics.time>LV800TORIKAN) {
+			} else if(nextSecLv==800&&engine.statistics.level>=800&&engine.statistics.time>(LV800TORIKAN+bonusTime*8)) {
 				if(engine.timerActive) sectionsDone++
 
 

@@ -38,6 +38,7 @@ import mu.nu.nullpo.game.event.EventReceiver.COLOR.*
 import mu.nu.nullpo.game.event.ScoreEvent
 import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.game.play.GameManager
+import mu.nu.nullpo.gui.common.BaseFont.FONT
 import mu.nu.nullpo.gui.common.bg.AbstractBG
 import mu.nu.nullpo.gui.common.bg.SpinBG
 import mu.nu.nullpo.gui.common.bg.dtet.*
@@ -144,8 +145,8 @@ abstract class AbstractRenderer:EventReceiver() {
 				bgaType[id.absoluteValue-1].speed = sp
 	}
 
-	override fun drawFont(x:Float, y:Float, str:String, font:BaseFont.FONT, color:COLOR, scale:Float, alpha:Float) {
-		if(font==BaseFont.FONT.TTF) printTTFSpecific(x, y, str, color, scale, alpha)
+	override fun drawFont(x:Float, y:Float, str:String, font:FONT, color:COLOR, scale:Float, alpha:Float) {
+		if(font==FONT.TTF) printTTFSpecific(x, y, str, color, scale, alpha)
 		else printFontSpecific(x, y, str, font, color, scale, alpha)
 	}
 
@@ -453,7 +454,7 @@ abstract class AbstractRenderer:EventReceiver() {
 			}
 			for(i in 0..2) {
 				val show = when(i) {
-					0 -> "LINE" to spd.lineDelay; 1 -> "LOCK" to spd.lockDelay;else -> "DAS" to spd.das
+					0 -> "LINE" to spd.lineDelay; 1 -> "LOCK" to spd.lockDelay; else -> "DAS" to spd.das
 				}
 				drawMenuNum(engine, 8-i*3, zy+1, String.format(if(i==1) "%2d+" else "%2d", show.second))
 				drawMenuNano(engine, 6.5f-i*3, zy+1f, show.first, scale = .5f)
@@ -504,7 +505,9 @@ abstract class AbstractRenderer:EventReceiver() {
 			val outline = if(engine.statc[0]%2==0||!engine.holdDisable) if(edgeBold) 2f else 1f else 0f
 			if(outline>0) p.block.forEachIndexed {i, blk ->
 				val oColor = if(engine.statc[0]%2==1) 0xFFFFFF else
-					getColorByID(engine.holdPieceObject?.block[i]?.color?:Block.COLOR.BLACK)
+					getColorByID(
+						engine.holdPieceObject?.block[i]?.run {if(getAttribute(Block.ATTRIBUTE.BONE)) Block.COLOR.WHITE else color}
+							?:Block.COLOR.BLACK)
 				val bX = pX+p.dataX[p.direction][i]
 				val bY = pY+p.dataY[p.direction][i]
 				val x = x+bX*blkSize
@@ -520,9 +523,9 @@ abstract class AbstractRenderer:EventReceiver() {
 			}
 			if(engine.nowPieceSteps<10) drawDirectNano(
 				x+(pX+p.spinCX-.1f)*blkSize, dY,
-				"${engine.nowPieceSteps}/${p.finesseLimit(engine.nowPieceX)}", COLOR.WHITE, .5f
+				"${engine.nowPieceSteps}/${p.finesseLimit(engine.nowPieceX)}", WHITE, .5f
 			)
-			if(showCenter&&engine.ghost&&engine.ruleOpt.ghost) drawDia(
+			if(showCenter) drawDia(
 				x+(pX+p.spinCX+.5f)*blkSize, y+(pY+p.spinCY+.5f)*blkSize+ys, blkSize*2/3, blkSize*2/3,
 				engine.statc[0]/(14f-engine.speed.rank*10f), alpha = .75f,
 				outlineColor = getColorByID(p.block[engine.statc[0]%p.block.size].run {
@@ -626,57 +629,59 @@ abstract class AbstractRenderer:EventReceiver() {
 	 */
 	private fun drawNext(x:Float, y:Float, engine:GameEngine) {
 		val fldWidth = engine.field.width+1
-		val fbs = engine.blockSize
+		val fbs = engine.blockSize.toFloat()
 		val cps = fldWidth*fbs
 		val cX = x+cps/2
 		val rX = x+cps
 		if(engine.isNextVisible&&engine.ruleOpt.nextDisplay>=1) {
 			val pid = engine.nextPieceCount
-			drawFont(x, y-fbs, "${engine.nextPieceArraySize}", BaseFont.FONT.NANO, COLOR.ORANGE, .5f)
-			printFontSpecific(x, y-fbs/2, "${engine.statistics.randSeed}", BaseFont.FONT.NANO, COLOR.WHITE, .5f, .5f)
+			drawFont(x, y-fbs, "${engine.nextPieceArraySize}", FONT.NANO, ORANGE, .5f)
+			printFontSpecific(x, y-fbs/2, "${engine.statistics.randSeed}", FONT.NANO, WHITE, .5f, .5f)
 			engine.getNextObject(pid)?.let {
 				//int x2 = x + 4 + ((-1 + (engine.field.getWidth() - piece.getWidth() + 1) / 2) * 16);
 				val x2 = x+engine.getSpawnPosX(it, engine.field)*fbs //Rules with spawn x modified were misaligned.
 				val y2 = y+engine.getSpawnPosY(it, engine.field)*fbs
+				val ym = y+(engine.getSpawnPosY(it, null)-engine.ruleOpt.pieceEnterMaxDistanceY)*fbs
+				drawPieceOutline(x2, ym, it, fbs, .5f)
 				if(engine.ruleOpt.fieldCeiling||!engine.ruleOpt.pieceEnterAboveField)
-					drawPieceOutline(x2, y2, it, 1f, .5f)
+					drawPieceOutline(x2, y2, it, fbs, .5f)
 				else drawPiece(x2, y2, it)
-				drawFont(cX-45, y-26, "%3d".format(pid), BaseFont.FONT.NANO, if(pid%7==0) COLOR.YELLOW else COLOR.WHITE, .75f)
+				drawFont(cX-45, y-26, "%3d".format(pid), FONT.NANO, if(pid%7==0) YELLOW else WHITE, .75f)
 			}
 			if(engine.ruleOpt.nextDisplay>1) when(nextDisplayType) {
 				2 -> {
-					drawFont(rX, y-fbs/2, "QUEUE", BaseFont.FONT.NANO, COLOR.ORANGE)
+					drawFont(rX, y-fbs/2, "QUEUE", FONT.NANO, ORANGE)
 					for(i in 0..<minOf(engine.ruleOpt.nextDisplay, 14)) {
 						engine.getNextObject(pid+i)?.let {
 							val centerX = ((4-it.width-1)*fbs)/2-it.minimumBlockX*fbs
 							val centerY = ((4-it.height-1)*fbs)/2-it.minimumBlockY*fbs
 							val pY = y+i*3*fbs
 							drawPiece(rX+centerX, pY+centerY, it, 1f)
-							(pid+i+1).let {n -> if(n%7==0) drawFont(rX, pY, "$n", BaseFont.FONT.NANO, COLOR.YELLOW, .5f)}
+							(pid+i+1).let {n -> if(n%7==0) drawFont(rX, pY, "$n", FONT.NANO, YELLOW, .5f)}
 						}
 					}
 				}
 				1 -> {
-					drawFont(rX, y, "QUEUE", BaseFont.FONT.NANO, COLOR.ORANGE)
+					drawFont(rX, y, "QUEUE", FONT.NANO, ORANGE)
 					for(i in 0..<minOf(engine.ruleOpt.nextDisplay, 14)) {
 						engine.getNextObject(pid+i)?.let {
 							val centerX = ((4-it.width-1)*fbs)/4-it.minimumBlockX*fbs/2
 							val centerY = ((4-it.height-1)*fbs)/4-it.minimumBlockY*fbs/2
 							val pY = y+i*2*fbs
 							drawPiece(rX+centerX, pY+centerY, it, .5f)
-							(pid+i+1).let {n -> if(n%7==0) drawFont(rX, pY, "$n", BaseFont.FONT.NANO, COLOR.YELLOW, .5f)}
+							(pid+i+1).let {n -> if(n%7==0) drawFont(rX, pY, "$n", FONT.NANO, YELLOW, .5f)}
 						}
 					}
 				}
 				else -> {
-					drawFont(cX-16, y-nextHeight, "NEXT", BaseFont.FONT.NANO, COLOR.ORANGE)
+					drawFont(cX-16, y-nextHeight, "NEXT", FONT.NANO, ORANGE)
 					// NEXT1~4
 					for(i in (0..<minOf(3, engine.ruleOpt.nextDisplay-1)).reversed())
 						engine.getNextObject(pid+i+1)?.let {
 							val pX = rX+(-2+i)*fbs*2
 							val cY = (i-2)*fbs/2
 							drawPiece(pX+((4-it.width-1)*fbs)/4-it.minimumBlockX*fbs/2, y+cY-(it.maximumBlockY+1)*fbs/2, it, .75f)
-							(pid+i+1).let {n -> if(n%7==0) drawFont(pX, y+cY-6, "$n", BaseFont.FONT.NANO, COLOR.YELLOW, .75f)}
+							(pid+i+1).let {n -> if(n%7==0) drawFont(pX, y+cY-6, "$n", FONT.NANO, YELLOW, .75f)}
 						}
 					if(engine.ruleOpt.nextDisplay>=5) {
 						// NEXT5~
@@ -684,7 +689,7 @@ abstract class AbstractRenderer:EventReceiver() {
 							engine.getNextObject(pid+i+4)?.let {
 								val pY = (1+i)*24
 								drawPiece(rX+((4-it.width-1)*fbs)/4-it.minimumBlockX*fbs/2, y+pY-(it.maximumBlockY+1)*8, it, .5f)
-								(pid+i+4).let {n -> if(n%7==0) drawFont(rX, y+pY-6, "$n", BaseFont.FONT.NANO, COLOR.YELLOW, .5f)}
+								(pid+i+4).let {n -> if(n%7==0) drawFont(rX, y+pY-6, "$n", FONT.NANO, YELLOW, .5f)}
 							}
 					}
 				}
@@ -698,13 +703,13 @@ abstract class AbstractRenderer:EventReceiver() {
 			val y2 = if(sideNext) y else y-fbs*3
 			if(engine.ruleOpt.holdLimit<0||holdRemain>0) {
 				var str = "SWAP"
-				var tempColor = if(engine.holdDisable) COLOR.WHITE else COLOR.GREEN
+				var tempColor = if(engine.holdDisable) WHITE else GREEN
 				if(engine.ruleOpt.holdLimit>=0) {
 					str += "\ne$holdRemain"
 					if(!engine.holdDisable&&holdRemain>0&&holdRemain<=10)
-						tempColor = if(holdRemain<=5) COLOR.RED else COLOR.YELLOW
+						tempColor = if(holdRemain<=5) RED else YELLOW
 				}
-				drawFont(x2, y2, str, BaseFont.FONT.NANO, tempColor, .75f)
+				drawFont(x2, y2, str, FONT.NANO, tempColor, .75f)
 
 				engine.holdPieceObject?.let {
 					val dark = if(engine.holdDisable) .3f else 0f
@@ -813,12 +818,12 @@ abstract class AbstractRenderer:EventReceiver() {
 		if(engine.statc[0]>0) {
 			val cy = (engine.fieldHeight-2)/2
 			if(engine.statc[0] in engine.readyStart..<engine.readyEnd)
-				drawMenuFont(engine, 0, cy, "READY", COLOR.WHITE, 2f)
+				drawMenuFont(engine, 0, cy, "READY", WHITE, 2f)
 			else if(engine.statc[0] in engine.goStart..<engine.goEnd)
-				drawMenuFont(engine, 2, cy, "GO!", COLOR.WHITE, 2f)
+				drawMenuFont(engine, 2, cy, "GO!", WHITE, 2f)
 
-			drawMenuNano(engine, 0f, cy+2.25f, "TODAY SEEDS:", COLOR.WHITE)
-			drawMenuNano(engine, 0f, cy+3f, "${engine.statistics.randSeed}", COLOR.WHITE, 0.75f)
+			drawMenuNano(engine, 0f, cy+2.25f, "TODAY SEEDS:", WHITE)
+			drawMenuNano(engine, 0f, cy+3f, "${engine.statistics.randSeed}", WHITE, 0.75f)
 		}
 	}
 
@@ -885,10 +890,15 @@ abstract class AbstractRenderer:EventReceiver() {
 		super.afterHardDropFall(engine, fall)
 	}
 
-	override fun pieceFlicked(engine:GameEngine, pX:Int, pY:Int, p:Piece) {
+	override fun pieceFlicked(engine:GameEngine, pX:Int, pY:Int, p:Piece, slide:Boolean) {
 		if(particle&&!engine.isRetroSkin) efxFG.addAll(
 			p.dataX[p.direction].zip(p.dataY[p.direction].withIndex()).groupBy({it.first}, {it.second})
-				.filterNot {it.value.isEmpty()}.flatMap {(x2, c) ->
+				.filterNot {it.value.isEmpty()}.filter {(x2, c) ->
+					c.maxBy {it.value}.value.let {y2 ->
+						!engine.field.getBlockEmpty(pX+x2, pY+y2+1, pY+y2<engine.field.height-1)
+					}
+				}
+				.flatMap {(x2, c) ->
 					val (i, y2) = c.maxBy {it.value}
 					val col = Fireworks.colorBy(getBlockColor(p.block[i]))
 					val px = engine.fX+(pX+x2)*engine.blockSize
@@ -896,7 +906,7 @@ abstract class AbstractRenderer:EventReceiver() {
 					val py = engine.fY+(pY+y2+1)*engine.blockSize
 					LandingParticles(
 						3, px, prx, py, 0f, col[0], col[1], col[2],
-						235, 45, .44f, .66f
+						235, 45, .44f, if(slide) .4f else 1f
 					).let {it.particles+it}
 				}
 		)
@@ -943,7 +953,7 @@ abstract class AbstractRenderer:EventReceiver() {
 					val sx = engine.fX+x*s
 					val sy = engine.fY+y*s
 					if(particle&&engine.blkSkin!=GameEngine.FRAME_SKIN_GB) {
-						if(blk.getAttribute(Block.ATTRIBUTE.BONE)) Fireworks.colorBy(COLOR.GREEN).let {col ->
+						if(blk.getAttribute(Block.ATTRIBUTE.BONE)) Fireworks.colorBy(GREEN).let {col ->
 							LandingParticles(
 								5, sx, sx+s, sy+s/2f, s*.5f, col[0], col[1], col[2],
 								235, 25, .44f, .66f
@@ -1026,12 +1036,12 @@ abstract class AbstractRenderer:EventReceiver() {
 
 		val cY = (engine.fieldHeight-1) // 19 : cY/3f = 6.3
 		if(engine.owner.players<=1) {
-			drawMenuFont(engine, 0f, cY/3f, "EXCELLENT!", COLOR.RAINBOW, 1f)
+			drawMenuFont(engine, 0f, cY/3f, "EXCELLENT!", RAINBOW, 1f)
 			engine.owner.mode?.name?.let {
-				drawMenuNano(engine, -30f, cY/3f+1, it, COLOR.RAINBOW, .5f)
-				drawMenuNano(engine, -30f, cY/3f+1.5f, "MODE COMPLETED", COLOR.RAINBOW, .5f)
+				drawMenuNano(engine, -30f, cY/3f+1, it, RAINBOW, .5f)
+				drawMenuNano(engine, -30f, cY/3f+1.5f, "MODE COMPLETED", RAINBOW, .5f)
 			}
-		} else drawMenuFont(engine, -3f, cY/2f, "You WIN!", COLOR.ORANGE, 1f)
+		} else drawMenuFont(engine, -3f, cY/2f, "You WIN!", ORANGE, 1f)
 	}
 
 	/* game over画面の描画処理 */
@@ -1040,15 +1050,15 @@ abstract class AbstractRenderer:EventReceiver() {
 		val offsetX = engine.fX
 		val offsetY = engine.fY
 		if(engine.lives>0&&engine.gameActive) {
-			drawDirectFont(offsetX+4, offsetY+156, "LEFT", COLOR.WHITE, 1f)
-			drawDirectFont(offsetX+128, offsetY+148, ((engine.lives-1)%10).toString(), COLOR.WHITE, 2f)
+			drawDirectFont(offsetX+4, offsetY+156, "LEFT", WHITE, 1f)
+			drawDirectFont(offsetX+128, offsetY+148, ((engine.lives-1)%10).toString(), WHITE, 2f)
 		} else if(engine.statc[0]>=engine.statc[1])
 			when {
 				engine.owner.players<2 -> if(engine.ending==0)
-					drawMenuFont(engine, -3f, engine.fieldHeight/2f, "GAME OVER", COLOR.RED, 1f)
-				else drawMenuFont(engine, -3f, engine.fieldHeight/2f, "THE END", COLOR.WHITE, 1f)
-				engine.owner.winner==-2 -> drawMenuFont(engine, -3f, engine.fieldHeight/2f, "DRAW", COLOR.PURPLE, 1f)
-				engine.owner.players<3 -> drawMenuFont(engine, -3f, engine.fieldHeight/2f, "You Lost", COLOR.RED, 1f)
+					drawMenuFont(engine, -3f, engine.fieldHeight/2f, "GAME OVER", RED, 1f)
+				else drawMenuFont(engine, -3f, engine.fieldHeight/2f, "THE END", WHITE, 1f)
+				engine.owner.winner==-2 -> drawMenuFont(engine, -3f, engine.fieldHeight/2f, "DRAW", PURPLE, 1f)
+				engine.owner.players<3 -> drawMenuFont(engine, -3f, engine.fieldHeight/2f, "You Lost", RED, 1f)
 			}
 	}
 
@@ -1059,11 +1069,11 @@ abstract class AbstractRenderer:EventReceiver() {
 
 		drawMenuFont(
 			engine, .75f, 0f+engine.fieldHeight, "RETRY",
-			if(engine.statc[0]==0) COLOR.RAINBOW else COLOR.WHITE, 1f
+			if(engine.statc[0]==0) RAINBOW else WHITE, 1f
 		)
 		drawMenuFont(
 			engine, 6.75f, 0f+engine.fieldHeight, "END",
-			if(engine.statc[0]==1) COLOR.RAINBOW else COLOR.WHITE, 1f
+			if(engine.statc[0]==1) RAINBOW else WHITE, 1f
 		)
 	}
 
@@ -1092,7 +1102,7 @@ abstract class AbstractRenderer:EventReceiver() {
 
 			drawFrame(offsetX, offsetY, engine, inside)
 			engine.statc.forEachIndexed {i, it ->
-				printFontSpecific(offsetX-20, offsetY+i*8, "%3d".format(it), BaseFont.FONT.NANO, COLOR.WHITE, .5f, .5f)
+				printFontSpecific(offsetX-20, offsetY+i*8, "%3d".format(it), FONT.NANO, WHITE, .5f, .5f)
 			}
 			efxBG.forEachIndexed {i, it -> it.draw(i, this)}
 			if(engine.displaySize!=-1) drawNext(offsetX+engine.fieldXOffset, offsetY, engine)
@@ -1122,10 +1132,10 @@ abstract class AbstractRenderer:EventReceiver() {
 
 	open fun drawBlendAdd(unit:()->Unit) = unit()
 
-	protected abstract fun printFontSpecific(x:Float, y:Float, str:String, font:BaseFont.FONT, color:COLOR, scale:Float,
+	protected abstract fun printFontSpecific(x:Float, y:Float, str:String, font:FONT, color:COLOR, scale:Float,
 		alpha:Float)
 
-	protected fun printFontSpecific(x:Number, y:Number, str:String, font:BaseFont.FONT, color:COLOR, scale:Float,
+	protected fun printFontSpecific(x:Number, y:Number, str:String, font:FONT, color:COLOR, scale:Float,
 		alpha:Float) =
 		printFontSpecific(x.toFloat(), y.toFloat(), str, font, color, scale, alpha)
 
@@ -1248,7 +1258,7 @@ abstract class AbstractRenderer:EventReceiver() {
 			it.block.forEachIndexed {i, blk ->
 				val x2 = x+(it.dataX[it.direction][i]*bigmul).toInt()
 				val y2 = y+(it.dataY[it.direction][i]*bigmul).toInt()
-				if(y2>=0) drawBlockOutline(x2, y2, blk, bigmul.toInt(), alpha, whiteLine)
+				drawBlockOutline(x2, y2, blk, bigmul.toInt(), alpha, whiteLine)
 			}
 		}
 	}
@@ -1312,11 +1322,11 @@ abstract class AbstractRenderer:EventReceiver() {
 		fillRectSpecific(
 			x, y, w, 2f, getColorByID(
 				when {
-					s<0.25f -> COLOR.CYAN
-					s<0.5f -> COLOR.GREEN
-					s<0.75f -> COLOR.YELLOW
-					s<1f -> COLOR.ORANGE
-					else -> COLOR.RED
+					s<0.25f -> CYAN
+					s<0.5f -> GREEN
+					s<0.75f -> YELLOW
+					s<1f -> ORANGE
+					else -> RED
 				}
 			)
 		)
@@ -1353,6 +1363,7 @@ abstract class AbstractRenderer:EventReceiver() {
 	 * @return color Hex
 	 */
 	protected fun getColorByID(color:Block.COLOR?):Int = getColorByID(getBlockColor(color))
+
 	companion object {
 		fun getMeterColorHex(meterColor:Int, value:Float):Int =
 			when(meterColor) {

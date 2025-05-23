@@ -419,6 +419,7 @@ class GrandM1:AbstractGrand() {
 			}
 			// medal
 			receiver.drawScoreMedal(engine, 0, 20, "AC", medalAC)
+			receiver.drawScoreNum(engine, 2, 20, "%3d".format(engine.statistics.bravos))
 		}
 	}
 

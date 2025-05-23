@@ -46,19 +46,19 @@ import mu.nu.nullpo.util.GeneralUtil.toTimeStr
 import kotlin.random.Random
 
 /** VS-BATTLE Mode */
-class VSBattle:AbstractMode() {
+open class VSBattle:AbstractMode() {
 	/** garbage blockType of */
-	private val garbageType = MutableList(MAX_PLAYERS) {0}
-	private val garbageStyle get() = garbageType.map {GarbageStyle.entries[it]}
+	protected val garbageType = MutableList(MAX_PLAYERS) {0}
+	val garbageStyle get() = garbageType.map {GarbageStyle.entries[it]}
 
 	/** Rate of change of garbage holes */
-	private val messiness = List(MAX_PLAYERS) {MutableList(2) {0}}
+	protected val messiness = List(MAX_PLAYERS) {MutableList(2) {0}}
 
 	/** Allow garbage countering */
-	private val garbageCounter = MutableList(MAX_PLAYERS) {true}
+	protected val garbageCounter = MutableList(MAX_PLAYERS) {true}
 
 	/** Allow garbage blocking */
-	private val garbageBlocking = MutableList(MAX_PLAYERS) {true}
+	protected val garbageBlocking = MutableList(MAX_PLAYERS) {true}
 
 	/** Has accumulated garbage blockOfcount */
 	val garbage get() = (0..<players).map {p -> garbageEntries[p].filter {it.time<=0}.sumOf {it.lines}}
@@ -67,19 +67,19 @@ class VSBattle:AbstractMode() {
 	val garbageSent get() = owner.engine.map {it.statistics.attacks}
 
 	/** Had sent garbage per minutes */
-	private val attackSpd get() = owner.engine.map {it.statistics.apm}
+	val attackSpd get() = owner.engine.map {it.statistics.apm}
 
 	/** VS Score */
-	private val score get() = owner.engine.map {it.statistics.vs}
+	val score get() = owner.engine.map {it.statistics.vs}
 
 	/** Had guard garbage blockOfcount */
-	private val garbageGuard = MutableList(MAX_PLAYERS) {0}
+	protected val garbageGuard = MutableList(MAX_PLAYERS) {0}
 
 	/** Last garbage hole position */
-	private val lastHole = MutableList(MAX_PLAYERS) {0}
+	protected val lastHole = MutableList(MAX_PLAYERS) {0}
 
 	/** Most recent scoring eventInCombocount */
-	private val lastcombo = MutableList(MAX_PLAYERS) {0}
+	protected val lastcombo = MutableList(MAX_PLAYERS) {0}
 
 	/** UseBGM */
 	private var bgmId = 0
@@ -153,12 +153,10 @@ class VSBattle:AbstractMode() {
 	/* Mode name */
 	override val name = "VS:Face to Face"
 
-	override val isVSMode:Boolean
-		get() = true
+	override val isVSMode = true
 
 	/* Number of players */
-	override val players:Int
-		get() = MAX_PLAYERS
+	override val players = MAX_PLAYERS
 
 	/* Mode initialization */
 	override fun modeInit(manager:GameManager) {
@@ -821,7 +819,7 @@ class VSBattle:AbstractMode() {
 	private data class GarbageEntry(var lines:Int, val playerID:Int, var time:Int)
 	companion object {
 		/** garbage blockChanges to the position of the holes in the normally random */
-		private enum class GarbageStyle {
+		enum class GarbageStyle {
 			/** One Attack will be One garbage-Group*/
 			STACK,
 			/** Each One turn will draw max 5 lines*/

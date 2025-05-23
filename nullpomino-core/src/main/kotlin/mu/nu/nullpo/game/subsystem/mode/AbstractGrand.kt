@@ -69,6 +69,7 @@ abstract class AbstractGrand:AbstractMode() {
 	protected var medalSK get() = medals.SK; set(v) {;medals.SK = v}
 	/** SK medal conditions: Required Quads */
 	open val medalSKQuads = listOf(listOf(10, 20, 30), listOf(1, 2, 4))
+
 	protected var medalRE get() = medals.RE; set(v) {;medals.RE = v}
 	/** 150個以上Blockがあるとtrue, 70個まで減らすとfalseになる */
 	protected var recoveryFlag = false
@@ -82,6 +83,10 @@ abstract class AbstractGrand:AbstractMode() {
 	protected var medalCO get() = medals.CO; set(v) {;medals.CO = v}
 	/** CO medal conditions: Required Chains */
 	private val medalCOChain = listOf(listOf(3, 4, 5), listOf(2, 3, 4))
+
+	/** TS medal conditions: Twister Line*/
+	protected var medalTS get() = medals.RO; set(v) {;medals.RO = v}
+
 
 	/** Section Time in Current run */
 	protected val sectionTime = MutableList(sectionMax) {0}
@@ -171,7 +176,7 @@ abstract class AbstractGrand:AbstractMode() {
 		engine.meterValue = engine.statistics.level%100/99f
 		engine.meterColor = GameEngine.METER_COLOR_LEVEL
 
-		if(lu>0&&engine.statistics.level==nextSecLv-1&&secAlert) engine.playSE("levelstop")
+		if(engine.statistics.level==nextSecLv-1&&secAlert) engine.playSE("levelstop")
 		// 速度変更
 		setSpeed(engine)
 

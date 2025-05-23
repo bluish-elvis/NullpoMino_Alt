@@ -1178,8 +1178,9 @@ class GameEngine(
 	fun getSpawnPosX(piece:Piece?):Int = getSpawnPosX(piece, field)
 
 	/** @return [piece]が[field]に出現するY-coordinate */
-	fun getSpawnPosY(piece:Piece?, fld:Field = field):Int {
+	fun getSpawnPosY(piece:Piece?, fld:Field? = field):Int {
 		val y = getSpawnPosY(piece)
+		if (fld==null) return y
 		var p = 0
 		while(piece?.checkCollision(getSpawnPosX(piece, fld), y-p, fld)==true&&p<ruleOpt.pieceEnterMaxDistanceY) {
 			p++
@@ -2095,7 +2096,7 @@ class GameEngine(
 
 									lastMove = if(onGroundBeforeMove) {
 										//it.updateConnectData(nowPieceX, nowPieceY, field)
-										owner.receiver.pieceFlicked(this, nowPieceX, nowPieceY, it)
+										owner.receiver.pieceFlicked(this, nowPieceX, nowPieceY, it, true)
 										extendedMoveCount++
 										LastMove.SLIDE_GROUND
 									} else LastMove.SLIDE_AIR
@@ -2193,7 +2194,7 @@ class GameEngine(
 			if(it.checkCollision(nowPieceX, nowPieceY+1, field)&&(statc[0]>0||ruleOpt.moveFirstFrame)) {
 				if(lockDelayNow==0&&lockDelay>0&&lastMove!=LastMove.SLIDE_GROUND&&lastMove!=LastMove.SPIN_GROUND) {
 					//it.updateConnectData(nowPieceX, nowPieceY, field)
-					owner.receiver.pieceFlicked(this, nowPieceX, nowPieceY, it)
+					owner.receiver.pieceFlicked(this, nowPieceX, nowPieceY, it, false)
 					playSE(if(frameSkin==FRAME_SKIN_GB) "stepold" else "step")
 					if(!ruleOpt.softdropLock&&ruleOpt.softdropSurfaceLock&&softDropUsed) softdropContinuousUse = true
 				}
@@ -2430,7 +2431,7 @@ class GameEngine(
 			}
 			// Calculate score
 			owner.mode?.calcScore(this, ev)?.let {
-				if(it>0) owner.receiver.addScore(this, nowPieceX, field.lastLinesBottom, it)
+				if(it>0) owner.receiver.addScore(this, nowPieceX, lastLinesY.maxBy{it.size}.average().toInt(), it)
 			}
 			if(li>0) owner.receiver.calcScore(this, ev)
 

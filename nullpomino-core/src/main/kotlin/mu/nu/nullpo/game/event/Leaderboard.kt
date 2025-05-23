@@ -117,7 +117,7 @@ class Leaderboard<T:Comparable<T>> private constructor(val list:MutableList<T>, 
 	fun save(file:String = filename):Boolean {
 		try {
 			val repFolder = File(file).parentFile
-			if(!repFolder.exists()) if(repFolder.mkdirs()) log.info("Created folder: ${repFolder.name}")
+			if(repFolder?.exists()!=true) if(repFolder.mkdirs()) log.info("Created folder: ${repFolder.name}")
 			else log.error("Couldn't create folder at ${repFolder.name}")
 			val s = GeneralUtil.Json.encodeToString(serializer, list)
 //			log.debug(s)

@@ -122,6 +122,10 @@ class Statistics {
 	/** Twister One-Two-3-line count */
 	var totalTwistSplitTriple = 0
 
+	/** Total Twister (without no-line) count */
+	val totalTwistsLine get() = totalTwistSingleMini + totalTwistSingle +
+			totalTwistDoubleMini + totalTwistDouble + totalTwistSplitDouble + totalTwistTriple + totalTwistSplitTriple
+
 	/** Back to Back 4-line clear count */
 	var totalB2BQuad = 0
 	/** Back to Back Split clear count */

@@ -157,8 +157,8 @@ open class EventReceiver {
 	 * @param engine GameEngine
 	 * @param pts Number of points last gained
 	 */
-	fun addScore(engine:GameEngine, x:Int, y:Int, pts:Int, color:COLOR = getPlayerColor(engine.playerID)) =
-		addScore(engine.fX.toInt()+x*engine.blockSize, engine.fY.toInt()+y*engine.blockSize, pts, color)
+	fun addScore(engine:GameEngine, x:Number, y:Number, pts:Int, color:COLOR = getPlayerColor(engine.playerID)) =
+		addScore((engine.fX+x.toFloat()*engine.blockSize).toInt(), (engine.fY+y.toFloat()*engine.blockSize).toInt(), pts, color)
 
 	open fun addCombo(x:Int, y:Int, pts:Int, type:PopupCombo.CHAIN, ex:Int) {}
 
@@ -988,9 +988,9 @@ open class EventReceiver {
 	 * @param pY pieceY
 	 * @param p piece
 	 */
-	open fun pieceFlicked(engine:GameEngine, pX:Int = engine.nowPieceX, pY:Int = engine.nowPieceY, p:Piece) {}
+	open fun pieceFlicked(engine:GameEngine, pX:Int = engine.nowPieceX, pY:Int = engine.nowPieceY, p:Piece, slide:Boolean) {}
 	fun pieceFlicked(engine:GameEngine) = engine.nowPieceObject?.let {
-		pieceFlicked(engine, engine.nowPieceX, engine.nowPieceY, it)
+		pieceFlicked(engine, engine.nowPieceX, engine.nowPieceY, it,engine.lastMove==GameEngine.LastMove.SLIDE_GROUND)
 	}
 
 	/** It will be called when the p has locked. (after calcScore)

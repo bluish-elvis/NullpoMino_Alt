@@ -318,9 +318,13 @@ class GrandS2:AbstractGrand() {
 
 			// medal
 			receiver.drawScoreMedal(engine, 0, 20, "AC", medalAC)
-			receiver.drawScoreMedal(engine, 3, 20, "ST", medalST)
+			receiver.drawScoreNum(engine, 2, 20, "%3d".format(engine.statistics.bravos))
+			receiver.drawScoreMedal(engine, 5, 20, "ST", medalST)
+			receiver.drawScoreNum(engine, 7, 20, medalsST.joinToString("."))
 			receiver.drawScoreMedal(engine, 0, 21, "SK", medalSK)
-			receiver.drawScoreMedal(engine, 3, 21, "CO", medalCO)
+			receiver.drawScoreNum(engine, 2, 21, "%3d".format(engine.statistics.totalQuadruple))
+			receiver.drawScoreMedal(engine, 5, 21, "CO", medalCO)
+			receiver.drawScoreNum(engine, 7, 21, "%3d".format(engine.statistics.maxCombo))
 			// Section Time
 			if(showST&&sectionTime.isNotEmpty()) {
 				val y = if(receiver.nextDisplayType==2) 4 else 2
