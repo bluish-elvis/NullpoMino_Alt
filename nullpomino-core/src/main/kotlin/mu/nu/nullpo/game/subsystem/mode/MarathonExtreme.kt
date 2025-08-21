@@ -41,6 +41,7 @@ import mu.nu.nullpo.game.subsystem.mode.menu.BooleanMenuItem
 import mu.nu.nullpo.game.subsystem.mode.menu.DelegateMenuItem
 import mu.nu.nullpo.game.subsystem.mode.menu.LevelMenuItem
 import mu.nu.nullpo.game.subsystem.mode.menu.MenuList
+import mu.nu.nullpo.gui.common.BaseFont.FONT.*
 import mu.nu.nullpo.util.CustomProperties
 import mu.nu.nullpo.util.GeneralUtil.toTimeStr
 
@@ -192,48 +193,50 @@ class MarathonExtreme:NetDummyMode() {
 	override fun renderLast(engine:GameEngine) {
 		if(owner.menuOnly) return
 
-		receiver.drawScoreFont(engine, 0, 0, "EXTREME MARATHON!", COLOR.RED)
+		receiver.drawScore(engine, 0, 0, "EXTREME MARATHON!", BASE, COLOR.RED)
 
 		if(engine.stat==GameEngine.Status.SETTING||engine.stat==GameEngine.Status.RESULT&&!owner.replayMode) {
 			if(!owner.replayMode&&!big&&engine.ai==null) {
 				val topY = if(receiver.nextDisplayType==2) 6 else 4
-				receiver.drawScoreFont(engine, 2, topY-1, "SCORE LINE TIME", COLOR.RED)
+				receiver.drawScore(engine, 2, topY-1, "SCORE LINE TIME", BASE, COLOR.RED)
 
 				for(i in 0..<rankingMax) {
 					var endlessIndex = 0
 					if(endless) endlessIndex = 1
 
-					receiver.drawScoreGrade(
+					receiver.drawScore(
 						engine, 0, topY+i, "%02d".format(i+1),
+						GRADE,
 						if(rankingRank==i) COLOR.RAINBOW else if(rankingLines[endlessIndex][i]>=200) COLOR.ORANGE else COLOR.RED
 					)
-					receiver.drawScoreNum(engine, 2, topY+i, "${rankingScore[endlessIndex][i]}", i==rankingRank)
-					receiver.drawScoreNum(engine, 9, topY+i, "${rankingLines[endlessIndex][i]}", i==rankingRank)
-					receiver.drawScoreNum(engine, 13, topY+i, rankingTime[endlessIndex][i].toTimeStr, i==rankingRank)
+					receiver.drawScore(engine, 2, topY+i, "${rankingScore[endlessIndex][i]}", NUM, i==rankingRank)
+					receiver.drawScore(engine, 9, topY+i, "${rankingLines[endlessIndex][i]}", NUM, i==rankingRank)
+					receiver.drawScore(engine, 13, topY+i, rankingTime[endlessIndex][i].toTimeStr, NUM, i==rankingRank)
 				}
 			}
 		} else {
-			receiver.drawScoreFont(engine, 0, 3, "LINE", COLOR.RED)
-			receiver.drawScoreNum(engine, 5, 2, engine.statistics.lines.toString(), 2f)
+			receiver.drawScore(engine, 0, 3, "LINE", BASE, COLOR.RED)
+			receiver.drawScore(engine, 5, 2, engine.statistics.lines.toString(), NUM, 2f)
 
-			receiver.drawScoreFont(engine, 0, 4, "Score", COLOR.RED)
-			receiver.drawScoreNum(engine, 5, 4, "+$lastScore")
+			receiver.drawScore(engine, 0, 4, "Score", BASE, COLOR.RED)
+			receiver.drawScore(engine, 5, 4, "+$lastScore", NUM)
 			val scget = scDisp<engine.statistics.score
-			receiver.drawScoreNum(engine, 0, 5, "$scDisp", scget, 2f)
+			receiver.drawScore(engine, 0, 5, "$scDisp", NUM, scget, 2f)
 			if(engine.gameActive&&engine.ending==2) {
 				val remainRollTime = maxOf(0, ROLLTIMELIMIT-rollTime)
 
-				receiver.drawScoreFont(engine, 0, 7, "ROLL TIME", COLOR.RED)
-				receiver.drawScoreNum(engine, 5, 7, remainRollTime.toTimeStr, remainRollTime>0&&remainRollTime<10*60, 2f)
+				receiver.drawScore(engine, 0, 7, "ROLL TIME", BASE, COLOR.RED)
+				receiver.drawScore(engine, 5, 7, remainRollTime.toTimeStr, NUM, remainRollTime>0&&remainRollTime<10*60, 2f)
 			} else {
-				receiver.drawScoreFont(engine, 0, 7, "Level", COLOR.RED)
-				receiver.drawScoreNum(
-					engine, 5, 7, "%.1f".format(engine.statistics.level.toDouble()+1.0+engine.statistics.lines%10*0.1),
-					2f
+				receiver.drawScore(engine, 0, 7, "Level", BASE, COLOR.RED)
+				receiver.drawScore(
+					engine, 5, 7,
+					"%.1f".format(engine.statistics.level.toDouble()+1.0+engine.statistics.lines%10*0.1),
+					NUM, 2f
 				)
 			}
-			receiver.drawScoreFont(engine, 0, 8, "Time", COLOR.RED)
-			receiver.drawScoreNum(engine, 0, 9, engine.statistics.time.toTimeStr, 2f)
+			receiver.drawScore(engine, 0, 8, "Time", BASE, COLOR.RED)
+			receiver.drawScore(engine, 0, 9, engine.statistics.time.toTimeStr, NUM, 2f)
 		}
 
 		super.renderLast(engine)
@@ -265,7 +268,7 @@ class MarathonExtreme:NetDummyMode() {
 	}
 
 	fun nextbgmLine(lines:Int) =
-		tableBGMChange.firstOrNull {lines<it} ?: if(endless) lines+20 else 200
+		tableBGMChange.firstOrNull {lines<it}?:if(endless) lines+20 else 200
 
 	fun bgmLv(lines:Int) =
 		tableBGMChange.indexOfFirst {lines<it}.let {if(it<0) tableBGMChange.size else it}
@@ -346,14 +349,14 @@ class MarathonExtreme:NetDummyMode() {
 		drawResultNetRank(engine, receiver, 14, COLOR.RED, netRankingRank[0])
 		drawResultNetRankDaily(engine, receiver, 16, COLOR.RED, netRankingRank[1])
 
-		if(netIsPB) receiver.drawMenuFont(engine, 2, 21, "NEW PB", COLOR.ORANGE)
+		if(netIsPB) receiver.drawMenu(engine, 2, 21, "NEW PB", BASE, COLOR.ORANGE)
 
 		if(netIsNetPlay&&netReplaySendStatus==1)
-			receiver.drawMenuFont(engine, 0, 22, "SENDING...", COLOR.PINK)
+			receiver.drawMenu(engine, 0, 22, "SENDING...", BASE, COLOR.PINK)
 		else if(netIsNetPlay&&!netIsWatch
 			&&netReplaySendStatus==2
 		)
-			receiver.drawMenuFont(engine, 1, 22, "A: RETRY", COLOR.RED)
+			receiver.drawMenu(engine, 1, 22, "A: RETRY", BASE, COLOR.RED)
 	}
 
 	/* Called when saving replay */

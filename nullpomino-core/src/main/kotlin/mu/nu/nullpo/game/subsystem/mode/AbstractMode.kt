@@ -43,6 +43,7 @@ import mu.nu.nullpo.game.play.GameManager
 import mu.nu.nullpo.game.subsystem.mode.menu.MenuList
 import mu.nu.nullpo.game.subsystem.mode.menu.PresetItem
 import mu.nu.nullpo.gui.common.BaseFont
+import mu.nu.nullpo.gui.common.BaseFont.FONT.*
 import mu.nu.nullpo.gui.net.NetLobbyFrame
 import mu.nu.nullpo.util.CustomProperties
 import mu.nu.nullpo.util.GeneralUtil.getONorOFF
@@ -57,7 +58,7 @@ import kotlin.math.ln1p
 
 /** Dummy implementation of game mode. Used as a base of most game modes. */
 abstract class AbstractMode:GameMode {
-	final override val id get() = this::class.simpleName ?: "noName"
+	final override val id get() = this::class.simpleName?:"noName"
 
 	/** GameManager that owns this mode */
 	protected var owner = GameManager()
@@ -98,7 +99,7 @@ abstract class AbstractMode:GameMode {
 		}
 	/** Number of frames spent in menu */
 	protected var menuTime = 0
-	override val name = this::class.simpleName ?: "No Name"
+	override val name = this::class.simpleName?:"No Name"
 	override val players = 1
 	override val gameStyle = GameStyle.TETROMINO
 	override val gameIntensity = 0
@@ -180,7 +181,8 @@ abstract class AbstractMode:GameMode {
 	override fun onFirst(engine:GameEngine) {}
 	/** This function will be called when the game timer updates */
 	override fun onLast(engine:GameEngine) {
-		if(scDisp<engine.statistics.score&&!engine.lagStop) scDisp += ceil(((engine.statistics.score-scDisp)/10f).toDouble()).toInt()
+		if(scDisp<engine.statistics.score&&!engine.lagStop) scDisp += ceil(
+			((engine.statistics.score-scDisp)/10f).toDouble()).toInt()
 	}
 
 	override fun onSetting(engine:GameEngine):Boolean {
@@ -202,7 +204,7 @@ abstract class AbstractMode:GameMode {
 		} else {
 			menuTime++
 			menuCursor = -1
-			return menuTime<60*(1+(menu.loc.maxOrNull() ?: 0)/engine.fieldHeight)
+			return menuTime<60*(1+(menu.loc.maxOrNull()?:0)/engine.fieldHeight)
 		}
 		return true
 	}
@@ -252,8 +254,10 @@ abstract class AbstractMode:GameMode {
 			"calcScore(engine, ScoreEvent(engine.nowPieceObject, lines, engine.b2bCount, engine.combo, engine.twistType, engine.split))",
 			"mu.nu.nullpo.game.event.ScoreEvent"
 		)
-	) fun calcScore(engine:GameEngine, lines:Int):Int =
-		calcScore(engine, ScoreEvent(engine.nowPieceObject, lines, engine.b2bCount, engine.combo, engine.twistType, engine.split))
+	)
+	fun calcScore(engine:GameEngine, lines:Int):Int =
+		calcScore(engine,
+			ScoreEvent(engine.nowPieceObject, lines, engine.b2bCount, engine.combo, engine.twistType, engine.split))
 	/** Calculates line-clear score
 	 * (This function will be called even if no lines are cleared)
 	 * @param engine GameEngine
@@ -367,10 +371,10 @@ abstract class AbstractMode:GameMode {
 			lines<=3 -> maxOf(0, lines-1)
 			else -> lines
 		}
-		val it = (if(players>1) ev.b2b.let {c ->
+		val it = (base+ev.b2b.let {c ->
 			if(c>0) (floor(1+ln1p(c*.8f))+if(c>2) floor(ln1p(c*.8f)%1/3) else 0f).toInt()
 			else 0
-		} else 0+base).let {
+		}).let {
 			val combo = maxOf(0, ev.combo)
 			if(it<=0) floor(ln1p(combo*1.25f)).toInt() else it+combo*it/4+engine.field.isEmpty.toInt()*10
 		}+if(ev.b2b<=-4) ev.b2b.absoluteValue else 0
@@ -384,6 +388,7 @@ abstract class AbstractMode:GameMode {
 		scDisp = 0
 		loadSetting(engine, if(owner.replayMode) owner.replayProp else owner.modeConfig)
 	}
+
 	override fun startGame(engine:GameEngine) {}
 
 	override fun renderFirst(engine:GameEngine) {}
@@ -393,6 +398,7 @@ abstract class AbstractMode:GameMode {
 		//TODO: Custom page breaks
 		menu.drawMenu(engine, engine.playerID, receiver, 0)
 	}
+
 	override fun renderLineClear(engine:GameEngine) {}
 
 	fun getTimeFontColor(time:Int):COLOR = when {
@@ -483,21 +489,23 @@ abstract class AbstractMode:GameMode {
 					else -> "$it"
 				}
 			}
-			receiver.drawMenuFont(engine, 0, menuY+y*2, key, color = menuColor)
-			if(menuCursor==statcMenu+y&&!owner.replayMode) receiver.drawMenuFont(engine, 0, menuY+1+y*2, "\u0082${str}", true)
-			else receiver.drawMenuFont(engine, 1, menuY+1+y*2, str)
+			receiver.drawMenu(engine, 0, menuY+y*2, key, BASE, color = menuColor)
+			if(menuCursor==statcMenu+y&&!owner.replayMode) receiver.drawMenu(engine, 0, menuY+1+y*2, "\u0082${str}", BASE, true)
+			else receiver.drawMenu(engine, 1, menuY+1+y*2, str, BASE)
 		}
 
 		statcMenu += value.size
 		menuY += value.size*2
 	}
 
-	protected fun drawMenu(engine:GameEngine, receiver:EventReceiver, color:COLOR = menuColor, vararg value:Pair<String, Any>) {
+	protected fun drawMenu(engine:GameEngine, receiver:EventReceiver, color:COLOR = menuColor,
+		vararg value:Pair<String, Any>) {
 		menuColor = color
 		drawMenu(engine, receiver, *value)
 	}
 
-	protected fun drawMenu(engine:GameEngine, receiver:EventReceiver, y:Int = menuY, color:COLOR = menuColor, statc:Int = statcMenu, vararg value:Pair<String, Any>) {
+	protected fun drawMenu(engine:GameEngine, receiver:EventReceiver, y:Int = menuY, color:COLOR = menuColor,
+		statc:Int = statcMenu, vararg value:Pair<String, Any>) {
 		menuY = y
 		menuColor = color
 		statcMenu = statc
@@ -506,10 +514,10 @@ abstract class AbstractMode:GameMode {
 
 	protected fun drawMenuBGM(engine:GameEngine, receiver:EventReceiver, bgmId:Int, color:COLOR = menuColor) {
 		val cur = menuCursor==statcMenu&&!owner.replayMode
-		receiver.drawMenuFont(engine, 0, menuY, "BGM", color)
-		receiver.drawMenuFont(engine, 0, menuY+1, BGM.values[bgmId].drawName, cur)
-		receiver.drawMenuNum(engine, 8, menuY, "%2d".format(bgmId), cur)
-		if(cur) receiver.drawMenuFont(engine, 7, menuY, BaseFont.CURSOR, true)
+		receiver.drawMenu(engine, 0, menuY, "BGM", BASE, color)
+		receiver.drawMenu(engine, 0, menuY+1, BGM.values[bgmId].drawName, BASE, cur)
+		receiver.drawMenu(engine, 8, menuY, "%2d".format(bgmId), NUM, cur)
+		if(cur) receiver.drawMenu(engine, 7, menuY, BaseFont.CURSOR, BASE, true)
 		statcMenu++
 		menuY += 2
 	}
@@ -524,83 +532,92 @@ abstract class AbstractMode:GameMode {
 					else -> "$it"
 				}
 			}
-			receiver.drawMenuFont(engine, 1, menuY, "${label}:", color = menuColor)
+			receiver.drawMenu(engine, 1, menuY, "${label}:", BASE, color = menuColor)
 			if(menuCursor==statcMenu&&!owner.replayMode) {
-				receiver.drawMenuFont(engine, 0, menuY, BaseFont.CURSOR, true)
-				receiver.drawMenuFont(engine, label.length+2, menuY, str, true)
-			} else receiver.drawMenuFont(engine, label.length+2, menuY, str)
+				receiver.drawMenu(engine, 0, menuY, BaseFont.CURSOR, BASE, true)
+				receiver.drawMenu(engine, label.length+2, menuY, str, BASE, true)
+			} else receiver.drawMenu(engine, label.length+2, menuY, str, BASE)
 			statcMenu++
 			menuY++
 		}
 	}
 
-	protected fun drawMenuCompact(engine:GameEngine, receiver:EventReceiver, color:COLOR = menuColor, vararg value:Pair<String, Any>) {
+	protected fun drawMenuCompact(engine:GameEngine, receiver:EventReceiver, color:COLOR = menuColor,
+		vararg value:Pair<String, Any>) {
 		menuColor = color
 		drawMenuCompact(engine, receiver, *value)
 	}
 
-	protected fun drawMenuCompact(engine:GameEngine, receiver:EventReceiver, y:Int = menuY, color:COLOR = menuColor, statc:Int = statcMenu, vararg value:Pair<String, Any>) {
+	protected fun drawMenuCompact(engine:GameEngine, receiver:EventReceiver, y:Int = menuY, color:COLOR = menuColor,
+		statc:Int = statcMenu, vararg value:Pair<String, Any>) {
 		menuY = y
 		menuColor = color
 		statcMenu = statc
 		drawMenuCompact(engine, receiver, *value)
 	}
 
-	protected fun drawGravity(engine:GameEngine, receiver:EventReceiver, g:Int = engine.speed.gravity, d:Int = engine.speed.denominator) {
-		receiver.drawMenuFont(engine, 0, menuY, "SPEED", color = menuColor)
+	protected fun drawGravity(engine:GameEngine, receiver:EventReceiver, g:Int = engine.speed.gravity,
+		d:Int = engine.speed.denominator) {
+		receiver.drawMenu(engine, 0, menuY, "SPEED", BASE, color = menuColor)
 		receiver.drawMenuSpeed(engine, 5, menuY+1, g, d, 5)
 		for(i in 0..1) {
 			if(menuCursor==statcMenu&&!owner.replayMode) {
-				receiver.drawMenuFont(engine, 5, menuY, BaseFont.CURSOR, true)
-				receiver.drawMenuNum(engine, 6, menuY, "%5d".format(if(i==0) g else d), true)
-			} else receiver.drawMenuNum(engine, 6, menuY, "%5d".format(if(i==0) g else d))
+				receiver.drawMenu(engine, 5, menuY, BaseFont.CURSOR, BASE, true)
+				receiver.drawMenu(engine, 6, menuY, "%5d".format(if(i==0) g else d), NUM, true)
+			} else receiver.drawMenu(engine, 6, menuY, "%5d".format(if(i==0) g else d), NUM)
 			statcMenu++
 			menuY++
 		}
 	}
 
-	protected fun drawGravity(engine:GameEngine, receiver:EventReceiver, y:Int, color:COLOR, statc:Int, g:Int = engine.speed.gravity, d:Int = engine.speed.denominator) {
+	protected fun drawGravity(engine:GameEngine, receiver:EventReceiver, y:Int, color:COLOR, statc:Int,
+		g:Int = engine.speed.gravity, d:Int = engine.speed.denominator) {
 		menuY = y
 		menuColor = color
 		statcMenu = statc
 		drawGravity(engine, receiver, g, d)
 	}
 
-	protected fun drawMenuSpeeds(engine:GameEngine, receiver:EventReceiver, y:Int, color:COLOR, statc:Int, g:Int, d:Int, are:Int, aline:Int, lined:Int, lock:Int, das:Int) {
+	protected fun drawMenuSpeeds(engine:GameEngine, receiver:EventReceiver, y:Int, color:COLOR, statc:Int, g:Int, d:Int,
+		are:Int, aline:Int, lined:Int, lock:Int, das:Int) {
 		menuY = y
 		menuColor = color
 		statcMenu = statc
 		drawMenuSpeeds(engine, receiver, g, d, are, aline, lined, lock, das)
 	}
 
-	protected fun drawMenuSpeeds(engine:GameEngine, receiver:EventReceiver, y:Int, color:COLOR, statc:Int, speed:SpeedParam = engine.speed, showG:Boolean = true) {
+	protected fun drawMenuSpeeds(engine:GameEngine, receiver:EventReceiver, y:Int, color:COLOR, statc:Int,
+		speed:SpeedParam = engine.speed, showG:Boolean = true) {
 		menuY = y
 		menuColor = color
 		statcMenu = statc
 		drawMenuSpeeds(engine, receiver, speed, showG)
 	}
 
-	protected fun drawMenuSpeeds(engine:GameEngine, receiver:EventReceiver, spd:SpeedParam = engine.speed, showG:Boolean = true) =
+	protected fun drawMenuSpeeds(engine:GameEngine, receiver:EventReceiver, spd:SpeedParam = engine.speed,
+		showG:Boolean = true) =
 		if(showG) drawMenuSpeeds(
 			engine, receiver, spd.gravity, spd.denominator, spd.are, spd.areLine, spd.lineDelay, spd.lockDelay, spd.das
 		)
 		else drawMenuSpeeds(engine, receiver, spd.are, spd.areLine, spd.lineDelay, spd.lockDelay, spd.das)
 
-	protected fun drawMenuSpeeds(engine:GameEngine, receiver:EventReceiver, g:Int, d:Int, are:Int, aline:Int, lined:Int, lock:Int, das:Int) {
+	protected fun drawMenuSpeeds(engine:GameEngine, receiver:EventReceiver, g:Int, d:Int, are:Int, aline:Int, lined:Int,
+		lock:Int, das:Int) {
 		drawGravity(engine, receiver, g, d)
 		drawMenuSpeeds(engine, receiver, are, aline, lined, lock, das)
 	}
 
-	protected fun drawMenuSpeeds(engine:GameEngine, receiver:EventReceiver, are:Int, aline:Int, lined:Int, lock:Int, das:Int) {
+	protected fun drawMenuSpeeds(engine:GameEngine, receiver:EventReceiver, are:Int, aline:Int, lined:Int, lock:Int,
+		das:Int) {
 		for(i in 0..1) {
 			val cur = menuCursor==statcMenu&&!owner.replayMode
 			val show = if(i==0) "ARE" to are else "LINE" to aline
-			if(cur) receiver.drawMenuFont(engine, 3+i*3, menuY, BaseFont.CURSOR, true)
+			if(cur) receiver.drawMenu(engine, 3+i*3, menuY, BaseFont.CURSOR, BASE, true)
 
-			receiver.drawMenuNum(
-				engine, 4+i*3, menuY, String.format(if(i==0) "%2d/" else "%2d", show.second), cur
+			receiver.drawMenu(
+				engine, 4+i*3, menuY, String.format(if(i==0) "%2d/" else "%2d", show.second), NUM, cur
 			)
-			receiver.drawMenuNano(engine, 6+i*6, menuY*2+1, show.first, menuColor, .5f)
+			receiver.drawMenu(engine, 6+i*6, menuY*2+1, show.first, NANO, menuColor, .5f)
 			statcMenu++
 		}
 		menuY++
@@ -611,54 +628,59 @@ abstract class AbstractMode:GameMode {
 				1 -> "LOCK" to lock
 				else -> "DAS" to das
 			}
-			if(cur) receiver.drawMenuFont(engine, 7-i*3, menuY, BaseFont.CURSOR, true)
+			if(cur) receiver.drawMenu(engine, 7-i*3, menuY, BaseFont.CURSOR, BASE, true)
 
-			receiver.drawMenuNum(
-				engine, 8-i*3, menuY, String.format(if(i==1) "%2d+" else "%2d", show.second), cur
+			receiver.drawMenu(
+				engine, 8-i*3, menuY, String.format(if(i==1) "%2d+" else "%2d", show.second), NUM, cur
 			)
-			receiver.drawMenuNano(engine, 14-i*6, menuY*2+1, show.first, menuColor, .5f)
+			receiver.drawMenu(engine, 14-i*6, menuY*2+1, show.first, NANO, menuColor, .5f)
 			statcMenu++
 		}
-		receiver.drawMenuNano(engine, 0, menuY*2-2, "DELAYS", menuColor, .5f)
+		receiver.drawMenu(engine, 0, menuY*2-2, "DELAYS", NANO, menuColor, .5f)
 		//receiver.drawMenuFont(engine, 0, menuY-1, show, color = menuColor)
 		menuY++
 	}
 
-	protected fun drawScoreSpeeds(engine:GameEngine, receiver:EventReceiver, x:Int, y:Int, g:Int = engine.speed.gravity, d:Int = engine.speed.denominator, are:Int = engine.speed.are, aline:Int = engine.speed.areLine, lined:Int = engine.speed.lineDelay, lock:Int = engine.speed.lockDelay, das:Int = engine.speed.das) {
+	protected fun drawScoreSpeeds(engine:GameEngine, receiver:EventReceiver, x:Int, y:Int, g:Int = engine.speed.gravity,
+		d:Int = engine.speed.denominator, are:Int = engine.speed.are, aline:Int = engine.speed.areLine,
+		lined:Int = engine.speed.lineDelay, lock:Int = engine.speed.lockDelay, das:Int = engine.speed.das) {
 		receiver.drawScoreSpeed(engine, x, 0, g, d, 4)
-		receiver.drawMenuNum(engine, x, y+1, "${g/1.0/d}")
+		receiver.drawMenu(engine, x, y+1, "${g/1.0/d}", NUM)
 
 		listOf(are, aline).forEachIndexed {i, _ ->
-			receiver.drawScoreNum(
-				engine, x+4+i*3, y, String.format(if(i==0) "%2d/" else "%2d", if(i==0) are else aline)
-			)
+			receiver.drawScore(
+				engine, x+4+i*3, y, String.format(if(i==0) "%2d/" else "%2d", if(i==0) are else aline),
+				NUM)
 		}
 
 		for(i in 0..2) {
-			receiver.drawScoreNum(
-				engine, x+8-i*3, y+1, String.format(if(i==1) "%2d+" else "%2d", if(i==0) lined else if(i==1) lock else das)
-			)
+			receiver.drawScore(
+				engine, x+8-i*3, y+1,
+				String.format(if(i==1) "%2d+" else "%2d", if(i==0) lined else if(i==1) lock else das),
+				NUM)
 		}
 	}
 
 	protected fun drawResult(engine:GameEngine, receiver:EventReceiver, y:Int, color:COLOR, str:String, num:Int) {
-		receiver.drawMenuFont(engine, 0, y, str, color = color)
-		receiver.drawMenuNum(engine, 0, y+1, num, 13 to null, color = COLOR.WHITE)
+		receiver.drawMenu(engine, 0, y, str, BASE, color)
+		receiver.drawMenuNum(engine, 0, y+1, num, 13 to null)
 	}
 
 	protected fun drawResult(engine:GameEngine, receiver:EventReceiver, y:Int, color:COLOR, str:String, num:Float) {
-		receiver.drawMenuFont(engine, 0, y, str, color = color)
-		receiver.drawMenuNum(engine, 0, y+1, num, 13 to null, color = COLOR.WHITE)
+		receiver.drawMenu(engine, 0, y, str, BASE, color = color)
+		receiver.drawMenuNum(engine, 0, y+1, num, 13 to null)
 	}
 
 	protected fun drawResult(engine:GameEngine, receiver:EventReceiver, y:Int, color:COLOR, vararg str:String) =
 		drawResultScale(engine, receiver, y, color, 1f, *str)
 
-	protected fun drawResultScale(engine:GameEngine, receiver:EventReceiver, y:Int, color:COLOR = COLOR.WHITE, scale:Float, vararg str:String) {
-		for(i in str.indices) receiver.drawMenuFont(engine, 0, y+i, str[i], if(i and 1==0) color else COLOR.WHITE, scale)
+	protected fun drawResultScale(engine:GameEngine, receiver:EventReceiver, y:Int, color:COLOR = COLOR.WHITE, scale:Float,
+		vararg str:String) {
+		for(i in str.indices) receiver.drawMenu(engine, 0, y+i, str[i], BASE, if(i and 1==0) color else COLOR.WHITE, scale)
 	}
 
-	protected fun drawResultRank(engine:GameEngine, receiver:EventReceiver, y:Int, color:COLOR, scale:Float, rank:Int, str:String) {
+	protected fun drawResultRank(engine:GameEngine, receiver:EventReceiver, y:Int, color:COLOR, scale:Float, rank:Int,
+		str:String) {
 		if(rank!=-1) {
 			val postfix = when {
 				rank%10==0&&rank%100!=10 -> "st"
@@ -666,12 +688,12 @@ abstract class AbstractMode:GameMode {
 				rank%10==2&&rank%100!=12 -> "rd"
 				else -> "th"
 			}
-			receiver.drawMenuFont(engine, 5, y, postfix, color, scale)
-			receiver.drawMenuFont(engine, 5, y+1, str, color, scale*.8f)
-			receiver.drawMenuNum(engine, 0, y, "%3d".format(rank+1), scale = scale*2)
+			receiver.drawMenu(engine, 5, y, postfix, BASE, color, scale)
+			receiver.drawMenu(engine, 5, y+1, str, BASE, color, scale*.8f)
+			receiver.drawMenu(engine, 0, y, "%3d".format(rank+1), NUM, scale = scale*2)
 		} else {
-			receiver.drawMenuFont(engine, 0, y, "OUT OF THE", color, scale)
-			receiver.drawMenuFont(engine, 0, y+1, "%12s".format(str), color, scale*.8f)
+			receiver.drawMenu(engine, 0, y, "OUT OF THE", BASE, color, scale)
+			receiver.drawMenu(engine, 0, y+1, "%12s".format(str), BASE, color, scale*.8f)
 		}
 	}
 
@@ -687,7 +709,8 @@ abstract class AbstractMode:GameMode {
 		drawResultNetRankScale(engine, receiver, y, color, getScaleF(engine.displaySize), rank)
 	}
 
-	protected fun drawResultNetRankScale(engine:GameEngine, receiver:EventReceiver, y:Int, color:COLOR, scale:Float, rank:Int) {
+	protected fun drawResultNetRankScale(engine:GameEngine, receiver:EventReceiver, y:Int, color:COLOR, scale:Float,
+		rank:Int) {
 		drawResultRank(engine, receiver, y, color, scale, rank, "ONLINE")
 	}
 
@@ -695,7 +718,8 @@ abstract class AbstractMode:GameMode {
 		drawResultNetRankDailyScale(engine, receiver, y, color, getScaleF(engine.displaySize), rank)
 	}
 
-	protected fun drawResultNetRankDailyScale(engine:GameEngine, receiver:EventReceiver, y:Int, color:COLOR, scale:Float, rank:Int) {
+	protected fun drawResultNetRankDailyScale(engine:GameEngine, receiver:EventReceiver, y:Int, color:COLOR, scale:Float,
+		rank:Int) {
 		drawResultRank(engine, receiver, y, color, scale, rank, "OF DAILY")
 	}
 
@@ -703,123 +727,133 @@ abstract class AbstractMode:GameMode {
 		drawResultStatsScale(engine, receiver, y, color, getScaleF(engine.displaySize), *stats)
 	}
 
-	protected fun drawResultStatsScale(engine:GameEngine, receiver:EventReceiver, startY:Int, color:COLOR, scale:Float, vararg stats:Statistic) {
+	protected fun drawResultStatsScale(engine:GameEngine, receiver:EventReceiver, startY:Int, color:COLOR, scale:Float,
+		vararg stats:Statistic) {
 		var y = startY
 		for(stat in stats) {
 			when(stat) {
 				Statistic.SCORE -> {
-					receiver.drawMenuFont(engine, 0, y, "Score", color, scale*.75f)
-					receiver.drawMenuNum(engine, 0, y, "%7d".format(engine.statistics.score), scale = scale*1.9f)
-					receiver.drawMenuNano(engine, 7f, y+1.25f, "Score", color = color, scale = scale*.75f)
+					receiver.drawMenu(engine, 0, y, "Score", BASE, color, scale*.75f)
+					receiver.drawMenu(engine, 0, y, "%7d".format(engine.statistics.score), NUM, scale*1.9f)
+					receiver.drawMenu(engine, 7f, y+1.25f, "Score", NANO, color, scale*.75f)
 				}
 				Statistic.ATTACKS -> {
-					receiver.drawMenuFont(engine, 6, y, "Lines", color, scale*.8f)
-					receiver.drawMenuFont(engine, 6, y+1, "Sent", color, scale*.8f)
-					receiver.drawMenuNum(engine, 0, y, "%4d".format(engine.statistics.attacks), scale = scale*2)
+					receiver.drawMenu(engine, 6, y, "Lines", BASE, color, scale*.8f)
+					receiver.drawMenu(engine, 6, y+1, "Sent", BASE, color, scale*.8f)
+					receiver.drawMenu(engine, 0, y, "%4d".format(engine.statistics.attacks), NUM, scale*2)
 				}
 				Statistic.TIME -> {
-					receiver.drawMenuNum(
-						engine, 0f, y+0.33f, "%8s".format(engine.statistics.time.toTimeStr), scale = scale*5/3
+					receiver.drawMenu(
+						engine, 0f, y+0.33f, "%8s".format(engine.statistics.time.toTimeStr), NUM, scale*5/3
 					)
-					receiver.drawMenuNano(engine, 0, y, "Elapsed Time", color, scale*.75f)
+					receiver.drawMenu(engine, 0, y, "Elapsed Time", NANO, color, scale*.75f)
 				}
 				Statistic.LEVEL -> {
-					receiver.drawMenuFont(engine, 0, y+1, "Level", color, scale)
-					receiver.drawMenuNum(engine, 5, y, "%03d".format(engine.statistics.level+1), scale = scale*2)
+					receiver.drawMenu(engine, 0, y+1, "Level", BASE, color, scale)
+					receiver.drawMenu(engine, 5, y, "%03d".format(engine.statistics.level+1), NUM, scale*2)
 				}
 				Statistic.LEVEL_ADD_DISP -> {
-					receiver.drawMenuFont(engine, 0, y, "Level", color, scale)
-					receiver.drawMenuNum(
-						engine, 0, y+1, "%10d".format(engine.statistics.level+engine.statistics.levelDispAdd), scale = scale
+					receiver.drawMenu(engine, 0, y, "Level", BASE, color, scale)
+					receiver.drawMenu(
+						engine, 0, y+1, "%10d".format(engine.statistics.level+engine.statistics.levelDispAdd),
+						NUM, scale
 					)
 				}
 				Statistic.LEVEL_MANIA -> {
-					receiver.drawMenuFont(engine, 0, y+1, "Level", color, scale)
-					receiver.drawMenuNum(engine, 5, y, "%03d".format(engine.statistics.level), scale = scale*2)
+					receiver.drawMenu(engine, 0, y+1, "Level", BASE, color, scale)
+					receiver.drawMenu(engine, 5, y, "%03d".format(engine.statistics.level), NUM, scale*2)
 				}
 				Statistic.LINES -> {
-					receiver.drawMenuFont(engine, 6, y, "Lines", color, scale*.8f)
-					receiver.drawMenuFont(engine, 6, y+1, "clear", color, scale*.8f)
-					receiver.drawMenuNum(engine, 0, y, "%4d".format(engine.statistics.lines), scale = scale*2)
+					receiver.drawMenu(engine, 6, y, "Lines", BASE, color, scale*.8f)
+					receiver.drawMenu(engine, 6, y+1, "clear", BASE, color, scale*.8f)
+					receiver.drawMenu(engine, 0, y, "%4d".format(engine.statistics.lines), NUM, scale*2)
 				}
 				Statistic.PIECE -> {
-					receiver.drawMenuNum(
-						engine, 0, y, "%4d".format(engine.statistics.totalPieceLocked), scale = scale*2
+					receiver.drawMenu(
+						engine, 0, y, "%4d".format(engine.statistics.totalPieceLocked), NUM, scale*2
 					)
-					receiver.drawMenuFont(engine, 6, y, "Pieces", color, scale*.8f)
-					receiver.drawMenuFont(engine, 6, y+1, "set", color, scale*.8f)
+					receiver.drawMenu(engine, 6, y, "Pieces", BASE, color, scale*.8f)
+					receiver.drawMenu(engine, 6, y+1, "set", BASE, color, scale*.8f)
 				}
 				Statistic.MAXCOMBO -> {
-					receiver.drawMenuFont(engine, 0, y, "Best", color, scale*.8f)
-					receiver.drawMenuFont(engine, 6, y, "Combo", color, scale*.8f)
-					receiver.drawMenuFont(engine, 6, y+1, "HITS", color, scale)
-					receiver.drawMenuNum(engine, 0, y, "%4d".format(engine.statistics.maxCombo), scale = scale*2)
+					receiver.drawMenu(engine, 0, y, "Best", BASE, color, scale*.8f)
+					receiver.drawMenu(engine, 6, y, "Combo", BASE, color, scale*.8f)
+					receiver.drawMenu(engine, 6, y+1, "HITS", BASE, color, scale)
+					receiver.drawMenu(engine, 0, y, "%4d".format(engine.statistics.maxCombo), NUM, scale*2)
 				}
 				Statistic.MAXB2B -> {
-					receiver.drawMenuFont(engine, 0, y, "Back2Back Peak", color, scale*.75f)
-					receiver.drawMenuFont(engine, 6, y+1, "Chain", color, scale*.8f)
-					receiver.drawMenuNum(engine, 0, y, "%4d".format(engine.statistics.maxB2B), scale = scale*2)
+					receiver.drawMenu(engine, 0, y, "Back2Back Peak", BASE, color, scale*.75f)
+					receiver.drawMenu(engine, 6, y+1, "Chain", BASE, color, scale*.8f)
+					receiver.drawMenu(engine, 0, y, "%4d".format(engine.statistics.maxB2B), NUM, scale*2)
 				}
 				Statistic.MAXCHAIN -> {
-					receiver.drawMenuFont(engine, 0, y, "Longest", color, scale*.8f)
-					receiver.drawMenuFont(engine, 6, y, "Chain", color, scale*.8f)
-					receiver.drawMenuFont(engine, 6, y+1, "HITS", color, scale)
-					receiver.drawMenuNum(
-						engine, 0, y, "%4d".format(engine.statistics.maxChain-1), scale = scale*2
-					)
+					receiver.drawMenu(engine, 0, y, "Longest", BASE, color, scale*.8f)
+					receiver.drawMenu(engine, 6, y, "Chain", BASE, color, scale*.8f)
+					receiver.drawMenu(engine, 6, y+1, "HITS", BASE, color, scale)
+					receiver.drawMenu(engine, 0, y, "%4d".format(engine.statistics.maxChain-1), NUM, scale*2)
 				}
 				Statistic.SPL -> {
-					receiver.drawMenuFont(engine, 0, y, "Score/Line", color, scale)
-					receiver.drawMenuNum(engine, 0, y+1, engine.statistics.spl, 13 to null, scale = scale)
+					receiver.drawMenu(engine, 0, y, "Score/Line", BASE, color, scale)
+					receiver.drawMenuNum(engine, 1, y+1, engine.statistics.spl, 13 to null, scale = scale)
 				}
 				Statistic.SPM -> {
-					receiver.drawMenuFont(engine, 0, y, "Score/min", color, scale)
-					receiver.drawMenuNum(engine, 0, y+1, engine.statistics.spm, 13 to null, scale = scale)
+					receiver.drawMenu(engine, 0, y, "Score/min", BASE, color, scale)
+					receiver.drawMenuNum(engine, 1, y+1, engine.statistics.spm, 13 to null, scale = scale)
 				}
 				Statistic.SPS -> {
-					receiver.drawMenuFont(engine, 0, y, "Score/sec", color, scale)
-					receiver.drawMenuNum(engine, 0, y+1, engine.statistics.sps, 13 to null, scale = scale)
+					receiver.drawMenu(engine, 0, y, "Score/sec", BASE, color, scale)
+					receiver.drawMenuNum(engine, 1, y+1, engine.statistics.sps, 13 to null, scale = scale)
 				}
 				Statistic.SPP -> {
-					receiver.drawMenuFont(engine, 0, y, "Score/Mino", color, scale)
-					receiver.drawMenuNum(engine, 0, y+1, engine.statistics.spp, 13 to null, scale = scale)
+					receiver.drawMenu(engine, 0, y, "Score/Mino", BASE, color, scale)
+					receiver.drawMenuNum(engine, 1, y+1, engine.statistics.spp, 13 to null, scale = scale)
 				}
 				Statistic.LPM -> {
-					receiver.drawMenuFont(engine, 0, y, "Lines/min", color, scale)
-					receiver.drawMenuNum(engine, 0, y+1, engine.statistics.lpm, 13 to null, scale = scale)
+					receiver.drawMenu(engine, 4, y, "Lines", BASE, color, scale*.8f)
+					receiver.drawMenu(engine, 0, y, "%4d".format(engine.statistics.lines), NUM_T)
+					receiver.drawMenu(engine, 8, y+1, "/min", NANO, color, scale*.5f)
+					receiver.drawMenuNum(engine, 5, y+1, (engine.statistics.lpm), 9 to 6, scale = scale)
 				}
 				Statistic.LPS -> {
-					receiver.drawMenuFont(engine, 0, y, "Lines/sec", color, scale)
-					receiver.drawMenuNum(engine, 0, y+1, engine.statistics.lps, 13 to null, scale = scale)
+					receiver.drawMenu(engine, 4, y, "Lines", BASE, color, scale*.8f)
+					receiver.drawMenu(engine, 0, y, "%4d".format(engine.statistics.lines), NUM_T)
+					receiver.drawMenu(engine, 8, y+1, "/sec", NANO, color, scale*.5f)
+					receiver.drawMenuNum(engine, 5, y+1, (engine.statistics.lps), 9 to 6, scale = scale)
 				}
 				Statistic.PPM -> {
-					receiver.drawMenuFont(engine, 0, y, "Pieces/min", color, scale)
-					receiver.drawMenuNum(engine, 0, y+1, engine.statistics.ppm, 13 to null, scale = scale)
+					receiver.drawMenu(engine, 4, y, "Pieces", BASE, color, scale*.8f)
+					receiver.drawMenu(engine, 0, y, "%4d".format(engine.statistics.totalPieceLocked), NUM_T)
+					receiver.drawMenu(engine, 8, y+1, "/min", NANO, color, scale*.5f)
+					receiver.drawMenuNum(engine, 5, y+1, (engine.statistics.ppm), 9 to 6, scale = scale)
 				}
 				Statistic.PPS -> {
-					receiver.drawMenuFont(engine, 5, y, "Pieces", color, scale*.8f)
-					receiver.drawMenuNum(
-						engine, 0, y, "%4d".format(engine.statistics.totalPieceLocked), scale = scale*1.5f
-					)
-					receiver.drawMenuFont(engine, 0, y+1, "/sec", color, scale)
-					receiver.drawMenuNum(engine, 4, y+1, (engine.statistics.pps), 8 to null, scale = scale)
+					receiver.drawMenu(engine, 4, y, "Pieces", BASE, color, scale*.8f)
+					receiver.drawMenu(engine, 0, y, "%4d".format(engine.statistics.totalPieceLocked), NUM_T)
+					receiver.drawMenu(engine, 8, y+1, "/sec", NANO, color, scale*.5f)
+					receiver.drawMenuNum(engine, 5, y+1, (engine.statistics.pps), 9 to 6, scale = scale)
 				}
 				Statistic.APM -> {
-					receiver.drawMenuFont(engine, 0, y, "Spikes/min", color, scale)
-					receiver.drawMenuNum(engine, 0, y+1, (engine.statistics.apm), 13 to null, scale = scale)
+					receiver.drawMenu(engine, 4, y, "Spikes", BASE, color, scale*.8f)
+					receiver.drawMenu(engine, 0, y, "%4d".format(engine.statistics.attacks), NUM_T)
+					receiver.drawMenu(engine, 8, y+1, "/min", NANO, color, scale*.5f)
+					receiver.drawMenuNum(engine, 5, y+1, (engine.statistics.apm), 9 to 6, scale = scale)
 				}
 				Statistic.APL -> {
-					receiver.drawMenuFont(engine, 0, y, "Spikes/Line", color, scale)
-					receiver.drawMenuNum(engine, 0, y+1, (engine.statistics.apl), 13 to null, scale = scale)
+					receiver.drawMenu(engine, 4, y, "Spikes", BASE, color, scale*.8f)
+					receiver.drawMenu(engine, 0, y, "%4d".format(engine.statistics.attacks), NUM_T)
+					receiver.drawMenu(engine, 8, y+1, "/line", NANO, color, scale*.5f)
+					receiver.drawMenuNum(engine, 5, y+1, (engine.statistics.apl), 9 to 6, scale = scale)
 				}
 				Statistic.APP -> {
-					receiver.drawMenuFont(engine, 0, y, "Spikes/Mino", color, scale)
-					receiver.drawMenuNum(engine, 0, y+1, (engine.statistics.app), 13 to null, scale = scale)
+					receiver.drawMenu(engine, 4, y, "Spikes", BASE, color, scale*.8f)
+					receiver.drawMenu(engine, 0, y, "%4d".format(engine.statistics.attacks), NUM_T)
+					receiver.drawMenu(engine, 8, y+1, "/mino", NANO, color, scale*.5f)
+					receiver.drawMenuNum(engine, 5, y+1, (engine.statistics.app), 9 to 6, scale = scale)
 				}
 				Statistic.VS -> {
-					receiver.drawMenuFont(engine, 0, y, "Rank Point", color = color, scale = scale*.8f)
+					receiver.drawMenu(engine, 0, y, "Rank Point", BASE, color, scale*.8f)
 					receiver.drawMenuNum(engine, 0, y, (engine.statistics.vs), 6 to null, scale = scale*1.7f)
-					receiver.drawMenuNano(engine, 4.25f, y+1.25f, "Rank Point", color = color, scale = scale*.75f)
+					receiver.drawMenu(engine, 4.25f, y+1.25f, "Rank Point", NANO, color, scale*.75f)
 				}
 			}
 			y += 2
@@ -828,7 +862,7 @@ abstract class AbstractMode:GameMode {
 	/** Default method to render controller input display
 	 * @param engine GameEngine
 	 */
-	override fun renderInput(engine:GameEngine) {		/*val receiver = owner.receiver
+	override fun renderInput(engine:GameEngine) {    /*val receiver = owner.receiver
 		val pid = engine.playerID
 		val x = 170*(pid+1)-110
 		val y = 464

@@ -264,8 +264,8 @@ NOTE: If using non-`exact` matching, `Field b` is used as the comparator where t
 			//StringBuilder matchArr = new StringBuilder("MATCH ARRAY:\n");
 			for(y in 0..<lcmHeight) {
 				for(x in 0..<lcmWidth) {
-					val v1:Int = a.getBlock(topLeftA[0]+x/multiplierWidthA, topLeftA[1]+y/multiplierHeightA)!!.drawColor
-					val v2:Int = b.getBlock(topLeftB[0]+x/multiplierWidthB, topLeftB[1]+y/multiplierHeightB)!!.drawColor
+					val v1:Int = a.getBlock(topLeftA[0]+x/multiplierWidthA, topLeftA[1]+y/multiplierHeightA)!!.drawId
+					val v2:Int = b.getBlock(topLeftB[0]+x/multiplierWidthB, topLeftB[1]+y/multiplierHeightB)!!.drawId
 					if(colorMatch) {
 						if(v1<=0&&v2<=0) {
 							total += 2

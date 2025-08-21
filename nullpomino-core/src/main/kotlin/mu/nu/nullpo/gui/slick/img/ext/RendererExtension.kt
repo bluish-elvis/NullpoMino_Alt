@@ -111,7 +111,7 @@ object RendererExtension {
 	 */
 	fun addBlockBreakEffect(receiver:EventReceiver?, x:Float, y:Float, blk:Block?) {
 		if(receiver==null||blk==null) return
-		addBlockBreakEffect(receiver, if(blk.isGemBlock) 2 else 1, x, y, blk.drawColor)
+		addBlockBreakEffect(receiver, if(blk.isGemBlock) 2 else 1, x, y, blk.drawId)
 	}
 	/**
 	 * Draw a block break effect at a custom position where coordinates stood for the left-hand corner of a block.

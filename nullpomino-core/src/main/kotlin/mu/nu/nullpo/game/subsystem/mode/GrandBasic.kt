@@ -44,6 +44,7 @@ import mu.nu.nullpo.game.subsystem.mode.menu.DelegateMenuItem
 import mu.nu.nullpo.game.subsystem.mode.menu.LevelGrandMenuItem
 import mu.nu.nullpo.game.subsystem.mode.menu.MenuList
 import mu.nu.nullpo.gui.common.BaseFont
+import mu.nu.nullpo.gui.common.BaseFont.FONT.*
 import mu.nu.nullpo.util.CustomProperties
 import mu.nu.nullpo.util.GeneralUtil.toTimeStr
 import kotlin.math.ceil
@@ -172,7 +173,7 @@ class GrandBasic:AbstractGrand() {
 	 */
 	override fun setSpeed(engine:GameEngine) {
 		engine.speed.gravity = if(always20g) -1
-		else tableGravityValue.lastOrNull {engine.statistics.level>=it.first}?.second ?: -1
+		else tableGravityValue.lastOrNull {engine.statistics.level>=it.first}?.second?:-1
 	}
 
 	/** Best section time update check routine
@@ -238,10 +239,10 @@ class GrandBasic:AbstractGrand() {
 	}
 	/** Renders HUD (leaderboard or game statistics) */
 	override fun renderLast(engine:GameEngine) {
-		receiver.drawScoreFont(engine, 0, 0, name, COLOR.COBALT)
-		receiver.drawScoreFont(engine, 1, 1, "Score Attack", COLOR.COBALT)
+		receiver.drawScore(engine, 0, 0, name, BASE, COLOR.COBALT)
+		receiver.drawScore(engine, 1, 1, "Score Attack", BASE, COLOR.COBALT)
 
-		receiver.drawScoreFont(engine, -1, -4*2, "DECORATION", scale = .5f)
+		receiver.drawScore(engine, -1, -4*2, "DECORATION", BASE, scale = .5f)
 		receiver.drawScoreBadges(engine, 0, -3, 100, decoration)
 		receiver.drawScoreBadges(engine, 5, -4, 100, decTemp)
 		if(engine.stat==GameEngine.Status.SETTING||engine.stat==GameEngine.Status.RESULT&&!owner.replayMode) {
@@ -250,90 +251,93 @@ class GrandBasic:AbstractGrand() {
 			)
 				if(!isShowBestSectionTime) {
 					// Score Leaderboard
-					receiver.drawScoreFont(engine, 0, 2, "HANABI SCORE TIME", COLOR.BLUE)
+					receiver.drawScore(engine, 0, 2, "HANABI SCORE TIME", BASE, COLOR.BLUE)
 
 					ranking.forEachIndexed {i, (fw, st, _) ->
-						receiver.drawScoreGrade(engine, 0, 3+i, "%2d".format(i+1), COLOR.YELLOW)
-						receiver.drawScoreNum(engine, 2, 3+i, "$fw", i==rankingRank)
-						receiver.drawScoreNum(engine, 6, 3+i, "${st.score}", i==rankingRank)
-						receiver.drawScoreNum(engine, 12, 3+i, st.time.toTimeStr, i==rankingRank)
+						receiver.drawScore(engine, 0, 3+i, "%2d".format(i+1), GRADE, COLOR.YELLOW)
+						receiver.drawScore(engine, 2, 3+i, "$fw", NUM, i==rankingRank)
+						receiver.drawScore(engine, 6, 3+i, "${st.score}", NUM, i==rankingRank)
+						receiver.drawScore(engine, 12, 3+i, st.time.toTimeStr, NUM, i==rankingRank)
 					}
 
-					receiver.drawScoreFont(engine, 0, 24, "F:VIEW SECTION SCORE", COLOR.GREEN)
+					receiver.drawScore(engine, 0, 24, "F:VIEW SECTION SCORE", BASE, COLOR.GREEN)
 				} else {
 					// Best Section Time Records
-					receiver.drawScoreFont(engine, 0, 2, "SECTION SCORE TIME", COLOR.BLUE)
+					receiver.drawScore(engine, 0, 2, "SECTION SCORE TIME", BASE, COLOR.BLUE)
 
 					val totalTime = bestSectionTime.sum()
 					val totalScore = bestSectionScore.sum()
 					val totalHanabi = bestSectionHanabi.sum()
 					for(i in 0..<sectionMax) {
 
-						receiver.drawScoreNum(
+						receiver.drawScore(
 							engine, 0, 3+i,
-							"%3d${if(i==sectionMax-1) "+" else "-"}".format(i*100), sectionIsNewRecord[i]
+							"%3d${if(i==sectionMax-1) "+" else "-"}".format(i*100), NUM,
+							sectionIsNewRecord[i]
 						)
-						receiver.drawScoreNum(engine, 4, 3+i, "%4d".format(bestSectionHanabi[i]), sectionIsNewRecord[i])
-						receiver.drawScoreNum(engine, 8, 3+i, "%6d".format(bestSectionScore[i]), sectionIsNewRecord[i])
-						receiver.drawScoreNum(engine, 14, 3+i, bestSectionTime[i].toTimeStr, sectionIsNewRecord[i])
+						receiver.drawScore(engine, 4, 3+i, "%4d".format(bestSectionHanabi[i]), NUM, sectionIsNewRecord[i])
+						receiver.drawScore(engine, 8, 3+i, "%6d".format(bestSectionScore[i]), NUM, sectionIsNewRecord[i])
+						receiver.drawScore(engine, 14, 3+i, bestSectionTime[i].toTimeStr, NUM, sectionIsNewRecord[i])
 					}
-					receiver.drawScoreFont(engine, 0, 4+sectionMax, "ALL", COLOR.BLUE)
-					receiver.drawScoreNum(engine, 4, 4+sectionMax, "%4d".format(totalHanabi))
-					receiver.drawScoreNum(engine, 8, 4+sectionMax, "%6d".format(totalScore))
-					receiver.drawScoreNum(engine, 14, 4+sectionMax, totalTime.toTimeStr)
-					receiver.drawScoreFont(engine, 0, 5+sectionMax, "AVG", COLOR.BLUE)
-					receiver.drawScoreNum(engine, 4, 5+sectionMax, "%4d".format(totalHanabi/sectionMax))
-					receiver.drawScoreNum(engine, 8, 5+sectionMax, "%6d".format(totalScore/sectionMax))
-					receiver.drawScoreNum(engine, 14, 5+sectionMax, (totalTime/sectionMax).toTimeStr)
+					receiver.drawScore(engine, 0, 4+sectionMax, "ALL", BASE, COLOR.BLUE)
+					receiver.drawScore(engine, 4, 4+sectionMax, "%4d".format(totalHanabi), NUM)
+					receiver.drawScore(engine, 8, 4+sectionMax, "%6d".format(totalScore), NUM)
+					receiver.drawScore(engine, 14, 4+sectionMax, totalTime.toTimeStr, NUM)
+					receiver.drawScore(engine, 0, 5+sectionMax, "AVG", BASE, COLOR.BLUE)
+					receiver.drawScore(engine, 4, 5+sectionMax, "%4d".format(totalHanabi/sectionMax), NUM)
+					receiver.drawScore(engine, 8, 5+sectionMax, "%6d".format(totalScore/sectionMax), NUM)
+					receiver.drawScore(engine, 14, 5+sectionMax, (totalTime/sectionMax).toTimeStr, NUM)
 
-					receiver.drawScoreFont(engine, 0, 17, "F:VIEW RANKING", COLOR.GREEN)
+					receiver.drawScore(engine, 0, 17, "F:VIEW RANKING", BASE, COLOR.GREEN)
 				}
 		} else {
 			val g20 = engine.speed.gravity<0&&rollTime%2==0
-			receiver.drawScoreFont(engine, 0, 5, "Score", COLOR.BLUE)
-			receiver.drawScoreNum(engine, 0, 6, "$scDisp", g20, 2f)
-			receiver.drawScoreNum(engine, 5, 4, "$hanabi", g20||intHanabi>-100, 2f)
+			receiver.drawScore(engine, 0, 5, "Score", BASE, COLOR.BLUE)
+			receiver.drawScore(engine, 0, 6, "$scDisp", NUM, g20, 2f)
+			receiver.drawScore(engine, 5, 4, "$hanabi", NUM, g20||intHanabi>-100, 2f)
 
-			receiver.drawScoreFont(engine, 0, 9, "Level", COLOR.BLUE)
-			receiver.drawScoreNum(engine, 1, 10, "%3d".format(maxOf(engine.statistics.level, 0)))
+			receiver.drawScore(engine, 0, 9, "Level", BASE, COLOR.BLUE)
+			receiver.drawScore(engine, 1, 10, "%3d".format(maxOf(engine.statistics.level, 0)), NUM)
 			receiver.drawScoreSpeed(
 				engine, 0, 11, if(g20) 40 else floor(ln(engine.speed.gravity.toDouble())).toInt()*4,
 				4
 			)
-			receiver.drawScoreNum(engine, 1, 12, "300")
+			receiver.drawScore(engine, 1, 12, "300", NUM)
 
-			receiver.drawScoreFont(engine, 0, 14, "Time", COLOR.BLUE)
-			receiver.drawScoreNum(engine, 0, 15, engine.statistics.time.toTimeStr, 2f)
+			receiver.drawScore(engine, 0, 14, "Time", BASE, COLOR.BLUE)
+			receiver.drawScore(engine, 0, 15, engine.statistics.time.toTimeStr, NUM, 2f)
 
 			if(engine.gameActive&&engine.ending==2) {
 				val time = maxOf(0, ROLLTIMELIMIT-rollTime)
-				receiver.drawScoreFont(engine, 0, 17, "ROLL TIME", COLOR.BLUE)
-				receiver.drawScoreNum(engine, 0, 18, time.toTimeStr, time>0&&time<10*60, 2f)
+				receiver.drawScore(engine, 0, 17, "ROLL TIME", BASE, COLOR.BLUE)
+				receiver.drawScore(engine, 0, 18, time.toTimeStr, NUM, time>0&&time<10*60, 2f)
 			}
 
 			// Section time
 			if(showST&&sectionTime.isNotEmpty()) {
 				val (x, x2) = if(receiver.nextDisplayType==2) 8 to 9 else 12 to 12
 
-				receiver.drawScoreFont(engine, x-1, 2, "SECTION SCORE", COLOR.BLUE)
+				receiver.drawScore(engine, x-1, 2, "SECTION SCORE", BASE, COLOR.BLUE)
 
 				for(i in sectionScore.indices)
 					if(i<=sectionsDone) {
 						var temp = i*100
 						if(temp>=300) {
 							temp = 300
-							receiver.drawScoreFont(engine, x-1, 4+i, "BONUS", COLOR.BLUE)
-							receiver.drawScoreNum(engine, x, 5+i, "%4d %d".format(sectionHanabi[i+1], sectionScore[i+1]))
+							receiver.drawScore(engine, x-1, 4+i, "BONUS", BASE, COLOR.BLUE)
+							receiver.drawScore(engine, x, 5+i, "%4d %d".format(sectionHanabi[i+1], sectionScore[i+1]), NUM)
 						}
 
-						val strSection = "%3d%s%4d %d".format(temp, if(i==sectionsDone) "+" else "-", sectionHanabi[i], sectionScore[i])
+						val strSection =
+							"%3d%s%4d %d".format(temp, if(i==sectionsDone) "+" else "-", sectionHanabi[i], sectionScore[i])
 
-						receiver.drawScoreNum(engine, x, 3+i, strSection, sectionIsNewRecord[i])
+						receiver.drawScore(engine, x, 3+i, strSection, NUM, sectionIsNewRecord[i])
 					}
 
-				receiver.drawScoreFont(engine, x2, 14, "AVERAGE", COLOR.BLUE)
-				receiver.drawScoreNum(
-					engine, x2, 15, (engine.statistics.time/(sectionsDone+if(engine.ending==0) 1 else 0)).toTimeStr, 2f
+				receiver.drawScore(engine, x2, 14, "AVERAGE", BASE, COLOR.BLUE)
+				receiver.drawScore(
+					engine, x2, 15, (engine.statistics.time/(sectionsDone+if(engine.ending==0) 1 else 0)).toTimeStr,
+					NUM, 2f
 				)
 			}
 		}
@@ -427,7 +431,8 @@ class GrandBasic:AbstractGrand() {
 		// Increase section timer
 		if(engine.timerActive&&engine.ending==0) {
 			val section = engine.statistics.level/100
-			if(section>=0&&section<sectionTime.size) sectionTime[section] = engine.statistics.time-sectionTime.take(section).sum()
+			if(section>=0&&section<sectionTime.size) sectionTime[section] =
+				engine.statistics.time-sectionTime.take(section).sum()
 			if(engine.statistics.time%1800==0) {
 				if(halfMinLine>0) halfMinBonus = true
 				halfMinLine = 0
@@ -478,12 +483,12 @@ class GrandBasic:AbstractGrand() {
 
 	/** Renders game result screen */
 	override fun renderResult(engine:GameEngine) {
-		receiver.drawMenuFont(engine, 0, 0, "${BaseFont.UP_S}${BaseFont.DOWN_S} PAGE${engine.statc[1]+1}/3", COLOR.RED)
+		receiver.drawMenu(engine, 0, 0, "${BaseFont.UP_S}${BaseFont.DOWN_S} PAGE${engine.statc[1]+1}/3", BASE, COLOR.RED)
 
 		if(engine.statc[1]==0) {
-			receiver.drawMenuNum(engine, 0, 2, "%04d".format(hanabi), 2f)
-			receiver.drawMenuFont(engine, 6, 3, "Score", COLOR.GREEN, .8f)
-			receiver.drawMenuNum(engine, 0, 4, "%7d".format(engine.statistics.score), 1.9f)
+			receiver.drawMenu(engine, 0, 2, "%04d".format(hanabi), NUM, 2f)
+			receiver.drawMenu(engine, 6, 3, "Score", BASE, COLOR.GREEN, .8f)
+			receiver.drawMenu(engine, 0, 4, "%7d".format(engine.statistics.score), NUM, 1.9f)
 			drawResultStats(engine, receiver, 6, COLOR.GREEN, Statistic.LINES, Statistic.LEVEL, Statistic.TIME)
 			drawResultRank(engine, receiver, 13, COLOR.GREEN, rankingRank)
 			if(secretGrade>4)
@@ -492,24 +497,25 @@ class GrandBasic:AbstractGrand() {
 					"%10s".format(tableSecretGradeName[secretGrade-1])
 				)
 		} else if(engine.statc[1]==1) {
-			receiver.drawMenuFont(engine, 0, 2, "SECTION", COLOR.GREEN)
-			receiver.drawMenuFont(engine, 0, 3, "Score", COLOR.GREEN)
+			receiver.drawMenu(engine, 0, 2, "SECTION", BASE, COLOR.GREEN)
+			receiver.drawMenu(engine, 0, 3, "Score", BASE, COLOR.GREEN)
 
 			for(i in sectionScore.indices)
-				receiver.drawMenuNum(
+				receiver.drawMenu(
 					engine, 1, (if(i==sectionMax) 5 else 4)+i,
-					"%4d:%d".format(sectionHanabi[i], sectionScore[i]), sectionIsNewRecord[i]
+					"%4d:%d".format(sectionHanabi[i], sectionScore[i]),
+					NUM, sectionIsNewRecord[i]
 				)
-			receiver.drawMenuFont(engine, 0, 4+sectionMax, "BONUS", COLOR.GREEN)
+			receiver.drawMenu(engine, 0, 4+sectionMax, "BONUS", BASE, COLOR.GREEN)
 
-			receiver.drawMenuFont(engine, 0, 7+sectionMax, "Time", COLOR.GREEN)
+			receiver.drawMenu(engine, 0, 7+sectionMax, "Time", BASE, COLOR.GREEN)
 			for(i in sectionTime.indices)
 				if(sectionTime[i]>0)
-					receiver.drawMenuNum(engine, 2, 8+sectionMax+i, sectionTime[i].toTimeStr)
+					receiver.drawMenu(engine, 2, 8+sectionMax+i, sectionTime[i].toTimeStr, NUM)
 
 			if(sectionAvgTime>0) {
-				receiver.drawMenuFont(engine, 0, 15, "AVERAGE", COLOR.GREEN)
-				receiver.drawMenuNum(engine, 2, 16, sectionAvgTime.toTimeStr)
+				receiver.drawMenu(engine, 0, 15, "AVERAGE", BASE, COLOR.GREEN)
+				receiver.drawMenu(engine, 2, 16, sectionAvgTime.toTimeStr, NUM)
 			}
 		} else if(engine.statc[1]==2)
 			drawResultStats(
@@ -569,8 +575,10 @@ class GrandBasic:AbstractGrand() {
 		private val tableGravityValue =
 			listOf(
 				0 to 4, 8 to 5, 19 to 6, 35 to 8, 40 to 10, 50 to 12, 60 to 16, 70 to 32, 80 to 48, 90 to 64,
-				100 to 4, 108 to 5, 119 to 6, 125 to 8, 131 to 12, 139 to 32, 149 to 48, 156 to 80, 164 to 112, 174 to 128, 180 to 144,
-				200 to 16, 212 to 48, 221 to 80, 232 to 112, 244 to 144, 256 to 176, 267 to 192, 277 to 208, 287 to 224, 295 to 240,
+				100 to 4, 108 to 5, 119 to 6, 125 to 8, 131 to 12, 139 to 32, 149 to 48, 156 to 80, 164 to 112, 174 to 128,
+				180 to 144,
+				200 to 16, 212 to 48, 221 to 80, 232 to 112, 244 to 144, 256 to 176, 267 to 192, 277 to 208, 287 to 224,
+				295 to 240,
 				300 to -1
 			)
 

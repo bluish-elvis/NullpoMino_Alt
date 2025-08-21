@@ -33,6 +33,7 @@ package mu.nu.nullpo.gui.common.fx
 
 import mu.nu.nullpo.game.event.EventReceiver.Companion.getRainbowColor
 import mu.nu.nullpo.gui.common.AbstractRenderer
+import mu.nu.nullpo.gui.common.BaseFont.FONT.BASE
 import kotlin.math.PI
 import kotlin.math.cos
 import kotlin.math.sin
@@ -67,7 +68,7 @@ class PopupBravo(x:Float, y:Float, val w:Int, val h:Int):SpriteSheet(x, y) {
 				r.drawRectSpecific(x-s*16, y-s*16, w+s*32, h+s*32, alpha = alpha)
 				r.drawRectSpecific(x-s*32, y-s*32, w+s*64, h+s*64, alpha = alpha)
 			}
-		r.drawDirectFont(x, y+h/2-20, "PERFECT!", getRainbowColor(ticks%9), 1.25f)
-		r.drawDirectFont(x-8, y+h/2+16, "ALL CLEARED", getRainbowColor((ticks+4)%9), 1f)
+		r.drawFont(x, y+h/2-20, "PERFECT!", BASE, getRainbowColor(ticks%9), 1.25f)
+		r.drawFont(x-8, y+h/2+16, "ALL CLEARED", BASE, getRainbowColor((ticks+4)%9), 1f)
 	}
 }

@@ -37,6 +37,7 @@ import mu.nu.nullpo.game.event.ScoreEvent
 import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.game.subsystem.mode.menu.*
 import mu.nu.nullpo.gui.common.BaseFont
+import mu.nu.nullpo.gui.common.BaseFont.FONT.*
 import mu.nu.nullpo.util.CustomProperties
 import mu.nu.nullpo.util.GeneralUtil.toInt
 import mu.nu.nullpo.util.GeneralUtil.toTimeStr
@@ -480,9 +481,9 @@ class GrandM3:AbstractGrand() {
 	}
 	/* Render score */
 	override fun renderLast(engine:GameEngine) {
-		receiver.drawScoreFont(engine, 0, 0, name, COLOR.CYAN)
+		receiver.drawScore(engine, 0, 0, name, BASE, COLOR.CYAN)
 
-		receiver.drawScoreFont(engine, -1, -4*2, "DECORATION", scale = .5f)
+		receiver.drawScore(engine, -1, -4*2, "DECORATION", BASE, scale = .5f)
 		receiver.drawScoreBadges(engine, 0, -3, 100, decoration)
 		receiver.drawScoreBadges(engine, 5, -4, 100, decTemp)
 		if(engine.stat==GameEngine.Status.SETTING||engine.stat==GameEngine.Status.RESULT&&!owner.replayMode) {
@@ -490,177 +491,183 @@ class GrandM3:AbstractGrand() {
 				if(!isShowBestSectionTime) {
 					// Rankings
 
-					receiver.drawScoreFont(engine, 0, 2, "GRADE TIME LEVEL", COLOR.BLUE)
+					receiver.drawScore(engine, 0, 2, "GRADE TIME LEVEL", BASE, COLOR.BLUE)
 
 					for(i in 0..<rankingMax) {
-						receiver.drawScoreGrade(
-							engine, 0, 3+i, "%2d".format(i+1), if(rankingRank==i) COLOR.RAINBOW else COLOR.YELLOW
+						receiver.drawScore(
+							engine, 0, 3+i, "%2d".format(i+1), GRADE,
+							if(rankingRank==i) COLOR.RAINBOW else COLOR.YELLOW
 						)
-						receiver.drawScoreGrade(
-							engine, 2, 3+i, getGradeName(rankingGrade[goalType][i]), when {
+						receiver.drawScore(
+							engine, 2, 3+i, getGradeName(rankingGrade[goalType][i]), GRADE, when {
 								rankingRollClear[goalType][i]==1||rankingRollClear[goalType][i]==3 -> COLOR.GREEN
 								rankingRollClear[goalType][i]==2||rankingRollClear[goalType][i]==4 -> COLOR.ORANGE
 								else -> COLOR.WHITE
 							}
 						)
-						receiver.drawScoreNum(engine, 5, 3+i, rankingTime[goalType][i].toTimeStr, i==rankingRank)
-						receiver.drawScoreNum(
+						receiver.drawScore(engine, 5, 3+i, rankingTime[goalType][i].toTimeStr, NUM, i==rankingRank)
+						receiver.drawScore(
 							engine, 12, 3+i, "%0${if(goalType==0) 3 else 4}d".format(rankingLevel[goalType][i]),
+							NUM,
 							i==rankingRank
 						)
 					}
-					receiver.drawScoreNano(engine, 0, 18, "CERTIFIED GRADE", COLOR.YELLOW)
-					receiver.drawScoreGrade(engine, 0, 19, getGradeName(recordGrade[goalType]), scale = 2f,
+					receiver.drawScore(engine, 0, 18, "CERTIFIED GRADE", NANO, COLOR.YELLOW)
+					receiver.drawScore(engine, 0, 19, getGradeName(recordGrade[goalType]), GRADE, scale = 2f,
 						alpha = if(enableExam) 1f else .5f)
 					if(promotionalExam>recordGrade[goalType]) {
-						receiver.drawScoreNano(engine, 4, 19, "NEXT QUALIFY", COLOR.YELLOW)
-						receiver.drawScoreFont(engine, 4, 20, BaseFont.CURSOR, alpha = if(enableExam) 1f else .5f)
-						receiver.drawScoreGrade(engine, 5, 20, getGradeName(promotionalExam), scale = 1.67f,
+						receiver.drawScore(engine, 4, 19, "NEXT QUALIFY", NANO, COLOR.YELLOW)
+						receiver.drawScore(engine, 4, 20, BaseFont.CURSOR, BASE, alpha = if(enableExam) 1f else .5f)
+						receiver.drawScore(engine, 5, 20, getGradeName(promotionalExam), GRADE, scale = 1.67f,
 							alpha = if(enableExam) 1f else .5f)
 					}
 					for(i in 0..<GRADE_HISTORY_SIZE)
 						if(gradeHistory[goalType][i]>=0)
-							receiver.drawScoreGrade(
+							receiver.drawScore(
 								engine, -2, 15+i, getGradeName(gradeHistory[goalType][i]),
+								GRADE,
 								if(gradeHistory[goalType][i]>recordGrade[goalType]) COLOR.YELLOW else COLOR.WHITE,
 								alpha = if(enableExam) 1f else .5f
 							)
-					receiver.drawScoreNum(engine, -2, 16+GRADE_HISTORY_SIZE, "-${demotionPoints[goalType]}", COLOR.RED,
+					receiver.drawScore(engine, -2, 16+GRADE_HISTORY_SIZE, "-${demotionPoints[goalType]}", NUM, COLOR.RED,
 						alpha = if(enableExam) 1f else .5f)
 
-					receiver.drawScoreFont(engine, 0, 17, "F:VIEW SECTION TIME", COLOR.GREEN)
+					receiver.drawScore(engine, 0, 17, "F:VIEW SECTION TIME", BASE, COLOR.GREEN)
 				} else {
 					// Section Time
-					receiver.drawScoreFont(engine, 0, 2, "SECTION TIME", COLOR.BLUE)
+					receiver.drawScore(engine, 0, 2, "SECTION TIME", BASE, COLOR.BLUE)
 
 					val totalTime = (0..<tableSectionMax[goalType]).fold(0) {_, i ->
 						val slv = minOf(i*100, tableGoalLevel[goalType])
-						receiver.drawScoreNum(
+						receiver.drawScore(
 							engine, 0, 3+i, "%4d-%4d/%s".format(slv, slv+99, bestSectionTime[goalType][i].toTimeStr),
-							sectionIsNewRecord[i]&&!isAnyExam
+							NUM, sectionIsNewRecord[i]&&!isAnyExam
 						)
 						bestSectionTime[goalType][i]
 					}
 
-					receiver.drawScoreFont(engine, 13, 2, "TOTAL", COLOR.BLUE)
-					receiver.drawScoreNum(engine, 13, 3, totalTime.toTimeStr, 2f)
-					receiver.drawScoreFont(
+					receiver.drawScore(engine, 13, 2, "TOTAL", BASE, COLOR.BLUE)
+					receiver.drawScore(engine, 13, 3, totalTime.toTimeStr, NUM, 2f)
+					receiver.drawScore(
 						engine, if(receiver.nextDisplayType==2) 0 else 12, if(receiver.nextDisplayType==2) 18 else 14,
-						"AVERAGE", COLOR.BLUE
+						"AVERAGE", BASE, COLOR.BLUE
 					)
-					receiver.drawScoreNum(
+					receiver.drawScore(
 						engine, if(receiver.nextDisplayType==2) 0 else 12, if(receiver.nextDisplayType==2) 19 else 15,
-						(totalTime/tableSectionMax[goalType]).toTimeStr, 2f
+						(totalTime/tableSectionMax[goalType]).toTimeStr, NUM, 2f
 					)
 
-					receiver.drawScoreFont(engine, 0, 17, "F:VIEW RANKING", COLOR.GREEN)
+					receiver.drawScore(engine, 0, 17, "F:VIEW RANKING", BASE, COLOR.GREEN)
 				}
 		} else {
 			val g20 = engine.speed.gravity<0
 			if(promotionFlag) {
 				// 試験段位
-				receiver.drawScoreNano(engine, 0, 1, "QUALIFY", COLOR.ORANGE)
-				receiver.drawScoreGrade(engine, 6, 1, getGradeName(promotionalExam))
+				receiver.drawScore(engine, 0, 1, "QUALIFY", NANO, COLOR.ORANGE)
+				receiver.drawScore(engine, 6, 1, getGradeName(promotionalExam), GRADE)
 			}
 			val headCol = if(g20) COLOR.YELLOW else COLOR.BLUE
 			if(gradeDisp) {
-				receiver.drawScoreFont(engine, 0, 2, "GRADE", headCol)
+				receiver.drawScore(engine, 0, 2, "GRADE", BASE, headCol)
 				// 段位
-				receiver.drawScoreGrade(engine, 0, 3, getGradeName(grade), gradeFlash>0&&gradeFlash%4==0, 2f)
+				receiver.drawScore(engine, 0, 3, getGradeName(grade), GRADE, gradeFlash>0&&gradeFlash%4==0, 2f)
 				if(goalType==0) {
 					val index = minOf(tableGradeDecayRate.size-1, gradeBasicInternal)
-					receiver.drawScoreGrade(engine, 3, 3, getGradeName(index), gradeFlash>0&&gradeFlash%4==0)
+					receiver.drawScore(engine, 3, 3, getGradeName(index), GRADE, gradeFlash>0&&gradeFlash%4==0)
 					receiver.drawScoreSpeed(engine, 3, 3, gradeBasicPoint-gradeBasicDecay*1f/tableGradeDecayRate[index], 5f)
-					receiver.drawScoreNum(
-						engine, 6, 2, "%02.1f%%".format(gradeBasicPoint-gradeBasicDecay*1f/tableGradeDecayRate[index]),
+					receiver.drawScore(
+						engine, 6, 2,
+						"%02.1f%%".format(gradeBasicPoint-gradeBasicDecay*1f/tableGradeDecayRate[index]),
+						NUM,
 						gradeFlash>0&&gradeFlash%4==0
 					)
 				} else {
-					receiver.drawScoreNum(
+					receiver.drawScore(
 						engine, 0, 3, "%05.1f%%".format(gradeBasicPoint-gradeBasicDecay/240f),
+						NUM,
 						gradeFlash>0&&gradeFlash%4==0
 					)
 				}
 			}
 
 			// Score
-			receiver.drawScoreFont(engine, 0, 5, "Score", headCol)
-			receiver.drawScoreNum(engine, 5, 5, "+$lastScore")
-			receiver.drawScoreNum(engine, 0, 6, "$scDisp", 2f)
+			receiver.drawScore(engine, 0, 5, "Score", BASE, headCol)
+			receiver.drawScore(engine, 5, 5, "+$lastScore", NUM)
+			receiver.drawScore(engine, 0, 6, "$scDisp", NUM, 2f)
 
 			// level
-			receiver.drawScoreFont(engine, 0, 9, "Level", headCol)
+			receiver.drawScore(engine, 0, 9, "Level", BASE, headCol)
 
-			receiver.drawScoreNum(engine, 1, 10, "%3d".format(maxOf(engine.statistics.level, 0)))
+			receiver.drawScore(engine, 1, 10, "%3d".format(maxOf(engine.statistics.level, 0)), NUM)
 			receiver.drawScoreSpeed(
 				engine, 0, 11, if(g20) 40 else floor(ln(engine.speed.gravity.toDouble())).toInt()*4, 4
 			)
 			if(coolCount>0) {
-				receiver.drawScoreFont(engine, 4, 11, "+")
-				receiver.drawScoreGrade(engine, 5, 11, "%1d".format(coolCount))
+				receiver.drawScore(engine, 4, 11, "+", BASE)
+				receiver.drawScore(engine, 5, 11, "%1d".format(coolCount), GRADE)
 			}
-			receiver.drawScoreNum(engine, 1, 12, "%3d".format(nextSecLv))
+			receiver.drawScore(engine, 1, 12, "%3d".format(nextSecLv), NUM)
 
 			// Time
-			receiver.drawScoreFont(engine, 0, 14, "Time", headCol)
+			receiver.drawScore(engine, 0, 14, "Time", BASE, headCol)
 			if(engine.ending!=2||rollTime/10%2==0)
-				receiver.drawScoreNum(engine, 0, 15, engine.statistics.time.toTimeStr, 2f)
+				receiver.drawScore(engine, 0, 15, engine.statistics.time.toTimeStr, NUM, 2f)
 
 			// Roll 残り time
 			if(engine.gameActive&&engine.ending==2) {
 				val time = maxOf(ROLLTIMELIMIT-rollTime, 0)
-				receiver.drawScoreFont(engine, 0, 17, "ROLL TIME", COLOR.CYAN)
-				receiver.drawScoreNum(engine, 0, 18, time.toTimeStr, time>0&&time<10*60, 2f)
+				receiver.drawScore(engine, 0, 17, "ROLL TIME", BASE, COLOR.CYAN)
+				receiver.drawScore(engine, 0, 18, time.toTimeStr, NUM, time>0&&time<10*60, 2f)
 			}
 
 			if(regretDispFrame>0)
 			// REGRET表示
-				receiver.drawMenuFont(
-					engine, 2, 21, "REGRET", when {
+				receiver.drawMenu(
+					engine, 2, 21, "REGRET", BASE, when {
 						regretDispFrame%4==0 -> COLOR.YELLOW; regretDispFrame%4==2 -> COLOR.RED; else -> COLOR.ORANGE
 					}
 				)
 			else if(coolDispFrame>0)
 			// COOL表示
-				receiver.drawMenuFont(
-					engine, 2, 21, "COOL!!", when {
+				receiver.drawMenu(
+					engine, 2, 21, "COOL!!", BASE, when {
 						coolDispFrame%4==0 -> COLOR.BLUE; coolDispFrame%2==0 -> COLOR.GREEN; else -> COLOR.CYAN
 					}
 				)
 
 			// medal
 			receiver.drawScoreMedal(engine, 0, 20, "AC", medalAC)
-			receiver.drawScoreNum(engine, 2, 20, "%3d".format(engine.statistics.bravos))
+			receiver.drawScore(engine, 2, 20, "%3d".format(engine.statistics.bravos), NUM)
 			receiver.drawScoreMedal(engine, 5, 20, "ST", medalST)
-			receiver.drawScoreNum(engine, 7, 20, medalsST.joinToString("."))
+			receiver.drawScore(engine, 7, 20, medalsST.joinToString("."), NUM)
 			receiver.drawScoreMedal(engine, 0, 21, "SK", medalSK)
-			receiver.drawScoreNum(engine, 2, 21, "%3d".format(engine.statistics.totalQuadruple))
+			receiver.drawScore(engine, 2, 21, "%3d".format(engine.statistics.totalQuadruple), NUM)
 			receiver.drawScoreMedal(engine, 5, 21, "CO", medalCO)
-			receiver.drawScoreNum(engine, 7, 21, "%3d".format(engine.statistics.maxCombo))
+			receiver.drawScore(engine, 7, 21, "%3d".format(engine.statistics.maxCombo), NUM)
 
 			// Section Time
 			if(showST&&sectionTime.isNotEmpty()) {
 				val x = receiver.nextDisplayType==2
-				receiver.drawScoreFont(engine, if(x) 8 else 10, 2, "SECTION TIME", COLOR.BLUE)
+				receiver.drawScore(engine, if(x) 8 else 10, 2, "SECTION TIME", BASE, COLOR.BLUE)
 
 				val section = engine.statistics.level/100
 				sectionTime.forEachIndexed {i, it ->
-					if(it>0) receiver.drawScoreNum(
+					if(it>0) receiver.drawScore(
 						engine, if(x) 9 else 10, 3+i, "%3d%s%s %02.2f".format(
 							minOf(i*100, tableGoalLevel[goalType]),
 							if(i==section&&engine.ending==0) "+" else "-", it.toTimeStr, section70Time[i]/60f
-						), when {
+						), NUM, when {
 							regretSection[i] -> if(sectionIsNewRecord[i]) COLOR.ORANGE else COLOR.RED
 							coolSection[i] -> if(sectionIsNewRecord[i]) COLOR.CYAN else COLOR.GREEN
 							else -> COLOR.WHITE
 						}, if(x) .75f else 1f
 					)
 				}
-				receiver.drawScoreFont(engine, if(x) 8 else 12, if(x) 11 else 14, "AVERAGE", COLOR.BLUE)
-				receiver.drawScoreNum(
+				receiver.drawScore(engine, if(x) 8 else 12, if(x) 11 else 14, "AVERAGE", BASE, COLOR.BLUE)
+				receiver.drawScore(
 					engine, if(x) 8 else 12, if(x) 12 else 15,
 					(engine.statistics.time/(sectionsDone+(engine.ending==0).toInt())).toTimeStr,
-					2f
+					NUM, 2f
 				)
 			}
 		}
@@ -718,10 +725,11 @@ class GrandM3:AbstractGrand() {
 	/* Ready→Goのときの描画 */
 	override fun renderReady(engine:GameEngine) {
 		if(promotionFlag&&readyFrame>0) {
-			receiver.drawMenuFont(engine, 0, 2, "PROMOTION", COLOR.YELLOW)
-			receiver.drawMenuFont(engine, 6, 3, "EXAM", COLOR.YELLOW)
-			receiver.drawMenuGrade(
-				engine, 2, 5.66f, getGradeName(promotionalExam), if(readyFrame%4==0) COLOR.ORANGE else COLOR.WHITE,
+			receiver.drawMenu(engine, 0, 2, "PROMOTION", BASE, COLOR.YELLOW)
+			receiver.drawMenu(engine, 6, 3, "EXAM", BASE, COLOR.YELLOW)
+			receiver.drawMenu(
+				engine, 2, 5.66f, getGradeName(promotionalExam), GRADE,
+				if(readyFrame%4==0) COLOR.ORANGE else COLOR.WHITE,
 				2f
 			)
 		}
@@ -1080,32 +1088,33 @@ class GrandM3:AbstractGrand() {
 	override fun renderResult(engine:GameEngine) {
 		if(passFrame>0) {
 			if(promotionFlag) {
-				receiver.drawMenuFont(engine, 0, 2, "PROMOTION", COLOR.YELLOW)
-				receiver.drawMenuFont(engine, 1, 3, "CHANCE TO", COLOR.YELLOW)
-				receiver.drawMenuGrade(
-					engine, 2, 5.66f, getGradeName(promotionalExam), if(passFrame%4==0) COLOR.ORANGE else COLOR.WHITE,
+				receiver.drawMenu(engine, 0, 2, "PROMOTION", BASE, COLOR.YELLOW)
+				receiver.drawMenu(engine, 1, 3, "CHANCE TO", BASE, COLOR.YELLOW)
+				receiver.drawMenu(
+					engine, 2, 5.66f, getGradeName(promotionalExam), GRADE,
+					if(passFrame%4==0) COLOR.ORANGE else COLOR.WHITE,
 					2f
 				)
 
 				if(passFrame<420)
 					if(grade<promotionalExam)
-						receiver.drawMenuFont(
-							engine, 3, 11, "FAIL", when {
+						receiver.drawMenu(
+							engine, 3, 11, "FAIL", BASE, when {
 								passFrame%4==0 -> COLOR.YELLOW
 								passFrame%4==2 -> COLOR.RED
 								else -> COLOR.ORANGE
 							}
 						)
 					else {
-						receiver.drawMenuFont(
-							engine, 2, 11, "PASS!!", when {
+						receiver.drawMenu(
+							engine, 2, 11, "PASS!!", BASE, when {
 								passFrame%4==0 -> COLOR.GREEN
 								passFrame%4==2 -> COLOR.BLUE
 								else -> COLOR.CYAN
 							}
 						)
-						receiver.drawMenuFont(
-							engine, 1, 5, "YOU ARE", when {
+						receiver.drawMenu(
+							engine, 1, 5, "YOU ARE", BASE, when {
 								passFrame%4==0 -> COLOR.GREEN
 								passFrame%4==2 -> COLOR.BLUE
 								else -> COLOR.CYAN
@@ -1113,24 +1122,25 @@ class GrandM3:AbstractGrand() {
 						)
 					}
 			} else if(demotionFlag) {
-				receiver.drawMenuFont(engine, 0, 2, "DEMOTION", COLOR.RED)
-				receiver.drawMenuFont(engine, 6, 3, "PINCH OF", COLOR.RED)
-				receiver.drawMenuGrade(
-					engine, 2, 5.66f, getGradeName(demotionExamGrade), if(passFrame%4==0) COLOR.RED else COLOR.WHITE,
+				receiver.drawMenu(engine, 0, 2, "DEMOTION", BASE, COLOR.RED)
+				receiver.drawMenu(engine, 6, 3, "PINCH OF", BASE, COLOR.RED)
+				receiver.drawMenu(
+					engine, 2, 5.66f, getGradeName(demotionExamGrade), GRADE,
+					if(passFrame%4==0) COLOR.RED else COLOR.WHITE,
 					2f
 				)
 				if(passFrame<420)
 					if(grade<demotionExamGrade)
-						receiver.drawMenuFont(
-							engine, 2, 11, "FUCKED", when {
+						receiver.drawMenu(
+							engine, 2, 11, "FUCKED", BASE, when {
 								passFrame%4==0 -> COLOR.YELLOW
 								passFrame%4==2 -> COLOR.RED
 								else -> COLOR.ORANGE
 							}
 						)
 					else
-						receiver.drawMenuFont(
-							engine, 3, 11, "SAFE", when {
+						receiver.drawMenu(
+							engine, 3, 11, "SAFE", BASE, when {
 								passFrame%4==0 -> COLOR.GREEN
 								passFrame%4==2 -> COLOR.BLUE
 								else -> COLOR.CYAN
@@ -1138,13 +1148,13 @@ class GrandM3:AbstractGrand() {
 						)
 			}
 		} else {
-			receiver.drawMenuFont(engine, 0, 0, "${BaseFont.UP_S}${BaseFont.DOWN_S} PAGE${engine.statc[1]+1}/3", COLOR.RED)
+			receiver.drawMenu(engine, 0, 0, "${BaseFont.UP_S}${BaseFont.DOWN_S} PAGE${engine.statc[1]+1}/3", BASE, COLOR.RED)
 
 			when(engine.statc[1]) {
 				0 -> {
-					receiver.drawMenuFont(engine, 0, 3, "GRADE", COLOR.BLUE)
-					receiver.drawMenuGrade(
-						engine, 6, 1.66f, getGradeName(grade), when {
+					receiver.drawMenu(engine, 0, 3, "GRADE", BASE, COLOR.BLUE)
+					receiver.drawMenu(
+						engine, 6, 1.66f, getGradeName(grade), GRADE, when {
 							grade>=32&&engine.statc[2]%2==0 -> COLOR.YELLOW
 							rollClear==1||rollClear==3 -> COLOR.GREEN
 							rollClear==2||rollClear==4 -> COLOR.ORANGE
@@ -1163,11 +1173,12 @@ class GrandM3:AbstractGrand() {
 						)
 				}
 				1 -> {
-					receiver.drawMenuFont(engine, 0, 2, "SECTION", COLOR.BLUE)
+					receiver.drawMenu(engine, 0, 2, "SECTION", BASE, COLOR.BLUE)
 
 					sectionTime.forEachIndexed {i, it ->
-						if(it>0) receiver.drawMenuNum(
+						if(it>0) receiver.drawMenu(
 							engine, 2, 3+i, it.toTimeStr,
+							NUM,
 							if(regretSection[i]) if(sectionIsNewRecord[i]) COLOR.ORANGE else COLOR.RED
 							else if(coolSection[i]) if(sectionIsNewRecord[i]) COLOR.CYAN else COLOR.GREEN
 							else COLOR.WHITE
@@ -1175,12 +1186,12 @@ class GrandM3:AbstractGrand() {
 					}
 
 					if(sectionAvgTime>0) {
-						receiver.drawMenuFont(engine, 0, 14, "AVERAGE", COLOR.BLUE)
-						receiver.drawMenuNum(engine, 0, 15, sectionAvgTime.toTimeStr, 1.7f)
+						receiver.drawMenu(engine, 0, 14, "AVERAGE", BASE, COLOR.BLUE)
+						receiver.drawMenu(engine, 0, 15, sectionAvgTime.toTimeStr, NUM, 1.7f)
 					}
 				}
 				2 -> {
-					receiver.drawMenuNano(engine, 0, 1.5f, "MEDAL", COLOR.BLUE, .5f)
+					receiver.drawMenu(engine, 0, 1.5f, "MEDAL", NANO, COLOR.BLUE, .5f)
 					receiver.drawMenuMedal(engine, 2, 2, "AC", medalAC)
 					receiver.drawMenuMedal(engine, 5, 2, "ST", medalST)
 					receiver.drawMenuMedal(engine, 8, 2, "SK", medalSK)
@@ -1189,7 +1200,7 @@ class GrandM3:AbstractGrand() {
 					receiver.drawMenuMedal(engine, 7, 3, "CO", medalCO)
 
 					if(rollPointsTotal>0) {
-						receiver.drawMenuFont(engine, 0, 4, "ROLL POINT", COLOR.BLUE)
+						receiver.drawMenu(engine, 0, 4, "ROLL POINT", BASE, COLOR.BLUE)
 						receiver.drawMenuNum(engine, 0, 5, rollPointsTotal, 10 to null)
 					}
 

@@ -42,6 +42,7 @@ import mu.nu.nullpo.game.component.Controller
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
 import mu.nu.nullpo.game.event.ScoreEvent
 import mu.nu.nullpo.game.play.GameEngine
+import mu.nu.nullpo.gui.common.BaseFont.FONT.*
 import mu.nu.nullpo.gui.common.fx.particles.BlockParticle
 import mu.nu.nullpo.util.CustomProperties
 import mu.nu.nullpo.util.GeneralUtil.toTimeStr
@@ -341,48 +342,54 @@ class ScoreTrial:MarathonModeBase() {
 	// Render score
 	override fun renderLast(engine:GameEngine) {
 		if(owner.menuOnly) return
-		receiver.drawScoreFont(engine, 0, 0, name, COLOR.GREEN)
-		receiver.drawScoreFont(engine, 0, 1, "("+DIFFICULTY_NAMES[difficultySelected]+" TIER)", COLOR.GREEN)
+		receiver.drawScore(engine, 0, 0, name, BASE, COLOR.GREEN)
+		receiver.drawScore(engine, 0, 1, "("+DIFFICULTY_NAMES[difficultySelected]+" TIER)", BASE, COLOR.GREEN)
 		if(engine.stat===GameEngine.Status.SETTING||engine.stat===GameEngine.Status.RESULT&&!owner.replayMode) {
 			if(!owner.replayMode&&!big&&engine.ai==null&&lifeOffset==0) {
 				val topY = if(receiver.nextDisplayType==2) 6 else 4
-				receiver.drawScoreFont(engine, 3, topY-1, "SCORE  LINE TIME", COLOR.BLUE)
+				receiver.drawScore(engine, 3, topY-1, "SCORE  LINE TIME", BASE, COLOR.BLUE)
 				if(showPlayerStats) {
 					for(i in 0..<rankingMax) {
-						receiver.drawScoreFont(engine, 0, topY+i, "%2d".format(i+1), COLOR.YELLOW)
+						receiver.drawScore(engine, 0, topY+i, "%2d".format(i+1), BASE, COLOR.YELLOW)
 						val s = "${rankingScorePlayer[difficultySelected][i]}"
 						val isLong = s.length>6&&receiver.nextDisplayType!=2
-						receiver.drawScoreFont(
-							engine, if(isLong) 6 else 3, if(isLong) (topY+i)*2 else topY+i, s, i==rankingRankPlayer,
+						receiver.drawScore(
+							engine, if(isLong) 6 else 3, if(isLong) (topY+i)*2 else topY+i, s, BASE,
+							i==rankingRankPlayer,
 							if(isLong) .5f else 1f
 						)
-						receiver.drawScoreFont(engine, 10, topY+i, "${rankingLinesPlayer[difficultySelected][i]}", i==rankingRankPlayer)
-						receiver.drawScoreFont(engine, 15, topY+i, rankingTimePlayer[difficultySelected][i].toTimeStr, i==rankingRankPlayer)
+						receiver.drawScore(engine, 10, topY+i, "${rankingLinesPlayer[difficultySelected][i]}",
+							BASE,
+							i==rankingRankPlayer)
+						receiver.drawScore(engine, 15, topY+i, rankingTimePlayer[difficultySelected][i].toTimeStr,
+							BASE,
+							i==rankingRankPlayer)
 					}
-					receiver.drawScoreFont(engine, 0, topY+rankingMax+1, "PLAYER SCORES", COLOR.BLUE)
-					receiver.drawScoreFont(
-						engine, 0, topY+rankingMax+2, engine.playerProp.nameDisplay, COLOR.WHITE,
+					receiver.drawScore(engine, 0, topY+rankingMax+1, "PLAYER SCORES", BASE, COLOR.BLUE)
+					receiver.drawScore(
+						engine, 0, topY+rankingMax+2, engine.playerProp.nameDisplay, BASE, COLOR.WHITE,
 						2f
 					)
-					receiver.drawScoreFont(engine, 0, topY+rankingMax+5, "F:SWITCH RANK SCREEN", COLOR.GREEN)
+					receiver.drawScore(engine, 0, topY+rankingMax+5, "F:SWITCH RANK SCREEN", BASE, COLOR.GREEN)
 				} else {
 					for(i in 0..<rankingMax) {
-						receiver.drawScoreFont(engine, 0, topY+i, "%2d".format(i+1), COLOR.YELLOW)
+						receiver.drawScore(engine, 0, topY+i, "%2d".format(i+1), BASE, COLOR.YELLOW)
 						val s = "${rankingScore[difficultySelected][i]}"
 						val isLong = s.length>6&&receiver.nextDisplayType!=2
-						receiver.drawScoreFont(
-							engine, if(isLong) 6 else 3, if(isLong) (topY+i)*2 else topY+i, s, i==rankingRank,
+						receiver.drawScore(
+							engine, if(isLong) 6 else 3, if(isLong) (topY+i)*2 else topY+i, s, BASE, i==rankingRank,
 							if(isLong) .5f else 1f
 						)
-						receiver.drawScoreFont(engine, 10, topY+i, "${rankingLines[difficultySelected][i]}", i==rankingRank)
-						receiver.drawScoreFont(engine, 15, topY+i, rankingTime[difficultySelected][i].toTimeStr, i==rankingRank)
+						receiver.drawScore(engine, 10, topY+i, "${rankingLines[difficultySelected][i]}", BASE, i==rankingRank)
+						receiver.drawScore(engine, 15, topY+i, rankingTime[difficultySelected][i].toTimeStr, BASE, i==rankingRank)
 					}
-					receiver.drawScoreFont(engine, 0, topY+rankingMax+1, "LOCAL SCORES", COLOR.BLUE)
-					if(!engine.playerProp.isLoggedIn) receiver.drawScoreFont(
-						engine, 0, topY+rankingMax+2, "(NOT LOGGED IN)\n(E:LOG IN)"
-					)
-					if(engine.playerProp.isLoggedIn) receiver.drawScoreFont(
+					receiver.drawScore(engine, 0, topY+rankingMax+1, "LOCAL SCORES", BASE, COLOR.BLUE)
+					if(!engine.playerProp.isLoggedIn) receiver.drawScore(
+						engine, 0, topY+rankingMax+2, "(NOT LOGGED IN)\n(E:LOG IN)",
+						BASE)
+					if(engine.playerProp.isLoggedIn) receiver.drawScore(
 						engine, 0, topY+rankingMax+5, "F:SWITCH RANK SCREEN",
+						BASE,
 						COLOR.GREEN
 					)
 				}
@@ -390,36 +397,37 @@ class ScoreTrial:MarathonModeBase() {
 		} else if(engine.stat===GameEngine.Status.CUSTOM) {
 			engine.playerProp.loginScreen.renderScreen(receiver, engine)
 		} else {
-			receiver.drawScoreFont(engine, 0, 3, "LINE", COLOR.BLUE)
+			receiver.drawScore(engine, 0, 3, "LINE", BASE, COLOR.BLUE)
 
-			receiver.drawScoreNum(engine, 5, 2, "%3d/%3d".format(engine.statistics.lines, goalLine), 2f)
+			receiver.drawScore(engine, 5, 2, "%3d/%3d".format(engine.statistics.lines, goalLine), NUM, 2f)
 			val scget:Boolean = scDisp<engine.statistics.score
-			receiver.drawScoreFont(engine, 0, 4, "Score", COLOR.BLUE)
-			receiver.drawScoreNum(engine, 5, 4, "+$lastScore")
+			receiver.drawScore(engine, 0, 4, "Score", BASE, COLOR.BLUE)
+			receiver.drawScore(engine, 5, 4, "+$lastScore", NUM)
 
-			receiver.drawScoreNum(engine, 0, 5, "$scDisp", scget, 2f)
+			receiver.drawScore(engine, 0, 5, "$scDisp", NUM, scget, 2f)
 			if(!o) {
 				l = engine.lives+1
 			}
 			if(engine.stat===GameEngine.Status.GAMEOVER&&!o&&engine.lives==0) l = 0
-			receiver.drawScoreFont(engine, 0, 9, "LIVES", COLOR.BLUE)
-			receiver.drawScoreFont(engine, 0, 10, "$l", (l<=1))
-			receiver.drawScoreFont(engine, 0, 12, "LEVEL", COLOR.BLUE)
-			receiver.drawScoreFont(engine, 0, 13, "${engine.statistics.level}")
-			receiver.drawScoreFont(engine, 0, 15, "TIME", COLOR.BLUE)
-			receiver.drawScoreFont(engine, 0, 16, engine.statistics.time.toTimeStr)
+			receiver.drawScore(engine, 0, 9, "LIVES", BASE, COLOR.BLUE)
+			receiver.drawScore(engine, 0, 10, "$l", BASE, l<=1)
+			receiver.drawScore(engine, 0, 12, "LEVEL", BASE, COLOR.BLUE)
+			receiver.drawScore(engine, 0, 13, "${engine.statistics.level}", BASE)
+			receiver.drawScore(engine, 0, 15, "TIME", BASE, COLOR.BLUE)
+			receiver.drawScore(engine, 0, 16, engine.statistics.time.toTimeStr, BASE)
 			if(engine.playerProp.isLoggedIn||engine.playerName.isNotEmpty()) {
-				receiver.drawScoreFont(engine, 11, 6, "PLAYER", COLOR.BLUE)
-				receiver.drawScoreFont(
+				receiver.drawScore(engine, 11, 6, "PLAYER", BASE, COLOR.BLUE)
+				receiver.drawScore(
 					engine, 11, 7, if(owner.replayMode) engine.playerName else engine.playerProp.nameDisplay,
+					BASE,
 					COLOR.WHITE,
 					2f
 				)
 			}
 
 			if(shouldUseTimer) {
-				receiver.drawMenuFont(engine, 0, 21, "TIME LIMIT", COLOR.RED)
-				receiver.drawMenuFont(engine, 1, 22, mainTimer.toTimeStr, mainTimer<=600&&mainTimer/2%2==0)
+				receiver.drawMenu(engine, 0, 21, "TIME LIMIT", BASE, COLOR.RED)
+				receiver.drawMenu(engine, 1, 22, mainTimer.toTimeStr, BASE, mainTimer<=600&&mainTimer/2%2==0)
 			}
 			congratulationsText?.draw(receiver)
 			comboTextAward?.draw(receiver)
@@ -532,9 +540,9 @@ class ScoreTrial:MarathonModeBase() {
 			var pts = LINECLEAR_SCORES[li-1]
 			pts *= ev.combo
 			pts *= engine.statistics.level+1
-			if(ev.combo>=2) {
+			if(ev.combo>0) {
 				val destinationX:Int = receiver.scoreX(engine)
-				val destinationY:Int = receiver.scoreY(engine,if(engine.displaySize==0) 20 else 40)
+				val destinationY:Int = receiver.scoreY(engine, if(engine.displaySize==0) 20 else 40)
 				val colors = when {
 					ev.combo>10 -> arrayOf(COLOR.YELLOW, COLOR.ORANGE, COLOR.RED)
 					ev.combo>=8 -> arrayOf(COLOR.CYAN, COLOR.BLUE, COLOR.COBALT)
@@ -582,7 +590,7 @@ class ScoreTrial:MarathonModeBase() {
 				owner.bgMan.bg = 19
 				engine.playSE("endingstart")
 				val destinationX:Int = receiver.scoreX(engine)
-				val destinationY:Int = receiver.scoreY(engine,if(engine.displaySize==0) 18 else 36)
+				val destinationY:Int = receiver.scoreY(engine, if(engine.displaySize==0) 18 else 36)
 				congratulationsText = FlyInOutText(
 					"WELL DONE!", destinationX, destinationY, 30, 120, 30,
 					arrayOf(COLOR.YELLOW, COLOR.ORANGE, COLOR.RED), 1.0f,
@@ -613,7 +621,7 @@ class ScoreTrial:MarathonModeBase() {
 					shouldUseTimer = true
 					engine.playSE("endingstart")
 					val destinationX:Int = receiver.scoreX(engine)
-					val destinationY:Int = receiver.scoreY(engine,if(engine.displaySize==0) 18 else 36)
+					val destinationY:Int = receiver.scoreY(engine, if(engine.displaySize==0) 18 else 36)
 					congratulationsText = FlyInOutText(
 						"WELL DONE!", destinationX, destinationY, 30, 120, 30,
 						arrayOf(COLOR.YELLOW, COLOR.ORANGE, COLOR.RED), 1.0f,

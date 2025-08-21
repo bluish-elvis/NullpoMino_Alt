@@ -38,6 +38,7 @@ import mu.nu.nullpo.game.event.EventReceiver.COLOR
 import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.game.play.GameManager
 import mu.nu.nullpo.gui.common.BaseFont
+import mu.nu.nullpo.gui.common.BaseFont.FONT.*
 import mu.nu.nullpo.gui.common.GameKeyDummy.Companion.MAX_PLAYERS
 import mu.nu.nullpo.util.CustomProperties
 import mu.nu.nullpo.util.GeneralUtil.toTimeStr
@@ -300,7 +301,7 @@ class AvalancheVSBomb:AvalancheVSDummyMode() {
 				drawMenuSpeeds(engine, receiver, 0, COLOR.ORANGE, 0)
 				drawMenu(engine, receiver, "FALL DELAY" to engine.cascadeDelay, "CLEAR DELAY" to engine.cascadeClearDelay)
 
-				receiver.drawMenuFont(engine, 0, 19, "${BaseFont.UP_S}${BaseFont.DOWN_S} PAGE 1/4", COLOR.YELLOW)
+				receiver.drawMenu(engine, 0, 19, "${BaseFont.UP_S}${BaseFont.DOWN_S} PAGE 1/4", BASE, COLOR.YELLOW)
 			} else {
 				val pid = engine.playerID
 				if(menuCursor<17) {
@@ -320,7 +321,7 @@ class AvalancheVSBomb:AvalancheVSDummyMode() {
 						"HARD OJAMA" to ojamaHard[pid]
 					)
 
-					receiver.drawMenuFont(engine, 0, 19, "${BaseFont.UP_S}${BaseFont.DOWN_S} PAGE 2/4", COLOR.YELLOW)
+					receiver.drawMenu(engine, 0, 19, "${BaseFont.UP_S}${BaseFont.DOWN_S} PAGE 2/4", BASE, COLOR.YELLOW)
 				} else if(menuCursor<26) {
 					drawMenu(
 						engine, receiver, 0, COLOR.CYAN, 17, "X COLUMN" to if(dangerColumnDouble[pid]) "3 AND 4" else "3 ONLY",
@@ -344,7 +345,7 @@ class AvalancheVSBomb:AvalancheVSDummyMode() {
 					)
 					drawMenu(engine, receiver, COLOR.CYAN, "CHAINPOWER" to if(newChainPower[pid]) "FEVER" else "CLASSIC")
 
-					receiver.drawMenuFont(engine, 0, 19, "${BaseFont.UP_S}${BaseFont.DOWN_S} PAGE 3/4", COLOR.YELLOW)
+					receiver.drawMenu(engine, 0, 19, "${BaseFont.UP_S}${BaseFont.DOWN_S} PAGE 3/4", BASE, COLOR.YELLOW)
 				} else {
 					drawMenu(
 						engine,
@@ -361,11 +362,11 @@ class AvalancheVSBomb:AvalancheVSDummyMode() {
 					drawMenu(engine, receiver, COLOR.COBALT, "BGM" to BGM.values[bgmId], "SE" to enableSE[pid])
 					drawMenu(engine, receiver, COLOR.GREEN, "LOAD" to presetNumber[pid], "SAVE" to presetNumber[pid])
 
-					receiver.drawMenuFont(engine, 0, 19, "${BaseFont.UP_S}${BaseFont.DOWN_S} PAGE 4/4", COLOR.YELLOW)
+					receiver.drawMenu(engine, 0, 19, "${BaseFont.UP_S}${BaseFont.DOWN_S} PAGE 4/4", BASE, COLOR.YELLOW)
 				}
 			}
 		} else
-			receiver.drawMenuFont(engine, 3, 10, "WAIT", COLOR.YELLOW)
+			receiver.drawMenu(engine, 3, 10, "WAIT", BASE, COLOR.YELLOW)
 	}
 
 	/* When the current piece is in action */
@@ -380,7 +381,7 @@ class AvalancheVSBomb:AvalancheVSDummyMode() {
 		val pid = engine.playerID
 		val playerColor = EventReceiver.getPlayerColor(pid)
 		// Timer
-		if(pid==0) receiver.drawDirectFont(224, 8, engine.statistics.time.toTimeStr)
+		if(pid==0) receiver.drawFont(224, 8, engine.statistics.time.toTimeStr, BASE)
 
 		// Ojama Counter
 		var fontColor = COLOR.WHITE
@@ -392,7 +393,7 @@ class AvalancheVSBomb:AvalancheVSDummyMode() {
 		if(ojamaAdd[pid]>0) strOjama += "(+${ojamaAdd[pid]/6} ${ojamaAdd[pid]%6}/6)"
 
 		if(ojama[pid]>0||ojamaAdd[pid]>0)
-			receiver.drawDirectFont(fldPosX+4, fldPosY+32, strOjama, fontColor)
+			receiver.drawFont(fldPosX+4, fldPosY+32, strOjama, BASE, fontColor)
 
 		// Score
 		var strScoreMultiplier = ""
@@ -400,11 +401,11 @@ class AvalancheVSBomb:AvalancheVSDummyMode() {
 			strScoreMultiplier = "(${lastscores[pid]}e${lastmultiplier[pid]})"
 
 		if(engine.displaySize==1) {
-			receiver.drawDirectFont(fldPosX+4, fldPosY+440, "%12d".format(score[pid]), playerColor)
-			receiver.drawDirectFont(fldPosX+4, fldPosY+456, "%12s".format(strScoreMultiplier), playerColor)
+			receiver.drawFont(fldPosX+4, fldPosY+440, "%12d".format(score[pid]), BASE, playerColor)
+			receiver.drawFont(fldPosX+4, fldPosY+456, "%12s".format(strScoreMultiplier), BASE, playerColor)
 		} else if(engine.gameStarted) {
-			receiver.drawDirectFont(fldPosX-28, fldPosY+248, "%8d".format(score[pid]), playerColor)
-			receiver.drawDirectFont(fldPosX-28, fldPosY+264, "%8s".format(strScoreMultiplier), playerColor)
+			receiver.drawFont(fldPosX-28, fldPosY+248, "%8d".format(score[pid]), BASE, playerColor)
+			receiver.drawFont(fldPosX-28, fldPosY+264, "%8s".format(strScoreMultiplier), BASE, playerColor)
 		}
 
 		if(engine.stat!=GameEngine.Status.MOVE&&engine.stat!=GameEngine.Status.RESULT
@@ -414,24 +415,24 @@ class AvalancheVSBomb:AvalancheVSDummyMode() {
 		if(engine.stat!=GameEngine.Status.RESULT&&engine.gameStarted)
 			for(x in 0..<engine.field.width)
 				for(y in 0..<engine.field.height) {
-					val b = engine.field.getBlock(x, y) ?: continue
+					val b = engine.field.getBlock(x, y)?:continue
 					if(b.isEmpty) continue
 					if(b.hard>0)
 						if(engine.displaySize==1)
-							receiver.drawMenuFont(
+							receiver.drawMenu(
 								engine, x*2, y*2,
-								b.hard.toString(), COLOR.YELLOW, 2f
+								b.hard.toString(), BASE, COLOR.YELLOW, 2f
 							)
 						else
-							receiver.drawMenuFont(engine, x, y, b.hard.toString(), COLOR.YELLOW)
+							receiver.drawMenu(engine, x, y, b.hard.toString(), BASE, COLOR.YELLOW)
 					if(b.countdown>0)
 						if(engine.displaySize==1)
-							receiver.drawMenuFont(
+							receiver.drawMenu(
 								engine, x*2, y*2,
-								b.countdown.toString(), COLOR.RED, 2f
+								b.countdown.toString(), BASE, COLOR.RED, 2f
 							)
 						else
-							receiver.drawMenuFont(engine, x, y, b.countdown.toString(), COLOR.RED)
+							receiver.drawMenu(engine, x, y, b.countdown.toString(), BASE, COLOR.RED)
 				}
 
 		super.renderLast(engine)
@@ -476,11 +477,11 @@ class AvalancheVSBomb:AvalancheVSDummyMode() {
 	}
 
 	private fun explode(engine:GameEngine, x:Int, y:Int) {
-		val b = engine.field.getBlock(x, y) ?: return
+		val b = engine.field.getBlock(x, y)?:return
 		b.countdown = 0
 		for(x2 in x-1..x+1)
 			for(y2 in y-1..y+1) {
-				val b2 = engine.field.getBlock(x2, y2) ?: continue
+				val b2 = engine.field.getBlock(x2, y2)?:continue
 				if(b2.isEmpty) continue
 				if(b2.countdown>0) explode(engine, x2, y2)
 				b2.cint = Block.COLOR_WHITE

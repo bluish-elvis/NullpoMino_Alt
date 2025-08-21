@@ -50,6 +50,7 @@ import mu.nu.nullpo.game.subsystem.mode.menu.BooleanMenuItem
 import mu.nu.nullpo.game.subsystem.mode.menu.DelegateMenuItem
 import mu.nu.nullpo.game.subsystem.mode.menu.LevelMenuItem
 import mu.nu.nullpo.game.subsystem.mode.menu.MenuList
+import mu.nu.nullpo.gui.common.BaseFont.FONT.*
 import mu.nu.nullpo.util.CustomProperties
 import mu.nu.nullpo.util.GeneralUtil.toTimeStr
 
@@ -135,33 +136,33 @@ class MarathonActual:AbstractMode() {
 
 	override fun renderLast(engine:GameEngine) {
 		if(!owner.menuOnly) {
-			receiver.drawScoreFont(engine, 0, 0, name, 4f)
+			receiver.drawScore(engine, 0, 0, name, BASE, 4f)
 			var topY:Int
 			if(engine.gameActive) {
-				receiver.drawScoreFont(engine, 0, 3, "SCORE", 1f)
+				receiver.drawScore(engine, 0, 3, "SCORE", BASE, 1f)
 				val strScore:String = if(lastScore!=0&&scDisp<120)
 					"${engine.statistics.score}(+$lastScore)" else "${engine.statistics.score}(+$lastScore)"
-				receiver.drawScoreFont(engine, 0, 4, strScore)
-				receiver.drawScoreFont(engine, 0, 6, "LINE", 1f)
-				receiver.drawScoreFont(engine, 0, 7, engine.statistics.lines.toString())
-				receiver.drawScoreFont(engine, 0, 9, "LEVEL", 1f)
-				receiver.drawScoreFont(engine, 0, 10, (engine.statistics.level+1).toString())
+				receiver.drawScore(engine, 0, 4, strScore, BASE)
+				receiver.drawScore(engine, 0, 6, "LINE", BASE, 1f)
+				receiver.drawScore(engine, 0, 7, engine.statistics.lines.toString(), BASE)
+				receiver.drawScore(engine, 0, 9, "LEVEL", BASE, 1f)
+				receiver.drawScore(engine, 0, 10, (engine.statistics.level+1).toString(), BASE)
 				topY = totalLength
 				if(engine.stat==GameEngine.Status.MOVE&&engine.nowPieceObject!=null) {
 					topY += engine.nowPieceY-engine.getSpawnPosY(engine.nowPieceObject)
 				}
-				receiver.drawScoreFont(engine, 0, 12, "DISTANCE LEFT", 1f)
-				receiver.drawScoreFont(engine, 0, 13, ('ꓓ'.code-topY).toString())
-				receiver.drawScoreFont(engine, 0, 15, "TIME", 1f)
-				receiver.drawScoreFont(engine, 0, 16, engine.statistics.time.toTimeStr)
+				receiver.drawScore(engine, 0, 12, "DISTANCE LEFT", BASE, 1f)
+				receiver.drawScore(engine, 0, 13, ('ꓓ'.code-topY).toString(), BASE)
+				receiver.drawScore(engine, 0, 15, "TIME", BASE, 1f)
+				receiver.drawScore(engine, 0, 16, engine.statistics.time.toTimeStr, BASE)
 			} else if(!owner.replayMode&&!big&&engine.ai==null) {
 				topY = if(receiver.nextDisplayType==2) 6 else 4
-				receiver.drawScoreFont(engine, 3, topY-1, "TIME     PIECE PPS", COLOR.BLUE)
+				receiver.drawScore(engine, 3, topY-1, "TIME     PIECE PPS", BASE, COLOR.BLUE)
 				for(i in 0..9) {
-					receiver.drawScoreGrade(engine, 0, topY+i, "%2d".format(i+1), COLOR.YELLOW)
-					receiver.drawScoreFont(engine, 3, topY+i, rankingTime[i].toTimeStr, rankingRank==i)
-					receiver.drawScoreFont(engine, 12, topY+i, "${rankingPieces[i]}", rankingRank==i)
-					receiver.drawScoreFont(engine, 18, topY+i, "%.5g".format(rankingPPS[i]), rankingRank==i)
+					receiver.drawScore(engine, 0, topY+i, "%2d".format(i+1), GRADE, COLOR.YELLOW)
+					receiver.drawScore(engine, 3, topY+i, rankingTime[i].toTimeStr, BASE, rankingRank==i)
+					receiver.drawScore(engine, 12, topY+i, "${rankingPieces[i]}", BASE, rankingRank==i)
+					receiver.drawScore(engine, 18, topY+i, "%.5g".format(rankingPPS[i]), BASE, rankingRank==i)
 				}
 			}
 		}
@@ -213,7 +214,7 @@ class MarathonActual:AbstractMode() {
 
 	override fun renderResult(engine:GameEngine) {
 		drawResultStats(engine, receiver, 0, COLOR.BLUE, Statistic.TIME, Statistic.PIECE, Statistic.PPM)
-		this.drawResultRank(engine, receiver, 12, COLOR.BLUE, rankingRank)
+		drawResultRank(engine, receiver, 12, COLOR.BLUE, rankingRank)
 	}
 
 	override fun saveReplay(engine:GameEngine, prop:CustomProperties):Boolean {

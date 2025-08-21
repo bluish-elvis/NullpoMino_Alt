@@ -48,6 +48,7 @@ import mu.nu.nullpo.game.subsystem.mode.menu.DelegateMenuItem
 import mu.nu.nullpo.game.subsystem.mode.menu.LevelMenuItem
 import mu.nu.nullpo.game.subsystem.mode.menu.MenuList
 import mu.nu.nullpo.game.subsystem.mode.menu.StringsMenuItem
+import mu.nu.nullpo.gui.common.BaseFont.FONT.*
 import mu.nu.nullpo.util.CustomProperties
 import mu.nu.nullpo.util.GeneralUtil.toTimeStr
 
@@ -281,41 +282,43 @@ class MarathonZone:NetDummyMode() {
 		if(owner.menuOnly) return
 		val titlecolor = if(inzone) EventReceiver.COLOR.RAINBOW else EventReceiver.COLOR.CYAN
 		val hudcolor = if(inzone) EventReceiver.COLOR.RAINBOW else EventReceiver.COLOR.BLUE
-		receiver.drawScoreFont(engine, 0, 0, name, titlecolor)
-		receiver.drawScoreFont(
-			engine, 0, 1, if(tableGameClearLines[goalType]==-1) "(Endless run)" else "(${tableGameClearLines[goalType]} Lines run)",
+		receiver.drawScore(engine, 0, 0, name, BASE, titlecolor)
+		receiver.drawScore(
+			engine, 0, 1,
+			if(tableGameClearLines[goalType]==-1) "(Endless run)" else "(${tableGameClearLines[goalType]} Lines run)",
+			BASE,
 			titlecolor
 		)
 		if((engine.stat===GameEngine.Status.SETTING)||((engine.stat===GameEngine.Status.RESULT)&&(!owner.replayMode))) {
 			if((!owner.replayMode)&&(engine.ai==null)) {
 				val scale:Float = if((receiver.nextDisplayType==2)) 0.5f else 1.0f
 				val topY = if((receiver.nextDisplayType==2)) 6 else 4
-				receiver.drawScoreFont(engine, 2, topY-1, "SCORE    LINE TIME", hudcolor, scale)
+				receiver.drawScore(engine, 2, topY-1, "SCORE    LINE TIME", BASE, hudcolor, scale)
 				for(i in 0..<rankingMax) {
-					receiver.drawScoreGrade(engine, -1, topY+i, "%2d".format(i+1), EventReceiver.COLOR.YELLOW, scale)
-					receiver.drawScoreNum(engine, 2, topY+i, "${rankingScore[goalType][i]}", (i==rankingRank), scale)
-					receiver.drawScoreNum(engine, 11, topY+i, "${rankingLines[goalType][i]}", (i==rankingRank), scale)
-					receiver.drawScoreNum(
-						engine, 16, topY+i, rankingTime[goalType][i].toTimeStr, (i==rankingRank),
-						scale
+					receiver.drawScore(engine, -1, topY+i, "%2d".format(i+1), GRADE, EventReceiver.COLOR.YELLOW, scale)
+					receiver.drawScore(engine, 2, topY+i, "${rankingScore[goalType][i]}", NUM, i==rankingRank, scale)
+					receiver.drawScore(engine, 11, topY+i, "${rankingLines[goalType][i]}", NUM, i==rankingRank, scale)
+					receiver.drawScore(
+						engine, 16, topY+i, rankingTime[goalType][i].toTimeStr, NUM, i==rankingRank, scale
 					)
 				}
 			}
 		} else {
-			receiver.drawScoreFont(engine, 0, 3, "SCORE", hudcolor)
+			receiver.drawScore(engine, 0, 3, "SCORE", BASE, hudcolor)
 			val strScore = "${engine.statistics.score}(+$lastScore)"
 
-			receiver.drawScoreNum(engine, 0, 4, strScore)
-			receiver.drawScoreFont(engine, 0, 6, "LINE", hudcolor)
-			receiver.drawScoreNum(
-				engine, 0, 7, if(engine.statistics.level>=19&&tableGameClearLines[goalType]<0) "${engine.statistics.lines}" else
-					"${engine.statistics.lines}/${(engine.statistics.level+1)*24}"
-			)
-			receiver.drawScoreFont(engine, 0, 9, "LEVEL", hudcolor)
-			receiver.drawScoreNum(engine, 0, 10, "${engine.statistics.level+1}")
-			receiver.drawScoreFont(engine, 0, 12, "TIME", hudcolor)
-			receiver.drawScoreNum(engine, 0, 13, engine.statistics.time.toTimeStr)
-			receiver.drawScoreFont(engine, 0, 15, "ZONE", hudcolor)
+			receiver.drawScore(engine, 0, 4, strScore, NUM)
+			receiver.drawScore(engine, 0, 6, "LINE", BASE, hudcolor)
+			receiver.drawScore(
+				engine, 0, 7,
+				if(engine.statistics.level>=19&&tableGameClearLines[goalType]<0) "${engine.statistics.lines}" else
+					"${engine.statistics.lines}/${(engine.statistics.level+1)*24}",
+				NUM)
+			receiver.drawScore(engine, 0, 9, "LEVEL", BASE, hudcolor)
+			receiver.drawScore(engine, 0, 10, "${engine.statistics.level+1}", NUM)
+			receiver.drawScore(engine, 0, 12, "TIME", BASE, hudcolor)
+			receiver.drawScore(engine, 0, 13, engine.statistics.time.toTimeStr, NUM)
+			receiver.drawScore(engine, 0, 15, "ZONE", BASE, hudcolor)
 			val colZone = when {
 				inzone -> EventReceiver.COLOR.RAINBOW
 				zoneframes>=MAX_ZONE_TIME*3/4 -> EventReceiver.COLOR.CYAN
@@ -324,16 +327,17 @@ class MarathonZone:NetDummyMode() {
 				else -> EventReceiver.COLOR.GREEN
 			}
 
-			receiver.drawScoreNum(engine, 0, 16, "$zoneframes", colZone)
-			receiver.drawScoreNum(
-				engine, 0, 17, zoneframes.toTimeStr, colZone
+			receiver.drawScore(engine, 0, 16, "$zoneframes", NUM, colZone)
+			receiver.drawScore(
+				engine, 0, 17, zoneframes.toTimeStr, NUM, colZone
 			)
 			if(zonedisplayframes<180&&lastzonelines>0) {
 				val linetxt = "%2d".format(lastzonelines)+" LINES!"
 				val pointtxt = "+$lastzonebonus PTS."
-				receiver.drawMenuFont(engine, 1, engine.field.height/2, linetxt, (zonedisplayframes%2)==0)
-				receiver.drawMenuFont(
-					engine, 6-(pointtxt.length/2+1), engine.field.height/2+1, pointtxt, (zonedisplayframes%2)==0
+				receiver.drawMenu(engine, 1, engine.field.height/2, linetxt, BASE, (zonedisplayframes%2)==0)
+				receiver.drawMenu(
+					engine, 6-(pointtxt.length/2+1), engine.field.height/2+1, pointtxt, BASE,
+					(zonedisplayframes%2)==0
 				)
 			}
 		}
@@ -543,12 +547,12 @@ class MarathonZone:NetDummyMode() {
 		drawResultNetRank(engine, receiver, 14, EventReceiver.COLOR.BLUE, netRankingRank[0])
 		drawResultNetRankDaily(engine, receiver, 16, EventReceiver.COLOR.BLUE, netRankingRank[1])
 		if(netIsPB) {
-			receiver.drawMenuFont(engine, 2, 21, "NEW PB", EventReceiver.COLOR.ORANGE)
+			receiver.drawMenu(engine, 2, 21, "NEW PB", BASE, EventReceiver.COLOR.ORANGE)
 		}
 		if(netIsNetPlay&&(netReplaySendStatus==1)) {
-			receiver.drawMenuFont(engine, 0, 22, "SENDING...", EventReceiver.COLOR.PINK)
+			receiver.drawMenu(engine, 0, 22, "SENDING...", BASE, EventReceiver.COLOR.PINK)
 		} else if(netIsNetPlay&&!netIsWatch&&(netReplaySendStatus==2)) {
-			receiver.drawMenuFont(engine, 1, 22, "A: RETRY", EventReceiver.COLOR.RED)
+			receiver.drawMenu(engine, 1, 22, "A: RETRY", BASE, EventReceiver.COLOR.RED)
 		}
 	}
 	/*
@@ -565,7 +569,7 @@ class MarathonZone:NetDummyMode() {
 			updateRanking(engine.statistics.score, engine.statistics.lines, engine.statistics.time, goalType)!=-1)
 	}
 	/** Load settings from [prop] */
-	override fun loadSetting(engine: GameEngine, prop: CustomProperties, ruleName: String, playerID: Int) {
+	override fun loadSetting(engine:GameEngine, prop:CustomProperties, ruleName:String, playerID:Int) {
 		startLevel = prop.getProperty("marathonzone.startLevel", 0)
 		goalType = prop.getProperty("marathonzone.gametype", 0)
 		version = prop.getProperty("marathonzone.version", 0)
@@ -693,7 +697,8 @@ class MarathonZone:NetDummyMode() {
 		/** Fall velocity table (numerators)  */
 		private val tableGravity = intArrayOf(1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 465, 731, 1280, 1707, -1, -1, -1)
 		/** Fall velocity table (denominators)  */
-		private val tableDenominator = intArrayOf(63, 50, 39, 30, 22, 16, 12, 8, 6, 4, 3, 2, 1, 256, 256, 256, 256, 256, 256, 256)
+		private val tableDenominator =
+			intArrayOf(63, 50, 39, 30, 22, 16, 12, 8, 6, 4, 3, 2, 1, 256, 256, 256, 256, 256, 256, 256)
 		/** Line counts when BGM changes occur  */
 		private val tableBGMChange = intArrayOf(5*24, 10*24, 15*24, 20*24, -1)
 		/** Line counts when game ending occurs  */

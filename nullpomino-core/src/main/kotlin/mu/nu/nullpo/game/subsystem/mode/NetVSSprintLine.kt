@@ -35,6 +35,7 @@ import mu.nu.nullpo.game.event.EventReceiver.COLOR
 import mu.nu.nullpo.game.event.ScoreEvent
 import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.game.play.GameManager
+import mu.nu.nullpo.gui.common.BaseFont.FONT.BASE
 import mu.nu.nullpo.util.GeneralUtil.toTimeStr
 
 /** NET-VS-LINE RACE mode */
@@ -167,13 +168,13 @@ class NetVSSprintLine:NetDummyVSMode() {
 
 				when {
 					engine.displaySize!=-1 -> when(strLines.length) {
-						1 -> receiver.drawMenuFont(engine, 4, 21, strLines, fontColor, 2f)
-						2 -> receiver.drawMenuFont(engine, 3, 21, strLines, fontColor, 2f)
-						3 -> receiver.drawMenuFont(engine, 2, 21, strLines, fontColor, 2f)
+						1 -> receiver.drawMenu(engine, 4, 21, strLines, BASE, fontColor, 2f)
+						2 -> receiver.drawMenu(engine, 3, 21, strLines, BASE, fontColor, 2f)
+						3 -> receiver.drawMenu(engine, 2, 21, strLines, BASE, fontColor, 2f)
 					}
-					strLines.length==1 -> receiver.drawDirectFont(x+4+32, y+168, strLines, fontColor, 1f)
-					strLines.length==2 -> receiver.drawDirectFont(x+4+24, y+168, strLines, fontColor, 1f)
-					strLines.length==3 -> receiver.drawDirectFont(x+4+16, y+168, strLines, fontColor, 1f)
+					strLines.length==1 -> receiver.drawFont(x+4+32, y+168, strLines, BASE, fontColor, 1f)
+					strLines.length==2 -> receiver.drawFont(x+4+24, y+168, strLines, BASE, fontColor, 1f)
+					strLines.length==3 -> receiver.drawFont(x+4+16, y+168, strLines, BASE, fontColor, 1f)
 				}
 			}
 
@@ -184,19 +185,19 @@ class NetVSSprintLine:NetDummyVSMode() {
 
 				when {
 					engine.displaySize!=-1 -> when(place) {
-						0 -> receiver.drawMenuFont(engine, -3, 22, "1ST", COLOR.ORANGE)
-						1 -> receiver.drawMenuFont(engine, -3, 22, "2ND", COLOR.WHITE)
-						2 -> receiver.drawMenuFont(engine, -3, 22, "3RD", COLOR.RED)
-						3 -> receiver.drawMenuFont(engine, -3, 22, "4TH", COLOR.GREEN)
-						4 -> receiver.drawMenuFont(engine, -3, 22, "5TH", COLOR.BLUE)
-						5 -> receiver.drawMenuFont(engine, -3, 22, "6TH", COLOR.PURPLE)
+						0 -> receiver.drawMenu(engine, -3, 22, "1ST", BASE, COLOR.ORANGE)
+						1 -> receiver.drawMenu(engine, -3, 22, "2ND", BASE, COLOR.WHITE)
+						2 -> receiver.drawMenu(engine, -3, 22, "3RD", BASE, COLOR.RED)
+						3 -> receiver.drawMenu(engine, -3, 22, "4TH", BASE, COLOR.GREEN)
+						4 -> receiver.drawMenu(engine, -3, 22, "5TH", BASE, COLOR.BLUE)
+						5 -> receiver.drawMenu(engine, -3, 22, "6TH", BASE, COLOR.PURPLE)
 					}
-					place==0 -> receiver.drawDirectFont(x, y+168, "1ST", COLOR.ORANGE, .5f)
-					place==1 -> receiver.drawDirectFont(x, y+168, "2ND", COLOR.WHITE, .5f)
-					place==2 -> receiver.drawDirectFont(x, y+168, "3RD", COLOR.RED, .5f)
-					place==3 -> receiver.drawDirectFont(x, y+168, "4TH", COLOR.GREEN, .5f)
-					place==4 -> receiver.drawDirectFont(x, y+168, "5TH", COLOR.BLUE, .5f)
-					place==5 -> receiver.drawDirectFont(x, y+168, "6TH", COLOR.PURPLE, .5f)
+					place==0 -> receiver.drawFont(x, y+168, "1ST", BASE, COLOR.ORANGE, .5f)
+					place==1 -> receiver.drawFont(x, y+168, "2ND", BASE, COLOR.WHITE, .5f)
+					place==2 -> receiver.drawFont(x, y+168, "3RD", BASE, COLOR.RED, .5f)
+					place==3 -> receiver.drawFont(x, y+168, "4TH", BASE, COLOR.GREEN, .5f)
+					place==4 -> receiver.drawFont(x, y+168, "5TH", BASE, COLOR.BLUE, .5f)
+					place==5 -> receiver.drawFont(x, y+168, "6TH", BASE, COLOR.PURPLE, .5f)
 				}
 			} else if(!netVSIsPractice||pid!=0) {
 				val strTemp = "${netVSPlayerWinCount[pid]}/${netVSPlayerPlayCount[pid]}"
@@ -204,9 +205,9 @@ class NetVSSprintLine:NetDummyVSMode() {
 				if(engine.displaySize!=-1) {
 					var y2 = 21
 					if(engine.stat==GameEngine.Status.RESULT) y2 = 22
-					owner.receiver.drawMenuFont(engine, 0, y2, strTemp, COLOR.WHITE)
+					owner.receiver.drawMenu(engine, 0, y2, strTemp, BASE)
 				} else
-					owner.receiver.drawDirectFont(x+4, y+168, strTemp, COLOR.WHITE, .5f)
+					owner.receiver.drawFont(x+4, y+168, strTemp, BASE, .5f)
 			}// Games count
 		}
 	}

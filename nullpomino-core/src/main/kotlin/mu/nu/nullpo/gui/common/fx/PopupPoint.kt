@@ -32,10 +32,12 @@
 package mu.nu.nullpo.gui.common.fx
 
 import mu.nu.nullpo.game.event.EventReceiver
+import mu.nu.nullpo.game.event.EventReceiver.COLOR
 import mu.nu.nullpo.gui.common.AbstractRenderer
+import mu.nu.nullpo.gui.common.BaseFont.FONT.NUM
 
 class PopupPoint(x:Int, y:Int, val pts:Int, private val c:Int):SpriteSheet(x, y) {
-	val color get() = if(c==EventReceiver.COLOR.RAINBOW.ordinal) EventReceiver.getRainbowColor(ticks).ordinal else c
+	val color get() = if(c==COLOR.RAINBOW.ordinal) EventReceiver.getRainbowColor(ticks).ordinal else c
 	override var alpha
 		get() = minOf(1f, 2f-ticks/36f)
 		set(v) {}
@@ -47,11 +49,12 @@ class PopupPoint(x:Int, y:Int, val pts:Int, private val c:Int):SpriteSheet(x, y)
 	}
 
 	override fun draw(i:Int, r:AbstractRenderer) {
-		if(pts>0) r.drawDirectNum(
+		if(pts>0) r.drawFont(
 			dx.toInt(), dy.toInt(), "+${pts}",
-			if(ticks/2%2==0) EventReceiver.COLOR.WHITE else EventReceiver.COLOR.all[color], alpha = alpha
+			NUM,
+			if(ticks/2%2==0) COLOR.WHITE else COLOR.all[color], alpha = alpha
 		)
-		else if(pts<0) r.drawDirectNum(dx.toInt(), dy.toInt(), "$pts", EventReceiver.COLOR.RED)
+		else if(pts<0) r.drawFont(dx.toInt(), dy.toInt(), "$pts", NUM, COLOR.RED)
 	}
 
 	override val dx:Float get() = x-"$pts".length*6

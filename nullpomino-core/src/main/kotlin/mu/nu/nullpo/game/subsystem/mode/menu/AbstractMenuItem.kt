@@ -35,7 +35,8 @@ import mu.nu.nullpo.game.event.EventReceiver
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
 import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.gui.common.BaseFont
-import mu.nu.nullpo.gui.common.BaseFont.FONT
+import mu.nu.nullpo.gui.common.BaseFont.FONT.BASE
+import mu.nu.nullpo.gui.common.BaseFont.FONT.NUM
 import mu.nu.nullpo.util.CustomProperties
 
 abstract class AbstractMenuItem<T>(
@@ -73,19 +74,19 @@ abstract class AbstractMenuItem<T>(
 	open fun draw(engine:GameEngine, playerID:Int, receiver:EventReceiver, y:Int, focus:Int = -1) {
 
 		if(mini) {
-			receiver.drawMenuFont(engine, 1, y, "${label}:", color = color)
-			if(focus==0) receiver.drawMenuFont(engine, 0, y, BaseFont.CURSOR, true)
+			receiver.drawMenu(engine, 1, y, "${label}:", BASE, color = color)
+			if(focus==0) receiver.drawMenu(engine, 0, y, BaseFont.CURSOR, BASE, true)
 			receiver.drawMenu(
 				engine, label.length+2, y, valueString,
-				if(valueString.all {it.isDigit()}) FONT.NUM else FONT.NORMAL,
+				if(valueString.all {it.isDigit()}) NUM else BASE,
 				if(focus==0) COLOR.RAINBOW else COLOR.WHITE
 			)
 		} else {
-			receiver.drawMenuFont(engine, 0, y, label, color = color)
-			if(focus==0) receiver.drawMenuFont(engine, 0, y+1, BaseFont.CURSOR, true)
+			receiver.drawMenu(engine, 0, y, label, BASE, color = color)
+			if(focus==0) receiver.drawMenu(engine, 0, y+1, BaseFont.CURSOR, BASE, true)
 			receiver.drawMenu(
 				engine, 1, y+1, valueString,
-				if(valueString.all {it.isDigit()}) FONT.NUM else FONT.NORMAL,
+				if(valueString.all {it.isDigit()}) NUM else BASE,
 				if(focus==0) COLOR.RAINBOW else COLOR.WHITE
 			)
 		}

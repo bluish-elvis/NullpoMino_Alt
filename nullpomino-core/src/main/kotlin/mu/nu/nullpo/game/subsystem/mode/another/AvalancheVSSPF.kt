@@ -38,6 +38,7 @@ import mu.nu.nullpo.game.event.EventReceiver.COLOR
 import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.game.play.GameManager
 import mu.nu.nullpo.gui.common.BaseFont
+import mu.nu.nullpo.gui.common.BaseFont.FONT.*
 import mu.nu.nullpo.gui.common.GameKeyDummy.Companion.MAX_PLAYERS
 import mu.nu.nullpo.util.CustomProperties
 import mu.nu.nullpo.util.GeneralUtil.toTimeStr
@@ -388,7 +389,7 @@ class AvalancheVSSPF:AvalancheVSDummyMode() {
 			if(menuCursor<9) {
 				drawMenuSpeeds(engine, receiver, 0, COLOR.ORANGE, 0)
 				drawMenu(engine, receiver, "FALL DELAY" to engine.cascadeDelay, "CLEAR DELAY" to engine.cascadeClearDelay)
-				receiver.drawMenuFont(engine, 0, 19, "${BaseFont.UP_S}${BaseFont.DOWN_S} PAGE 1/5", COLOR.YELLOW)
+				receiver.drawMenu(engine, 0, 19, "${BaseFont.UP_S}${BaseFont.DOWN_S} PAGE 1/5", BASE, COLOR.YELLOW)
 			} else {
 				val pid = engine.playerID
 				if(menuCursor<17) {
@@ -404,7 +405,7 @@ class AvalancheVSSPF:AvalancheVSDummyMode() {
 						"X SHOW" to dangerColumnShowX[pid]
 					)
 
-					receiver.drawMenuFont(engine, 0, 19, "${BaseFont.UP_S}${BaseFont.DOWN_S} PAGE 2/5", COLOR.YELLOW)
+					receiver.drawMenu(engine, 0, 19, "${BaseFont.UP_S}${BaseFont.DOWN_S} PAGE 2/5", BASE, COLOR.YELLOW)
 				} else if(menuCursor<24) {
 					drawMenu(
 						engine, receiver, 0, COLOR.CYAN, 17,
@@ -426,7 +427,7 @@ class AvalancheVSSPF:AvalancheVSDummyMode() {
 
 					drawMenu(engine, receiver, COLOR.CYAN, "CHAINPOWER" to if(newChainPower[pid]) "FEVER" else "CLASSIC")
 
-					receiver.drawMenuFont(engine, 0, 19, "${BaseFont.UP_S}${BaseFont.DOWN_S} PAGE 3/5", COLOR.YELLOW)
+					receiver.drawMenu(engine, 0, 19, "${BaseFont.UP_S}${BaseFont.DOWN_S} PAGE 3/5", BASE, COLOR.YELLOW)
 				} else if(menuCursor<32) {
 					initMenu()
 					drawMenu(
@@ -441,22 +442,22 @@ class AvalancheVSSPF:AvalancheVSDummyMode() {
 
 					drawMenu(engine, receiver, COLOR.GREEN, "LOAD" to presetNumber[pid], "SAVE" to presetNumber[pid])
 
-					receiver.drawMenuFont(engine, 0, 19, "${BaseFont.UP_S}${BaseFont.DOWN_S} PAGE 4/5", COLOR.YELLOW)
+					receiver.drawMenu(engine, 0, 19, "${BaseFont.UP_S}${BaseFont.DOWN_S} PAGE 4/5", BASE, COLOR.YELLOW)
 				} else {
-					receiver.drawMenuFont(engine, 0, 0, "ATTACK", COLOR.CYAN)
+					receiver.drawMenu(engine, 0, 0, "ATTACK", BASE, COLOR.CYAN)
 					var multiplier = (100*getAttackMultiplier(dropSet[pid], dropMap[pid])).toInt()
 					if(multiplier>=100)
-						receiver.drawMenuFont(engine, 2, 1, "$multiplier%", if(multiplier==100) COLOR.YELLOW else COLOR.GREEN)
+						receiver.drawMenu(engine, 2, 1, "$multiplier%", BASE, if(multiplier==100) COLOR.YELLOW else COLOR.GREEN)
 					else
-						receiver.drawMenuFont(engine, 3, 1, "$multiplier%", COLOR.RED)
-					receiver.drawMenuFont(engine, 0, 2, "DEFEND", COLOR.CYAN)
+						receiver.drawMenu(engine, 3, 1, "$multiplier%", BASE, COLOR.RED)
+					receiver.drawMenu(engine, 0, 2, "DEFEND", BASE, COLOR.CYAN)
 					multiplier = (100*getDefendMultiplier(dropSet[pid], dropMap[pid])).toInt()
 					if(multiplier>=100)
-						receiver.drawMenuFont(
-							engine, 2, 3, "$multiplier%", if(multiplier==100) COLOR.YELLOW else COLOR.RED
+						receiver.drawMenu(
+							engine, 2, 3, "$multiplier%", BASE, if(multiplier==100) COLOR.YELLOW else COLOR.RED
 						)
 					else
-						receiver.drawMenuFont(engine, 3, 3, "$multiplier%", COLOR.GREEN)
+						receiver.drawMenu(engine, 3, 3, "$multiplier%", BASE, COLOR.GREEN)
 
 					drawMenu(
 						engine,
@@ -470,11 +471,11 @@ class AvalancheVSSPF:AvalancheVSDummyMode() {
 						}"
 					)
 
-					receiver.drawMenuFont(engine, 0, 19, "${BaseFont.UP_S}${BaseFont.DOWN_S} PAGE 5/5", COLOR.YELLOW)
+					receiver.drawMenu(engine, 0, 19, "${BaseFont.UP_S}${BaseFont.DOWN_S} PAGE 5/5", BASE, COLOR.YELLOW)
 				}
 			}
 		} else
-			receiver.drawMenuFont(engine, 3, 10, "WAIT", COLOR.YELLOW)
+			receiver.drawMenu(engine, 3, 10, "WAIT", BASE, COLOR.YELLOW)
 	}
 
 	/* Called for initialization during Ready (before initialization) */
@@ -502,7 +503,7 @@ class AvalancheVSSPF:AvalancheVSDummyMode() {
 		val playerColor = EventReceiver.getPlayerColor(pid)
 
 		// Timer
-		if(pid==0) receiver.drawDirectFont(224, 8, engine.statistics.time.toTimeStr)
+		if(pid==0) receiver.drawFont(224, 8, engine.statistics.time.toTimeStr, BASE)
 
 		// Ojama Counter
 		var fontColor = COLOR.WHITE
@@ -513,7 +514,7 @@ class AvalancheVSSPF:AvalancheVSDummyMode() {
 		var strOjama = "${ojama[pid]}"
 		if(ojamaAdd[pid]>0) strOjama += "(+${ojamaAdd[pid]})"
 
-		if(strOjama!="0") receiver.drawDirectFont(fldPosX+4, fldPosY+32, strOjama, fontColor)
+		if(strOjama!="0") receiver.drawFont(fldPosX+4, fldPosY+32, strOjama, BASE, fontColor)
 
 		// Score
 		var strScoreMultiplier = ""
@@ -521,11 +522,11 @@ class AvalancheVSSPF:AvalancheVSDummyMode() {
 			strScoreMultiplier = "(${lastscores[pid]}e${lastmultiplier[pid]})"
 
 		if(engine.displaySize==1) {
-			receiver.drawDirectFont(fldPosX+4, fldPosY+440, "%12d".format(score[pid]), playerColor)
-			receiver.drawDirectFont(fldPosX+4, fldPosY+456, "%12s".format(strScoreMultiplier), playerColor)
+			receiver.drawFont(fldPosX+4, fldPosY+440, "%12d".format(score[pid]), BASE, playerColor)
+			receiver.drawFont(fldPosX+4, fldPosY+456, "%12s".format(strScoreMultiplier), BASE, playerColor)
 		} else if(engine.gameStarted) {
-			receiver.drawDirectFont(fldPosX-28, fldPosY+248, "%8d".format(score[pid]), playerColor)
-			receiver.drawDirectFont(fldPosX-28, fldPosY+264, "%8s".format(strScoreMultiplier), playerColor)
+			receiver.drawFont(fldPosX-28, fldPosY+248, "%8d".format(score[pid]), BASE, playerColor)
+			receiver.drawFont(fldPosX-28, fldPosY+264, "%8s".format(strScoreMultiplier), BASE, playerColor)
 		}
 
 		if(engine.stat!=GameEngine.Status.MOVE&&engine.stat!=GameEngine.Status.RESULT&&engine.gameStarted)
@@ -549,8 +550,9 @@ class AvalancheVSSPF:AvalancheVSDummyMode() {
 									Block.COLOR.YELLOW -> COLOR.YELLOW
 									else -> COLOR.WHITE
 								}
-							receiver.drawMenuFont(
-								engine, x*d, y*d, if(b.countdown>=10) "\u0084" else "${b.countdown}", textColor, 1f*d
+							receiver.drawMenu(
+								engine, x*d, y*d, if(b.countdown>=10) "\u0084" else "${b.countdown}", BASE, textColor,
+								1f*d
 							)
 						}
 					}
@@ -601,7 +603,7 @@ class AvalancheVSSPF:AvalancheVSDummyMode() {
 			countdownDecremented[pid] = true
 			for(y in engine.field.hiddenHeight*-1..<engine.field.height)
 				for(x in 0..<engine.field.width) {
-					val b = engine.field.getBlock(x, y) ?: continue
+					val b = engine.field.getBlock(x, y)?:continue
 					if(b.countdown>1) b.countdown--
 					else if(b.countdown==1) {
 						b.countdown = 0

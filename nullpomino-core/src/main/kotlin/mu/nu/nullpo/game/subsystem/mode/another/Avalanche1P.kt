@@ -34,6 +34,8 @@ import mu.nu.nullpo.game.component.Controller
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
 import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.gui.common.BaseFont
+import mu.nu.nullpo.gui.common.BaseFont.FONT.BASE
+import mu.nu.nullpo.gui.common.BaseFont.FONT.GRADE
 import mu.nu.nullpo.util.CustomProperties
 import mu.nu.nullpo.util.GeneralUtil.toTimeStr
 
@@ -206,7 +208,7 @@ class Avalanche1P:Avalanche1PDummyMode() {
 				"BIG DISP" to bigDisplay
 			)
 
-			receiver.drawMenuFont(engine, 0, 19, "${BaseFont.UP_S}${BaseFont.DOWN_S} PAGE 1/2", COLOR.YELLOW)
+			receiver.drawMenu(engine, 0, 19, "${BaseFont.UP_S}${BaseFont.DOWN_S} PAGE 1/2", BASE, COLOR.YELLOW)
 		} else {
 			val strOutline = when(outlinetype) {
 				1 -> "COLOR"
@@ -215,7 +217,7 @@ class Avalanche1P:Avalanche1PDummyMode() {
 			}
 			drawMenu(engine, receiver, 0, COLOR.BLUE, 9, "OUTLINE" to strOutline, "SHOW CHAIN" to showChains)
 
-			receiver.drawMenuFont(engine, 0, 19, "${BaseFont.UP_S}${BaseFont.DOWN_S} PAGE 2/2", COLOR.YELLOW)
+			receiver.drawMenu(engine, 0, 19, "${BaseFont.UP_S}${BaseFont.DOWN_S} PAGE 2/2", BASE, COLOR.YELLOW)
 		}
 	}
 
@@ -228,8 +230,8 @@ class Avalanche1P:Avalanche1PDummyMode() {
 	override fun renderLast(engine:GameEngine) {
 		var modeStr = GAMETYPE_NAME[gametype]
 		if(gametype==2) modeStr = "$modeStr ${SPRINT_MAX_SCORE[sprintTarget]/1000}K"
-		receiver.drawScoreFont(engine, 0, 0, "AVALANCHE ($modeStr)", COLOR.COBALT)
-		receiver.drawScoreFont(engine, 0, 1, "(${SCORETYPE_NAME[scoreType]} $numColors COLORS)", COLOR.COBALT)
+		receiver.drawScore(engine, 0, 0, "AVALANCHE ($modeStr)", BASE, COLOR.COBALT)
+		receiver.drawScore(engine, 0, 1, "(${SCORETYPE_NAME[scoreType]} $numColors COLORS)", BASE, COLOR.COBALT)
 
 		if(engine.stat==GameEngine.Status.SETTING||engine.stat==GameEngine.Status.RESULT&&!owner.replayMode) {
 			if(!owner.replayMode&&engine.ai==null&&engine.colorClearSize==4) {
@@ -237,58 +239,62 @@ class Avalanche1P:Avalanche1PDummyMode() {
 				val topY = if(receiver.nextDisplayType==2&&gametype==0) 6 else 4
 
 				when(gametype) {
-					0 -> receiver.drawScoreFont(engine, 3, topY-1, "SCORE      TIME", COLOR.BLUE, scale)
-					1 -> receiver.drawScoreFont(engine, 3, 3, "Score", COLOR.BLUE)
-					2 -> receiver.drawScoreFont(engine, 3, 3, "Time", COLOR.BLUE)
+					0 -> receiver.drawScore(engine, 3, topY-1, "SCORE      TIME", BASE, COLOR.BLUE, scale)
+					1 -> receiver.drawScore(engine, 3, 3, "Score", BASE, COLOR.BLUE)
+					2 -> receiver.drawScore(engine, 3, 3, "Time", BASE, COLOR.BLUE)
 				}
 
 				for(i in 0..<rankingMax) {
-					receiver.drawScoreGrade(engine, 0, topY+i, "%2d".format(i+1), COLOR.YELLOW, scale)
+					receiver.drawScore(engine, 0, topY+i, "%2d".format(i+1), GRADE, COLOR.YELLOW, scale)
 					when(gametype) {
 						0 -> {
-							receiver.drawScoreFont(
-								engine, 3, topY+i, "${rankingScore[scoreType][numColors-3][gametype][i]}", i==rankingRank,
+							receiver.drawScore(
+								engine, 3, topY+i, "${rankingScore[scoreType][numColors-3][gametype][i]}", BASE,
+								i==rankingRank,
 								scale
 							)
-							receiver.drawScoreFont(
+							receiver.drawScore(
 								engine, 14, topY+i, rankingTime[scoreType][numColors-3][gametype][i].toTimeStr,
+								BASE,
 								i==rankingRank, scale
 							)
 						}
-						1 -> receiver.drawScoreFont(
-							engine, 3, 4+i, "${rankingScore[scoreType][numColors-3][gametype][i]}", i==rankingRank
+						1 -> receiver.drawScore(
+							engine, 3, 4+i, "${rankingScore[scoreType][numColors-3][gametype][i]}", BASE,
+							i==rankingRank
 						)
-						2 -> receiver.drawScoreFont(
+						2 -> receiver.drawScore(
 							engine, 3, 4+i, rankingTime[scoreType][numColors-3][gametype][i].toTimeStr,
+							BASE,
 							i==rankingRank
 						)
 					}
 				}
 			}
 		} else {
-			receiver.drawScoreFont(engine, 0, 3, "Score", COLOR.BLUE)
+			receiver.drawScore(engine, 0, 3, "Score", BASE, COLOR.BLUE)
 			val strScore = "${engine.statistics.score}(+${lastScore}X$lastmultiplier)"
-			receiver.drawScoreFont(engine, 0, 4, strScore)
+			receiver.drawScore(engine, 0, 4, strScore, BASE)
 
-			receiver.drawScoreFont(engine, 0, 6, "Level", COLOR.BLUE)
-			receiver.drawScoreFont(engine, 0, 7, "$level")
+			receiver.drawScore(engine, 0, 6, "Level", BASE, COLOR.BLUE)
+			receiver.drawScore(engine, 0, 7, "$level", BASE)
 
-			receiver.drawScoreFont(engine, 0, 9, "POWER", COLOR.BLUE)
+			receiver.drawScore(engine, 0, 9, "POWER", BASE, COLOR.BLUE)
 			var strSent = "$garbageSent"
 			if(garbageAdd>0) strSent = "$strSent(+$garbageAdd)"
-			receiver.drawScoreFont(engine, 0, 10, strSent)
+			receiver.drawScore(engine, 0, 10, strSent, BASE)
 
-			receiver.drawScoreFont(engine, 0, 12, "Time", COLOR.BLUE)
-			receiver.drawScoreFont(engine, 0, 13, engine.statistics.time.toTimeStr)
+			receiver.drawScore(engine, 0, 12, "Time", BASE, COLOR.BLUE)
+			receiver.drawScore(engine, 0, 13, engine.statistics.time.toTimeStr, BASE)
 
-			receiver.drawScoreFont(engine, 11, 6, "CLEARED", COLOR.BLUE)
-			receiver.drawScoreFont(engine, 11, 7, "$blocksCleared")
+			receiver.drawScore(engine, 11, 6, "CLEARED", BASE, COLOR.BLUE)
+			receiver.drawScore(engine, 11, 7, "$blocksCleared", BASE)
 
-			receiver.drawScoreFont(engine, 11, 9, "ZENKESHI", COLOR.BLUE)
-			receiver.drawScoreFont(engine, 11, 10, "$zenKeshiCount")
+			receiver.drawScore(engine, 11, 9, "ZENKESHI", BASE, COLOR.BLUE)
+			receiver.drawScore(engine, 11, 10, "$zenKeshiCount", BASE)
 
-			receiver.drawScoreFont(engine, 11, 12, "MAX CHAIN", COLOR.BLUE)
-			receiver.drawScoreFont(engine, 11, 13, engine.statistics.maxChain.toString())
+			receiver.drawScore(engine, 11, 12, "MAX CHAIN", BASE, COLOR.BLUE)
+			receiver.drawScore(engine, 11, 13, engine.statistics.maxChain.toString(), BASE)
 
 			if(dangerColumnShowX&&engine.gameStarted&&engine.stat!=GameEngine.Status.MOVE
 				&&engine.stat!=GameEngine.Status.RESULT)
@@ -298,14 +304,14 @@ class Avalanche1P:Avalanche1PDummyMode() {
 
 			val baseX = if(engine.displaySize==1) 1 else 0
 			if(engine.chain>0&&chainDisplay>0&&showChains)
-				receiver.drawMenuFont(
+				receiver.drawMenu(
 					engine, baseX+if(engine.chain>9)
 						0
 					else
-						1, textHeight, "${engine.chain} CHAIN!", COLOR.YELLOW
+						1, textHeight, "${engine.chain} CHAIN!", BASE, COLOR.YELLOW
 				)
 			if(zenKeshi)
-				receiver.drawMenuFont(engine, baseX, textHeight+1, "ZENKESHI!", COLOR.YELLOW)
+				receiver.drawMenu(engine, baseX, textHeight+1, "ZENKESHI!", BASE, COLOR.YELLOW)
 		}
 	}
 
@@ -313,8 +319,8 @@ class Avalanche1P:Avalanche1PDummyMode() {
 	override fun drawX(engine:GameEngine) {
 		for(i in 0..<if(dangerColumnDouble) 2 else 1)
 			if(engine.field.getBlockEmpty(2+i, 0))
-				if(engine.displaySize==1) receiver.drawMenuFont(engine, 4+i*2, 0, "\u0085", COLOR.RED, 2f)
-				else receiver.drawMenuFont(engine, 2+i, 0, "\u0085", COLOR.RED)
+				if(engine.displaySize==1) receiver.drawMenu(engine, 4+i*2, 0, "\u0085", BASE, COLOR.RED, 2f)
+				else receiver.drawMenu(engine, 2+i, 0, "\u0085", BASE, COLOR.RED)
 	}
 
 	/* Called after every frame */
@@ -390,28 +396,28 @@ class Avalanche1P:Avalanche1PDummyMode() {
 	/* Render results screen */
 	override fun renderResult(engine:GameEngine) {
 		if(gametype==2) {
-			receiver.drawMenuFont(engine, 0, 1, "PLAY DATA", COLOR.ORANGE)
-			receiver.drawMenuFont(engine, 0, 3, "Time", COLOR.BLUE)
+			receiver.drawMenu(engine, 0, 1, "PLAY DATA", BASE, COLOR.ORANGE)
+			receiver.drawMenu(engine, 0, 3, "Time", BASE, COLOR.BLUE)
 			val strTime = "%10s".format(engine.statistics.time.toTimeStr)
-			receiver.drawMenuFont(engine, 0, 4, strTime)
-			receiver.drawMenuFont(engine, 0, 5, "Score", COLOR.BLUE)
-			receiver.drawMenuFont(engine, 0, 6, "${engine.statistics.score}")
-			receiver.drawMenuFont(engine, 0, 7, "ZENKESHI", COLOR.BLUE)
-			receiver.drawMenuFont(engine, 0, 8, "%10d".format(zenKeshiCount))
-			receiver.drawMenuFont(engine, 0, 9, "MAX CHAIN", COLOR.BLUE)
-			receiver.drawMenuFont(engine, 0, 10, "%10d".format(engine.statistics.maxChain))
+			receiver.drawMenu(engine, 0, 4, strTime, BASE)
+			receiver.drawMenu(engine, 0, 5, "Score", BASE, COLOR.BLUE)
+			receiver.drawMenu(engine, 0, 6, "${engine.statistics.score}", BASE)
+			receiver.drawMenu(engine, 0, 7, "ZENKESHI", BASE, COLOR.BLUE)
+			receiver.drawMenu(engine, 0, 8, "%10d".format(zenKeshiCount), BASE)
+			receiver.drawMenu(engine, 0, 9, "MAX CHAIN", BASE, COLOR.BLUE)
+			receiver.drawMenu(engine, 0, 10, "%10d".format(engine.statistics.maxChain), BASE)
 			if(rankingRank!=-1) {
-				receiver.drawMenuFont(engine, 0, 11, "RANK", COLOR.BLUE)
+				receiver.drawMenu(engine, 0, 11, "RANK", BASE, COLOR.BLUE)
 				val strRank = "%10d".format(rankingRank+1)
-				receiver.drawMenuFont(engine, 0, 12, strRank)
+				receiver.drawMenu(engine, 0, 12, strRank, BASE)
 			}
 		} else {
 			super.renderResult(engine)
 
 			if(rankingRank!=-1) {
-				receiver.drawMenuFont(engine, 0, 15, "RANK", COLOR.BLUE)
+				receiver.drawMenu(engine, 0, 15, "RANK", BASE, COLOR.BLUE)
 				val strRank = "%10d".format(rankingRank+1)
-				receiver.drawMenuFont(engine, 0, 16, strRank)
+				receiver.drawMenu(engine, 0, 16, strRank, BASE)
 			}
 		}
 	}

@@ -39,6 +39,7 @@ package zeroxfc.nullpo.custom.libs
 import mu.nu.nullpo.game.event.EventReceiver
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
 import mu.nu.nullpo.game.play.GameEngine
+import mu.nu.nullpo.gui.common.BaseFont.FONT.BASE
 import zeroxfc.nullpo.custom.libs.MathHelper.pythonModulo
 import kotlin.random.Random
 
@@ -107,7 +108,8 @@ object GameTextUtilities {
 	 *
 	 * @param x Amount to increment by.
 	 */
-	@JvmOverloads fun updatePhase(x:Int = 1) {
+	@JvmOverloads
+	fun updatePhase(x:Int = 1) {
 		CharacterPhase = (CharacterPhase+x).pythonModulo(CHARACTERS.length)
 	}
 	/**
@@ -180,7 +182,8 @@ object GameTextUtilities {
 	 * @param color     Color of string
 	 * @param scale     Scale of string
 	 */
-	fun drawDirectTextAlign(receiver:EventReceiver, x:Number, y:Number, alignment:Int, str:String, color:COLOR = COLOR.WHITE, scale:Float = 1f) {
+	fun drawDirectTextAlign(receiver:EventReceiver, x:Number, y:Number, alignment:Int, str:String, color:COLOR = COLOR.WHITE,
+		scale:Float = 1f) {
 		val offsetX = when(alignment) {
 			ALIGN_TOP_MIDDLE, ALIGN_MIDDLE_MIDDLE, ALIGN_BOTTOM_MIDDLE -> 8*str.length*scale
 			ALIGN_TOP_RIGHT, ALIGN_MIDDLE_RIGHT, ALIGN_BOTTOM_RIGHT -> 16*str.length*scale
@@ -191,7 +194,7 @@ object GameTextUtilities {
 			ALIGN_BOTTOM_LEFT, ALIGN_BOTTOM_MIDDLE, ALIGN_BOTTOM_RIGHT -> 16*scale
 			else -> 0f
 		}
-		receiver.drawDirectFont(x.toFloat()-offsetX, y.toFloat()-offsetY, str, color, scale)
+		receiver.drawFont(x.toFloat()-offsetX, y.toFloat()-offsetY, str, BASE, color, scale)
 	}
 	/**
 	 * Draws an aligned string using `drawScoreFont`.
@@ -205,7 +208,8 @@ object GameTextUtilities {
 	 * @param color     Color of string
 	 * @param scale     Scale of string
 	 */
-	fun drawScoreTextAlign(receiver:EventReceiver, engine:GameEngine, x:Number, y:Number, alignment:Int, str:String, color:COLOR = COLOR.WHITE,
+	fun drawScoreTextAlign(receiver:EventReceiver, engine:GameEngine, x:Number, y:Number, alignment:Int, str:String,
+		color:COLOR = COLOR.WHITE,
 		scale:Float = 1f) {
 		val offsetX = when(alignment) {
 			ALIGN_TOP_MIDDLE, ALIGN_MIDDLE_MIDDLE, ALIGN_BOTTOM_MIDDLE -> str.length/2f
@@ -217,7 +221,7 @@ object GameTextUtilities {
 			ALIGN_BOTTOM_LEFT, ALIGN_BOTTOM_MIDDLE, ALIGN_BOTTOM_RIGHT -> scale
 			else -> 0f
 		}
-		receiver.drawScoreFont(engine, x.toFloat()-offsetX, y.toFloat()-offsetY, str, color, scale)
+		receiver.drawScore(engine, x.toFloat()-offsetX, y.toFloat()-offsetY, str, BASE, color, scale)
 	}
 	/**
 	 * Draws an aligned string using `drawMenuFont`.
@@ -231,15 +235,16 @@ object GameTextUtilities {
 	 * @param color     Color of string
 	 * @param scale     Scale of string
 	 */
-	fun drawMenuTextAlign(receiver:EventReceiver, engine:GameEngine, x:Int, y:Int, alignment:Int, str:String?, color:COLOR = COLOR.WHITE,
+	fun drawMenuTextAlign(receiver:EventReceiver, engine:GameEngine, x:Int, y:Int, alignment:Int, str:String?,
+		color:COLOR = COLOR.WHITE,
 		scale:Float = 1f) {
-		str ?: return
+		str?:return
 		val offsetX:Int = when(alignment) {
 			ALIGN_TOP_MIDDLE, ALIGN_MIDDLE_MIDDLE, ALIGN_BOTTOM_MIDDLE -> (str.length*scale/2).toInt()
 			ALIGN_TOP_RIGHT, ALIGN_MIDDLE_RIGHT, ALIGN_BOTTOM_RIGHT -> (str.length*scale).toInt()
 			else -> 0
 		}
-		receiver.drawMenuFont(engine, x-offsetX, y, str, color, scale)
+		receiver.drawMenu(engine, x-offsetX, y, str, BASE, color, scale)
 	}
 	/**
 	 * Draws a rainbow string using `drawDirectFont`.
@@ -252,7 +257,8 @@ object GameTextUtilities {
 	 * @param scale       Scale of text
 	 * @param reverse     Reverse order or not
 	 */
-	@JvmOverloads fun drawRainbowDirectString(receiver:EventReceiver, x:Int, y:Int, str:String,
+	@JvmOverloads
+	fun drawRainbowDirectString(receiver:EventReceiver, x:Int, y:Int, str:String,
 		startColor:COLOR, scale:Float, reverse:Boolean = false) {
 		var offset = 0
 		for(i in str.indices) {
@@ -262,7 +268,7 @@ object GameTextUtilities {
 				var j = (listOf(*RAINBOW_ORDER)
 					.indexOf(startColor)+i*if(reverse) -1 else 1-offset)%RAINBOW_COLORS
 				if(j<0) j = RAINBOW_COLORS-j
-				receiver.drawDirectFont(x+(i*16*scale).toInt(), y, str.substring(i, i+1), RAINBOW_ORDER[j])
+				receiver.drawFont(x+(i*16*scale).toInt(), y, str.substring(i, i+1), BASE, RAINBOW_ORDER[j])
 			}
 		}
 	}
@@ -283,8 +289,9 @@ object GameTextUtilities {
 			if(str[i]==' ') {
 				offset++
 			} else {
-				receiver.drawDirectFont(
+				receiver.drawFont(
 					x+(i*16*scale).toInt(), y, str.substring(i, i+1),
+					BASE,
 					RAINBOW_ORDER[randomEngine.nextInt(RAINBOW_COLORS)]
 				)
 			}
@@ -301,15 +308,16 @@ object GameTextUtilities {
 	 * @param randomEngine Random instance to use
 	 * @param scale        Scale of text
 	 */
-	fun drawRandomRainbowScoreString(receiver:EventReceiver, engine:GameEngine, x:Int, y:Int, str:String, randomEngine:Random,
+	fun drawRandomRainbowScoreString(receiver:EventReceiver, engine:GameEngine, x:Int, y:Int, str:String,
+		randomEngine:Random,
 		scale:Float) {
 		var offset = 0
 		for(i in str.indices) {
 			if(str[i]==' ') {
 				offset++
 			} else {
-				receiver.drawScoreFont(
-					engine, x+i, y, str.substring(i, i+1), RAINBOW_ORDER[randomEngine.nextInt(
+				receiver.drawScore(
+					engine, x+i, y, str.substring(i, i+1), BASE, RAINBOW_ORDER[randomEngine.nextInt(
 						RAINBOW_COLORS
 					)]
 				)
@@ -334,8 +342,8 @@ object GameTextUtilities {
 			if(str[i]==' ') {
 				offset++
 			} else {
-				receiver.drawMenuFont(
-					engine, x+i, y, str.substring(i, i+1), RAINBOW_ORDER[randomEngine.nextInt(
+				receiver.drawMenu(
+					engine, x+i, y, str.substring(i, i+1), BASE, RAINBOW_ORDER[randomEngine.nextInt(
 						RAINBOW_COLORS
 					)]
 				)
@@ -359,16 +367,18 @@ object GameTextUtilities {
 	 * @param destinationY Y of destination (uses drawDirectFont(...)).
 	 * @param scale        Text scale (0.5f, 1.0f, 2.0f).
 	 */
-	fun drawMixedColorDirectString(receiver:EventReceiver, stringData:Array<String>, colorData:Array<COLOR>, destinationX:Int,
+	fun drawMixedColorDirectString(receiver:EventReceiver, stringData:Array<String>, colorData:Array<COLOR>,
+		destinationX:Int,
 		destinationY:Int, scale:Float) {
 		if(stringData.size!=colorData.size||stringData.isEmpty()) return
 		var counterX = 0
 		var counterY = 0
 		for(i in stringData.indices) {
 			if(colorData[i]!=COLOR.RAINBOW) {
-				receiver.drawDirectFont(
+				receiver.drawFont(
 					destinationX+(counterX*16*scale).toInt(),
-					destinationY+(counterY*16*scale).toInt(), stringData[i], colorData[i], scale
+					destinationY+(counterY*16*scale).toInt(),
+					stringData[i], BASE, colorData[i], scale
 				)
 				counterX += stringData[i].length
 			} else {
@@ -393,15 +403,16 @@ object GameTextUtilities {
 	 * @param destinationY Y of destination (uses drawScoreFont(...)).
 	 * @param scale        Text scale (0.5f, 1.0f, 2.0f).
 	 */
-	fun drawMixedColorScoreString(receiver:EventReceiver, engine:GameEngine, stringData:Array<String>, colorData:Array<COLOR>,
+	fun drawMixedColorScoreString(receiver:EventReceiver, engine:GameEngine, stringData:Array<String>,
+		colorData:Array<COLOR>,
 		destinationX:Int, destinationY:Int, scale:Float) {
 		if(stringData.size!=colorData.size||stringData.isEmpty()) return
 		var counterX = 0
 		val counterY = 0
 		for(i in stringData.indices) {
-			receiver.drawScoreFont(
+			receiver.drawScore(
 				engine, destinationX+counterX, destinationY+counterY, stringData[i],
-				colorData[i], scale
+				BASE, colorData[i], scale
 			)
 			counterX += stringData[i].length
 		}
@@ -428,9 +439,9 @@ object GameTextUtilities {
 		var counterX = 0
 		val counterY = 0
 		for(i in stringData.indices) {
-			receiver.drawMenuFont(
+			receiver.drawMenu(
 				engine, destinationX+counterX, destinationY+counterY, stringData[i],
-				colorData[i], scale
+				BASE, colorData[i], scale
 			)
 			counterX += stringData[i].length
 		}
@@ -454,9 +465,10 @@ object GameTextUtilities {
 		offset %= colorData.size
 		if(offset<0) offset += colorData.size
 		for(i in string.indices) {
-			receiver.drawDirectFont(
+			receiver.drawFont(
 				x+(16*i*scale).toInt(), y, string.substring(i, i+1),
-				colorData[(offset+i)%colorData.size], scale
+				BASE, colorData[(offset+i)%colorData.size],
+				scale
 			)
 		}
 	}
@@ -478,7 +490,7 @@ object GameTextUtilities {
 		offset %= colorData.size
 		if(offset<0) offset += colorData.size
 		for(i in string.indices) {
-			receiver.drawScoreFont(engine, x, y, string.substring(i, i+1), colorData[(offset+i)%colorData.size], scale)
+			receiver.drawScore(engine, x, y, string.substring(i, i+1), BASE, colorData[(offset+i)%colorData.size], scale)
 		}
 
 		/**
@@ -499,7 +511,7 @@ object GameTextUtilities {
 			offset %= colorData.size
 			if(offset<0) offset += colorData.size
 			for(i in string.indices) {
-				receiver.drawScoreFont(engine, x, y, string.substring(i, i+1), colorData[(offset+i)%colorData.size], scale)
+				receiver.drawScore(engine, x, y, string.substring(i, i+1), BASE, colorData[(offset+i)%colorData.size], scale)
 			}
 		}
 // endregion Color Alternator Text

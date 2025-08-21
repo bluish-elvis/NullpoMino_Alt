@@ -37,6 +37,7 @@ import mu.nu.nullpo.game.event.EventReceiver.COLOR
 import mu.nu.nullpo.game.event.ScoreEvent
 import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.game.play.GameManager
+import mu.nu.nullpo.gui.common.BaseFont.FONT.BASE
 import mu.nu.nullpo.util.GeneralUtil.toTimeStr
 
 /** NET-VS-DIG RACE mode */
@@ -123,7 +124,7 @@ class NetVSSprintDig:NetDummyVSMode() {
 	 * @return Number of garbage lines left
 	 */
 	private fun getRemainGarbageLines(engine:GameEngine?):Int {
-		val field = engine?.field ?: return -1
+		val field = engine?.field?:return -1
 
 		val w = field.width
 		val h = field.height
@@ -279,7 +280,7 @@ class NetVSSprintDig:NetDummyVSMode() {
 						else -> COLOR.WHITE
 					}
 				val strLines = "$remainLines"
-				receiver.drawMenuFont(engine, (5-strLines.length)/s, y, strLines, fontColor, 2*s)
+				receiver.drawMenu(engine, (5-strLines.length)/s, y, strLines, BASE, fontColor, 2*s)
 
 			}
 
@@ -290,24 +291,24 @@ class NetVSSprintDig:NetDummyVSMode() {
 
 				when {
 					engine.displaySize!=-1 -> when(place) {
-						0 -> receiver.drawMenuFont(engine, -3f, y, "1ST", COLOR.ORANGE)
-						1 -> receiver.drawMenuFont(engine, -3f, y, "2ND", COLOR.WHITE)
-						2 -> receiver.drawMenuFont(engine, -3f, y, "3RD", COLOR.RED)
-						3 -> receiver.drawMenuFont(engine, -3f, y, "4TH", COLOR.GREEN)
-						4 -> receiver.drawMenuFont(engine, -3f, y, "5TH", COLOR.BLUE)
-						5 -> receiver.drawMenuFont(engine, -3f, y, "6TH", COLOR.PURPLE)
+						0 -> receiver.drawMenu(engine, -3f, y, "1ST", BASE, COLOR.ORANGE)
+						1 -> receiver.drawMenu(engine, -3f, y, "2ND", BASE, COLOR.WHITE)
+						2 -> receiver.drawMenu(engine, -3f, y, "3RD", BASE, COLOR.RED)
+						3 -> receiver.drawMenu(engine, -3f, y, "4TH", BASE, COLOR.GREEN)
+						4 -> receiver.drawMenu(engine, -3f, y, "5TH", BASE, COLOR.BLUE)
+						5 -> receiver.drawMenu(engine, -3f, y, "6TH", BASE, COLOR.PURPLE)
 					}
-					place==0 -> receiver.drawMenuFont(engine, -3f, y, "1ST", COLOR.ORANGE, s)
-					place==1 -> receiver.drawMenuFont(engine, -3f, y, "2ND", COLOR.WHITE, s)
-					place==2 -> receiver.drawMenuFont(engine, -3f, y, "3RD", COLOR.RED, s)
-					place==3 -> receiver.drawMenuFont(engine, -3f, y, "4TH", COLOR.GREEN, s)
-					place==4 -> receiver.drawMenuFont(engine, -3f, y, "5TH", COLOR.BLUE, s)
-					place==5 -> receiver.drawMenuFont(engine, -3f, y, "6TH", COLOR.PURPLE, s)
+					place==0 -> receiver.drawMenu(engine, -3f, y, "1ST", BASE, COLOR.ORANGE, s)
+					place==1 -> receiver.drawMenu(engine, -3f, y, "2ND", BASE, COLOR.WHITE, s)
+					place==2 -> receiver.drawMenu(engine, -3f, y, "3RD", BASE, COLOR.RED, s)
+					place==3 -> receiver.drawMenu(engine, -3f, y, "4TH", BASE, COLOR.GREEN, s)
+					place==4 -> receiver.drawMenu(engine, -3f, y, "5TH", BASE, COLOR.BLUE, s)
+					place==5 -> receiver.drawMenu(engine, -3f, y, "6TH", BASE, COLOR.PURPLE, s)
 				}
 			} else if(!netVSIsPractice||pid!=0) {
 				val strTemp = "${netVSPlayerWinCount[pid]}/${netVSPlayerPlayCount[pid]}"
 
-				receiver.drawMenuFont(engine, -3f, y, strTemp, COLOR.WHITE, .5f)
+				receiver.drawMenu(engine, -3f, y, strTemp, BASE, COLOR.WHITE, .5f)
 			}// Games count
 		}
 	}

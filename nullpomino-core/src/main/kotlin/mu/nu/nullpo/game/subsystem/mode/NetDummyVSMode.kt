@@ -40,6 +40,7 @@ import mu.nu.nullpo.game.net.NetPlayerInfo
 import mu.nu.nullpo.game.net.NetRoomInfo
 import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.game.play.GameManager
+import mu.nu.nullpo.gui.common.BaseFont.FONT.*
 import mu.nu.nullpo.gui.net.NetLobbyFrame
 import mu.nu.nullpo.util.GeneralUtil.toTimeStr
 import java.io.IOException
@@ -327,13 +328,13 @@ abstract class NetDummyVSMode:NetDummyMode() {
 			when {
 				engine.displaySize==-1 -> {
 					if(name.length>7) name = name.take(7)+".."
-					receiver.drawDirectTTF(x, y-16, name, fontcolor)
+					receiver.drawFont(x, y-16, name, TTF, fontcolor)
 				}
 				playerID==0 -> {
 					if(name.length>14) name = name.take(14)+".."
-					receiver.drawDirectTTF(x, y-20, name, fontcolor)
+					receiver.drawFont(x, y-20, name, TTF, fontcolor)
 				}
-				else -> receiver.drawDirectTTF(x, y-20, name, fontcolor)
+				else -> receiver.drawFont(x, y-20, name, TTF, fontcolor)
 			}
 		}
 	}
@@ -551,20 +552,20 @@ abstract class NetDummyVSMode:NetDummyMode() {
 	 */
 	private fun netVSDrawRoomInfoBox(x:Int, y:Int) {
 		if(netCurrentRoomInfo!=null) {
-			receiver.drawDirectFont(x, y, "PLAYERS", COLOR.CYAN, .5f)
-			receiver.drawDirectFont(x, y+8, "$netVSNumPlayers", COLOR.WHITE, .5f)
-			receiver.drawDirectFont(x, y+16, "SPECTATORS", COLOR.CYAN, .5f)
-			receiver.drawDirectFont(x, y+24, "$netNumSpectators", COLOR.WHITE, .5f)
+			receiver.drawFont(x, y, "PLAYERS", BASE, COLOR.CYAN, .5f)
+			receiver.drawFont(x, y+8, "$netVSNumPlayers", BASE, COLOR.WHITE, .5f)
+			receiver.drawFont(x, y+16, "SPECTATORS", BASE, COLOR.CYAN, .5f)
+			receiver.drawFont(x, y+24, "$netNumSpectators", BASE, COLOR.WHITE, .5f)
 
 			if(!netVSIsWatch()) {
-				receiver.drawDirectFont(x, y+32, "MATCHES", COLOR.CYAN, .5f)
-				receiver.drawDirectFont(x, y+40, "${netVSPlayerPlayCount[0]}", COLOR.WHITE, .5f)
-				receiver.drawDirectFont(x, y+48, "WINS", COLOR.CYAN, .5f)
-				receiver.drawDirectFont(x, y+56, "${netVSPlayerWinCount[0]}", COLOR.WHITE, .5f)
+				receiver.drawFont(x, y+32, "MATCHES", BASE, COLOR.CYAN, .5f)
+				receiver.drawFont(x, y+40, "${netVSPlayerPlayCount[0]}", BASE, COLOR.WHITE, .5f)
+				receiver.drawFont(x, y+48, "WINS", BASE, COLOR.CYAN, .5f)
+				receiver.drawFont(x, y+56, "${netVSPlayerWinCount[0]}", BASE, COLOR.WHITE, .5f)
 			}
 		}
-		receiver.drawDirectFont(x, y+72, "ALL ROOMS", COLOR.GREEN, .5f)
-		receiver.drawDirectFont(x, y+80, "${netLobby!!.netPlayerClient!!.roomInfoList.size}", COLOR.WHITE, .5f)
+		receiver.drawFont(x, y+72, "ALL ROOMS", BASE, COLOR.GREEN, .5f)
+		receiver.drawFont(x, y+80, "${netLobby!!.netPlayerClient!!.roomInfoList.size}", BASE, COLOR.WHITE, .5f)
 	}
 
 	/** NET-VS: Settings screen */
@@ -628,22 +629,22 @@ abstract class NetDummyVSMode:NetDummyMode() {
 		if(netCurrentRoomInfo!=null) {
 			if(netVSPlayerReady[pid]&&netVSPlayerExist[pid])
 				if(engine.displaySize!=-1)
-					receiver.drawDirectFont(x+68, y+204, "OK", COLOR.YELLOW)
+					receiver.drawFont(x+68, y+204, "OK", BASE, COLOR.YELLOW)
 				else
-					receiver.drawDirectFont(x+36, y+80, "OK", COLOR.YELLOW, .5f)
+					receiver.drawFont(x+36, y+80, "OK", BASE, COLOR.YELLOW, .5f)
 
 			if(pid==0&&!netVSIsWatch()&&!netVSIsReadyChangePending&&netVSNumPlayers>=2
 				&&!netVSIsNewcomer)
 				if(!netVSPlayerReady[pid]) {
 					var strTemp = "A(${receiver.getKeyNameByButtonID(engine, Controller.BUTTON_A)} KEY):"
 					if(strTemp.length>10) strTemp = strTemp.take(10)
-					receiver.drawMenuFont(engine, 0, 16, strTemp, COLOR.CYAN)
-					receiver.drawMenuFont(engine, 1, 17, "READY", COLOR.CYAN)
+					receiver.drawMenu(engine, 0, 16, strTemp, BASE, COLOR.CYAN)
+					receiver.drawMenu(engine, 1, 17, "READY", BASE, COLOR.CYAN)
 				} else {
 					var strTemp = "B(${receiver.getKeyNameByButtonID(engine, Controller.BUTTON_B)} KEY):"
 					if(strTemp.length>10) strTemp = strTemp.take(10)
-					receiver.drawMenuFont(engine, 0, 16, strTemp, COLOR.BLUE)
-					receiver.drawMenuFont(engine, 1, 17, "CANCEL", COLOR.BLUE)
+					receiver.drawMenu(engine, 0, 16, strTemp, BASE, COLOR.BLUE)
+					receiver.drawMenu(engine, 1, 17, "CANCEL", BASE, COLOR.BLUE)
 				}
 		}
 
@@ -651,8 +652,8 @@ abstract class NetDummyVSMode:NetDummyMode() {
 			var strTemp = "F(${receiver.getKeyNameByButtonID(engine, Controller.BUTTON_F)} KEY):"
 			if(strTemp.length>10) strTemp = strTemp.take(10)
 			strTemp = strTemp.uppercase()
-			receiver.drawMenuFont(engine, 0, 18, strTemp, COLOR.PURPLE)
-			receiver.drawMenuFont(engine, 1, 19, "PRACTICE", COLOR.PURPLE)
+			receiver.drawMenu(engine, 0, 18, strTemp, BASE, COLOR.PURPLE)
+			receiver.drawMenu(engine, 1, 19, "PRACTICE", BASE, COLOR.PURPLE)
 		}
 	}
 
@@ -720,7 +721,7 @@ abstract class NetDummyVSMode:NetDummyMode() {
 	}
 
 	/** NET-VS: When the piece locked */
-	override fun pieceLocked(engine: GameEngine, lines: Int, finesse: Boolean) {
+	override fun pieceLocked(engine:GameEngine, lines:Int, finesse:Boolean) {
 		netVSPieceMoveTimer = 0
 	}
 
@@ -773,16 +774,17 @@ abstract class NetDummyVSMode:NetDummyMode() {
 
 		// Elapsed time
 		if(pid==0) {
-			receiver.drawDirectFont(256, 16, netVSPlayTimer.toTimeStr)
+			receiver.drawFont(256, 16, netVSPlayTimer.toTimeStr, BASE)
 
 			if(netVSIsPractice)
-				receiver.drawDirectFont(256, 32, engine.statistics.time.toTimeStr, COLOR.PURPLE)
+				receiver.drawFont(256, 32, engine.statistics.time.toTimeStr, BASE, COLOR.PURPLE)
 		}
 
 		// Automatic start timer
 		if(pid==0&&netCurrentRoomInfo!=null&&netVSAutoStartTimerActive&&!netVSIsGameActive)
-			receiver.drawDirectFont(
+			receiver.drawFont(
 				496, 16, netVSAutoStartTimer.toTimeStr,
+				BASE,
 				if(netCurrentRoomInfo!!.autoStartTNET2) COLOR.RED else COLOR.YELLOW
 			)
 	}
@@ -844,25 +846,25 @@ abstract class NetDummyVSMode:NetDummyMode() {
 
 		if(engine.displaySize!=-1) {
 			if(netVSPlayerReady[pid]&&!netVSIsGameActive)
-				owner.receiver.drawDirectFont(x+68, y+204, "OK", COLOR.YELLOW)
+				owner.receiver.drawFont(x+68, y+204, "OK", BASE, COLOR.YELLOW)
 			else if(netVSNumNowPlayers==2||netCurrentRoomInfo!!.maxPlayers==2)
-				owner.receiver.drawDirectFont(x+20, y+204, "YOU LOSE", COLOR.WHITE)
-			else if(place==1) receiver.drawDirectFont(x+28, y+80, "YOU WIN", COLOR.WHITE, .5f)
-			else if(place==2) receiver.drawDirectFont(x+12, y+204, "2ND PLACE", COLOR.WHITE)
-			else if(place==3) receiver.drawDirectFont(x+12, y+204, "3RD PLACE", COLOR.RED)
-			else if(place==4) receiver.drawDirectFont(x+12, y+204, "4TH PLACE", COLOR.GREEN)
-			else if(place==5) receiver.drawDirectFont(x+12, y+204, "5TH PLACE", COLOR.BLUE)
-			else if(place==6) receiver.drawDirectFont(x+12, y+204, "6TH PLACE", COLOR.PURPLE)
+				owner.receiver.drawFont(x+20, y+204, "YOU LOSE", BASE, COLOR.WHITE)
+			else if(place==1) receiver.drawFont(x+28, y+80, "YOU WIN", BASE, COLOR.WHITE, .5f)
+			else if(place==2) receiver.drawFont(x+12, y+204, "2ND PLACE", BASE, COLOR.WHITE)
+			else if(place==3) receiver.drawFont(x+12, y+204, "3RD PLACE", BASE, COLOR.RED)
+			else if(place==4) receiver.drawFont(x+12, y+204, "4TH PLACE", BASE, COLOR.GREEN)
+			else if(place==5) receiver.drawFont(x+12, y+204, "5TH PLACE", BASE, COLOR.BLUE)
+			else if(place==6) receiver.drawFont(x+12, y+204, "6TH PLACE", BASE, COLOR.PURPLE)
 		} else if(netVSPlayerReady[pid]&&!netVSIsGameActive)
-			owner.receiver.drawDirectFont(x+36, y+80, "OK", COLOR.YELLOW, .5f)
+			owner.receiver.drawFont(x+36, y+80, "OK", BASE, COLOR.YELLOW, .5f)
 		else if(netVSNumNowPlayers==2||netCurrentRoomInfo!!.maxPlayers==2)
-			owner.receiver.drawDirectFont(x+20, y+80, "YOU LOSE", COLOR.WHITE, .5f)
-		else if(place==1) receiver.drawDirectFont(x+28, y+80, "YOU WIN", COLOR.WHITE, .5f)
-		else if(place==2) receiver.drawDirectFont(x+8, y+80, "2ND PLACE", COLOR.WHITE, .5f)
-		else if(place==3) receiver.drawDirectFont(x+8, y+80, "3RD PLACE", COLOR.RED, .5f)
-		else if(place==4) receiver.drawDirectFont(x+8, y+80, "4TH PLACE", COLOR.GREEN, .5f)
-		else if(place==5) receiver.drawDirectFont(x+8, y+80, "5TH PLACE", COLOR.BLUE, .5f)
-		else if(place==6) receiver.drawDirectFont(x+8, y+80, "6TH PLACE", COLOR.PURPLE, .5f)
+			owner.receiver.drawFont(x+20, y+80, "YOU LOSE", BASE, COLOR.WHITE, .5f)
+		else if(place==1) receiver.drawFont(x+28, y+80, "YOU WIN", BASE, COLOR.WHITE, .5f)
+		else if(place==2) receiver.drawFont(x+8, y+80, "2ND PLACE", BASE, COLOR.WHITE, .5f)
+		else if(place==3) receiver.drawFont(x+8, y+80, "3RD PLACE", BASE, COLOR.RED, .5f)
+		else if(place==4) receiver.drawFont(x+8, y+80, "4TH PLACE", BASE, COLOR.GREEN, .5f)
+		else if(place==5) receiver.drawFont(x+8, y+80, "5TH PLACE", BASE, COLOR.BLUE, .5f)
+		else if(place==6) receiver.drawFont(x+8, y+80, "6TH PLACE", BASE, COLOR.PURPLE, .5f)
 	}
 
 	/** NET-VS: Excellent screen */
@@ -900,13 +902,13 @@ abstract class NetDummyVSMode:NetDummyMode() {
 		val cY = (engine.fieldHeight-1)/2f
 
 		if(pid==0&&netVSIsPractice&&!netVSIsWatch())
-			owner.receiver.drawMenuFont(engine, 0f, cY/2, "EXCELLENT!", COLOR.RAINBOW)
+			owner.receiver.drawMenu(engine, 0f, cY/2, "EXCELLENT!", BASE, COLOR.RAINBOW)
 		else if(netVSPlayerReady[pid]&&!netVSIsGameActive)
-			owner.receiver.drawMenuFont(engine, 0f, cY/2, "OK", COLOR.WHITE)
+			owner.receiver.drawMenu(engine, 0f, cY/2, "OK", BASE, COLOR.WHITE)
 		else if(netVSNumNowPlayers==2||netCurrentRoomInfo!!.maxPlayers==2)
-			owner.receiver.drawMenuFont(engine, 0f, cY/2, "WIN!", COLOR.YELLOW)
+			owner.receiver.drawMenu(engine, 0f, cY/2, "WIN!", BASE, COLOR.YELLOW)
 		else
-			owner.receiver.drawMenuFont(engine, 0f, cY/2, "1ST PLACE!", COLOR.YELLOW)
+			owner.receiver.drawMenu(engine, 0f, cY/2, "1ST PLACE!", BASE, COLOR.YELLOW)
 	}
 
 	/** NET-VS: Results screen */
@@ -941,51 +943,51 @@ abstract class NetDummyVSMode:NetDummyMode() {
 		// Place
 		val pid = engine.playerID
 		if(!netVSIsPractice||pid!=0) {
-			owner.receiver.drawMenuFont(engine, 0, 0, "RESULT", COLOR.ORANGE, scale)
+			owner.receiver.drawMenu(engine, 0, 0, "RESULT", BASE, COLOR.ORANGE, scale)
 			if(netVSPlayerPlace[pid]==1) {
 				if(netVSNumNowPlayers==2)
-					owner.receiver.drawMenuFont(engine, 6, 1, "WIN!", COLOR.YELLOW, scale)
+					owner.receiver.drawMenu(engine, 6, 1, "WIN!", BASE, COLOR.YELLOW, scale)
 				else
-					owner.receiver.drawMenuFont(engine, 6, 1, "1ST!", COLOR.YELLOW, scale)
+					owner.receiver.drawMenu(engine, 6, 1, "1ST!", BASE, COLOR.YELLOW, scale)
 			} else if(netVSPlayerPlace[pid]==2) {
 				if(netVSNumNowPlayers==2)
-					owner.receiver.drawMenuFont(engine, 6, 1, "LOSE", COLOR.WHITE, scale)
+					owner.receiver.drawMenu(engine, 6, 1, "LOSE", BASE, COLOR.WHITE, scale)
 				else
-					owner.receiver.drawMenuFont(engine, 7, 1, "2ND", COLOR.WHITE, scale)
+					owner.receiver.drawMenu(engine, 7, 1, "2ND", BASE, COLOR.WHITE, scale)
 			} else if(netVSPlayerPlace[pid]==3)
-				owner.receiver.drawMenuFont(engine, 7, 1, "3RD", COLOR.RED, scale)
+				owner.receiver.drawMenu(engine, 7, 1, "3RD", BASE, COLOR.RED, scale)
 			else if(netVSPlayerPlace[pid]==4)
-				owner.receiver.drawMenuFont(engine, 7, 1, "4TH", COLOR.GREEN, scale)
+				owner.receiver.drawMenu(engine, 7, 1, "4TH", BASE, COLOR.GREEN, scale)
 			else if(netVSPlayerPlace[pid]==5)
-				owner.receiver.drawMenuFont(engine, 7, 1, "5TH", COLOR.BLUE, scale)
+				owner.receiver.drawMenu(engine, 7, 1, "5TH", BASE, COLOR.BLUE, scale)
 			else if(netVSPlayerPlace[pid]==6)
-				owner.receiver.drawMenuFont(engine, 7, 1, "6TH", COLOR.COBALT, scale)
+				owner.receiver.drawMenu(engine, 7, 1, "6TH", BASE, COLOR.COBALT, scale)
 		} else
-			owner.receiver.drawMenuFont(engine, 0, 0, "PRACTICE", COLOR.PINK, scale)
+			owner.receiver.drawMenu(engine, 0, 0, "PRACTICE", BASE, COLOR.PINK, scale)
 
 		if(pid==0&&!netVSIsWatch()) {
 			// Restart/Practice
 			var strTemp = "A(${owner.receiver.getKeyNameByButtonID(engine, Controller.BUTTON_A)} KEY):"
 			if(strTemp.length>10) strTemp = strTemp.take(10)
-			owner.receiver.drawMenuFont(engine, 0, 18, strTemp, COLOR.RED)
-			owner.receiver.drawMenuFont(engine, 1, 19, "RESTART", COLOR.RED)
+			owner.receiver.drawMenu(engine, 0, 18, strTemp, BASE, COLOR.RED)
+			owner.receiver.drawMenu(engine, 1, 19, "RESTART", BASE, COLOR.RED)
 
 			var strTempF = "F(${owner.receiver.getKeyNameByButtonID(engine, Controller.BUTTON_F)} KEY):"
 			if(strTempF.length>10) strTempF = strTempF.take(10)
-			owner.receiver.drawMenuFont(engine, 0, 20, strTempF, COLOR.PURPLE)
+			owner.receiver.drawMenu(engine, 0, 20, strTempF, BASE, COLOR.PURPLE)
 			if(!netVSIsPractice)
-				owner.receiver.drawMenuFont(engine, 1, 21, "PRACTICE", COLOR.PURPLE)
+				owner.receiver.drawMenu(engine, 1, 21, "PRACTICE", BASE, COLOR.PURPLE)
 			else
-				owner.receiver.drawMenuFont(engine, 1, 21, "RETRY", COLOR.PURPLE)
+				owner.receiver.drawMenu(engine, 1, 21, "RETRY", BASE, COLOR.PURPLE)
 		} else if(netVSPlayerReady[pid]&&netVSPlayerExist[pid]) {
 			// Player Ready
 			val x = receiver.fieldX(engine)
 			val y = receiver.fieldY(engine)
 
 			if(engine.displaySize!=-1)
-				owner.receiver.drawDirectFont(x+68, y+356, "OK", COLOR.YELLOW)
+				owner.receiver.drawFont(x+68, y+356, "OK", BASE, COLOR.YELLOW)
 			else
-				owner.receiver.drawDirectFont(x+36, y+156, "OK", COLOR.YELLOW, .5f)
+				owner.receiver.drawFont(x+36, y+156, "OK", BASE, COLOR.YELLOW, .5f)
 		}
 	}
 

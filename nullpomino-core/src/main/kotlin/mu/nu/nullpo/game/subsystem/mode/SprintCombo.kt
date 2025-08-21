@@ -37,6 +37,7 @@ import mu.nu.nullpo.game.event.ScoreEvent
 import mu.nu.nullpo.game.net.NetUtil
 import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.game.subsystem.mode.menu.*
+import mu.nu.nullpo.gui.common.BaseFont.FONT.*
 import mu.nu.nullpo.util.CustomProperties
 import mu.nu.nullpo.util.GeneralUtil.toTimeStr
 
@@ -252,48 +253,51 @@ class SprintCombo:NetDummyMode() {
 	override fun renderLast(engine:GameEngine) {
 		if(owner.menuOnly) return
 
-		receiver.drawScoreFont(engine, 0, 0, name, COLOR.RED)
+		receiver.drawScore(engine, 0, 0, name, BASE, COLOR.RED)
 
-		receiver.drawScoreFont(
+		receiver.drawScore(
 			engine, 0, 1, if(GOAL_TABLE[goalType]==-1) "(Endless run)" else
-				"(${GOAL_TABLE[goalType]-1}CHAIN Challenge)", COLOR.WHITE
+				"(${GOAL_TABLE[goalType]-1}CHAIN Challenge)", BASE, COLOR.WHITE
 		)
 
 		if(engine.stat==GameEngine.Status.SETTING||engine.stat==GameEngine.Status.RESULT&&!owner.replayMode) {
 			if(!owner.replayMode&&!big&&engine.ai==null) {
-				receiver.drawScoreFont(engine, 3, 3, "RECORD", COLOR.BLUE)
+				receiver.drawScore(engine, 3, 3, "RECORD", BASE, COLOR.BLUE)
 
 				for(i in 0..<rankingMax) {
-					receiver.drawScoreGrade(
+					receiver.drawScore(
 						engine, 0, 4+i, "%2d".format(i+1),
-						if(rankingRank==i) COLOR.RAINBOW else COLOR.YELLOW
+						GRADE, if(rankingRank==i) COLOR.RAINBOW else COLOR.YELLOW
 					)
 					if(rankingCombo[goalType][gameType][i]==GOAL_TABLE[goalType]-1)
-						receiver.drawScoreFont(engine, 2, 4+i, "PERFECT", true)
-					else receiver.drawScoreNum(engine, 3, 4+i, "${rankingCombo[goalType][gameType][i]}", rankingRank==i)
-					receiver.drawScoreNum(engine, 9, 4+i, rankingTime[goalType][gameType][i].toTimeStr, rankingRank==i)
+						receiver.drawScore(engine, 2, 4+i, "PERFECT", BASE, true)
+					else receiver.drawScore(engine, 3, 4+i, "${rankingCombo[goalType][gameType][i]}", NUM, rankingRank==i)
+					receiver.drawScore(engine, 9, 4+i, rankingTime[goalType][gameType][i].toTimeStr, NUM, rankingRank==i)
 				}
 			}
 		} else {
-			receiver.drawScoreFont(engine, 0, 3, "Longest Chain", COLOR.BLUE)
-			receiver.drawScoreNum(
-				engine, 0, 4, "${engine.statistics.maxCombo}", engine.statistics.maxCombo>0&&engine.combo==engine.statistics.maxCombo,
+			receiver.drawScore(engine, 0, 3, "Longest Chain", BASE, COLOR.BLUE)
+			receiver.drawScore(
+				engine, 0, 4, "${engine.statistics.maxCombo}",
+				NUM,
+				engine.statistics.maxCombo>0&&engine.combo==engine.statistics.maxCombo,
 				2f
 			)
 
-			receiver.drawScoreFont(engine, 0, 6, "Lines", COLOR.BLUE)
-			receiver.drawScoreNum(
-				engine, 0, 7, "${engine.statistics.lines}", engine.statistics.lines==engine.statistics.totalPieceLocked,
+			receiver.drawScore(engine, 0, 6, "Lines", BASE, COLOR.BLUE)
+			receiver.drawScore(
+				engine, 0, 7, "${engine.statistics.lines}", NUM,
+				engine.statistics.lines==engine.statistics.totalPieceLocked,
 				2f
 			)
 
-			receiver.drawScoreFont(engine, 0, 9, "PIECE", COLOR.BLUE)
-			receiver.drawScoreNum(engine, 0, 10, "${engine.statistics.totalPieceLocked}", 2f)
+			receiver.drawScore(engine, 0, 9, "PIECE", BASE, COLOR.BLUE)
+			receiver.drawScore(engine, 0, 10, "${engine.statistics.totalPieceLocked}", NUM, 2f)
 
 
-			receiver.drawScoreFont(engine, 0, 15, "Time", COLOR.BLUE)
-			receiver.drawScoreNum(engine, 0, 16, scgettime.toTimeStr, 2f)
-			receiver.drawScoreNano(engine, 0, 17, engine.statistics.time.toTimeStr)
+			receiver.drawScore(engine, 0, 15, "Time", BASE, COLOR.BLUE)
+			receiver.drawScore(engine, 0, 16, scgettime.toTimeStr, NUM, 2f)
+			receiver.drawScore(engine, 0, 17, engine.statistics.time.toTimeStr, NANO)
 		}
 
 		super.renderLast(engine)
@@ -376,14 +380,14 @@ class SprintCombo:NetDummyMode() {
 		drawResultNetRank(engine, receiver, 14, COLOR.BLUE, netRankingRank[0])
 		drawResultNetRankDaily(engine, receiver, 16, COLOR.BLUE, netRankingRank[1])
 
-		if(netIsPB) receiver.drawMenuFont(engine, 2, 18, "NEW PB", COLOR.ORANGE)
+		if(netIsPB) receiver.drawMenu(engine, 2, 18, "NEW PB", BASE, COLOR.ORANGE)
 
 		if(netIsNetPlay&&netReplaySendStatus==1)
-			receiver.drawMenuFont(engine, 0, 19, "SENDING...", COLOR.PINK)
+			receiver.drawMenu(engine, 0, 19, "SENDING...", BASE, COLOR.PINK)
 		else if(netIsNetPlay&&!netIsWatch
 			&&netReplaySendStatus==2
 		)
-			receiver.drawMenuFont(engine, 1, 19, "A: RETRY", COLOR.RED)
+			receiver.drawMenu(engine, 1, 19, "A: RETRY", BASE, COLOR.RED)
 	}
 
 	/** This function will be called when the replay data is going to be saved */
@@ -557,7 +561,8 @@ class SprintCombo:NetDummyMode() {
 		/** Meter colors for really high combos in Endless */
 		private val METER_COLOR_TABLE = listOf(
 			GameEngine.METER_COLOR_GREEN, GameEngine.METER_COLOR_YELLOW,
-			GameEngine.METER_COLOR_ORANGE, GameEngine.METER_COLOR_RED, GameEngine.METER_COLOR_PINK, GameEngine.METER_COLOR_PURPLE,
+			GameEngine.METER_COLOR_ORANGE, GameEngine.METER_COLOR_RED, GameEngine.METER_COLOR_PINK,
+			GameEngine.METER_COLOR_PURPLE,
 			GameEngine.METER_COLOR_DARKBLUE, GameEngine.METER_COLOR_BLUE, GameEngine.METER_COLOR_CYAN,
 			GameEngine.METER_COLOR_DARKGREEN
 		)

@@ -38,17 +38,14 @@
 package bin.sylveon.nullpomino.mods
 
 import mu.nu.nullpo.game.component.BGM
-import mu.nu.nullpo.game.event.EventReceiver
+import mu.nu.nullpo.game.event.EventReceiver.COLOR
 import mu.nu.nullpo.game.event.ScoreEvent
 import mu.nu.nullpo.game.net.NetUtil
 import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.game.play.GameEngine.Status
 import mu.nu.nullpo.game.subsystem.mode.NetDummyMode
-import mu.nu.nullpo.game.subsystem.mode.menu.BooleanMenuItem
-import mu.nu.nullpo.game.subsystem.mode.menu.DelegateMenuItem
-import mu.nu.nullpo.game.subsystem.mode.menu.LevelMenuItem
-import mu.nu.nullpo.game.subsystem.mode.menu.MenuList
-import mu.nu.nullpo.game.subsystem.mode.menu.StringsMenuItem
+import mu.nu.nullpo.game.subsystem.mode.menu.*
+import mu.nu.nullpo.gui.common.BaseFont.FONT.*
 import mu.nu.nullpo.util.CustomProperties
 import mu.nu.nullpo.util.GeneralUtil.toInt
 import mu.nu.nullpo.util.GeneralUtil.toTimeStr
@@ -72,17 +69,17 @@ class SubscriberChallenge:NetDummyMode() {
 	private var lastpiece:Int = 0
 	/** Current BGM  */
 	private var bgmLv:Int = 0
-	private val itemLv = LevelMenuItem("startLevel", "Level", EventReceiver.COLOR.BLUE, 0, 0..19)
+	private val itemLv = LevelMenuItem("startLevel", "Level", COLOR.BLUE, 0, 0..19)
 	/** Level at start time  */
 	private var startLevel:Int by DelegateMenuItem(itemLv)
 
 	private val itemMode = StringsMenuItem(
-		"goalType", "GOAL", EventReceiver.COLOR.BLUE, 0,
+		"goalType", "GOAL", COLOR.BLUE, 0,
 		List(GAMETYPE_MAX) {if(tableGameClearLines[it]<=0) "ENDLESS" else "${tableGameClearLines[it]} LINES"})
 	/** Game type  */
 	private var goalType:Int by DelegateMenuItem(itemMode)
 
-	private val itemBig = BooleanMenuItem("big", "BIG", EventReceiver.COLOR.BLUE, false)
+	private val itemBig = BooleanMenuItem("big", "BIG", COLOR.BLUE, false)
 	/** BigMode */
 	private var big:Boolean by DelegateMenuItem(itemBig)
 
@@ -229,11 +226,11 @@ class SubscriberChallenge:NetDummyMode() {
 			netOnRenderNetPlayRanking(engine, receiver)
 		} else {
 			drawMenu(
-				engine, receiver, 0, EventReceiver.COLOR.BLUE, 0,
+				engine, receiver, 0, COLOR.BLUE, 0,
 			)
 			drawMenuCompact(engine, receiver, "Level" to startLevel+1)
-			drawMenuSpeeds(engine, receiver, 4, EventReceiver.COLOR.WHITE, 10)
-			drawMenuCompact(engine, receiver, 9, EventReceiver.COLOR.BLUE, 2, "BIG" to big)
+			drawMenuSpeeds(engine, receiver, 4, COLOR.WHITE, 10)
+			drawMenuCompact(engine, receiver, 9, COLOR.BLUE, 2, "BIG" to big)
 		}
 	}
 	/*
@@ -257,41 +254,42 @@ class SubscriberChallenge:NetDummyMode() {
 	 */
 	override fun renderLast(engine:GameEngine) {
 		if(owner.menuOnly) return
-		receiver.drawScoreFont(engine, 0, 0, name, EventReceiver.COLOR.GREEN)
-		receiver.drawScoreFont(
-			engine, 0, 1, if(tableGameClearLines[goalType]==-1) "(Endless Run)" else "(${tableGameClearLines[goalType]} Lines run)",
-			EventReceiver.COLOR.GREEN
+		receiver.drawScore(engine, 0, 0, name, BASE, COLOR.GREEN)
+		receiver.drawScore(
+			engine, 0, 1,
+			if(tableGameClearLines[goalType]==-1) "(Endless Run)" else "(${tableGameClearLines[goalType]} Lines run)",
+			BASE,
+			COLOR.GREEN
 		)
 		if((engine.stat==Status.SETTING)||((engine.stat==Status.RESULT)&&!owner.replayMode)) {
 			if(!owner.replayMode&&!big&&(engine.ai==null)) {
 				val scale:Float = if((receiver.nextDisplayType==2)) 0.5f else 1.0f
 				val topY:Int = if((receiver.nextDisplayType==2)) 6 else 4
-				receiver.drawScoreFont(engine, 3, topY-1, "SCORE  LINE TIME", EventReceiver.COLOR.BLUE, scale)
+				receiver.drawScore(engine, 3, topY-1, "SCORE  LINE TIME", BASE, COLOR.BLUE, scale)
 				for(i in 0..<rankingMax) {
-					receiver.drawScoreGrade(engine, 0, topY+i, "%2d".format(i+1), EventReceiver.COLOR.YELLOW, scale)
-					receiver.drawScoreFont(engine, 3, topY+i, "${rankingScore[goalType][i]}", (i==rankingRank), scale)
-					receiver.drawScoreFont(engine, 10, topY+i, "${rankingLines[goalType][i]}", (i==rankingRank), scale)
-					receiver.drawScoreFont(engine, 15, topY+i, rankingTime[goalType][i].toTimeStr, i==rankingRank, scale)
+					receiver.drawScore(engine, 0, topY+i, "%2d".format(i+1), GRADE, COLOR.YELLOW, scale)
+					receiver.drawScore(engine, 3, topY+i, "${rankingScore[goalType][i]}", BASE, i==rankingRank, scale)
+					receiver.drawScore(engine, 10, topY+i, "${rankingLines[goalType][i]}", BASE, i==rankingRank, scale)
+					receiver.drawScore(engine, 15, topY+i, rankingTime[goalType][i].toTimeStr, BASE, i==rankingRank, scale)
 				}
 			}
 		} else {
-			receiver.drawScoreFont(engine, 0, 3, "SUBSCRIBER", EventReceiver.COLOR.BLUE)
+			receiver.drawScore(engine, 0, 3, "SUBSCRIBER", BASE, COLOR.BLUE)
 			val a = "${
 				if(subscriber!=lastValue) Interpolation.lerp(lastValue, subscriber, scDisp/120.0) else subscriber
 			}${if(subscriber-lastValue!=0) "(${if(subscriber-lastValue>0) "+" else ""}${subscriber-lastValue})" else ""}"
 
-			receiver.drawScoreFont(engine, 0, 4, a, ((subscriber-lastValue)>0))
+			receiver.drawScore(engine, 0, 4, a, BASE, (subscriber-lastValue)>0)
 
-			receiver.drawScoreFont(engine, 0, 6, "LINE", EventReceiver.COLOR.BLUE)
-			if((engine.statistics.level>=19)&&(tableGameClearLines[goalType]<0)) receiver.drawScoreFont(
-				engine, 0, 7, "${engine.statistics.lines}"
-			) else receiver.drawScoreFont(
-				engine, 0, 7, "${engine.statistics.lines}/${(engine.statistics.level+1)*10}"
+			receiver.drawScore(engine, 0, 6, "LINE", BASE, COLOR.BLUE)
+			receiver.drawScore(
+				engine, 0, 7, if((engine.statistics.level>=19)&&(tableGameClearLines[goalType]<0))
+					"${engine.statistics.lines}" else "${engine.statistics.lines}/${(engine.statistics.level+1)*10}", BASE
 			)
-			receiver.drawScoreFont(engine, 0, 9, "LEVEL", EventReceiver.COLOR.BLUE)
-			receiver.drawScoreFont(engine, 0, 10, "${engine.statistics.level+1}")
-			receiver.drawScoreFont(engine, 0, 12, "TIME", EventReceiver.COLOR.BLUE)
-			receiver.drawScoreFont(engine, 0, 13, engine.statistics.time.toTimeStr)
+			receiver.drawScore(engine, 0, 9, "LEVEL", BASE, COLOR.BLUE)
+			receiver.drawScore(engine, 0, 10, "${engine.statistics.level+1}", BASE)
+			receiver.drawScore(engine, 0, 12, "TIME", BASE, COLOR.BLUE)
+			receiver.drawScore(engine, 0, 13, engine.statistics.time.toTimeStr, BASE)
 		}
 
 		// NET: Number of spectators
@@ -367,7 +365,7 @@ class SubscriberChallenge:NetDummyMode() {
 		// Add to score
 		if(pts>0) {
 			lastScore = pts
-			lastpiece = engine.nowPieceObject?.id ?: 0
+			lastpiece = engine.nowPieceObject?.id?:0
 			if(li>=1) engine.statistics.scoreLine += pts else engine.statistics.scoreBonus += pts
 		}
 		subscriber += sub
@@ -424,19 +422,19 @@ class SubscriberChallenge:NetDummyMode() {
 	 */
 	override fun renderResult(engine:GameEngine) {
 		drawResultStats(
-			engine, receiver, 0, EventReceiver.COLOR.BLUE, Statistic.SCORE,
+			engine, receiver, 0, COLOR.BLUE, Statistic.SCORE,
 			Statistic.LINES, Statistic.LEVEL, Statistic.TIME, Statistic.SPL, Statistic.LPM
 		)
-		drawResultRank(engine, receiver, 12, EventReceiver.COLOR.BLUE, rankingRank)
-		drawResultNetRank(engine, receiver, 14, EventReceiver.COLOR.BLUE, netRankingRank[0])
-		drawResultNetRankDaily(engine, receiver, 16, EventReceiver.COLOR.BLUE, netRankingRank[1])
+		drawResultRank(engine, receiver, 12, COLOR.BLUE, rankingRank)
+		drawResultNetRank(engine, receiver, 14, COLOR.BLUE, netRankingRank[0])
+		drawResultNetRankDaily(engine, receiver, 16, COLOR.BLUE, netRankingRank[1])
 		if(netIsPB) {
-			receiver.drawMenuFont(engine, 2, 21, "NEW PB", EventReceiver.COLOR.ORANGE)
+			receiver.drawMenu(engine, 2, 21, "NEW PB", BASE, COLOR.ORANGE)
 		}
 		if(netIsNetPlay&&(netReplaySendStatus==1)) {
-			receiver.drawMenuFont(engine, 0, 22, "SENDING...", EventReceiver.COLOR.PINK)
+			receiver.drawMenu(engine, 0, 22, "SENDING...", BASE, COLOR.PINK)
 		} else if(netIsNetPlay&&!netIsWatch&&(netReplaySendStatus==2)) {
-			receiver.drawMenuFont(engine, 1, 22, "A: RETRY", EventReceiver.COLOR.RED)
+			receiver.drawMenu(engine, 1, 22, "A: RETRY", BASE, COLOR.RED)
 		}
 	}
 	/*

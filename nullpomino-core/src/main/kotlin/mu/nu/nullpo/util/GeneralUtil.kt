@@ -338,9 +338,9 @@ object GeneralUtil {
 	 */
 	val Char.aNum:Int
 		get() = when {
-			code>='0'.code -> code-'0'.code
-			code>='A'.code -> code-'A'.code
-			else -> code-'a'.code
+			code>='a'.code -> code-('a'.code)+36
+			code>='A'.code -> code-('A'.code)+10
+			else -> code-'0'.code
 		}
 
 	/** Returns a list containing all elements that are not `null`.*/

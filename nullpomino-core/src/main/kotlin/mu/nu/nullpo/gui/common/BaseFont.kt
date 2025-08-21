@@ -57,7 +57,8 @@ interface BaseFont {
 	}
 	/** Font cint constants */
 	enum class FONT(val w:Int, val h:Int = 16) {
-		NORMAL(BaseFontNormal.W), NANO(BaseFontNano.W,BaseFontNano.H), NUM(BaseFontNumber.W),
+		BASE(BaseFontNormal.W), NANO(BaseFontNano.W,BaseFontNano.H), NUM(BaseFontNumber.W),
+		NUM_T(BaseFontNumTall.W,BaseFontNumTall.H),
 		GRADE(BaseFontGrade.WS), GRADE_BIG(BaseFontGrade.WB), MEDAL(BaseFontMedal.W), TTF(BaseFontTTF.FONT_SIZE);
 	}
 

@@ -40,6 +40,7 @@ import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.game.subsystem.mode.menu.*
 import mu.nu.nullpo.gui.common.BaseFont
 import mu.nu.nullpo.gui.common.BaseFont.FONT
+import mu.nu.nullpo.gui.common.BaseFont.FONT.*
 import mu.nu.nullpo.util.CustomProperties
 import mu.nu.nullpo.util.GeneralUtil
 import mu.nu.nullpo.util.GeneralUtil.toTimeStr
@@ -138,14 +139,14 @@ class RetroN:AbstractMode() {
 			owSDSpd = 1
 			ruleOpt.nextDisplay = 1
 			ruleOpt.harddropEnable = false
-			ruleOpt.strWallkick=""
+			ruleOpt.strWallkick = ""
 			owSkin = if(speedType==2!=startLevel>=10) 8 else 9
 			owDelayCancel = 0
 		}
 
 		owner.bgMan.bg = startLevel
 		if(owner.bgMan.bg>19) owner.bgMan.bg = 19
-		lvLines = ((startLevel-5)*10).coerceIn(minOf((startLevel+1)*10,100), 100)
+		lvLines = ((startLevel-5)*10).coerceIn(minOf((startLevel+1)*10, 100), 100)
 		engine.frameSkin = GameEngine.FRAME_SKIN_GB
 	}
 
@@ -172,7 +173,7 @@ class RetroN:AbstractMode() {
 
 	/** Main routine for game setup screen */
 	override fun onSettingChanged(engine:GameEngine) {
-		lvLines = ((startLevel-5)*10).coerceIn(minOf((startLevel+1)*10,100), 100)
+		lvLines = ((startLevel-5)*10).coerceIn(minOf((startLevel+1)*10, 100), 100)
 		super.onSettingChanged(engine)
 	}
 
@@ -198,7 +199,7 @@ class RetroN:AbstractMode() {
 				createFieldIfNeeded()
 			}
 			fillGarbage(engine, startHeight)
-			lvLines = ((startLevel-5)*10).coerceIn(minOf((startLevel+1)*10,100), 100)
+			lvLines = ((startLevel-5)*10).coerceIn(minOf((startLevel+1)*10, 100), 100)
 		}
 		return false
 	}
@@ -228,57 +229,57 @@ class RetroN:AbstractMode() {
 
 	/** Renders HUD (leaderboard or game statistics) */
 	override fun renderLast(engine:GameEngine) {
-		receiver.drawScoreFont(engine, 0, 0, name, COLOR.GREEN)
-		receiver.drawScoreFont(engine, 0, 1, "(${SPEED_NAME[speedType]} ${GAMETYPE_NAME[gameType]})", COLOR.GREEN)
+		receiver.drawScore(engine, 0, 0, name, BASE, COLOR.GREEN)
+		receiver.drawScore(engine, 0, 1, "(${SPEED_NAME[speedType]} ${GAMETYPE_NAME[gameType]})", BASE, COLOR.GREEN)
 
 		if(engine.stat==GameEngine.Status.SETTING||engine.stat==GameEngine.Status.RESULT&&!owner.replayMode) {
 			if(!owner.replayMode&&!big&&engine.ai==null) {
-				receiver.drawScoreFont(engine, 3, 3, "SCORE    LINE LV.", COLOR.BLUE)
+				receiver.drawScore(engine, 3, 3, "SCORE    LINE LV.", BASE, COLOR.BLUE)
 
 				for(i in 0..<rankingMax) {
-					receiver.drawScoreGrade(
-						engine, 0, 4+i, "%2d".format(i+1), if(rankingRank==i) COLOR.RAINBOW else COLOR.YELLOW
+					receiver.drawScore(
+						engine, 0, 4+i, "%2d".format(i+1), GRADE, if(rankingRank==i) COLOR.RAINBOW else COLOR.YELLOW
 					)
-					receiver.drawScoreNum(engine, 3, 4+i, GeneralUtil.capsNum(rankingScore[gameType][i], 6), i==rankingRank)
-					receiver.drawScoreNum(
-						engine, 12, 4+i, GeneralUtil.capsNum(rankingLines[gameType][i], 3), i==rankingRank
+					receiver.drawScore(engine, 3, 4+i, GeneralUtil.capsNum(rankingScore[gameType][i], 6), NUM, i==rankingRank)
+					receiver.drawScore(
+						engine, 12, 4+i, GeneralUtil.capsNum(rankingLines[gameType][i], 3), NUM, i==rankingRank
 					)
 					receiver.drawScore(
 						engine,
 						17,
 						4+i,
 						LEVEL_NAME[rankingLevel[gameType][i]],
-						font = if(rankingLevel[gameType][i]<30) FONT.NUM else FONT.NORMAL,
+						font = if(rankingLevel[gameType][i]<30) FONT.NUM else FONT.BASE,
 						flag = i==rankingRank
 					)
 				}
 			}
 		} else {
-			receiver.drawScoreFont(engine, 0, 3, "SCORE${if(lastScore>0) "(+$lastScore)" else ""}", COLOR.BLUE)
+			receiver.drawScore(engine, 0, 3, "SCORE${if(lastScore>0) "(+$lastScore)" else ""}", BASE, COLOR.BLUE)
 			receiver.drawScore(
-				engine, 0, 4, GeneralUtil.capsNum(scDisp, 6), font = if(engine.statistics.score<=999999) FONT.NUM else FONT.NORMAL,
+				engine, 0, 4, GeneralUtil.capsNum(scDisp, 6), font = if(engine.statistics.score<=999999) FONT.NUM else FONT.BASE,
 				scale = 2f
 			)
 
-			receiver.drawScoreFont(engine, 0, 6, "LINE", COLOR.BLUE)
+			receiver.drawScore(engine, 0, 6, "LINE", BASE, COLOR.BLUE)
 			receiver.drawScore(
 				engine, 0, 7, when(gameType) {
 					GAMETYPE_TYPE_B -> "-%2d".format(maxOf(25-engine.statistics.lines, 0))
 					else -> GeneralUtil.capsNum(engine.statistics.lines, 3)
-				}, if(gameType!=GAMETYPE_TYPE_B&&engine.statistics.lines<999) FONT.NUM else FONT.NORMAL, scale = 2f
+				}, if(gameType!=GAMETYPE_TYPE_B&&engine.statistics.lines<999) FONT.NUM else FONT.BASE, scale = 2f
 			)
 
-			receiver.drawScoreFont(engine, 0, 9, "Level", COLOR.BLUE)
+			receiver.drawScore(engine, 0, 9, "Level", BASE, COLOR.BLUE)
 			receiver.drawScore(
-				engine, 0, 10, LEVEL_NAME[engine.statistics.level], if(engine.statistics.level<30) FONT.NUM else FONT.NORMAL,
+				engine, 0, 10, LEVEL_NAME[engine.statistics.level], if(engine.statistics.level<30) FONT.NUM else FONT.BASE,
 				scale = 2f
 			)
 
-			receiver.drawScoreFont(engine, 0, 12, "Time", COLOR.BLUE)
-			receiver.drawScoreNum(engine, 0, 13, engine.statistics.time.toTimeStr, 2f)
+			receiver.drawScore(engine, 0, 12, "Time", BASE, COLOR.BLUE)
+			receiver.drawScore(engine, 0, 13, engine.statistics.time.toTimeStr, NUM, 2f)
 
-			receiver.drawScoreFont(engine, 0, 16, "I-Piece Drought", COLOR.BLUE)
-			receiver.drawScoreNum(engine, 0, 17, "$drought / ${maxOf(drought, droughts.maxOrNull() ?: 0)}", 2f)
+			receiver.drawScore(engine, 0, 16, "I-Piece Drought", BASE, COLOR.BLUE)
+			receiver.drawScore(engine, 0, 17, "$drought / ${maxOf(drought, droughts.maxOrNull()?:0)}", NUM, 2f)
 		}
 	}
 
@@ -380,25 +381,25 @@ class RetroN:AbstractMode() {
 
 	/** Renders game result screen */
 	override fun renderResult(engine:GameEngine) {
-		receiver.drawMenuFont(engine, 0, 0, "${BaseFont.UP_S}${BaseFont.DOWN_S} PAGE${engine.statc[1]+1}/2", COLOR.ORANGE)
-		receiver.drawMenuFont(engine, 0, 1, "PLAY DATA", COLOR.ORANGE)
+		receiver.drawMenu(engine, 0, 0, "${BaseFont.UP_S}${BaseFont.DOWN_S} PAGE${engine.statc[1]+1}/2", BASE, COLOR.ORANGE)
+		receiver.drawMenu(engine, 0, 1, "PLAY DATA", BASE, COLOR.ORANGE)
 
 		if(engine.statc[1]==0) {
 			drawResultStats(engine, receiver, 3, COLOR.BLUE, Statistic.SCORE, Statistic.LINES)
-			receiver.drawMenuFont(engine, 0, 7, "Level", COLOR.BLUE)
+			receiver.drawMenu(engine, 0, 7, "Level", BASE, COLOR.BLUE)
 			val strLevel = "%10s".format(LEVEL_NAME[engine.statistics.level])
-			receiver.drawMenuFont(engine, 0, 8, strLevel)
+			receiver.drawMenu(engine, 0, 8, strLevel, BASE)
 			drawResultStats(engine, receiver, 9, COLOR.BLUE, Statistic.SPL)
 			drawResultRank(engine, receiver, 15, COLOR.BLUE, rankingRank)
-			drawResult(engine, receiver, 11, COLOR.BLUE, "QUAD%", "%3d%%".format( engine.statistics.run {
+			drawResult(engine, receiver, 11, COLOR.BLUE, "QUAD%", "%3d%%".format(engine.statistics.run {
 				totalQuadruple*100/maxOf(1, totalQuadruple+totalSingle+totalDouble+totalTriple+totalSplitDouble+totalSplitTriple)
 			}))
 		} else {
 			drawResultStats(engine, receiver, 3, COLOR.BLUE, Statistic.TIME, Statistic.LPM)
-			receiver.drawMenuFont(engine, 0, 7, "I-Droughts", COLOR.BLUE)
-			receiver.drawMenuFont(engine, 0, 8, "Longest", COLOR.BLUE, .8f)
-			receiver.drawMenuNum(engine, 0, 8, "%3d".format(droughts.maxOrNull() ?: 0), 2f)
-			receiver.drawMenuFont(engine, 0, 10, "Average", COLOR.BLUE, .8f)
+			receiver.drawMenu(engine, 0, 7, "I-Droughts", BASE, COLOR.BLUE)
+			receiver.drawMenu(engine, 0, 8, "Longest", BASE, COLOR.BLUE, .8f)
+			receiver.drawMenu(engine, 0, 8, "%3d".format(droughts.maxOrNull()?:0), NUM, 2f)
+			receiver.drawMenu(engine, 0, 10, "Average", BASE, COLOR.BLUE, .8f)
 			receiver.drawMenuNum(engine, 0, 11, droughts.average(), null to 3, scale = 2f)
 			drawResult(
 				engine, receiver, 13, COLOR.RED, "Burnouts",
@@ -477,7 +478,8 @@ class RetroN:AbstractMode() {
 			for(x in 0..<engine.field.width) {
 				f = engine.random.nextFloat()
 				if(f<0.5)
-					engine.field.setBlock(x, y, Block((f*14).toInt()+2, engine.blkSkin, Block.ATTRIBUTE.VISIBLE, Block.ATTRIBUTE.GARBAGE))
+					engine.field.setBlock(x, y,
+						Block((f*14).toInt()+2, engine.blkSkin, Block.ATTRIBUTE.VISIBLE, Block.ATTRIBUTE.GARBAGE))
 			}
 	}
 
@@ -518,7 +520,7 @@ class RetroN:AbstractMode() {
 		private enum class SpeedLevel(title:String? = null) {
 			NTSC, PAL, PAL_RAW("PAL HARD");
 
-			val showName:String = title ?: name
+			val showName:String = title?:name
 		}
 		/** Number of speed types */
 		private val SPEED_MAX = SpeedLevel.entries.size

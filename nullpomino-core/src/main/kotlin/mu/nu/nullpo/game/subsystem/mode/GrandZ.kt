@@ -38,6 +38,7 @@ import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.game.subsystem.mode.menu.BooleanMenuItem
 import mu.nu.nullpo.game.subsystem.mode.menu.DelegateMenuItem
 import mu.nu.nullpo.gui.common.BaseFont
+import mu.nu.nullpo.gui.common.BaseFont.FONT.*
 import mu.nu.nullpo.util.CustomProperties
 import mu.nu.nullpo.util.GeneralUtil.toInt
 import mu.nu.nullpo.util.GeneralUtil.toTimeStr
@@ -297,81 +298,83 @@ class GrandZ:AbstractGrand() {
 	}
 	/** Renders HUD (leaderboard or game statistics) */
 	override fun renderLast(engine:GameEngine) {
-		receiver.drawScoreFont(engine, 0, 0, name, COLOR.WHITE)
+		receiver.drawScore(engine, 0, 0, name, BASE, COLOR.WHITE)
 
-		receiver.drawScoreFont(engine, 0, 1, "b${tableModeName[gametype]}", COLOR.WHITE)
+		receiver.drawScore(engine, 0, 1, "b${tableModeName[gametype]}", BASE, COLOR.WHITE)
 
 		if(engine.stat==GameEngine.Status.SETTING||engine.stat==GameEngine.Status.RESULT&&!owner.replayMode) {
 			if(!owner.replayMode&&startLevel==0&&!big&&engine.ai==null)
 				if(!isShowBestSectionTime) {
 					// Leaderboard
 					val topY = if(receiver.nextDisplayType==2) 5 else 3
-					receiver.drawScoreFont(engine, 0, topY-1, "GRADE LV TIME", COLOR.RED)
+					receiver.drawScore(engine, 0, topY-1, "GRADE LV TIME", BASE, COLOR.RED)
 
 					for(i in 0..<rankingMax) {
 
-						receiver.drawScoreGrade(engine, 0, topY+i, "%02d".format(i+1), COLOR.YELLOW)
-						receiver.drawScoreGrade(
-							engine, 3, topY+i, tableGradeName[minOf(tableGradeName.lastIndex, rankingGrade[gametype][i])],
-							when {
+						receiver.drawScore(engine, 0, topY+i, "%02d".format(i+1), GRADE, COLOR.YELLOW)
+						receiver.drawScore(
+							engine, 3, topY+i,
+							tableGradeName[minOf(tableGradeName.lastIndex, rankingGrade[gametype][i])],
+							GRADE, when {
 								rankingRollClear[gametype][i]==1 -> COLOR.RED
 								rankingRollClear[gametype][i]==2 -> COLOR.ORANGE
 								else -> COLOR.WHITE
 							}
 						)
-						receiver.drawScoreNum(engine, 5, topY+i, "%03d".format(rankingLevel[gametype][i]), i==rankingRank)
-						receiver.drawScoreNum(engine, 8, topY+i, rankingTime[gametype][i].toTimeStr, i==rankingRank)
+						receiver.drawScore(engine, 5, topY+i, "%03d".format(rankingLevel[gametype][i]), NUM, i==rankingRank)
+						receiver.drawScore(engine, 8, topY+i, rankingTime[gametype][i].toTimeStr, NUM, i==rankingRank)
 					}
 
-					receiver.drawScoreFont(engine, 0, 19, "F:VIEW SECTION TIME", COLOR.ORANGE)
+					receiver.drawScore(engine, 0, 19, "F:VIEW SECTION TIME", BASE, COLOR.ORANGE)
 				} else {
 					// Best section time records
-					receiver.drawScoreFont(engine, 0, 2, "SECTION TIME", COLOR.RED)
+					receiver.drawScore(engine, 0, 2, "SECTION TIME", BASE, COLOR.RED)
 
 					val totalTime =
 						(0..<sectionMax).fold(0) {tt, i ->
 							val slv = minOf(i*100, 999)
-							receiver.drawScoreNum(
+							receiver.drawScore(
 								engine, 0, 3+i, "%3d-%3d %s %3d".format(
 									slv, slv+99, bestSectionTime[gametype][i].toTimeStr, bestSectionLine[gametype][i]
-								), sectionIsNewRecord[i]
+								), NUM, sectionIsNewRecord[i]
 							)
 							tt+bestSectionTime[gametype][i]
 						}
 
-					receiver.drawScoreFont(engine, 0, 14, "TOTAL", COLOR.RED)
-					receiver.drawScoreNum(engine, 0, 15, totalTime.toTimeStr, 2f)
-					receiver.drawScoreFont(engine, 9, 14, "AVERAGE", COLOR.RED)
-					receiver.drawScoreNum(engine, 9, 15, (totalTime*1f/sectionMax).toTimeStr, 2f)
+					receiver.drawScore(engine, 0, 14, "TOTAL", BASE, COLOR.RED)
+					receiver.drawScore(engine, 0, 15, totalTime.toTimeStr, NUM, 2f)
+					receiver.drawScore(engine, 9, 14, "AVERAGE", BASE, COLOR.RED)
+					receiver.drawScore(engine, 9, 15, (totalTime*1f/sectionMax).toTimeStr, NUM, 2f)
 
-					receiver.drawScoreFont(engine, 0, 19, "F:VIEW RANKING", COLOR.ORANGE)
+					receiver.drawScore(engine, 0, 19, "F:VIEW RANKING", BASE, COLOR.ORANGE)
 				}
 		} else {
 			val color:COLOR = COLOR.all[(engine.statistics.time+rollTime)%COLOR.all.size]
 			// Grade
 			if(grade>=1&&grade<tableGradeName.size)
-				receiver.drawScoreGrade(engine, 0, 2, tableGradeName[grade], gradeFlash>0&&gradeFlash%4==0, 2f)
+				receiver.drawScore(engine, 0, 2, tableGradeName[grade], GRADE, gradeFlash>0&&gradeFlash%4==0, 2f)
 
 			// Time
-			receiver.drawScoreFont(engine, 0, 4, "Time", color)
+			receiver.drawScore(engine, 0, 4, "Time", BASE, color)
 			if((engine.ending!=2) or (rollTime/10%2==0))
-				receiver.drawScoreNum(engine, 0, 5, engine.statistics.time.toTimeStr, 2f)
+				receiver.drawScore(engine, 0, 5, engine.statistics.time.toTimeStr, NUM, 2f)
 			// Level
-			receiver.drawScoreFont(engine, 0, 8, "Level", color)
-			receiver.drawScoreNum(engine, 0, 9, "%3d".format(maxOf(engine.statistics.level, 0)))
+			receiver.drawScore(engine, 0, 8, "Level", BASE, color)
+			receiver.drawScore(engine, 0, 9, "%3d".format(maxOf(engine.statistics.level, 0)), NUM)
 			receiver.drawScoreSpeed(
 				engine, 0, 10, if(gametype==1)
 					if(engine.statistics.level<600) engine.statistics.level/600f else 1-(engine.statistics.level-600)/400f
 				else engine.statistics.level/999f,
 				4f
 			)
-			receiver.drawScoreNum(engine, 0, 11, "%3d".format(nextSecLv))
+			receiver.drawScore(engine, 0, 11, "%3d".format(nextSecLv), NUM)
 			// Lines
-			receiver.drawScoreFont(
-				engine, 0, 13, if(gametype==1) "JOKERS" else "Lines", if(gametype==1&&joker<=0) COLOR.WHITE else color
+			receiver.drawScore(
+				engine, 0, 13, if(gametype==1) "JOKERS" else "Lines", BASE,
+				if(gametype==1&&joker<=0) COLOR.WHITE else color
 			)
-			receiver.drawScoreNum(
-				engine, 1, 14, "%3d".format(if(gametype==1) joker else engine.statistics.lines), 2f
+			receiver.drawScore(
+				engine, 1, 14, "%3d".format(if(gametype==1) joker else engine.statistics.lines), NUM, 2f
 			)
 			if(gametype!=0)
 				receiver.drawScoreSpeed(
@@ -379,14 +382,14 @@ class GrandZ:AbstractGrand() {
 					4
 				)
 			if(gametype==2)
-				receiver.drawScoreNum(engine, 1, 17, "%3d".format(FURTHEST_LINES))
+				receiver.drawScore(engine, 1, 17, "%3d".format(FURTHEST_LINES), NUM)
 
 			// Remain roll time
 			if(engine.gameActive&&engine.ending==2) {
 				var time = ROLLTIMELIMIT-rollTime
 				if(time<0) time = 0
-				receiver.drawScoreFont(engine, 0, 17, "ROLL TIME", COLOR.RED)
-				receiver.drawScoreNum(engine, 0, 18, time.toTimeStr, time>0&&time<10*60, 2f)
+				receiver.drawScore(engine, 0, 17, "ROLL TIME", BASE, COLOR.RED)
+				receiver.drawScore(engine, 0, 18, time.toTimeStr, NUM, time>0&&time<10*60, 2f)
 			}
 
 			// Medals
@@ -400,17 +403,17 @@ class GrandZ:AbstractGrand() {
 				val x = if(receiver.nextDisplayType==2) 8 else 12
 				val x2 = if(receiver.nextDisplayType==2) 9 else 12
 
-				receiver.drawScoreFont(engine, x, 2, "SECTION TIME", COLOR.RED)
+				receiver.drawScore(engine, x, 2, "SECTION TIME", BASE, COLOR.RED)
 				val section = engine.statistics.level/100
 				sectionTime.forEachIndexed {i, it ->
-					if(it>0) receiver.drawScoreNum(
+					if(it>0) receiver.drawScore(
 						engine, x, 3+i, "%3d%s%s".format(
 							minOf(i*100, 999), if(i==section&&engine.ending==0) "+" else "-", it.toTimeStr
-						), sectionIsNewRecord[i]
+						), NUM, sectionIsNewRecord[i]
 					)
 				}
-				receiver.drawScoreFont(engine, x2, 17, "AVERAGE", COLOR.RED)
-				receiver.drawScoreNum(engine, x2, 18, (engine.statistics.time/(sectionsDone+1)).toTimeStr, 2f)
+				receiver.drawScore(engine, x2, 17, "AVERAGE", BASE, COLOR.RED)
+				receiver.drawScore(engine, x2, 18, (engine.statistics.time/(sectionsDone+1)).toTimeStr, NUM, 2f)
 			}
 		}
 	}
@@ -583,7 +586,7 @@ class GrandZ:AbstractGrand() {
 
 	/** Renders game result screen */
 	override fun renderResult(engine:GameEngine) {
-		receiver.drawMenuFont(engine, 0, 0, "${BaseFont.UP_S}${BaseFont.DOWN_S} PAGE${engine.statc[1]+1}/3", COLOR.RED)
+		receiver.drawMenu(engine, 0, 0, "${BaseFont.UP_S}${BaseFont.DOWN_S} PAGE${engine.statc[1]+1}/3", BASE, COLOR.RED)
 
 		if(engine.statc[1]==0) {
 			if(grade>=1&&grade<tableGradeName.size) {
@@ -592,8 +595,8 @@ class GrandZ:AbstractGrand() {
 					2 -> COLOR.ORANGE
 					else -> COLOR.WHITE
 				}
-				receiver.drawMenuFont(engine, 0, 2, "GRADE", COLOR.RED)
-				receiver.drawMenuGrade(engine, 6, 1.66f, tableGradeName[grade], gcolor, 2f)
+				receiver.drawMenu(engine, 0, 2, "GRADE", BASE, COLOR.RED)
+				receiver.drawMenu(engine, 6, 1.66f, tableGradeName[grade], GRADE, gcolor, 2f)
 			}
 
 			drawResultStats(
@@ -605,18 +608,18 @@ class GrandZ:AbstractGrand() {
 					"%10s".format(tableSecretGradeName[secretGrade-1])
 				)
 		} else if(engine.statc[1]==1) {
-			receiver.drawMenuFont(engine, 0, 2, "SECTION", COLOR.RED)
+			receiver.drawMenu(engine, 0, 2, "SECTION", BASE, COLOR.RED)
 
 			for(i in sectionTime.indices)
 				if(sectionTime[i]>0)
-					receiver.drawMenuFont(engine, 2, 3+i, sectionTime[i].toTimeStr, sectionIsNewRecord[i])
+					receiver.drawMenu(engine, 2, 3+i, sectionTime[i].toTimeStr, BASE, sectionIsNewRecord[i])
 
 			if(sectionAvgTime>0) {
-				receiver.drawMenuFont(engine, 0, 14, "AVERAGE", COLOR.RED)
-				receiver.drawMenuNum(engine, 2, 15, sectionAvgTime.toTimeStr)
+				receiver.drawMenu(engine, 0, 14, "AVERAGE", BASE, COLOR.RED)
+				receiver.drawMenu(engine, 2, 15, sectionAvgTime.toTimeStr, NUM)
 			}
 		} else if(engine.statc[1]==2) {
-			receiver.drawMenuNano(engine, 0, 1.5f, "MEDAL", COLOR.RED, .5f)
+			receiver.drawMenu(engine, 0, 1.5f, "MEDAL", NANO, COLOR.RED, .5f)
 			receiver.drawMenuMedal(engine, 2, 2, "AC", medalAC)
 			receiver.drawMenuMedal(engine, 5, 2, "ST", medalST)
 			receiver.drawMenuMedal(engine, 8, 2, "SK", medalSK)

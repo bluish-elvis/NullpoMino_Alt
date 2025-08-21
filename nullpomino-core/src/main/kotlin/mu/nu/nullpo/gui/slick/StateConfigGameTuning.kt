@@ -190,19 +190,40 @@ internal class StateConfigGameTuning:BaseMenuConfigState() {
 			val skinMax = ResourceHolder.imgNormalBlockList.size
 			sk = when(conf.skin) {
 				-1 -> (sk+1)%skinMax
-				-2 -> Random.Default.nextInt(skinMax)
+				-2 -> Random.nextInt(skinMax)
 				else -> conf.skin
 			}
 			val imgBlock = ResourceHolder.imgNormalBlockList[sk]
-			if(ResourceHolder.blockStickyFlagList[sk])
+			if(ResourceHolder.blockStickyFlagList[sk]) {
 				for(j in 0..8) imgBlock.draw(
-					(160+j*16).toFloat(), 64f, (160+j*16+16).toFloat(), (64+16).toFloat(),
+					(160+j*16).toFloat(), 64f, (160+j*16+16).toFloat(), 80.toFloat(),
 					0f, (j*16).toFloat(), 16f, (j*16+16).toFloat()
 				)
-			else imgBlock.draw(160f, 64f, (160+144).toFloat(), (64+16).toFloat(), 0f, 0f, 144f, 16f)
-
+				//gem
+				imgBlock.draw(304f, 64f, 416f, 80f, 0f, 288f, 112f, 304f)
+				//gold
+				imgBlock.draw(416f, 32f, 464f, 48f, 112f, 288f, 160f, 304f)
+				imgBlock.draw(416f, 48f, 464f, 64f, 160f, 288f, 208f, 304f)
+				imgBlock.draw(416f, 64f, 464f, 80f, 208f, 288f, 256f, 304f)
+				//silver
+				imgBlock.draw(464f, 32f, 512f, 48f,  256f, 288f, 304f, 304f)
+				imgBlock.draw(464f, 48f, 512f, 64f,  304f, 288f, 352f, 304f)
+				imgBlock.draw(464f, 64f, 512f, 80f,  352f, 288f, 400f, 304f)
+			}
+			else {
+				imgBlock.draw(160f, 64f, 304f, 80f, 0f, 0f, 144f, 16f)
+				imgBlock.draw(304f, 64f, 416f, 80f, 288f, 0f, 400f, 16f) //gem
+				//gold
+				imgBlock.draw(416f, 32f, 464f, 48f, 400f, 0f, 448f, 16f)
+				imgBlock.draw(416f, 48f, 464f, 64f, 448f, 0f, 496f, 16f)
+				imgBlock.draw(416f, 64f, 464f, 80f, 496f, 0f, 544f, 16f)
+				//silver
+				imgBlock.draw(464f, 32f, 512f, 48f, 544f, 0f, 592f, 16f)
+				imgBlock.draw(464f, 48f, 512f, 64f, 592f, 0f, 640f, 16f)
+				imgBlock.draw(464f, 64f, 512f, 80f, 640f, 0f, 688f, 16f)
+			}
 			FontNano.printFontGrid(
-				19, 4, when(conf.skin) {
+				19, 5, when(conf.skin) {
 					-1 -> "AUTO"
 					-2 -> "RANDOM"
 					else -> skinStrs[conf.skin]

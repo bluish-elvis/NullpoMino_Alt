@@ -39,6 +39,7 @@ import mu.nu.nullpo.game.net.*
 import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.game.play.GameManager
 import mu.nu.nullpo.gui.common.BaseFont
+import mu.nu.nullpo.gui.common.BaseFont.FONT.*
 import mu.nu.nullpo.gui.net.NetLobbyFrame
 import mu.nu.nullpo.gui.net.NetLobbyListener
 import mu.nu.nullpo.util.GeneralUtil.strDateTime
@@ -275,10 +276,10 @@ abstract class NetDummyMode:AbstractMode(), NetLobbyListener {
 				if(engine.ctrl.isPush(Controller.BUTTON_D)&&netIsNetPlay&&!netIsWatch&&netIsNetRankingViewOK(engine))
 					netEnterNetPlayRankingScreen(netGetGoalType)
 
-			}else {
+			} else {
 				menuTime++
 				menuCursor = -1
-				return menuTime<60*(1+(menu.loc.maxOrNull() ?: 0)/engine.fieldHeight)
+				return menuTime<60*(1+(menu.loc.maxOrNull()?:0)/engine.fieldHeight)
 			}
 		return true
 	}
@@ -306,7 +307,7 @@ abstract class NetDummyMode:AbstractMode(), NetLobbyListener {
 	}
 
 	/** NET: When the piece locked. NetDummyMode will send field and stats. */
-	override fun pieceLocked(engine: GameEngine, lines: Int, finesse: Boolean) {
+	override fun pieceLocked(engine:GameEngine, lines:Int, finesse:Boolean) {
 		// NET: Send field and stats
 		if(engine.ending==0&&netIsNetPlay&&!netIsWatch&&(netNumSpectators>0||netForceSendMovements)) {
 			netSendField(engine)
@@ -630,7 +631,7 @@ abstract class NetDummyMode:AbstractMode(), NetLobbyListener {
 		netPlayerName = ""
 
 		if(netLobby!=null&&netCurrentRoomInfo!=null&&netCurrentRoomInfo?.roomID!=-1)
-			for(pInfo in netLobby?.updateSameRoomPlayerInfoList() ?: emptyList())
+			for(pInfo in netLobby?.updateSameRoomPlayerInfoList()?:emptyList())
 				if(pInfo.roomID==netCurrentRoomInfo?.roomID)
 					if(pInfo.seatID==0)
 						netPlayerName = pInfo.strName
@@ -642,9 +643,9 @@ abstract class NetDummyMode:AbstractMode(), NetLobbyListener {
 	fun netDrawAllPlayersCount() {
 		netLobby?.netPlayerClient?.let {
 			if(it.isConnected) {
-				receiver.drawDirectFont(
+				receiver.drawFont(
 					0, 480-16,
-					"%40s".format("%d/%d".format(it.observerCount, it.playerCount)), when {
+					"%40s".format("%d/%d".format(it.observerCount, it.playerCount)), BASE, when {
 						it.playerCount>1 -> COLOR.RED
 						it.observerCount>0 -> COLOR.GREEN
 						else -> COLOR.BLUE
@@ -665,8 +666,8 @@ abstract class NetDummyMode:AbstractMode(), NetLobbyListener {
 				(engine.replayTimer/(0.00000006*(nowtime-engine.startTime))).toFloat()
 			}
 
-			receiver.drawDirectFont(
-				0, 480-32, "%40s".format("%.0f%%".format(gamerate*100f)), when {
+			receiver.drawFont(
+				0, 480-32, "%40s".format("%.0f%%".format(gamerate*100f)), BASE, when {
 					gamerate<.8f -> COLOR.RED
 					gamerate<.9f -> COLOR.ORANGE
 					gamerate<1f -> COLOR.YELLOW
@@ -684,16 +685,16 @@ abstract class NetDummyMode:AbstractMode(), NetLobbyListener {
 	fun netDrawSpectatorsCount(engine:GameEngine, x:Int, y:Int) {
 		if(netIsNetPlay) {
 			val fontcolor = if(netIsWatch) COLOR.GREEN else COLOR.RED
-			receiver.drawScoreFont(engine, x, y, "SPECTATORS", fontcolor)
-			receiver.drawScoreFont(engine, x, y+1, "$netNumSpectators", COLOR.WHITE)
+			receiver.drawScore(engine, x, y, "SPECTATORS", BASE, fontcolor)
+			receiver.drawScore(engine, x, y+1, "$netNumSpectators", BASE, COLOR.WHITE)
 
 			if(engine.stat==GameEngine.Status.SETTING&&!netIsWatch&&netIsNetRankingViewOK(engine)) {
 				var y2 = y+2
 				if(y2>24) y2 = 24
 				val strBtnD = owner.receiver.getKeyNameByButtonID(engine, Controller.BUTTON_D)
-				receiver.drawScoreFont(
+				receiver.drawScore(
 					engine, x, y2, "D($strBtnD KEY):\n NET RANKING",
-					COLOR.GREEN
+					BASE, COLOR.GREEN
 				)
 			}
 		}
@@ -705,7 +706,7 @@ abstract class NetDummyMode:AbstractMode(), NetLobbyListener {
 	protected open fun netDrawPlayerName(engine:GameEngine) {
 		if(netPlayerName!=null&&netPlayerName!!.isNotEmpty()) {
 			val name = netPlayerName
-			receiver.drawDirectTTF(receiver.fieldX(engine), receiver.fieldY(engine)-20, name!!)
+			receiver.drawFont(receiver.fieldX(engine), receiver.fieldY(engine)-20, name!!, TTF)
 		}
 	}
 
@@ -733,7 +734,7 @@ abstract class NetDummyMode:AbstractMode(), NetLobbyListener {
 				)
 				return@netSendPieceMovement true
 			}
-		} ?: (return if(netPrevPieceID!=Piece.PIECE_NONE||engine.manualLock) {
+		}?:(return if(netPrevPieceID!=Piece.PIECE_NONE||engine.manualLock) {
 			netPrevPieceID = Piece.PIECE_NONE
 			netLobby?.netPlayerClient?.send(
 				"game\tpiece\t$netPrevPieceID\t$netPrevPieceX\t$netPrevPieceY\t$netPrevPieceDir\t0\t${engine.blkSkin}\tfalse\n"
@@ -1000,10 +1001,12 @@ abstract class NetDummyMode:AbstractMode(), NetLobbyListener {
 			val d = netRankingView
 
 			if(!netRankingNoDataFlag[d]&&netRankingReady[d]) {
-				receiver.drawMenuFont(engine, 0, 1, "<<", COLOR.ORANGE)
-				receiver.drawMenuFont(engine, 38, 1, ">>", COLOR.ORANGE)
-				receiver.drawMenuFont(
-					engine, 3, 1, "${if(d!=0) "DAILY" else "ALL-TIME"} RANKING (${netRankingCursor[d]+1}/${netRankingPlace[d].size})",
+				receiver.drawMenu(engine, 0, 1, "<<", BASE, COLOR.ORANGE)
+				receiver.drawMenu(engine, 38, 1, ">>", BASE, COLOR.ORANGE)
+				receiver.drawMenu(
+					engine, 3, 1,
+					"${if(d!=0) "DAILY" else "ALL-TIME"} RANKING (${netRankingCursor[d]+1}/${netRankingPlace[d].size})",
+					BASE,
 					COLOR.GREEN
 				)
 
@@ -1012,146 +1015,154 @@ abstract class NetDummyMode:AbstractMode(), NetLobbyListener {
 				if(endIndex>netRankingPlace[d].size) endIndex = netRankingPlace[d].size
 
 				when(netRankingType) {
-					NetSPRecord.RANKINGTYPE_GENERIC_SCORE -> receiver.drawMenuFont(
+					NetSPRecord.RANKINGTYPE_GENERIC_SCORE -> receiver.drawMenu(
 						engine, 1, 3, "    SCORE   LINE TIME     NAME",
+						BASE,
 						COLOR.BLUE
 					)
-					NetSPRecord.RANKINGTYPE_GENERIC_TIME -> receiver.drawMenuFont(
+					NetSPRecord.RANKINGTYPE_GENERIC_TIME -> receiver.drawMenu(
 						engine, 1, 3, "    TIME     PIECE PPS    NAME",
+						BASE,
 						COLOR.BLUE
 					)
-					NetSPRecord.RANKINGTYPE_SCORERACE -> receiver.drawMenuFont(
-						engine, 1, 3, "    TIME     LINE SPL    NAME", COLOR.BLUE
+					NetSPRecord.RANKINGTYPE_SCORERACE -> receiver.drawMenu(
+						engine, 1, 3, "    TIME     LINE SPL    NAME", BASE,
+						COLOR.BLUE
 					)
-					NetSPRecord.RANKINGTYPE_DIGRACE -> receiver.drawMenuFont(
-						engine, 1, 3, "    TIME     LINE PIECE  NAME", COLOR.BLUE
+					NetSPRecord.RANKINGTYPE_DIGRACE -> receiver.drawMenu(
+						engine, 1, 3, "    TIME     LINE PIECE  NAME", BASE,
+						COLOR.BLUE
 					)
-					NetSPRecord.RANKINGTYPE_ULTRA -> receiver.drawMenuFont(
-						engine, 1, 3, "    SCORE   LINE PIECE    NAME", COLOR.BLUE
+					NetSPRecord.RANKINGTYPE_ULTRA -> receiver.drawMenu(
+						engine, 1, 3, "    SCORE   LINE PIECE    NAME", BASE,
+						COLOR.BLUE
 					)
-					NetSPRecord.RANKINGTYPE_COMBORACE -> receiver.drawMenuFont(
-						engine, 1, 3, "    COMBO TIME     PPS    NAME", COLOR.BLUE
+					NetSPRecord.RANKINGTYPE_COMBORACE -> receiver.drawMenu(
+						engine, 1, 3, "    COMBO TIME     PPS    NAME", BASE,
+						COLOR.BLUE
 					)
-					NetSPRecord.RANKINGTYPE_DIGCHALLENGE -> receiver.drawMenuFont(
+					NetSPRecord.RANKINGTYPE_DIGCHALLENGE -> receiver.drawMenu(
 						engine, 1, 3, "    SCORE   LINE TIME     NAME",
+						BASE,
 						COLOR.BLUE
 					)
-					NetSPRecord.RANKINGTYPE_TIMEATTACK -> receiver.drawMenuFont(
+					NetSPRecord.RANKINGTYPE_TIMEATTACK -> receiver.drawMenu(
 						engine, 1, 3, "    LINE  TIME     PPS    NAME",
+						BASE,
 						COLOR.BLUE
 					)
 				}
 
 				for((c, i) in (startIndex..<endIndex).withIndex()) {
 					if(i==netRankingCursor[d])
-						receiver.drawMenuFont(engine, 0, 4+c, BaseFont.CURSOR, COLOR.RED)
+						receiver.drawMenu(engine, 0, 4+c, BaseFont.CURSOR, BASE, COLOR.RED)
 
 					val rankColor = if(i==netRankingMyRank[d])
 						COLOR.PINK else COLOR.YELLOW
 					if(netRankingPlace[d][i]==-1)
-						receiver.drawMenuFont(engine, 1, 4+c, "N/A", rankColor)
+						receiver.drawMenu(engine, 1, 4+c, "N/A", BASE, rankColor)
 					else
-						receiver.drawMenuNum(engine, 1, 4+c, "%3d".format(netRankingPlace[d][i]+1), rankColor)
+						receiver.drawMenu(engine, 1, 4+c, "%3d".format(netRankingPlace[d][i]+1), NUM, rankColor)
 
 					when(netRankingType) {
 						NetSPRecord.RANKINGTYPE_GENERIC_SCORE -> {
-							receiver.drawMenuNum(engine, 5, 4+c, "${netRankingScore[d][i]}", i==netRankingCursor[d])
-							receiver.drawMenuNum(engine, 13, 4+c, "${netRankingLines[d][i]}", i==netRankingCursor[d])
-							receiver.drawMenuNum(
+							receiver.drawMenu(engine, 5, 4+c, "${netRankingScore[d][i]}", NUM, i==netRankingCursor[d])
+							receiver.drawMenu(engine, 13, 4+c, "${netRankingLines[d][i]}", NUM, i==netRankingCursor[d])
+							receiver.drawMenu(
 								engine, 18, 4+c, netRankingTime[d][i].toTimeStr,
-								i==netRankingCursor[d]
+								NUM, i==netRankingCursor[d]
 							)
-							receiver.drawMenuTTF(engine, 27, 4+c, netRankingName[d][i], i==netRankingCursor[d])
+							receiver.drawMenu(engine, 27, 4+c, netRankingName[d][i], TTF, i==netRankingCursor[d])
 						}
 						NetSPRecord.RANKINGTYPE_GENERIC_TIME -> {
-							receiver.drawMenuNum(
+							receiver.drawMenu(
 								engine, 5, 4+c, netRankingTime[d][i].toTimeStr,
-								i==netRankingCursor[d]
+								NUM, i==netRankingCursor[d]
 							)
-							receiver.drawMenuNum(engine, 14, 4+c, "${netRankingPiece[d][i]}", i==netRankingCursor[d])
-							receiver.drawMenuNum(
+							receiver.drawMenu(engine, 14, 4+c, "${netRankingPiece[d][i]}", NUM, i==netRankingCursor[d])
+							receiver.drawMenu(
 								engine, 20, 4+c, "%.5g".format(netRankingPPS[d][i]),
-								i==netRankingCursor[d]
+								NUM, i==netRankingCursor[d]
 							)
-							receiver.drawMenuTTF(engine, 27, 4+c, netRankingName[d][i], i==netRankingCursor[d])
+							receiver.drawMenu(engine, 27, 4+c, netRankingName[d][i], TTF, i==netRankingCursor[d])
 						}
 						NetSPRecord.RANKINGTYPE_SCORERACE -> {
-							receiver.drawMenuNum(
+							receiver.drawMenu(
 								engine, 5, 4+c, netRankingTime[d][i].toTimeStr,
-								i==netRankingCursor[d]
+								NUM, i==netRankingCursor[d]
 							)
-							receiver.drawMenuNum(engine, 14, 4+c, "${netRankingLines[d][i]}", i==netRankingCursor[d])
-							receiver.drawMenuNum(
+							receiver.drawMenu(engine, 14, 4+c, "${netRankingLines[d][i]}", NUM, i==netRankingCursor[d])
+							receiver.drawMenu(
 								engine, 19, 4+c, "%.5g".format(netRankingSPL[d][i]),
-								i==netRankingCursor[d]
+								NUM, i==netRankingCursor[d]
 							)
-							receiver.drawMenuTTF(engine, 26, 4+c, netRankingName[d][i], i==netRankingCursor[d])
+							receiver.drawMenu(engine, 26, 4+c, netRankingName[d][i], TTF, i==netRankingCursor[d])
 						}
 						NetSPRecord.RANKINGTYPE_DIGRACE -> {
-							receiver.drawMenuNum(
+							receiver.drawMenu(
 								engine, 5, 4+c, netRankingTime[d][i].toTimeStr,
-								i==netRankingCursor[d]
+								NUM, i==netRankingCursor[d]
 							)
-							receiver.drawMenuNum(engine, 14, 4+c, "${netRankingLines[d][i]}", i==netRankingCursor[d])
-							receiver.drawMenuNum(engine, 19, 4+c, "${netRankingPiece[d][i]}", i==netRankingCursor[d])
-							receiver.drawMenuTTF(engine, 26, 4+c, netRankingName[d][i], i==netRankingCursor[d])
+							receiver.drawMenu(engine, 14, 4+c, "${netRankingLines[d][i]}", NUM, i==netRankingCursor[d])
+							receiver.drawMenu(engine, 19, 4+c, "${netRankingPiece[d][i]}", NUM, i==netRankingCursor[d])
+							receiver.drawMenu(engine, 26, 4+c, netRankingName[d][i], TTF, i==netRankingCursor[d])
 						}
 						NetSPRecord.RANKINGTYPE_ULTRA -> {
-							receiver.drawMenuNum(engine, 5, 4+c, "${netRankingScore[d][i]}", i==netRankingCursor[d])
-							receiver.drawMenuNum(engine, 13, 4+c, "${netRankingLines[d][i]}", i==netRankingCursor[d])
-							receiver.drawMenuNum(engine, 18, 4+c, "${netRankingPiece[d][i]}", i==netRankingCursor[d])
-							receiver.drawMenuTTF(
+							receiver.drawMenu(engine, 5, 4+c, "${netRankingScore[d][i]}", NUM, i==netRankingCursor[d])
+							receiver.drawMenu(engine, 13, 4+c, "${netRankingLines[d][i]}", NUM, i==netRankingCursor[d])
+							receiver.drawMenu(engine, 18, 4+c, "${netRankingPiece[d][i]}", NUM, i==netRankingCursor[d])
+							receiver.drawMenu(
 								engine, 27, 4+c, netRankingName[d][i],
-								i==netRankingCursor[d]
+								TTF, i==netRankingCursor[d]
 							)
 						}
 						NetSPRecord.RANKINGTYPE_COMBORACE -> {
-							receiver.drawMenuNum(
+							receiver.drawMenu(
 								engine, 5, 4+c,
-								"${(netRankingScore[d][i]-1)}", i==netRankingCursor[d]
+								"${(netRankingScore[d][i]-1)}", NUM, i==netRankingCursor[d]
 							)
-							receiver.drawMenuNum(
+							receiver.drawMenu(
 								engine, 11, 4+c,
-								netRankingTime[d][i].toTimeStr, i==netRankingCursor[d]
+								netRankingTime[d][i].toTimeStr, NUM, i==netRankingCursor[d]
 							)
-							receiver.drawMenuNum(
+							receiver.drawMenu(
 								engine, 20, 4+c,
-								"%.4g".format(netRankingPPS[d][i]), i==netRankingCursor[d]
+								"%.4g".format(netRankingPPS[d][i]), NUM, i==netRankingCursor[d]
 							)
-							receiver.drawMenuTTF(
+							receiver.drawMenu(
 								engine, 27, 4+c, netRankingName[d][i],
-								i==netRankingCursor[d]
+								TTF, i==netRankingCursor[d]
 							)
 						}
 						NetSPRecord.RANKINGTYPE_DIGCHALLENGE -> {
-							receiver.drawMenuNum(
+							receiver.drawMenu(
 								engine, 5, 4+c,
-								"${netRankingScore[d][i]}", i==netRankingCursor[d]
+								"${netRankingScore[d][i]}", NUM, i==netRankingCursor[d]
 							)
-							receiver.drawMenuNum(
+							receiver.drawMenu(
 								engine, 13, 4+c,
-								"${netRankingLines[d][i]}", i==netRankingCursor[d]
+								"${netRankingLines[d][i]}", NUM, i==netRankingCursor[d]
 							)
-							receiver.drawMenuNum(
+							receiver.drawMenu(
 								engine, 18, 4+c,
-								"${netRankingDepth[d][i]}", i==netRankingCursor[d]
+								"${netRankingDepth[d][i]}", NUM, i==netRankingCursor[d]
 							)
-							receiver.drawMenuTTF(engine, 27, 4+c, netRankingName[d][i], i==netRankingCursor[d])
+							receiver.drawMenu(engine, 27, 4+c, netRankingName[d][i], TTF, i==netRankingCursor[d])
 						}
 						NetSPRecord.RANKINGTYPE_TIMEATTACK -> {
 							var fontcolor = COLOR.WHITE
 							if(netRankingRollclear[d][i]==1) fontcolor = COLOR.GREEN
 							if(netRankingRollclear[d][i]==2) fontcolor = COLOR.ORANGE
-							receiver.drawMenuNum(engine, 5, 4+c, "${netRankingLines[d][i]}", fontcolor)
-							receiver.drawMenuNum(
+							receiver.drawMenu(engine, 5, 4+c, "${netRankingLines[d][i]}", NUM, fontcolor)
+							receiver.drawMenu(
 								engine, 11, 4+c, netRankingTime[d][i].toTimeStr,
-								i==netRankingCursor[d]
+								NUM, i==netRankingCursor[d]
 							)
-							receiver.drawMenuNum(
+							receiver.drawMenu(
 								engine, 20, 4+c, "%.4g".format(netRankingPPS[d][i]),
-								i==netRankingCursor[d]
+								NUM, i==netRankingCursor[d]
 							)
-							receiver.drawMenuTTF(engine, 27, 4+c, netRankingName[d][i], i==netRankingCursor[d])
+							receiver.drawMenu(engine, 27, 4+c, netRankingName[d][i], TTF, i==netRankingCursor[d])
 						}
 					}
 				}
@@ -1159,39 +1170,44 @@ abstract class NetDummyMode:AbstractMode(), NetLobbyListener {
 				if(netRankingCursor[d]>=0&&netRankingCursor[d]<netRankingDate[d].size) {
 					val calendar = netRankingDate[d][netRankingCursor[d]]
 					val strDate = calendar.strDateTime(TimeZone.getDefault())
-					receiver.drawMenuFont(engine, 1, 25, "DATE:$strDate", COLOR.CYAN)
+					receiver.drawMenu(engine, 1, 25, "DATE:$strDate", BASE, COLOR.CYAN)
 
 					val gamerate = netRankingGamerate[d][netRankingCursor[d]]
-					receiver.drawMenuFont(
+					receiver.drawMenu(
 						engine, 1, 26, "GAMERATE:"+if(gamerate==0f) "UNKNOWN" else "${(100*gamerate)}%",
+						BASE,
 						COLOR.CYAN
 					)
 				}
 
-				receiver.drawMenuFont(
-					engine, 1, 27, "A($strBtnA KEY):DOWNLOAD\nB($strBtnB KEY):BACK LEFT/RIGHT:${if(d==0) "DAILY" else "ALL-TIME"}",
+				receiver.drawMenu(
+					engine, 1, 27,
+					"A($strBtnA KEY):DOWNLOAD\nB($strBtnB KEY):BACK LEFT/RIGHT:${if(d==0) "DAILY" else "ALL-TIME"}",
+					BASE,
 					COLOR.ORANGE
 				)
 			} else if(netRankingNoDataFlag[d]) {
-				receiver.drawMenuFont(engine, 0, 1, "<<", COLOR.ORANGE)
-				receiver.drawMenuFont(engine, 38, 1, ">>", COLOR.ORANGE)
-				receiver.drawMenuFont(engine, 3, 1, (if(d!=0) "DAILY" else "ALL-TIME")+" RANKING", COLOR.GREEN)
+				receiver.drawMenu(engine, 0, 1, "<<", BASE, COLOR.ORANGE)
+				receiver.drawMenu(engine, 38, 1, ">>", BASE, COLOR.ORANGE)
+				receiver.drawMenu(engine, 3, 1, (if(d!=0) "DAILY" else "ALL-TIME")+" RANKING", BASE, COLOR.GREEN)
 
-				receiver.drawMenuFont(engine, 1, 3, "NO DATA", COLOR.COBALT)
+				receiver.drawMenu(engine, 1, 3, "NO DATA", BASE, COLOR.COBALT)
 
-				receiver.drawMenuFont(
+				receiver.drawMenu(
 					engine, 1, 28, "B($strBtnB KEY):BACK LEFT/RIGHT:${if(d==0) "DAILY" else "ALL-TIME"}",
+					BASE,
 					COLOR.ORANGE
 				)
 			} else if(!netRankingReady[d]) {
-				receiver.drawMenuFont(engine, 0, 1, "<<", COLOR.ORANGE)
-				receiver.drawMenuFont(engine, 38, 1, ">>", COLOR.ORANGE)
-				receiver.drawMenuFont(engine, 3, 1, "${if(d!=0) "DAILY" else "ALL-TIME"} RANKING", COLOR.GREEN)
+				receiver.drawMenu(engine, 0, 1, "<<", BASE, COLOR.ORANGE)
+				receiver.drawMenu(engine, 38, 1, ">>", BASE, COLOR.ORANGE)
+				receiver.drawMenu(engine, 3, 1, "${if(d!=0) "DAILY" else "ALL-TIME"} RANKING", BASE, COLOR.GREEN)
 
-				receiver.drawMenuFont(engine, 1, 3, "LOADING...", COLOR.CYAN)
+				receiver.drawMenu(engine, 1, 3, "LOADING...", BASE, COLOR.CYAN)
 
-				receiver.drawMenuFont(
+				receiver.drawMenu(
 					engine, 1, 28, "B($strBtnB KEY):BACK LEFT/RIGHT:${if(d==0) "DAILY" else "ALL-TIME"}",
+					BASE,
 					COLOR.ORANGE
 				)
 			}
@@ -1214,7 +1230,8 @@ abstract class NetDummyMode:AbstractMode(), NetLobbyListener {
 		owner.menuOnly = true
 		netCurrentRoomInfo?.let {
 			val rule = if(it.rated) it.ruleName else "all"
-			netLobby?.netPlayerClient?.send("spranking\t${NetUtil.urlEncode(rule)}\t${NetUtil.urlEncode(id)}\t$goalType\tfalse\n")
+			netLobby?.netPlayerClient?.send(
+				"spranking\t${NetUtil.urlEncode(rule)}\t${NetUtil.urlEncode(id)}\t$goalType\tfalse\n")
 			netLobby?.netPlayerClient?.send("spranking\t${NetUtil.urlEncode(rule)}\t${NetUtil.urlEncode(id)}\t$goalType\ttrue\n")
 		}
 	}

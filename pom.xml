@@ -26,7 +26,7 @@
  <properties>
   <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
   <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-  <kotlin.version>2.2.0-RC</kotlin.version>
+  <kotlin.version>2.2.20-RC</kotlin.version>
   <java.version>24</java.version>
   <maven.compiler.source>${java.version}</maven.compiler.source>
   <maven.compiler.target>${java.version}</maven.compiler.target>

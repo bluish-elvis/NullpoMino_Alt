@@ -39,6 +39,8 @@ import mu.nu.nullpo.game.event.ScoreEvent
 import mu.nu.nullpo.game.net.NetUtil
 import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.game.subsystem.mode.menu.*
+import mu.nu.nullpo.gui.common.BaseFont
+import mu.nu.nullpo.gui.common.BaseFont.FONT.*
 import mu.nu.nullpo.util.CustomProperties
 import mu.nu.nullpo.util.GeneralUtil.toTimeStr
 
@@ -191,42 +193,42 @@ class MarathonDrill:NetDummyMode() {
 		super.renderLast(engine)
 		if(owner.menuOnly) return
 
-		receiver.drawScoreFont(engine, 0, 0, name, color = COLOR.GREEN)
-		receiver.drawScoreFont(engine, 0, 1, if(goalType==0) "(NORMAL RUN)" else "(REALTIME RUN)", COLOR.GREEN)
+		receiver.drawScore(engine, 0, 0, name, BASE, color = COLOR.GREEN)
+		receiver.drawScore(engine, 0, 1, if(goalType==0) "(NORMAL RUN)" else "(REALTIME RUN)", BASE, COLOR.GREEN)
 
 		if(engine.stat==GameEngine.Status.SETTING||engine.stat==GameEngine.Status.RESULT&&!owner.replayMode) {
 			if(!owner.replayMode&&startLevel==0) {
 				val topY = if(receiver.nextDisplayType==2) 6 else 4
-				receiver.drawScoreFont(engine, 0, topY-1, "SCORE LINE DEPTH", COLOR.BLUE)
+				receiver.drawScore(engine, 0, topY-1, "SCORE LINE DEPTH", BASE, COLOR.BLUE)
 
 				for(i in 0..<rankingMax) {
-					receiver.drawScoreGrade(engine, 0, topY+i, "%2d".format(i+1), COLOR.YELLOW)
-					receiver.drawScoreNum(engine, 2, topY+i, "${rankingScore[goalType][i]}", i==rankingRank)
-					receiver.drawScoreNum(engine, 7, topY+i, "${rankingLines[goalType][i]}", i==rankingRank)
-					receiver.drawScoreNum(engine, 12, topY+i, "${rankingDepth[goalType][i]}", i==rankingRank)
+					receiver.drawScore(engine, 0, topY+i, "%2d".format(i+1), GRADE, COLOR.YELLOW)
+					receiver.drawScore(engine, 2, topY+i, "${rankingScore[goalType][i]}", NUM, i==rankingRank)
+					receiver.drawScore(engine, 7, topY+i, "${rankingLines[goalType][i]}", NUM, i==rankingRank)
+					receiver.drawScore(engine, 12, topY+i, "${rankingDepth[goalType][i]}", NUM, i==rankingRank)
 				}
 			}
 		} else {
-			receiver.drawScoreFont(engine, 0, 3, "Score", COLOR.BLUE)
-			receiver.drawScoreNum(engine, 0, 4, "${engine.statistics.score}", scale = 2f)
-			receiver.drawScoreNum(engine, 5, 3, "+$lastScore")
+			receiver.drawScore(engine, 0, 3, "Score", BASE, COLOR.BLUE)
+			receiver.drawScore(engine, 0, 4, "${engine.statistics.score}", NUM, scale = 2f)
+			receiver.drawScore(engine, 5, 3, "+$lastScore", NUM)
 
-			receiver.drawScoreFont(engine, 0, 6, "DEPTH", COLOR.BLUE)
-			receiver.drawScoreNum(engine, 0, 7, "$garbageDug", scale = 2f)
+			receiver.drawScore(engine, 0, 6, "DEPTH", BASE, COLOR.BLUE)
+			receiver.drawScore(engine, 0, 7, "$garbageDug", NUM, scale = 2f)
 
-			receiver.drawScoreFont(engine, 0, 9, "LINE", COLOR.BLUE)
-			receiver.drawScoreNum(engine, 0, 10, "${engine.statistics.lines}", scale = 2f)
+			receiver.drawScore(engine, 0, 9, "LINE", BASE, COLOR.BLUE)
+			receiver.drawScore(engine, 0, 10, "${engine.statistics.lines}", NUM, scale = 2f)
 
-			receiver.drawScoreFont(engine, 0, 12, "Level", COLOR.BLUE)
-			receiver.drawScoreNum(engine, 5, 12, "${engine.statistics.level+1}", scale = 2f)
-			receiver.drawScoreNum(engine, 1, 13, "$norm")
+			receiver.drawScore(engine, 0, 12, "Level", BASE, COLOR.BLUE)
+			receiver.drawScore(engine, 5, 12, "${engine.statistics.level+1}", NUM, scale = 2f)
+			receiver.drawScore(engine, 1, 13, "$norm", NUM)
 			receiver.drawScoreSpeed(
 				engine, 0, 14, norm%LEVEL_GARBAGE_LINES*1f/(LEVEL_GARBAGE_LINES-1), 2f
 			)
-			receiver.drawScoreNum(engine, 1, 15, "$normMax")
+			receiver.drawScore(engine, 1, 15, "$normMax", NUM)
 
-			receiver.drawScoreFont(engine, 0, 16, "Time", COLOR.BLUE)
-			receiver.drawScoreNum(engine, 0, 17, engine.statistics.time.toTimeStr, scale = 2f)
+			receiver.drawScore(engine, 0, 16, "Time", BASE, COLOR.BLUE)
+			receiver.drawScore(engine, 0, 17, engine.statistics.time.toTimeStr, NUM, scale = 2f)
 
 			if(garbagePending>0) {
 				val fontColor = when {
@@ -235,9 +237,9 @@ class MarathonDrill:NetDummyMode() {
 					else -> COLOR.YELLOW
 				}
 				val strTempGarbage = "%2d".format(garbagePending)
-				receiver.drawMenuNum(engine, 10, 20, strTempGarbage, fontColor)
+				receiver.drawMenu(engine, 10, 20, strTempGarbage, NUM, fontColor)
 			}
-			receiver.drawMenuFont(engine, garbageHole, 20, "\u008b")
+			receiver.drawMenu(engine, garbageHole, 20, "\u008b", BASE)
 		}
 	}
 
@@ -365,7 +367,8 @@ class MarathonDrill:NetDummyMode() {
 	 * @param lv Level
 	 * @return Garbage time limit
 	 */
-	private fun getGarbageMaxTime(lv:Int):Int = GARBAGE_TIMER_TABLE[goalType][minOf(lv, GARBAGE_TIMER_TABLE[goalType].size-1)]
+	private fun getGarbageMaxTime(lv:Int):Int =
+		GARBAGE_TIMER_TABLE[goalType][minOf(lv, GARBAGE_TIMER_TABLE[goalType].size-1)]
 
 	private fun getGarbageMessRate(lv:Int):Float =
 		GARBAGE_MESSINESS_TABLE[goalType][minOf(lv, GARBAGE_MESSINESS_TABLE[goalType].size-1)]/100f
@@ -450,11 +453,11 @@ class MarathonDrill:NetDummyMode() {
 		drawResultNetRank(engine, receiver, 14, COLOR.BLUE, netRankingRank[0])
 		drawResultNetRankDaily(engine, receiver, 16, COLOR.BLUE, netRankingRank[1])
 
-		if(netIsPB) receiver.drawMenuFont(engine, 2, 18, "NEW PB", COLOR.ORANGE)
+		if(netIsPB) receiver.drawMenu(engine, 2, 18, "NEW PB", BASE, COLOR.ORANGE)
 
-		if(netIsNetPlay&&netReplaySendStatus==1) receiver.drawMenuFont(engine, 0, 19, "SENDING...", COLOR.PINK)
+		if(netIsNetPlay&&netReplaySendStatus==1) receiver.drawMenu(engine, 0, 19, "SENDING...", BASE, COLOR.PINK)
 		else if(netIsNetPlay&&!netIsWatch&&netReplaySendStatus==2)
-			receiver.drawMenuFont(engine, 1, 19, "A: RETRY", COLOR.RED)
+			receiver.drawMenu(engine, 1, 19, "A: RETRY", BASE, COLOR.RED)
 	}
 
 	/* Called when saving replay */

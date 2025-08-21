@@ -126,7 +126,7 @@ class Fireworks @JvmOverloads constructor(
 		val DEF_COLORS = listOf(
 			listOf(240, 240, 240, 235, 20), listOf(240, 30, 0, 235, 20),
 			listOf(240, 130, 0, 235, 20), listOf(240, 240, 0, 235, 20), listOf(30, 240, 0, 235, 20),
-			listOf(0, 240, 240, 235, 20), listOf(0, 30, 240, 235, 20), listOf(210, 0, 210, 235, 20)
+			listOf(0, 240, 240, 235, 20), listOf(0, 30, 240, 235, 20), listOf(210, 0, 210, 235, 20),
 		)
 
 		fun colorBy(c:COLOR):List<Int> = DEF_COLORS[when(c) {

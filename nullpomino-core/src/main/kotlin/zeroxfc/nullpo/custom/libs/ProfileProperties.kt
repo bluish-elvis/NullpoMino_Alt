@@ -38,33 +38,27 @@ package zeroxfc.nullpo.custom.libs
 
 import mu.nu.nullpo.game.component.Controller
 import mu.nu.nullpo.game.event.EventReceiver
+import mu.nu.nullpo.game.event.EventReceiver.COLOR
 import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.gui.common.BaseFont
 import mu.nu.nullpo.gui.common.BaseFont.Companion.NAME_END
 import mu.nu.nullpo.gui.common.BaseFont.Companion.NAME_REV
+import mu.nu.nullpo.gui.common.BaseFont.FONT.*
 import mu.nu.nullpo.util.CustomProperties
 import org.apache.logging.log4j.LogManager
 import zeroxfc.nullpo.custom.libs.MathHelper.pythonModulo
-import zeroxfc.nullpo.custom.libs.ProfileProperties.LoginScreen.Companion.State.Init
-import zeroxfc.nullpo.custom.libs.ProfileProperties.LoginScreen.Companion.State.Name
-import zeroxfc.nullpo.custom.libs.ProfileProperties.LoginScreen.Companion.State.Pin
-import zeroxfc.nullpo.custom.libs.ProfileProperties.LoginScreen.Companion.State.Result
-import java.io.BufferedWriter
-import java.io.FileNotFoundException
-import java.io.FileOutputStream
-import java.io.IOException
-import java.io.OutputStreamWriter
-import java.io.Writer
+import zeroxfc.nullpo.custom.libs.ProfileProperties.LoginScreen.Companion.State.*
+import java.io.*
 import java.nio.charset.StandardCharsets
 import java.security.SecureRandom
-import java.util.Locale
+import java.util.*
 
 /**
 Create a new profile loader. Use this constructor in a mode.
 
 @param colorHeading Color of heading. Use values from [EventReceiver] class.
  */
-class ProfileProperties @JvmOverloads constructor(colorHeading:EventReceiver.COLOR = EventReceiver.COLOR.CYAN) {
+class ProfileProperties @JvmOverloads constructor(colorHeading:COLOR = COLOR.CYAN) {
 	/** Login screen */
 	val loginScreen = LoginScreen(this, colorHeading)
 	/** Profile cfg file */
@@ -301,7 +295,8 @@ class ProfileProperties @JvmOverloads constructor(colorHeading:EventReceiver.COL
 	 * @param def  Default value
 	 * @return Value of property. Returns `def` if undefined or not logged in.
 	 */
-	fun getProperty(path:String, def:Boolean):Boolean = if(isLoggedIn) propProfile.getProperty("$nameProp.$path", def) else def
+	fun getProperty(path:String, def:Boolean):Boolean =
+		if(isLoggedIn) propProfile.getProperty("$nameProp.$path", def) else def
 	//endregion
 	//region setProperty() methods
 	/**
@@ -412,7 +407,7 @@ class ProfileProperties @JvmOverloads constructor(colorHeading:EventReceiver.COL
 	 */
 	class LoginScreen @JvmOverloads internal constructor(
 		private val playerProperties:ProfileProperties,
-		private val colorHeading:EventReceiver.COLOR = EventReceiver.COLOR.CYAN
+		private val colorHeading:COLOR = COLOR.CYAN
 	) {
 		private var nameEntry = ""
 		private var buttonPresses = IntArray(6)
@@ -638,10 +633,10 @@ class ProfileProperties @JvmOverloads constructor(colorHeading:EventReceiver.COL
 						receiver, engine, 5, 2, GameTextUtilities.ALIGN_TOP_MIDDLE,
 						"Data", colorHeading, 2f
 					)
-					receiver.drawMenuFont(engine, 0, 8, "A: Login ", EventReceiver.COLOR.YELLOW)
-					receiver.drawMenuFont(engine, 0, 9, "B: New SignUp", EventReceiver.COLOR.YELLOW)
-					receiver.drawMenuFont(engine, 0, 11, "E: Play as Guest", EventReceiver.COLOR.YELLOW)
-					receiver.drawMenuNano(engine, 0, 18, "SELECT NEXT ACTION.", scale = .75f)
+					receiver.drawMenu(engine, 0, 8, "A: Login ", BASE, COLOR.YELLOW)
+					receiver.drawMenu(engine, 0, 9, "B: New SignUp", BASE, COLOR.YELLOW)
+					receiver.drawMenu(engine, 0, 11, "E: Play as Guest", BASE, COLOR.YELLOW)
+					receiver.drawMenu(engine, 0, 18, "SELECT NEXT ACTION.", NANO, COLOR.WHITE, .75f, 1f)
 				}
 				Name -> {
 					// region NAME INPUT
@@ -653,13 +648,13 @@ class ProfileProperties @JvmOverloads constructor(colorHeading:EventReceiver.COL
 						receiver, engine, 5, 2, GameTextUtilities.ALIGN_TOP_MIDDLE,
 						"Entry", colorHeading, 2f
 					)
-					receiver.drawMenuFont(engine, 2, 8, nameEntry, scale = 2f)
-					val c = if(engine.statc[0]/6%2==0) EventReceiver.COLOR.RAINBOW else EventReceiver.COLOR.WHITE
-					receiver.drawMenuFont(engine, 2+nameEntry.length*2, 8, getCharAt(currentChar), c, 2f)
+					receiver.drawMenu(engine, 2, 8, nameEntry, BASE, 2f)
+					val c = if(engine.statc[0]/6%2==0) COLOR.RAINBOW else COLOR.WHITE
+					receiver.drawMenu(engine, 2+nameEntry.length*2, 8, getCharAt(currentChar), BASE, c, 2f)
 					ENTRY_CHARS.forEachIndexed {i, c ->
-						receiver.drawMenuFont(engine, i%10, 11+i/10, "$c", i==currentChar)
+						receiver.drawMenu(engine, i%10, 11+i/10, "$c", BASE, i==currentChar)
 					}
-					receiver.drawMenuFont(engine, 0, 18, "Input Your ID name.", scale = .75f)
+					receiver.drawMenu(engine, 0, 18, "Input Your ID name.", BASE, .75f)
 				}
 				Pin -> {
 					// region PASSWORD INPUT
@@ -667,29 +662,27 @@ class ProfileProperties @JvmOverloads constructor(colorHeading:EventReceiver.COL
 						receiver, engine, 5, 0, GameTextUtilities.ALIGN_TOP_MIDDLE,
 						"Pass Phrase", colorHeading, .75f
 					)
-					receiver.drawMenuFont(engine, 2, 8, nameEntry, scale = 2f)
+					receiver.drawMenu(engine, 2, 8, nameEntry, BASE, 2f)
 					var x = 0
 					while(x<6) {
-						val chr = if(x<engine.statc[1]||x==engine.statc[1]&&engine.statc[0]/2%2==0) BaseFont.CIRCLE_S else BaseFont.CIRCLE_L
-						receiver.drawMenuFont(engine, x+2, 12, chr, colorHeading)
+						val chr =
+							if(x<engine.statc[1]||x==engine.statc[1]&&engine.statc[0]/2%2==0) BaseFont.CIRCLE_S else BaseFont.CIRCLE_L
+						receiver.drawMenu(engine, x+2, 12, chr, BASE, colorHeading)
 						x++
 					}
-					receiver.drawMenuNano(
+					receiver.drawMenu(
 						engine, 0, 18,
-						if(signup&&engine.statc[2]==1) "Input your PIN again" else "Input your PIN code"
-					)
-					receiver.drawMenuNano(engine, 0, 9, "With your ABCD Buttons")
+						if(signup&&engine.statc[2]==1) "Input your PIN again" else "Input your PIN code",
+						NANO, COLOR.WHITE, 1f, 1f)
+					receiver.drawMenu(engine, 0, 9, "With your ABCD Buttons", NANO, COLOR.WHITE, 1f, 1f)
 				}
 				Result -> {
 					// region SUCCESS SCREEN
-					val s = if(success) "OK" else "ERROR"
-					val col = if(engine.statc[0]/6%2==0)
-						if(success) EventReceiver.COLOR.RAINBOW else EventReceiver.COLOR.RED
-					else EventReceiver.COLOR.WHITE
 
 					GameTextUtilities.drawMenuTextAlign(
 						receiver, engine, 5, 9, GameTextUtilities.ALIGN_TOP_MIDDLE,
-						s, col, 2f
+						if(success) "OK" else "ERROR",
+						if(engine.statc[0]/6%2==0) if(success) COLOR.RAINBOW else COLOR.RED else COLOR.WHITE, 2f
 					)
 				}
 			}

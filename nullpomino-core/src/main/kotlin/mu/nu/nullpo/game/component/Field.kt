@@ -385,41 +385,6 @@ class Field {
 		}?:reset()
 	}
 
-	/** プロパティセット[p]に保存
-	 * @param id 適当なID
-	 */
-	fun writeProperty(p:CustomProperties, id:Int) {
-		for(i in 0..<height) {
-			val mapStr = StringBuilder()
-
-			for(j in 0..<width) {
-				mapStr.append("${getBlock(j, i)?.toChar()?:'_'}")
-				if(j<width-1) mapStr.append(",")
-			}
-
-			p.setProperty("$id.field.map.$i", "$mapStr")
-		}
-	}
-
-	/** プロパティセット[p]から読み込み
-	 * @param id 適当なID
-	 */
-	fun readProperty(p:CustomProperties, id:Int) {
-		for(i in 0..<height) {
-			val mapStr = p.getProperty("$id.field.map.$i", p.getProperty("$id.field.values.$i", ""))
-			val mapArray = mapStr.split(Regex(",")).dropLastWhile {it.isEmpty()}
-
-			for(j in mapArray.indices) {
-				val blkColor = try {
-					mapArray[j].toInt()
-				} catch(e:NumberFormatException) {
-					mapArray[j][0].aNum
-				}
-				setBlock(j, i, Block(blkColor).apply {elapsedFrames = -1})
-			}
-		}
-	}
-
 	/** [x],[y]座標の属性を取得
 	 * @return 座標の属性
 	 */
@@ -520,7 +485,7 @@ class Field {
 	 * @return true if successful, false if failed
 	 */
 	fun setBlockColor(x:Int, y:Int, c:Pair<Block.COLOR, Block.TYPE>):Boolean =
-		if(getCoordVaild(x, y)) if(getBlock(x, y)?.also {it.color = c.first;it.type = c.second}==null) setBlock(x, y,
+		if(getCoordVaild(x, y)) if(getBlock(x, y)?.also {it.color = c.first; it.type = c.second}==null) setBlock(x, y,
 			Block(c.first, c.second)) else true
 		else false
 	/** [x],[y]座標にあるBlock colorを[c]に変更
@@ -933,10 +898,8 @@ class Field {
 			// We found a square! Set all the blocks equal to gold blocks.
 			if(squareCheck) {
 				squares[0]++
-				val squareX = listOf(0, 1, 1, 2)
-				val squareY = listOf(0, 3, 3, 6)
 				for(k in 0..3) for(l in 0..3) getBlock(j+l, i+k)?.apply {
-					cint = Block.COLOR_SQUARE_GOLD_1+squareX[l]+squareY[k]
+					setAttribute(true, ATTRIBUTE.SQUARE_GOLD)
 					// For stylistic concerns, we attach all blocks in the square together.
 					if(k>0) setAttribute(true, ATTRIBUTE.CONNECT_UP)
 					if(k<3) setAttribute(true, ATTRIBUTE.CONNECT_DOWN)
@@ -972,10 +935,8 @@ class Field {
 			// We found a square! Set all the blocks equal to silver blocks.
 			if(squareCheck) {
 				squares[1]++
-				val squareX = listOf(0, 1, 1, 2)
-				val squareY = listOf(0, 3, 3, 6)
 				for(k in 0..3) for(l in 0..3) getBlock(j+l, i+k)?.apply {
-					cint = Block.COLOR_SQUARE_SILVER_1+squareX[l]+squareY[k]
+					setAttribute(true, ATTRIBUTE.SQUARE_SILVER)
 					if(k>0) setAttribute(true, ATTRIBUTE.CONNECT_UP)
 					if(k<3) setAttribute(true, ATTRIBUTE.CONNECT_DOWN)
 					if(l>0) setAttribute(true, ATTRIBUTE.CONNECT_LEFT)
@@ -1074,14 +1035,18 @@ class Field {
 		setBlockLinkBrokenSub(x, y)
 	}
 
-	/** Checks the color of all blocks in this Field and set the connection flags to each blocks. */
+	/** Checks the color of all blocks in this Field and set the connection flags to each block. */
 	fun setBlockLinkByColor() {
-		for(i in -hiddenHeight..<heightWithoutHurryupFloor) for(j in 0..<width) setBlockLinkByColor(j, i)
+		setAllAttribute(false, ATTRIBUTE.TEMP_MARK)
+		for(i in -hiddenHeight..<heightWithoutHurryupFloor)
+			for(j in (0..<width).filter {getBlock(it, i)?.getAttribute(ATTRIBUTE.TEMP_MARK)==false})
+			// まだTEMP_MARKがついていないBlockに対して
+			// 色を見て接続フラグを設定
+				setBlockLinkByColor(j, i)
 	}
 
 	/** Checks the color of block on [x],[y] position and set the connection flags to each block. */
 	fun setBlockLinkByColor(x:Int, y:Int) {
-		setAllAttribute(false, ATTRIBUTE.TEMP_MARK)
 		fun setBlockLinkByColorSub(x:Int, y:Int) {
 			getBlock(x, y)?.run {
 				if(!isEmpty&&!getAttribute(ATTRIBUTE.TEMP_MARK)&&!getAttribute(ATTRIBUTE.GARBAGE)&&isNormalBlock) {
@@ -1113,7 +1078,7 @@ class Field {
 	 * @param lines 上げるLines count
 	 * @param skin 地面の絵柄
 	 */
-	fun addHurryupFloor(lines:Int, skin:Int) {
+	fun addHurryUpFloor(lines:Int, skin:Int) {
 		if(lines>0) for(k in 0..<lines) {
 			pushUp(1)
 
@@ -1128,6 +1093,39 @@ class Field {
 			val l = minOf(lines, hurryUpFloorLines)
 			hurryUpFloorLines -= l
 			cutLine(height-1, l)
+		}
+	}
+
+	/** プロパティセット[p]:[id].field.mapに保存 マップはcsvとして格納される
+	 */
+	fun writeProperty(p:CustomProperties, id:Int) {
+		for(i in 0..<height) {
+			val mapStr = StringBuilder()
+
+			for(j in 0..<width) {
+				mapStr.append("${getBlock(j, i)?.toChar()?:'_'}")
+				if(j<width-1) mapStr.append(",")
+			}
+
+			p.setProperty("$id.field.map.$i", "$mapStr")
+		}
+	}
+
+	/** プロパティセット[p]:[id].field.mapからcsvマップを読み込み*/
+	fun readProperty(p:CustomProperties, id:Int) {
+		for(i in 0..<height) {
+			val mapStr = p.getProperty("$id.field.map.$i", p.getProperty("$id.field.values.$i", ""))
+			val mapArray = mapStr.split(Regex(",")).dropLastWhile {it.isEmpty()}
+
+			for(j in mapArray.indices) {
+				val blkColor = try {
+					mapArray[j].toInt()
+				} catch(_:NumberFormatException) {
+					mapArray[j][0].aNum
+				}
+				setBlock(j, i, Block(blkColor).apply {elapsedFrames = -1})
+			}
+			setBlockLinkByColor()
 		}
 	}
 
@@ -1163,13 +1161,12 @@ class Field {
 	 * @return The row array
 	 */
 	@JvmOverloads
-	fun stringToRow(str:String, skin:Int = 0, isGarbage:Boolean = false, isWall:Boolean = false):Array<Block?> {
-		val row = arrayOfNulls<Block>(width)
-		for(j in 0..<width) {      /* NullNoname's original approach from the old stringToField: If a
-			 * character outside the row string is referenced, default to an
-			 * empty block by ignoring the exception. */
+	fun stringToRow(str:String, skin:Int = 0, isGarbage:Boolean = false, isWall:Boolean = false):Array<Block?> =
+		(0..<minOf(width,str.length)).map {j ->
+			/* NullNoname's original approach from the old stringToField:
+				 If a character outside the row string is referenced, default to an empty block by ignoring the exception. */
 			try {
-				row[j] = Block(str[j], skin).apply {
+				Block(str[j].aNum, skin).apply {
 					elapsedFrames = -1
 					setAttribute(true, ATTRIBUTE.VISIBLE)
 					setAttribute(true, ATTRIBUTE.OUTLINE)
@@ -1179,12 +1176,11 @@ class Field {
 						setAttribute(true, ATTRIBUTE.GARBAGE)
 					if(isWall) setAttribute(true, ATTRIBUTE.WALL)
 				}
-			} catch(_:Exception) {
+			} catch(e:Exception) {
+				log.warn(e)
+				null
 			}
-		}
-
-		return row
-	}
+		}.toTypedArray()
 
 	/** 文字列を元にfieldを変更
 	 * @param str 文字列
@@ -1196,12 +1192,12 @@ class Field {
 	fun stringToField(str:String, skin:Int = 0, highestGarbageY:Int = Integer.MAX_VALUE,
 		highestWallY:Int = Integer.MAX_VALUE) {
 		for(i in -1..<height) {
-			val index = (height-1-i)*width      /* Much like NullNoname's try/catch from the old stringToField that
-			 * is now in stringToRow, we need to skip over substrings
-			 * referenced
-			 * outside the field string -- empty rows. */
+			val index = (height-1-i)*width
+			/* Much like NullNoname's try/catch from the old stringToField that is now in stringToRow,
+			 we need to skip over substrings referenced outside the field string -- empty rows. */
 			try {
 				val substr = str.substring(index, minOf(str.length, index+width))
+//				log.debug("Field Row $i: $substr ${substr.map {it.aNum}.joinToString()}")
 				val row = stringToRow(substr, skin, i>=highestGarbageY, i>=highestWallY)
 				for(j in 0..<width) setBlock(j, i, row[j])
 			} catch(e:Exception) {

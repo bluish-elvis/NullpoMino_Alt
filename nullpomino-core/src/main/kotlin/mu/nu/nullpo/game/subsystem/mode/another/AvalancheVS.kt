@@ -38,6 +38,7 @@ import mu.nu.nullpo.game.event.EventReceiver.COLOR
 import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.game.play.GameManager
 import mu.nu.nullpo.gui.common.BaseFont
+import mu.nu.nullpo.gui.common.BaseFont.FONT.*
 import mu.nu.nullpo.gui.common.GameKeyDummy.Companion.MAX_PLAYERS
 import mu.nu.nullpo.util.CustomProperties
 import mu.nu.nullpo.util.GeneralUtil.toTimeStr
@@ -517,7 +518,7 @@ class AvalancheVS:AvalancheVSDummyMode() {
 					drawMenuSpeeds(engine, receiver, 0, COLOR.ORANGE, 0)
 					drawMenu(engine, receiver, "FALL DELAY" to engine.cascadeDelay, "CLEAR DELAY" to engine.cascadeClearDelay)
 
-					receiver.drawMenuFont(engine, 0, 21, "${BaseFont.UP_S}${BaseFont.DOWN_S} PAGE 1/5", COLOR.YELLOW)
+					receiver.drawMenu(engine, 0, 21, "${BaseFont.UP_S}${BaseFont.DOWN_S} PAGE 1/5", BASE, COLOR.YELLOW)
 				}
 				menuCursor<17 -> {
 					drawMenu(
@@ -532,7 +533,7 @@ class AvalancheVS:AvalancheVSDummyMode() {
 						"CHAINPOWER" to if(newChainPower[pid]) "FEVER" else "CLASSIC"
 					)
 
-					receiver.drawMenuFont(engine, 0, 21, "${BaseFont.UP_S}${BaseFont.DOWN_S} PAGE 2/5", COLOR.YELLOW)
+					receiver.drawMenu(engine, 0, 21, "${BaseFont.UP_S}${BaseFont.DOWN_S} PAGE 2/5", BASE, COLOR.YELLOW)
 				}
 				menuCursor<26 -> {
 					drawMenu(
@@ -554,7 +555,7 @@ class AvalancheVS:AvalancheVSDummyMode() {
 						engine, receiver, "ZK-BONUS" to
 							if(zenKeshiType[pid]==ZENKESHI_MODE_FEVER) "${zenKeshiChain[pid]} CHAIN" else "${zenKeshiOjama[pid]} OJAMA"
 					)
-					receiver.drawMenuFont(engine, 0, 21, "${BaseFont.UP_S}${BaseFont.DOWN_S} PAGE 3/5", COLOR.YELLOW)
+					receiver.drawMenu(engine, 0, 21, "${BaseFont.UP_S}${BaseFont.DOWN_S} PAGE 3/5", BASE, COLOR.YELLOW)
 				}
 				menuCursor<36 -> {
 					drawMenu(
@@ -575,10 +576,10 @@ class AvalancheVS:AvalancheVSDummyMode() {
 						"SIDE METER" to if(ojamaMeter[pid]||feverThreshold[pid]==0) "OJAMA" else "FEVER"
 					)
 
-					receiver.drawMenuFont(engine, 0, 21, "${BaseFont.UP_S}${BaseFont.DOWN_S} PAGE 4/5", COLOR.YELLOW)
+					receiver.drawMenu(engine, 0, 21, "${BaseFont.UP_S}${BaseFont.DOWN_S} PAGE 4/5", BASE, COLOR.YELLOW)
 				}
 				menuCursor<44
-				-> {
+					-> {
 					drawMenu(
 						engine,
 						receiver,
@@ -594,11 +595,11 @@ class AvalancheVS:AvalancheVSDummyMode() {
 					drawMenu(engine, receiver, COLOR.COBALT, "BIG DISP" to bigDisplay)
 					drawMenu(engine, receiver, COLOR.GREEN, "LOAD" to presetNumber[pid], "SAVE" to presetNumber[pid])
 
-					receiver.drawMenuFont(engine, 0, 21, "${BaseFont.UP_S}${BaseFont.DOWN_S} PAGE 5/5", COLOR.YELLOW)
+					receiver.drawMenu(engine, 0, 21, "${BaseFont.UP_S}${BaseFont.DOWN_S} PAGE 5/5", BASE, COLOR.YELLOW)
 				}
 				else -> {
-					receiver.drawMenuFont(engine, 0, 13, "MAP PREVIEW", COLOR.YELLOW)
-					receiver.drawMenuFont(engine, 0, 14, "A:DISPLAY", COLOR.GREEN)
+					receiver.drawMenu(engine, 0, 13, "MAP PREVIEW", BASE, COLOR.YELLOW)
+					receiver.drawMenu(engine, 0, 14, "A:DISPLAY", BASE, COLOR.GREEN)
 					drawMenu(
 						engine,
 						receiver,
@@ -612,7 +613,7 @@ class AvalancheVS:AvalancheVSDummyMode() {
 				}
 			}
 		} else
-			receiver.drawMenuFont(engine, 3, 10, "WAIT", COLOR.YELLOW)
+			receiver.drawMenu(engine, 3, 10, "WAIT", BASE, COLOR.YELLOW)
 	}
 
 	/* Called for initialization during Ready (before initialization) */
@@ -646,7 +647,7 @@ class AvalancheVS:AvalancheVSDummyMode() {
 		val playerColor = EventReceiver.getPlayerColor(pid)
 
 		// Timer
-		if(pid==0) receiver.drawDirectFont(224, 8, engine.statistics.time.toTimeStr)
+		if(pid==0) receiver.drawFont(224, 8, engine.statistics.time.toTimeStr, BASE)
 
 		// Ojama Counter
 		var fontColor = COLOR.WHITE
@@ -659,7 +660,7 @@ class AvalancheVS:AvalancheVSDummyMode() {
 			strOjama = "$strOjama(+${ojamaAdd[pid]})"
 
 		if(strOjama!="0")
-			receiver.drawDirectFont(fldPosX+4, fldPosY+if(inFever[pid]) 16 else 32, strOjama, fontColor)
+			receiver.drawFont(fldPosX+4, fldPosY+if(inFever[pid]) 16 else 32, strOjama, BASE, fontColor)
 
 		// Fever Ojama Counter
 		fontColor = COLOR.WHITE
@@ -672,7 +673,7 @@ class AvalancheVS:AvalancheVSDummyMode() {
 			ojamaFeverStr = "$ojamaFeverStr(+${ojamaAdd[pid]})"
 
 		if(ojamaFeverStr!="0")
-			receiver.drawDirectFont(fldPosX+4, fldPosY+if(inFever[pid]) 32 else 16, ojamaFeverStr, fontColor)
+			receiver.drawFont(fldPosX+4, fldPosY+if(inFever[pid]) 32 else 16, ojamaFeverStr, BASE, fontColor)
 
 		// Score
 		var strScoreMultiplier = ""
@@ -680,35 +681,37 @@ class AvalancheVS:AvalancheVSDummyMode() {
 			strScoreMultiplier = "(${lastscores[pid]}e${lastmultiplier[pid]})"
 
 		if(engine.displaySize==1) {
-			receiver.drawDirectFont(fldPosX+4, fldPosY+440, "%12d".format(score[pid]), playerColor)
-			receiver.drawDirectFont(fldPosX+4, fldPosY+456, "%12s".format(strScoreMultiplier), playerColor)
+			receiver.drawFont(fldPosX+4, fldPosY+440, "%12d".format(score[pid]), BASE, playerColor)
+			receiver.drawFont(fldPosX+4, fldPosY+456, "%12s".format(strScoreMultiplier), BASE, playerColor)
 		} else if(engine.gameStarted) {
-			receiver.drawDirectFont(fldPosX-28, fldPosY+248, "%8d".format(score[pid]), playerColor)
-			receiver.drawDirectFont(fldPosX-28, fldPosY+264, "%8s".format(strScoreMultiplier), playerColor)
+			receiver.drawFont(fldPosX-28, fldPosY+248, "%8d".format(score[pid]), BASE, playerColor)
+			receiver.drawFont(fldPosX-28, fldPosY+264, "%8s".format(strScoreMultiplier), BASE, playerColor)
 		}
 
 		// Fever
 		if(feverThreshold[pid]>0) {
 			// Timer
 			if(engine.displaySize==1) {
-				receiver.drawDirectFont(fldPosX+224, fldPosY+200, "REST", playerColor, .5f)
-				receiver.drawDirectFont(fldPosX+216, fldPosY+216, "%2d".format(feverTime[pid]/60))
-				receiver.drawDirectFont(fldPosX+248, fldPosY+224, ".%d".format(feverTime[pid]%60/6), scale = .5f)
+				receiver.drawFont(fldPosX+224, fldPosY+200, "REST", BASE, playerColor, .5f)
+				receiver.drawFont(fldPosX+216, fldPosY+216, "%2d".format(feverTime[pid]/60), BASE)
+				receiver.drawFont(fldPosX+248, fldPosY+224, ".%d".format(feverTime[pid]%60/6), BASE, scale = .5f)
 
 				if(feverTimeLimitAddDisplay[pid]>0)
-					receiver.drawDirectFont(
+					receiver.drawFont(
 						fldPosX+216, fldPosY+240, "+%d SEC.".format(feverTimeLimitAdd[pid]/60),
-						COLOR.YELLOW, .5f
+						BASE, COLOR.YELLOW,
+						.5f
 					)
 			} else if(engine.gameStarted) {
-				receiver.drawDirectFont(fldPosX+128, fldPosY+184, "REST", playerColor, .5f)
-				receiver.drawDirectFont(fldPosX+120, fldPosY+200, "%2d".format(feverTime[pid]/60))
-				receiver.drawDirectFont(fldPosX+152, fldPosY+208, ".%d".format(feverTime[pid]%60/6), scale = .5f)
+				receiver.drawFont(fldPosX+128, fldPosY+184, "REST", BASE, playerColor, .5f)
+				receiver.drawFont(fldPosX+120, fldPosY+200, "%2d".format(feverTime[pid]/60), BASE)
+				receiver.drawFont(fldPosX+152, fldPosY+208, ".%d".format(feverTime[pid]%60/6), BASE, scale = .5f)
 
 				if(feverTimeLimitAddDisplay[pid]>0)
-					receiver.drawDirectFont(
+					receiver.drawFont(
 						fldPosX+120, fldPosY+216, "+%d SEC.".format(feverTimeLimitAdd[pid]/60),
-						COLOR.YELLOW, .5f
+						BASE, COLOR.YELLOW,
+						.5f
 					)
 			}
 
@@ -719,22 +722,22 @@ class AvalancheVS:AvalancheVSDummyMode() {
 					for(i in 0..<feverThreshold[pid]) {
 						if(color==0) color = FEVER_METER_COLORS.size
 						color--
-						receiver.drawDirectFont(fldPosX+232, fldPosY+424-i*16, "\u0084", FEVER_METER_COLORS[color])
+						receiver.drawFont(fldPosX+232, fldPosY+424-i*16, "\u0084", BASE, FEVER_METER_COLORS[color])
 					}
 				} else {
 					for(i in feverPoints[pid]..<feverThreshold[pid])
-						receiver.drawDirectFont(fldPosX+232, fldPosY+424-i*16, "\u0083")
+						receiver.drawFont(fldPosX+232, fldPosY+424-i*16, "\u0083", BASE)
 					for(i in 0..<feverPoints[pid]) {
 						val color = feverThreshold[pid]-1-i
-						receiver.drawDirectFont(fldPosX+232, fldPosY+424-i*16, "\u0084", FEVER_METER_COLORS[color])
+						receiver.drawFont(fldPosX+232, fldPosY+424-i*16, "\u0084", BASE, FEVER_METER_COLORS[color])
 					}
 				}
 			} else if(engine.displaySize==1) {
-				receiver.drawDirectFont(fldPosX+220, fldPosY+240, "FEVER", playerColor, .5f)
-				receiver.drawDirectFont(fldPosX+228, fldPosY+256, "${feverPoints[pid]}/${feverThreshold[pid]}", scale = .5f)
+				receiver.drawFont(fldPosX+220, fldPosY+240, "FEVER", BASE, playerColor, .5f)
+				receiver.drawFont(fldPosX+228, fldPosY+256, "${feverPoints[pid]}/${feverThreshold[pid]}", BASE, scale = .5f)
 			} else if(engine.gameStarted) {
-				receiver.drawDirectFont(fldPosX+124, fldPosY+232, "FEVER", playerColor, .5f)
-				receiver.drawDirectFont(fldPosX+132, fldPosY+240, "${feverPoints[pid]}/${feverThreshold[pid]}", scale = .5f)
+				receiver.drawFont(fldPosX+124, fldPosY+232, "FEVER", BASE, playerColor, .5f)
+				receiver.drawFont(fldPosX+132, fldPosY+240, "${feverPoints[pid]}/${feverThreshold[pid]}", BASE, scale = .5f)
 			}
 		}
 
@@ -754,13 +757,15 @@ class AvalancheVS:AvalancheVSDummyMode() {
 			for(i in 0..1)
 				if(engine.field.getBlockEmpty(2+i, 0))
 					if(engine.displaySize==1)
-						receiver.drawMenuFont(
-							engine, 4+i*2, 0, "${strFeverTimer[i]}", if(feverTime[playerID]<360) COLOR.RED else COLOR.WHITE,
+						receiver.drawMenu(
+							engine, 4+i*2, 0, "${strFeverTimer[i]}", BASE,
+							if(feverTime[playerID]<360) COLOR.RED else COLOR.WHITE,
 							2f
 						)
 					else
-						receiver.drawMenuFont(
-							engine, 2+i, 0, "${strFeverTimer[i]}", if(feverTime[playerID]<360) COLOR.RED else COLOR.WHITE
+						receiver.drawMenu(
+							engine, 2+i, 0, "${strFeverTimer[i]}", BASE,
+							if(feverTime[playerID]<360) COLOR.RED else COLOR.WHITE
 						)
 		} else if(dangerColumnShowX[playerID]) drawX(engine)
 	}

@@ -652,7 +652,7 @@ internal class NullpoMinoSlick:StateBasedGame("NullpoMino (Now Loading...)") {
 		/** FPS display */
 		internal fun drawFPS() {
 			if(propConfig.general.showFPS)
-				FontNano.printFont(320-42, 0, "${df.format(actualFPS)}FPS", COLOR.WHITE, .5f)
+				FontNano.printFont(278, 0, "${df.format(actualFPS)}FPS", COLOR.WHITE, .5f)
 		}
 
 		/** Observerクライアントを開始 */

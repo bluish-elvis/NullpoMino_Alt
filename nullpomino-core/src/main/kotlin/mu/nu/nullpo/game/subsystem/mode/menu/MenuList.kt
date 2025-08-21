@@ -32,7 +32,9 @@
 package mu.nu.nullpo.game.subsystem.mode.menu
 
 import mu.nu.nullpo.game.event.EventReceiver
+import mu.nu.nullpo.game.event.EventReceiver.COLOR
 import mu.nu.nullpo.game.play.GameEngine
+import mu.nu.nullpo.gui.common.BaseFont.FONT.NANO
 import mu.nu.nullpo.util.CustomProperties
 
 class MenuList(val propName:String = "", vararg items:AbstractMenuItem<*>) {
@@ -42,7 +44,7 @@ class MenuList(val propName:String = "", vararg items:AbstractMenuItem<*>) {
 		list+List(item.colMax) {id to it}
 	}
 	/** map of [items] drawed Y-coordinate grids*/
-	val loc = items.fold(emptyList<Int>()) {buf, it -> buf+((buf.lastOrNull() ?: 0)+it.showHeight)}
+	val loc = items.fold(emptyList<Int>()) {buf, it -> buf+((buf.lastOrNull()?:0)+it.showHeight)}
 	private fun locPage(page:Int, height:Int) = loc.indexOfFirst {it>=page*height}.let {if(it<0) loc.size else it}
 	val size get() = items.size
 	operator fun get(index:Int) = items[index]
@@ -62,9 +64,10 @@ class MenuList(val propName:String = "", vararg items:AbstractMenuItem<*>) {
 	fun drawMenu(engine:GameEngine, playerID:Int, receiver:EventReceiver, y:Int = menuY, page:Int, offset:Int = 0) {
 		var menuY = y
 		val range = locPage(page, engine.field.height)+offset..<locPage(page+1, engine.field.height)+offset
-		receiver.drawMenuNano(engine, 3f, -.5f, "$menuCursor / ${menus.size-1}, ${range.first}", scale = .5f)
+		receiver.drawMenu(engine, 3f, -.5f, "$menuCursor / ${menus.size-1}, ${range.first}", NANO, COLOR.WHITE, .5f, 1f)
 		items.slice(range).forEachIndexed {i, it ->
-			for(z in 0..<it.colMax) receiver.drawMenuNano(engine, -.4f, .5f+menuY+z*.5f, "${range.first+i+z}", scale = .5f)
+			for(z in 0..<it.colMax) receiver.drawMenu(engine, -.4f, .5f+menuY+z*.5f, "${range.first+i+z}", NANO, COLOR.WHITE,
+				.5f, 1f)
 			val i1 = menuCursor-range.first
 			it.draw(
 				engine, playerID, receiver, menuY, if(engine.owner.replayMode||menus[i1].first!=i) -1 else menus[i1].second

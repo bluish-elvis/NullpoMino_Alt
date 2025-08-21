@@ -44,6 +44,7 @@ import mu.nu.nullpo.game.play.LineGravity
 import mu.nu.nullpo.game.play.LineGravity.CASCADE.canCascade
 import mu.nu.nullpo.game.play.clearRule.ColorStraight
 import mu.nu.nullpo.game.subsystem.mode.AbstractMode
+import mu.nu.nullpo.gui.common.BaseFont.FONT.*
 import mu.nu.nullpo.gui.common.GameKeyDummy.Companion.MAX_PLAYERS
 import mu.nu.nullpo.util.CustomProperties
 import mu.nu.nullpo.util.GeneralUtil.toTimeStr
@@ -274,7 +275,7 @@ class PhysicianVS:AbstractMode() {
 		}
 
 		engine.frameSkin = PLAYER_COLOR_FRAME[pid]
-		engine.clearMode = ColorStraight(4,false,true)
+		engine.clearMode = ColorStraight(4, false, true)
 		engine.garbageColorClear = false
 		engine.colorClearSize = 4
 		engine.lineGravityType = LineGravity.CASCADE
@@ -442,7 +443,7 @@ class PhysicianVS:AbstractMode() {
 				)
 			}
 		} else
-			receiver.drawMenuFont(engine, 3, 10, "WAIT", COLOR.YELLOW)
+			receiver.drawMenu(engine, 3, 10, "WAIT", BASE, COLOR.YELLOW)
 	}
 
 	/* Called for initialization during Ready (before initialization) */
@@ -514,20 +515,21 @@ class PhysicianVS:AbstractMode() {
 		val tempX:Int
 
 		// Timer
-		if(pid==0) receiver.drawDirectFont(256, 16, engine.statistics.time.toTimeStr)
+		if(pid==0) receiver.drawFont(256, 16, engine.statistics.time.toTimeStr, BASE)
 
 		if(engine.gameStarted) {
 			// Rest
-			receiver.drawDirectFont(fldPosX+160, fldPosY+241, "Target", playerColor, .5f)
+			receiver.drawFont(fldPosX+160, fldPosY+241, "Target", BASE, playerColor, .5f)
 			tempX = if(rest[pid]<10) 8 else 0
-			receiver.drawDirectFont(
+			receiver.drawFont(
 				fldPosX+160+tempX, fldPosY+257, "${rest[pid]}",
+				BASE,
 				if(rest[pid]<=if(flash[pid]) 1 else 3) COLOR.RED else COLOR.WHITE
 			)
 
 			// Speed
-			receiver.drawDirectFont(fldPosX+156, fldPosY+280, "Speed", playerColor, .5f)
-			receiver.drawDirectFont(fldPosX+152, fldPosY+296, SPEED_NAME[speed[pid]], SPEED_COLOR[speed[pid]])
+			receiver.drawFont(fldPosX+156, fldPosY+280, "Speed", BASE, playerColor, .5f)
+			receiver.drawFont(fldPosX+152, fldPosY+296, SPEED_NAME[speed[pid]], BASE, SPEED_COLOR[speed[pid]])
 		}
 
 		/* if(playerID == 0) {
@@ -725,11 +727,11 @@ class PhysicianVS:AbstractMode() {
 
 	/* Render results screen */
 	override fun renderResult(engine:GameEngine) {
-		receiver.drawMenuFont(engine, 0, 1, "RESULT", COLOR.ORANGE)
+		receiver.drawMenu(engine, 0, 1, "RESULT", BASE, COLOR.ORANGE)
 		when(winnerID) {
-			-1 -> receiver.drawMenuFont(engine, 6, 2, "DRAW", COLOR.GREEN)
-			engine.playerID -> receiver.drawMenuFont(engine, 6, 2, "WIN!", COLOR.YELLOW)
-			else -> receiver.drawMenuFont(engine, 6, 2, "LOSE", COLOR.WHITE)
+			-1 -> receiver.drawMenu(engine, 6, 2, "DRAW", BASE, COLOR.GREEN)
+			engine.playerID -> receiver.drawMenu(engine, 6, 2, "WIN!", BASE, COLOR.YELLOW)
+			else -> receiver.drawMenu(engine, 6, 2, "LOSE", BASE, COLOR.WHITE)
 		}
 
 		drawResultStats(

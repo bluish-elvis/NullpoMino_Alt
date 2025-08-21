@@ -39,6 +39,7 @@ import mu.nu.nullpo.game.event.EventReceiver
 import mu.nu.nullpo.game.event.ScoreEvent
 import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.game.play.GameManager
+import mu.nu.nullpo.gui.common.BaseFont.FONT.*
 import mu.nu.nullpo.gui.common.GameKeyDummy.Companion.MAX_PLAYERS
 import mu.nu.nullpo.util.CustomProperties
 import mu.nu.nullpo.util.GeneralUtil.toTimeStr
@@ -262,7 +263,7 @@ class VSSprintDig:AbstractMode() {
 				drawMenu(engine, receiver, 6, EventReceiver.COLOR.PINK, 12, "BGM" to BGM.values[bgmId])
 			}
 		} else
-			receiver.drawMenuFont(engine, 3, 10, "WAIT", EventReceiver.COLOR.YELLOW)
+			receiver.drawMenu(engine, 3, 10, "WAIT", BASE, EventReceiver.COLOR.YELLOW)
 	}
 
 	/* Ready */
@@ -388,33 +389,33 @@ class VSSprintDig:AbstractMode() {
 
 		if(remainLines>0)
 			when(strLines.length) {
-				1 -> receiver.drawMenuFont(engine, 4, 21, strLines, fontColor, 2f)
-				2 -> receiver.drawMenuFont(engine, 3, 21, strLines, fontColor, 2f)
-				3 -> receiver.drawMenuFont(engine, 2, 21, strLines, fontColor, 2f)
+				1 -> receiver.drawMenu(engine, 4, 21, strLines, BASE, fontColor, 2f)
+				2 -> receiver.drawMenu(engine, 3, 21, strLines, BASE, fontColor, 2f)
+				3 -> receiver.drawMenu(engine, 2, 21, strLines, BASE, fontColor, 2f)
 			}
 
 		// 1st/2nd
 		if(remainLines<enemyRemainLines)
-			receiver.drawMenuFont(engine, -3, 22, "1ST", EventReceiver.COLOR.ORANGE)
-		else if(remainLines>enemyRemainLines) receiver.drawMenuFont(engine, -3, 22, "2ND", EventReceiver.COLOR.WHITE)
+			receiver.drawMenu(engine, -3, 22, "1ST", BASE, EventReceiver.COLOR.ORANGE)
+		else if(remainLines>enemyRemainLines) receiver.drawMenu(engine, -3, 22, "2ND", BASE, EventReceiver.COLOR.WHITE)
 
 		// Timer
-		if(pid==0) receiver.drawDirectFont(256, 16, engine.statistics.time.toTimeStr)
+		if(pid==0) receiver.drawFont(256, 16, engine.statistics.time.toTimeStr, BASE)
 
 		// Normal layout
 		if(owner.receiver.nextDisplayType!=2&&pid==0) {
-			receiver.drawScoreFont(engine, 0, 2, "1P LINES", EventReceiver.COLOR.RED)
-			receiver.drawScoreFont(engine, 0, 3, owner.engine[0].statistics.lines.toString())
+			receiver.drawScore(engine, 0, 2, "1P LINES", BASE, EventReceiver.COLOR.RED)
+			receiver.drawScore(engine, 0, 3, owner.engine[0].statistics.lines.toString(), BASE)
 
-			receiver.drawScoreFont(engine, 0, 5, "2P LINES", EventReceiver.COLOR.BLUE)
-			receiver.drawScoreFont(engine, 0, 6, owner.engine[1].statistics.lines.toString())
+			receiver.drawScore(engine, 0, 5, "2P LINES", BASE, EventReceiver.COLOR.BLUE)
+			receiver.drawScore(engine, 0, 6, owner.engine[1].statistics.lines.toString(), BASE)
 
 			if(!owner.replayMode) {
-				receiver.drawScoreFont(engine, 0, 8, "1P WINS", EventReceiver.COLOR.RED)
-				receiver.drawScoreFont(engine, 0, 9, "${winCount[0]}")
+				receiver.drawScore(engine, 0, 8, "1P WINS", BASE, EventReceiver.COLOR.RED)
+				receiver.drawScore(engine, 0, 9, "${winCount[0]}", BASE)
 
-				receiver.drawScoreFont(engine, 0, 11, "2P WINS", EventReceiver.COLOR.BLUE)
-				receiver.drawScoreFont(engine, 0, 12, "${winCount[1]}")
+				receiver.drawScore(engine, 0, 11, "2P WINS", BASE, EventReceiver.COLOR.BLUE)
+				receiver.drawScore(engine, 0, 12, "${winCount[1]}", BASE)
 			}
 		}
 
@@ -423,11 +424,8 @@ class VSSprintDig:AbstractMode() {
 			val fontColor2 = if(pid==0) EventReceiver.COLOR.RED else EventReceiver.COLOR.BLUE
 
 			if(!owner.replayMode) {
-				receiver.drawDirectFont(x-44, y+190, "WINS", fontColor2, .5f)
-				receiver.drawDirectFont(
-					x-if(winCount[pid]>=10) 44 else 36, y+204,
-					"${winCount[pid]}"
-				)
+				receiver.drawFont(x-44, y+190, "WINS", BASE, fontColor2, .5f)
+				receiver.drawFont(x-if(winCount[pid]>=10) 44 else 36, y+204, "${winCount[pid]}", BASE)
 			}
 		}
 	}
@@ -485,11 +483,11 @@ class VSSprintDig:AbstractMode() {
 
 	/* Render results screen */
 	override fun renderResult(engine:GameEngine) {
-		receiver.drawMenuFont(engine, 0, 0, "RESULT", EventReceiver.COLOR.ORANGE)
+		receiver.drawMenu(engine, 0, 0, "RESULT", BASE, EventReceiver.COLOR.ORANGE)
 		when(winnerID) {
-			-1 -> receiver.drawMenuFont(engine, 6, 1, "DRAW", EventReceiver.COLOR.GREEN)
-			engine.playerID -> receiver.drawMenuFont(engine, 6, 1, "WIN!", EventReceiver.COLOR.YELLOW)
-			else -> receiver.drawMenuFont(engine, 6, 1, "LOSE", EventReceiver.COLOR.WHITE)
+			-1 -> receiver.drawMenu(engine, 6, 1, "DRAW", BASE, EventReceiver.COLOR.GREEN)
+			engine.playerID -> receiver.drawMenu(engine, 6, 1, "WIN!", BASE, EventReceiver.COLOR.YELLOW)
+			else -> receiver.drawMenu(engine, 6, 1, "LOSE", BASE, EventReceiver.COLOR.WHITE)
 		}
 		drawResultStats(
 			engine, receiver, 2, EventReceiver.COLOR.ORANGE, Statistic.LINES, Statistic.PIECE, Statistic.LPM, Statistic.PPS,

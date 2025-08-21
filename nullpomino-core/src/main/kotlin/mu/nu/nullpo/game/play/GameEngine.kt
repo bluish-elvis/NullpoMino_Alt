@@ -166,7 +166,7 @@ class GameEngine(
 	var endTime = 0L
 
 	private var versionMajor = 0f
-	private var versionMinor = 0
+	private var versionMinor = 0f
 	/** OLD minor version (Used for 6.9 or earlier replays) */
 	private var versionMinorOld = 0f
 	/** Dev build flag */
@@ -1180,9 +1180,9 @@ class GameEngine(
 	/** @return [piece]が[field]に出現するY-coordinate */
 	fun getSpawnPosY(piece:Piece?, fld:Field? = field):Int {
 		val y = getSpawnPosY(piece)
-		if (fld==null) return y
+		if(fld==null) return y
 		var p = 0
-		while(piece?.checkCollision(getSpawnPosX(piece, fld), y-p, fld)==true&&p<ruleOpt.pieceEnterMaxDistanceY) {
+		while(piece?.checkCollision(getSpawnPosX(piece, fld), y-p, fld)==true&&(p<ruleOpt.pieceEnterMaxDistanceY)) {
 			p++
 		}
 		return y-p
@@ -1526,8 +1526,6 @@ class GameEngine(
 		// 最初の処理
 		if(!owner.receiver.doesGraphicsExist) return
 		owner.receiver.renderFirst(this) {owner.mode?.renderFirst(this)}
-
-		if(rainbowAnimate) Block.updateRainbowPhase(this)
 
 		// 各ステータスの処理
 		when(stat) {
@@ -2022,13 +2020,14 @@ class GameEngine(
 						nowPieceBottomY = it.getBottom(nowPieceX, nowPieceY, field)
 					}
 					// Blockの出現位置を上にずらせる場合はそうする
-					for(i in 0..<ruleOpt.pieceEnterMaxDistanceY) {
+					var cl = 0
+					while(cl<ruleOpt.pieceEnterMaxDistanceY||combo>=0) {
 						nowPieceY--
-
 						if(!it.checkCollision(nowPieceX, nowPieceY, field)) {
 							nowPieceBottomY = it.getBottom(nowPieceX, nowPieceY, field)
 							break
 						}
+						cl++
 					}
 
 					// 死亡
@@ -2140,25 +2139,20 @@ class GameEngine(
 							extendedSpinCount = 0
 						}
 					}
+					// Soft drop
 					if(ruleOpt.softdropEnable&&ctrl.isPress(down)&&
 						!softdropContinuousUse&&(isDiagonalMoveEnabled||!sideMoved)&&
 						(ruleOpt.moveUpAndDown||!updown)&&
 						(!onGroundBeforeMove&&!harddropContinuousUse)
 					) {
-						// This prevents soft drop from adding to the gravity speed.
-						if(!ruleOpt.softdropGravitySpeedLimit) gCount = 0
-						if(!ruleOpt.softdropGravitySpeedLimit||(softDropSpd<speed.denominator)) {// Old Soft Drop codes
-							gCount += softDropSpd.toInt()
-							softDropUsed = true
-						} else {// New Soft Drop codes
-							gCount = softDropSpd.toInt()
-							softDropUsed = true
-						}
+						gCount += softDropSpd.toInt()
+						softDropUsed = true
 					}
 				}
 				if(ending==0||staffrollEnableStatistics) statistics.totalPieceActiveTime++
 			}
-			if(!ruleOpt.softdropGravitySpeedLimit||softDropSpd<1f||!softDropUsed) gCount += speed.gravity // Part of Old Soft Drop
+			// This prevents soft drop from adding to the gravity speed.
+			if(!ruleOpt.softdropGravitySpeedLimit||!softDropUsed) gCount += speed.gravity // Part of Old Soft Drop
 
 			while((gCount>=speed.denominator||speed.gravity<0)&&!it.checkCollision(nowPieceX, nowPieceY+1, field)) {
 				if(speed.denominator!=0) {
@@ -2431,7 +2425,7 @@ class GameEngine(
 			}
 			// Calculate score
 			owner.mode?.calcScore(this, ev)?.let {
-				if(it>0) owner.receiver.addScore(this, nowPieceX, lastLinesY.maxBy{it.size}.average().toInt(), it)
+				if(it>0) owner.receiver.addScore(this, nowPieceX, lastLinesY.maxBy {it.size}.average().toInt(), it)
 			}
 			if(li>0) owner.receiver.calcScore(this, ev)
 
@@ -2734,8 +2728,7 @@ class GameEngine(
 						statc[0]++
 					}
 					statc[0]==statc[1] -> {
-						if(ending==2&&field.isEmpty) playSE("gamewon") else
-							playSE("gamelost")
+						if(ending==2) playSE("gamewon") else playSE("gamelost")
 						statc[0]++
 					}
 					statc[0]<statc[1]+180 -> {

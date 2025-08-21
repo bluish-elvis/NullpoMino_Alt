@@ -184,7 +184,7 @@ class GameManager(
 		/** Major version */
 		const val versionMajor = 7.7f
 		/** Minor version */
-		const val versionMinor = 2025
+		const val versionMinor = 2025.08f
 		/** Development-build flag (false:Release-build true:Dev-build) */
 		const val isDevBuild = true
 		/** Get minor version (For compatibility with old replays)

@@ -37,6 +37,7 @@
 package zeroxfc.nullpo.custom.libs
 
 import mu.nu.nullpo.game.event.EventReceiver
+import mu.nu.nullpo.gui.common.BaseFont.FONT.BASE
 import kotlin.random.Random
 
 class FlyInOutText(  // String to draw
@@ -65,8 +66,9 @@ class FlyInOutText(  // String to draw
 	fun draw(receiver:EventReceiver) {
 		for(i in letterPositions.indices.reversed()) {
 			for(j in 0..<letterPositions[i].size) {
-				receiver.drawDirectFont(
+				receiver.drawFont(
 					letterPositions[i][j].x.toInt(), letterPositions[i][j].y.toInt(), "${mainString[j]}",
+					BASE,
 					if((currentLifetime-i)/4%2==0&&flash) EventReceiver.COLOR.WHITE else textColors[i], textScale
 				)
 			}
@@ -126,10 +128,10 @@ class FlyInOutText(  // String to draw
 		var sMod = 16
 		if(scale==2.0f) sMod = 32
 		if(scale==0.5f) sMod = 16
-		val position:List<Pair<Vector, Vector>> = mainString.indices.map { i ->
+		val position:List<Pair<Vector, Vector>> = mainString.indices.map {i ->
 			var startX = 0
 			var startY = 0
-			var position: Vector = Vector.zero()
+			var position:Vector = Vector.zero()
 			// float distanceX = 0, distanceY = 0;
 			// FloatVector velocity = FloatVector.zero();
 			val dec1 = positionRandomizer.nextFloat()

@@ -37,6 +37,7 @@ import mu.nu.nullpo.game.event.ScoreEvent
 import mu.nu.nullpo.game.net.NetUtil
 import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.game.subsystem.mode.menu.*
+import mu.nu.nullpo.gui.common.BaseFont.FONT.*
 import mu.nu.nullpo.util.CustomProperties
 import mu.nu.nullpo.util.GeneralUtil.toTimeStr
 import org.apache.logging.log4j.LogManager
@@ -75,8 +76,9 @@ class SprintLine:NetDummyMode() {
 	) {
 		override fun draw(engine:GameEngine, playerID:Int, receiver:EventReceiver, y:Int, focus:Int) {
 			super.draw(engine, playerID, receiver, y, focus)
-			if(gameMode>=2) receiver.drawMenuNano(
+			if(gameMode>=2) receiver.drawMenu(
 				engine, 1, y+1, "${GOAL_TABLE[value]/2} TSDs",
+				NANO,
 				if(focus==0) COLOR.RAINBOW else COLOR.WHITE
 			)
 		}
@@ -100,7 +102,7 @@ class SprintLine:NetDummyMode() {
 	/** Rankings' PPS values */
 	private val rankingPPS
 		get() = List(GOALTYPE_MAX) {x ->
-			List(rankingMax) { y -> rankingPiece[x][y]*60f/rankingTime[x][y]}
+			List(rankingMax) {y -> rankingPiece[x][y]*60f/rankingTime[x][y]}
 		}
 
 	/* Mode name */
@@ -150,19 +152,19 @@ Ready&Go screen disappears) */
 	override fun renderLast(engine:GameEngine) {
 		if(owner.menuOnly) return
 
-		receiver.drawScoreFont(engine, 0, 0, name, COLOR.RED)
-		receiver.drawScoreFont(engine, 0, 1, "(${GOAL_TABLE[goalType]} Lines run)", COLOR.RED)
+		receiver.drawScore(engine, 0, 0, name, BASE, COLOR.RED)
+		receiver.drawScore(engine, 0, 1, "(${GOAL_TABLE[goalType]} Lines run)", BASE, COLOR.RED)
 
 		if(engine.stat==GameEngine.Status.SETTING||engine.stat==GameEngine.Status.RESULT&&!owner.replayMode) {
 			if(!owner.replayMode&&!big&&engine.ai==null&&!netIsWatch) {
 				val topY = if(receiver.nextDisplayType==2) 6 else 4
-				receiver.drawScoreFont(engine, 1, topY-1, "TIME   PIECE/sec", COLOR.BLUE)
+				receiver.drawScore(engine, 1, topY-1, "TIME   PIECE/sec", BASE, COLOR.BLUE)
 
 				for(i in 0..<rankingMax) {
-					receiver.drawScoreGrade(engine, 0, topY+i, "%2d".format(i+1), COLOR.YELLOW)
-					receiver.drawScoreNum(engine, 2, topY+i, rankingTime[goalType][i].toTimeStr, rankingRank==i)
+					receiver.drawScore(engine, 0, topY+i, "%2d".format(i+1), GRADE, COLOR.YELLOW)
+					receiver.drawScore(engine, 2, topY+i, rankingTime[goalType][i].toTimeStr, NUM, rankingRank==i)
 					if(rankingTime[goalType][i]>=0) {
-						receiver.drawScoreNum(engine, 9, topY+i, "${rankingPiece[goalType][i]}", rankingRank==i)
+						receiver.drawScore(engine, 9, topY+i, "${rankingPiece[goalType][i]}", NUM, rankingRank==i)
 						receiver.drawScoreNum(engine, 12, topY+i, rankingPPS[goalType][i], null to null, rankingRank==i)
 					}
 				}
@@ -176,22 +178,22 @@ Ready&Go screen disappears) */
 				else -> COLOR.WHITE
 			}
 			"$remainLines".let {
-				receiver.drawMenuNum(engine, -30, 1, it, fontColor, 4f, .5f)
-				receiver.drawScoreNum(engine, 0, 3, it, fontColor, 2f)
+				receiver.drawMenu(engine, -30, 1, it, NUM, fontColor, 4f, .5f)
+				receiver.drawScore(engine, 0, 3, it, NUM, fontColor, 2f)
 			}
-			receiver.drawScoreNano(engine, 4, 3, "LINES\nTO GO", COLOR.BLUE)
+			receiver.drawScore(engine, 4, 3, "LINES\nTO GO", NANO, COLOR.BLUE)
 
-			receiver.drawScoreNum(engine, 0, 5, "${engine.statistics.totalPieceLocked}", 2f)
-			receiver.drawScoreFont(engine, 0, 7, "Piece\n/sec", COLOR.BLUE)
+			receiver.drawScore(engine, 0, 5, "${engine.statistics.totalPieceLocked}", NUM, 2f)
+			receiver.drawScore(engine, 0, 7, "Piece\n/sec", BASE, COLOR.BLUE)
 			receiver.drawScoreNum(engine, 5, 8, engine.statistics.pps, scale = 2f)
-			receiver.drawScoreFont(engine, 6, 7, "Finesse", COLOR.BLUE)
-			receiver.drawScoreNum(engine, 5, 5, "${engine.statistics.finesse}", 2f)
+			receiver.drawScore(engine, 6, 7, "Finesse", BASE, COLOR.BLUE)
+			receiver.drawScore(engine, 5, 5, "${engine.statistics.finesse}", NUM, 2f)
 			receiver.drawScoreNum(engine, 0, 10, engine.statistics.lpm, scale = 2f)
-			receiver.drawScoreFont(engine, 0, 12, "Lines/MIN", COLOR.BLUE)
+			receiver.drawScore(engine, 0, 12, "Lines/MIN", BASE, COLOR.BLUE)
 
 
-			receiver.drawScoreFont(engine, 0, 15, "Time", COLOR.BLUE)
-			receiver.drawScoreNum(engine, 0, 16, engine.statistics.time.toTimeStr, 2f)
+			receiver.drawScore(engine, 0, 15, "Time", BASE, COLOR.BLUE)
+			receiver.drawScore(engine, 0, 16, engine.statistics.time.toTimeStr, NUM, 2f)
 		}
 
 		super.renderLast(engine)
@@ -230,12 +232,12 @@ Ready&Go screen disappears) */
 		drawResultNetRank(engine, receiver, 13, COLOR.BLUE, netRankingRank[0])
 		drawResultNetRankDaily(engine, receiver, 15, COLOR.BLUE, netRankingRank[1])
 
-		if(netIsPB) receiver.drawMenuFont(engine, 2, 18, "NEW PB", COLOR.ORANGE)
+		if(netIsPB) receiver.drawMenu(engine, 2, 18, "NEW PB", BASE, COLOR.ORANGE)
 
 		if(netIsNetPlay&&netReplaySendStatus==1)
-			receiver.drawMenuFont(engine, 0, 19, "SENDING...", COLOR.PINK)
+			receiver.drawMenu(engine, 0, 19, "SENDING...", BASE, COLOR.PINK)
 		else if(netIsNetPlay&&!netIsWatch&&netReplaySendStatus==2)
-			receiver.drawMenuFont(engine, 1, 19, "A: RETRY", COLOR.RED)
+			receiver.drawMenu(engine, 1, 19, "A: RETRY", BASE, COLOR.RED)
 	}
 
 	/* Save replay file */

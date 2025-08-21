@@ -39,6 +39,7 @@ import mu.nu.nullpo.game.net.NetUtil
 import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.game.subsystem.mode.menu.*
 import mu.nu.nullpo.gui.common.BaseFont
+import mu.nu.nullpo.gui.common.BaseFont.FONT.*
 import mu.nu.nullpo.util.CustomProperties
 import mu.nu.nullpo.util.GeneralUtil.toInt
 import mu.nu.nullpo.util.GeneralUtil.toTimeStr
@@ -169,10 +170,10 @@ class SprintUltra:NetDummyMode() {
 	override fun renderLast(engine:GameEngine) {
 		if(owner.menuOnly) return
 
-		receiver.drawScoreFont(engine, 0, 0, name, if(is20g(engine.speed)) COLOR.PINK else COLOR.CYAN)
+		receiver.drawScore(engine, 0, 0, name, BASE, if(is20g(engine.speed)) COLOR.PINK else COLOR.CYAN)
 		val is20g = is20g(engine.speed)
-		if(is20g) receiver.drawScoreFont(engine, 0, 1, "(${(tableLength[goalType])} Minutes Rush)", COLOR.PINK)
-		else receiver.drawScoreFont(engine, 0, 1, "(${(tableLength[goalType])} Minutes sprint)", COLOR.CYAN)
+		if(is20g) receiver.drawScore(engine, 0, 1, "(${(tableLength[goalType])} Minutes Rush)", BASE, COLOR.PINK)
+		else receiver.drawScore(engine, 0, 1, "(${(tableLength[goalType])} Minutes sprint)", BASE, COLOR.CYAN)
 
 		if(engine.stat==GameEngine.Status.SETTING||engine.stat==GameEngine.Status.RESULT&&!owner.replayMode) {
 			val gt = goalType(engine.speed)
@@ -180,78 +181,78 @@ class SprintUltra:NetDummyMode() {
 			val col2 = if(is20g) COLOR.YELLOW else COLOR.GREEN
 			val col3 = if(is20g) COLOR.ORANGE else COLOR.YELLOW
 			if(!owner.replayMode&&!big&&engine.ai==null) {
-				receiver.drawScoreFont(engine, 0, 3, "Score RANKING", col2)
-				receiver.drawScoreFont(engine, 1, 4, "Score Power Lines", col1)
+				receiver.drawScore(engine, 0, 3, "Score RANKING", BASE, col2)
+				receiver.drawScore(engine, 1, 4, "Score Power Lines", BASE, col1)
 
 				for(i in 0..<minOf(rankingMax, 12)) {
-					receiver.drawScoreGrade(engine, 0, 5+i, "%2d".format(i+1), col3)
-					receiver.drawScoreNum(
-						engine, 1, 5+i, "%7d".format(rankingScore[0][gt][i]), i==rankingRank[0]
+					receiver.drawScore(engine, 0, 5+i, "%2d".format(i+1), GRADE, col3)
+					receiver.drawScore(
+						engine, 1, 5+i, "%7d".format(rankingScore[0][gt][i]), NUM, i==rankingRank[0]
 					)
-					receiver.drawScoreNum(
-						engine, 8, 5+i, "%5d".format(rankingPower[0][gt][i]), i==rankingRank[0]
+					receiver.drawScore(
+						engine, 8, 5+i, "%5d".format(rankingPower[0][gt][i]), NUM, i==rankingRank[0]
 					)
-					receiver.drawScoreNum(
-						engine, 14, 5+i, "%5d".format(rankingLines[0][gt][i]), i==rankingRank[0]
-					)
-				}
-
-				receiver.drawScoreFont(engine, 0, 11, "Power RANKING", col2)
-				receiver.drawScoreFont(engine, 1, 12, "Power Score Lines", col1)
-
-				for(i in 0..<rankingMax) {
-					receiver.drawScoreGrade(engine, 0, 13+i, "%2d".format(i+1), col3)
-					receiver.drawScoreNum(
-						engine, 2, 13+i, "%5d".format(rankingPower[1][gt][i]), i==rankingRank[1]
-					)
-					receiver.drawScoreNum(
-						engine, 7, 13+i, "%7d".format(rankingScore[1][gt][i]), i==rankingRank[1]
-					)
-					receiver.drawScoreNum(
-						engine, 14, 13+i, "%5d".format(rankingLines[1][gt][i]), i==rankingRank[1]
+					receiver.drawScore(
+						engine, 14, 5+i, "%5d".format(rankingLines[0][gt][i]), NUM, i==rankingRank[0]
 					)
 				}
 
-				receiver.drawScoreFont(engine, 0, 19, "Lines RANKING", col2)
-				receiver.drawScoreFont(engine, 1, 20, "Lines Score Power", col1)
+				receiver.drawScore(engine, 0, 11, "Power RANKING", BASE, col2)
+				receiver.drawScore(engine, 1, 12, "Power Score Lines", BASE, col1)
 
 				for(i in 0..<rankingMax) {
-					receiver.drawScoreGrade(engine, 0, 21+i, "%2d".format(i+1), col3)
-					receiver.drawScoreNum(
-						engine, 2, 21+i, "%5d".format(rankingLines[2][gt][i]), i==rankingRank[2]
+					receiver.drawScore(engine, 0, 13+i, "%2d".format(i+1), GRADE, col3)
+					receiver.drawScore(
+						engine, 2, 13+i, "%5d".format(rankingPower[1][gt][i]), NUM, i==rankingRank[1]
 					)
-					receiver.drawScoreNum(
-						engine, 7, 21+i, "%7d".format(rankingScore[2][gt][i]), i==rankingRank[2]
+					receiver.drawScore(
+						engine, 7, 13+i, "%7d".format(rankingScore[1][gt][i]), NUM, i==rankingRank[1]
 					)
-					receiver.drawScoreNum(
-						engine, 14, 21+i, "%5d".format(rankingPower[2][gt][i]), i==rankingRank[2]
+					receiver.drawScore(
+						engine, 14, 13+i, "%5d".format(rankingLines[1][gt][i]), NUM, i==rankingRank[1]
+					)
+				}
+
+				receiver.drawScore(engine, 0, 19, "Lines RANKING", BASE, col2)
+				receiver.drawScore(engine, 1, 20, "Lines Score Power", BASE, col1)
+
+				for(i in 0..<rankingMax) {
+					receiver.drawScore(engine, 0, 21+i, "%2d".format(i+1), GRADE, col3)
+					receiver.drawScore(
+						engine, 2, 21+i, "%5d".format(rankingLines[2][gt][i]), NUM, i==rankingRank[2]
+					)
+					receiver.drawScore(
+						engine, 7, 21+i, "%7d".format(rankingScore[2][gt][i]), NUM, i==rankingRank[2]
+					)
+					receiver.drawScore(
+						engine, 14, 21+i, "%5d".format(rankingPower[2][gt][i]), NUM, i==rankingRank[2]
 					)
 				}
 			}
 		} else {
-			receiver.drawScoreFont(engine, 0, 3, "Score", COLOR.BLUE)
-			receiver.drawScoreNum(engine, 5, 3, "+${"%6d".format(lastScore)}")
-			receiver.drawScoreNum(engine, 0, 4, "%7d".format(scDisp), scDisp<engine.statistics.score, 2f)
+			receiver.drawScore(engine, 0, 3, "Score", BASE, COLOR.BLUE)
+			receiver.drawScore(engine, 5, 3, "+${"%6d".format(lastScore)}", NUM)
+			receiver.drawScore(engine, 0, 4, "%7d".format(scDisp), NUM, scDisp<engine.statistics.score, 2f)
 
-			receiver.drawScoreFont(engine, 5, 6, "/min", COLOR.BLUE)
+			receiver.drawScore(engine, 5, 6, "/min", BASE, COLOR.BLUE)
 			receiver.drawScoreNum(
 				engine, 0f, 6.3f, engine.statistics.spm, 7 to null, scDisp<engine.statistics.score,
 				1.6f
 			)
 
-			receiver.drawScoreFont(engine, 0, 8, "Spike", COLOR.BLUE)
-			receiver.drawScoreNum(engine, 0, 9, "%5d".format(engine.statistics.attacks), 2f)
+			receiver.drawScore(engine, 0, 8, "Spike", BASE, COLOR.BLUE)
+			receiver.drawScore(engine, 0, 9, "%5d".format(engine.statistics.attacks), NUM, 2f)
 
-			receiver.drawScoreFont(engine, 3, 11, "Lines", COLOR.BLUE)
-			receiver.drawScoreNum(engine, 8, 10, "${engine.statistics.lines}", 2f)
+			receiver.drawScore(engine, 3, 11, "Lines", BASE, COLOR.BLUE)
+			receiver.drawScore(engine, 8, 10, "${engine.statistics.lines}", NUM, 2f)
 
-			receiver.drawScoreFont(engine, 4, 12, "/min", COLOR.BLUE)
+			receiver.drawScore(engine, 4, 12, "/min", BASE, COLOR.BLUE)
 			receiver.drawScoreNum(engine, 8, 12, engine.statistics.lpm, 7 to null, scale = 1.5f)
 
-			receiver.drawScoreFont(engine, 0, 14, "Time", COLOR.BLUE)
+			receiver.drawScore(engine, 0, 14, "Time", BASE, COLOR.BLUE)
 			val time = maxOf(0, (tableLength[goalType])*3600-engine.statistics.time)
 			receiver.drawScoreSpeed(engine, 0, 15, engine.statistics.time/(tableLength[goalType]*3600f), 12f)
-			receiver.drawScoreNum(engine, 0, 16, time.toTimeStr, getTimeFontColor(time), 2f)
+			receiver.drawScore(engine, 0, 16, time.toTimeStr, NUM, getTimeFontColor(time), 2f)
 		}
 
 		super.renderLast(engine)
@@ -333,19 +334,19 @@ class SprintUltra:NetDummyMode() {
 
 	/* Render results screen */
 	override fun renderResult(engine:GameEngine) {
-		receiver.drawMenuFont(
-			engine, 0, 0, "${BaseFont.UP_L}${BaseFont.DOWN_L} PAGE${engine.statc[1]+1}/2", COLOR.RED
+		receiver.drawMenu(
+			engine, 0, 0, "${BaseFont.UP_L}${BaseFont.DOWN_L} PAGE${engine.statc[1]+1}/2", BASE, COLOR.RED
 		)
 		if(engine.statc[1]<=1) {
-			if(rankingRank[0]==0) receiver.drawMenuFont(engine, 0, 3, "NEW RECORD", COLOR.ORANGE)
+			if(rankingRank[0]==0) receiver.drawMenu(engine, 0, 3, "NEW RECORD", BASE, COLOR.ORANGE)
 			else if(rankingRank[0]!=-1)
-				receiver.drawMenuFont(engine, 4, 3, "RANK %d".format(rankingRank[0]+1), COLOR.ORANGE)
-			if(rankingRank[1]==0) receiver.drawMenuFont(engine, 0, 6, "NEW RECORD", COLOR.ORANGE)
+				receiver.drawMenu(engine, 4, 3, "RANK %d".format(rankingRank[0]+1), BASE, COLOR.ORANGE)
+			if(rankingRank[1]==0) receiver.drawMenu(engine, 0, 6, "NEW RECORD", BASE, COLOR.ORANGE)
 			else if(rankingRank[1]!=-1)
-				receiver.drawMenuFont(engine, 4, 6, "RANK %d".format(rankingRank[1]+1), COLOR.ORANGE)
-			if(rankingRank[2]==0) receiver.drawMenuFont(engine, 0, 9, "NEW RECORD", COLOR.ORANGE)
+				receiver.drawMenu(engine, 4, 6, "RANK %d".format(rankingRank[1]+1), BASE, COLOR.ORANGE)
+			if(rankingRank[2]==0) receiver.drawMenu(engine, 0, 9, "NEW RECORD", BASE, COLOR.ORANGE)
 			else if(rankingRank[2]!=-1)
-				receiver.drawMenuFont(engine, 4, 9, "RANK %d".format(rankingRank[2]+1), COLOR.ORANGE)
+				receiver.drawMenu(engine, 4, 9, "RANK %d".format(rankingRank[2]+1), BASE, COLOR.ORANGE)
 		}
 		when(engine.statc[1]) {
 			0 -> {
@@ -373,14 +374,14 @@ class SprintUltra:NetDummyMode() {
 		drawResultNetRank(engine, receiver, 14, COLOR.BLUE, netRankingRank[0])
 		drawResultNetRankDaily(engine, receiver, 16, COLOR.BLUE, netRankingRank[1])
 
-		if(netIsPB) receiver.drawMenuFont(engine, 2, 21, "NEW PB", COLOR.ORANGE)
+		if(netIsPB) receiver.drawMenu(engine, 2, 21, "NEW PB", BASE, COLOR.ORANGE)
 
 		if(netIsNetPlay&&netReplaySendStatus==1)
-			receiver.drawMenuFont(engine, 0, 22, "SENDING...", COLOR.PINK)
+			receiver.drawMenu(engine, 0, 22, "SENDING...", BASE, COLOR.PINK)
 		else if(netIsNetPlay&&!netIsWatch
 			&&netReplaySendStatus==2
 		)
-			receiver.drawMenuFont(engine, 1, 22, "A: RETRY", COLOR.RED)
+			receiver.drawMenu(engine, 1, 22, "A: RETRY", BASE, COLOR.RED)
 	}
 
 	/* Called when saving replay */
@@ -554,7 +555,6 @@ class SprintUltra:NetDummyMode() {
 	companion object {
 		/** Current version */
 		private const val CURRENT_VERSION = 1
-
 
 		/** Minutes counts when game ending occurs */
 		private val tableLength = listOf(3, 5)

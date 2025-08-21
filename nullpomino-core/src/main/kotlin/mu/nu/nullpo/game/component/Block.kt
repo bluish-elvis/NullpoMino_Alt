@@ -30,7 +30,6 @@
  */
 package mu.nu.nullpo.game.component
 
-import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.util.GeneralUtil.aNum
 import mu.nu.nullpo.util.GeneralUtil.toAlphaNum
 
@@ -57,13 +56,30 @@ class Block @JvmOverloads constructor(
 			}
 		}
 
+	private val squarePosInt:Int
+		get() = if(getAttribute(ATTRIBUTE.SQUARE_GOLD)||getAttribute(ATTRIBUTE.SQUARE_SILVER))
+			when {
+				getAttribute(ATTRIBUTE.CONNECT_LEFT, ATTRIBUTE.CONNECT_RIGHT) -> 1
+				getAttribute(ATTRIBUTE.CONNECT_LEFT) -> 2
+				getAttribute(ATTRIBUTE.CONNECT_RIGHT) -> 0
+				else -> 1
+			}+when {
+				getAttribute(ATTRIBUTE.CONNECT_UP, ATTRIBUTE.CONNECT_DOWN) -> 3
+				getAttribute(ATTRIBUTE.CONNECT_UP) -> 6
+				getAttribute(ATTRIBUTE.CONNECT_DOWN) -> 0
+				else -> 3
+			}
+		else 0
+
 	/** Block color integer for Rendering */
-	val drawColor:Int
-		get() = when(cint) {
-			COLOR_GEM_RAINBOW -> COLOR_GEM_RED+rainbowPhase/3
-			COLOR_RAINBOW -> COLOR_RED+rainbowPhase/3
-			else -> cint
-		}
+	val drawId:Int
+		get() = if(getAttribute(ATTRIBUTE.SQUARE_GOLD)) COLOR_GEM_PURPLE+1+squarePosInt else
+			if(getAttribute(ATTRIBUTE.SQUARE_SILVER)) COLOR_GEM_PURPLE+10+squarePosInt else
+				when(cint) {
+					COLOR_GEM_RAINBOW -> COLOR_GEM_RED+(elapsedFrames/3%COLOR.COLOR_NUM)
+					COLOR_RAINBOW -> COLOR_RED+(elapsedFrames/3%COLOR.COLOR_NUM)
+					else -> cint
+				}
 
 	constructor(color:COLOR?, type:TYPE, skin:Int = 0, vararg attrs:ATTRIBUTE):
 		this(color, type, skin, attrs.fold(0) {x, y -> x or y.bit})
@@ -77,7 +93,7 @@ class Block @JvmOverloads constructor(
 
 	override operator fun equals(other:Any?):Boolean = other is Block?&&color==other?.color&&type==other?.type
 
-	//val aset:Set<ATTRIBUTE> get() = aint.values{it.bit}.sum()
+//val aset:Set<ATTRIBUTE> get() = aint.values{it.bit}.sum()
 
 	/** 固定してから経過した frame count */
 	var elapsedFrames = 0
@@ -125,12 +141,12 @@ class Block @JvmOverloads constructor(
 	/** Checks to see if `this` is a gold square block
 	 * @return `true` if the block is a gold square block
 	 */
-	val isGoldSquareBlock get() = type===TYPE.SQUARE_GOLD
+	val isGoldSquareBlock get() = getAttribute(ATTRIBUTE.SQUARE_GOLD)
 
 	/** Checks to see if `this` is a silver square block
 	 * @return `true` if the block is a silver square block
 	 */
-	val isSilverSquareBlock get() = type===TYPE.SQUARE_SILVER
+	val isSilverSquareBlock get() = getAttribute(ATTRIBUTE.SQUARE_SILVER)
 
 	/** Checks to see if `this` is a normal block (gray to purple)
 	 * @return `true` if the block is a normal block
@@ -219,7 +235,7 @@ class Block @JvmOverloads constructor(
 		.let {31*it+secondaryColor.hashCode()}
 		.let {31*it+bonusValue}
 
-	enum class TYPE(val pos:Byte = 0) { BLOCK, GEM, SQUARE_GOLD, SQUARE_SILVER, ITEM }
+	enum class TYPE(val pos:Byte = 0) { BLOCK, GEM, ITEM }
 	enum class COLOR(val color:Boolean = true) {
 		BLACK(false), WHITE(false), RED, ORANGE, YELLOW, GREEN, CYAN, BLUE, PURPLE, RAINBOW(false);
 
@@ -269,6 +285,10 @@ class Block @JvmOverloads constructor(
 		LAST_COMMIT,
 		/** Ignore block connections (for Avalanche modes) */
 		IGNORE_LINK,
+		/** Marked as Gold Square */
+		SQUARE_GOLD,
+		/** Marked as Silver Square */
+		SQUARE_SILVER,
 		/** Placed with Big Piece, or Combined as Big Bomb*/
 		BIG;
 
@@ -296,26 +316,8 @@ class Block @JvmOverloads constructor(
 		const val COLOR_GEM_CYAN = 13
 		const val COLOR_GEM_BLUE = 14
 		const val COLOR_GEM_PURPLE = 15
-		const val COLOR_SQUARE_GOLD_1 = 16
-		const val COLOR_SQUARE_GOLD_2 = 17
-		const val COLOR_SQUARE_GOLD_3 = 18
-		const val COLOR_SQUARE_GOLD_4 = 19
-		const val COLOR_SQUARE_GOLD_5 = 20
-		const val COLOR_SQUARE_GOLD_6 = 21
-		const val COLOR_SQUARE_GOLD_7 = 22
-		const val COLOR_SQUARE_GOLD_8 = 23
-		const val COLOR_SQUARE_GOLD_9 = 24
-		const val COLOR_SQUARE_SILVER_1 = 25
-		const val COLOR_SQUARE_SILVER_2 = 26
-		const val COLOR_SQUARE_SILVER_3 = 27
-		const val COLOR_SQUARE_SILVER_4 = 28
-		const val COLOR_SQUARE_SILVER_5 = 29
-		const val COLOR_SQUARE_SILVER_6 = 30
-		const val COLOR_SQUARE_SILVER_7 = 31
-		const val COLOR_SQUARE_SILVER_8 = 32
-		const val COLOR_SQUARE_SILVER_9 = 33
-		const val COLOR_RAINBOW = 34
-		const val COLOR_GEM_RAINBOW = 35
+		const val COLOR_RAINBOW = 16
+		const val COLOR_GEM_RAINBOW = 17
 
 		val MAX_ITEM get() = items.size
 
@@ -327,9 +329,6 @@ class Block @JvmOverloads constructor(
 		val COLOR_EXT_COUNT
 			get() = COLOR.ALL_COLOR_NUM
 
-		/** Color-shift phase for rainbow blocks */
-		var rainbowPhase = 0
-
 		fun colorNumber(color:COLOR?, type:TYPE, isBone:Boolean = false, item:Item? = null):Int =
 			if(color==COLOR.RAINBOW) {
 				if(type==TYPE.GEM) COLOR_GEM_RAINBOW
@@ -337,13 +336,9 @@ class Block @JvmOverloads constructor(
 			} else {
 				val ci:Int = (color?.ordinal?:0)
 				when(type) {
-					TYPE.BLOCK -> if(color==COLOR.BLACK&&isBone) COLOR_WHITE
-					else ci
-					TYPE.GEM -> if(color?.color!=true) {
-						COLOR_GEM_RAINBOW
-					} else ci+COLOR_GEM_RED-COLOR_RED
-					TYPE.SQUARE_SILVER -> ci+COLOR_SQUARE_SILVER_1
-					TYPE.SQUARE_GOLD -> ci+COLOR_SQUARE_GOLD_1
+					TYPE.BLOCK -> if(color?.color!=true && isBone) COLOR_WHITE else ci
+					TYPE.GEM -> if(color?.color!=true) COLOR_GEM_RAINBOW
+					else ci+COLOR_GEM_RED-COLOR_RED
 					TYPE.ITEM -> item?.color?.ordinal?:0
 				}
 			}
@@ -353,7 +348,7 @@ class Block @JvmOverloads constructor(
 				COLOR.all[v] to TYPE.BLOCK
 			}
 			in COLOR_GEM_RED..COLOR_GEM_PURPLE -> {
-				COLOR.all[v-COLOR_PURPLE] to TYPE.GEM
+				COLOR.all[v-COLOR_GEM_RED+2] to TYPE.GEM
 			}
 			COLOR_RAINBOW -> {
 				COLOR.RAINBOW to TYPE.BLOCK
@@ -361,25 +356,10 @@ class Block @JvmOverloads constructor(
 			COLOR_GEM_RAINBOW -> {
 				COLOR.RAINBOW to TYPE.GEM
 			}
-			in COLOR_SQUARE_SILVER_1..COLOR_SQUARE_SILVER_9 -> {
-				COLOR.all[v-COLOR_SQUARE_SILVER_1] to TYPE.SQUARE_SILVER
-			}
-			in COLOR_SQUARE_GOLD_1..COLOR_SQUARE_GOLD_9 -> {
-				COLOR.all[v-COLOR_SQUARE_GOLD_1] to TYPE.SQUARE_GOLD
-			}
 			else -> null to TYPE.BLOCK
 		}
 
 		fun charToColorNum(c:Char):Int = c.aNum
-
-		fun updateRainbowPhase(time:Int) {
-			rainbowPhase = time%21
-		}
-
-		fun updateRainbowPhase(engine:GameEngine) {
-			if(engine.timerActive) updateRainbowPhase(engine.statistics.time)
-			else if(++rainbowPhase>=21) rainbowPhase = 0
-		}
 
 		//@Deprecated("enumed : COLOR.ungem",level=DeprecationLevel.WARNING)
 		fun gemToNormalColor(color:Int):Int = when(color) {
@@ -387,5 +367,6 @@ class Block @JvmOverloads constructor(
 			COLOR_GEM_RAINBOW -> COLOR_RAINBOW
 			else -> color
 		}
+
 	}
 }

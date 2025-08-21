@@ -38,6 +38,7 @@ package zeroxfc.nullpo.custom.libs
 
 import mu.nu.nullpo.game.event.EventReceiver
 import mu.nu.nullpo.game.play.GameEngine
+import mu.nu.nullpo.gui.common.BaseFont.FONT.BASE
 import kotlin.random.Random
 
 /**
@@ -67,13 +68,13 @@ Generates a text shaker object with an auto-generated randomizer.
 		val mDX = if(maxDevianceX<0) -maxDevianceX else maxDevianceX
 		val mDY = if(maxDevianceY<0) -maxDevianceY else maxDevianceY
 		val offset = 16f*scale
-		text.forEachIndexed { i,it ->
+		text.forEachIndexed {i, it ->
 			val offsetUsed = (offset*i).toInt()
 			var xDiff = 0
 			var yDiff = 0
 			if(mDX>0) xDiff = textPositionRandomizer.nextInt(mDX*2+1)-mDX
 			if(mDY>0) yDiff = textPositionRandomizer.nextInt(mDY*2+1)-mDY
-			receiver.drawDirectFont(x+offsetUsed+xDiff, y+yDiff, "$it", color, scale)
+			receiver.drawFont(x+offsetUsed+xDiff, y+yDiff, "$it", BASE, color, scale)
 		}
 	}
 	/**
@@ -89,7 +90,8 @@ Generates a text shaker object with an auto-generated randomizer.
 	 * @param color       Color of text. Use colors from `EventReceiver`
 	 * @param scale        Scale of drawn text.
 	 */
-	fun drawScoreText(receiver:EventReceiver, engine:GameEngine, x:Int, y:Int, maxDevianceX:Int, maxDevianceY:Int, text:String,
+	fun drawScoreText(receiver:EventReceiver, engine:GameEngine, x:Int, y:Int, maxDevianceX:Int, maxDevianceY:Int,
+		text:String,
 		color:EventReceiver.COLOR, scale:Float) {
 		val nx = receiver.scoreX(engine)+x*if(scale<=0.5f) 8 else 16
 		val ny = receiver.scoreY(engine)+y*if(scale<=0.5f) 8 else 16
@@ -108,7 +110,8 @@ Generates a text shaker object with an auto-generated randomizer.
 	 * @param color       Color of text. Use colors from `EventReceiver`
 	 * @param scale        Scale of drawn text.
 	 */
-	fun drawMenuText(receiver:EventReceiver, engine:GameEngine, x:Int, y:Int, maxDevianceX:Int, maxDevianceY:Int, text:String,
+	fun drawMenuText(receiver:EventReceiver, engine:GameEngine, x:Int, y:Int, maxDevianceX:Int, maxDevianceY:Int,
+		text:String,
 		color:EventReceiver.COLOR, scale:Float) {
 		val nx = receiver.fieldX(engine).toInt()+x*if(scale<=0.5f) 8 else 16+4
 		val ny = receiver.fieldY(engine).toInt()+y*if(scale<=0.5f) 8 else 16+52

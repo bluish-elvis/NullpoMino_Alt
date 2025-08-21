@@ -34,7 +34,7 @@ import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.game.play.GameEngine.Companion.FRAME_SKIN_GRADE
 import mu.nu.nullpo.game.play.GameManager
 import mu.nu.nullpo.gui.common.AbstractRenderer
-import mu.nu.nullpo.gui.common.BaseFont
+import mu.nu.nullpo.gui.common.BaseFont.FONT
 import mu.nu.nullpo.gui.common.ResourceImage
 import mu.nu.nullpo.gui.slick.img.*
 import mu.nu.nullpo.gui.slick.img.bg.AbstractBG
@@ -74,12 +74,13 @@ class RendererSlick(
 		g.setDrawMode(Graphics.MODE_NORMAL)
 	}
 
-	override fun printFontSpecific(x:Float, y:Float, str:String, font:BaseFont.FONT, color:COLOR, scale:Float, alpha:Float) {
+	override fun printFontSpecific(x:Float, y:Float, str:String, font:FONT, color:COLOR, scale:Float, alpha:Float) {
 		when(font) {
-			BaseFont.FONT.NANO -> FontNano.printFont(x, y, str, color, scale, alpha)
-			BaseFont.FONT.NUM -> FontNumber.printFont(x, y, str, color, scale, alpha)
-			BaseFont.FONT.TTF -> printTTFSpecific(x, y, str, color, scale, alpha)
-			BaseFont.FONT.GRADE -> FontGrade.printFont(x, y, str, color, scale, alpha)
+			FONT.NANO -> FontNano.printFont(x, y, str, color, scale, alpha)
+			FONT.NUM -> FontNumber.printFont(x, y, str, color, scale, alpha)
+			FONT.NUM_T -> FontNumTall.printFont(x, y, str, color, scale, alpha)
+			FONT.TTF -> printTTFSpecific(x, y, str, color, scale, alpha)
+			FONT.GRADE -> FontGrade.printFont(x, y, str, color, scale, alpha)
 			else -> FontNormal.printFont(x, y, str, color, scale, alpha)
 		}
 	}

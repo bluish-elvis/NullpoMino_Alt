@@ -50,6 +50,7 @@ import mu.nu.nullpo.game.subsystem.mode.menu.DelegateMenuItem
 import mu.nu.nullpo.game.subsystem.mode.menu.MenuList
 import mu.nu.nullpo.game.subsystem.mode.menu.StringsMenuItem
 import mu.nu.nullpo.gui.common.BaseFont
+import mu.nu.nullpo.gui.common.BaseFont.FONT.*
 import mu.nu.nullpo.util.CustomProperties
 import mu.nu.nullpo.util.GeneralUtil.toTimeStr
 import kotlin.math.pow
@@ -229,57 +230,59 @@ class ScoreAttackRun:AbstractMode() {
 
 	override fun renderLast(engine:GameEngine) {
 		if(!owner.menuOnly) {
-			receiver.drawScoreFont(engine, 0, 0, name, 8f)
-			if(gametype!=0) receiver.drawScoreFont(engine, 2, 1, "(${GAMETYPE_LABELS[gametype]} MODE)", 9f)
+			receiver.drawScore(engine, 0, 0, name, BASE, 8f)
+			if(gametype!=0) receiver.drawScore(engine, 2, 1, "(${GAMETYPE_LABELS[gametype]} MODE)", BASE, 9f)
 
 			var colour:Int
 			val event:Int = if(receiver.nextDisplayType==2) 6 else 4
 			if(engine.stat==GameEngine.Status.SETTING||engine.stat==GameEngine.Status.RESULT&&!owner.replayMode) {
 				if(!owner.replayMode&&engine.ai==null) {
-					receiver.drawScoreFont(engine, 1, event-1, "LV QS SCORE", COLOR.PURPLE)
+					receiver.drawScore(engine, 1, event-1, "LV QS SCORE", BASE, COLOR.PURPLE)
 					colour = 0
 					while(colour<10) {
-						receiver.drawScoreGrade(engine, -2, event+colour, "%2d".format(colour+1), COLOR.YELLOW)
-						receiver.drawScoreFont(engine, 1, event+colour, "${rankingLevel[gametype][colour]+1}", colour==rankingRank)
-						receiver.drawScoreFont(engine, 4, event+colour, "${rankingQuads[gametype][colour]}", colour==rankingRank)
-						receiver.drawScoreFont(engine, 7, event+colour, formatScore(rankingScore[gametype][colour]), colour==rankingRank)
+						receiver.drawScore(engine, -2, event+colour, "%2d".format(colour+1), GRADE, COLOR.YELLOW)
+						receiver.drawScore(engine, 1, event+colour, "${rankingLevel[gametype][colour]+1}", BASE, colour==rankingRank)
+						receiver.drawScore(engine, 4, event+colour, "${rankingQuads[gametype][colour]}", BASE, colour==rankingRank)
+						receiver.drawScore(engine, 7, event+colour, formatScore(rankingScore[gametype][colour]),
+							BASE,
+							colour==rankingRank)
 						++colour
 					}
 				}
 			} else {
-				receiver.drawScoreFont(engine, 0, 3, "SCORE", 8f)
-				receiver.drawScoreFont(engine, 0, 4, formatScore(score), 5f)
+				receiver.drawScore(engine, 0, 3, "SCORE", BASE, 8f)
+				receiver.drawScore(engine, 0, 4, formatScore(score), BASE, 5f)
 				if(lastscoreL!=0L)
-					receiver.drawScoreFont(engine, 0, 5, "+"+formatScore(lastscoreL))
+					receiver.drawScore(engine, 0, 5, "+"+formatScore(lastscoreL), BASE)
 
-				receiver.drawScoreFont(engine, 0, 7, "LINES", 8f)
+				receiver.drawScore(engine, 0, 7, "LINES", BASE, 8f)
 				if(engine.statistics.level>=19) {
-					receiver.drawScoreFont(engine, 0, 8, engine.statistics.lines.toString())
+					receiver.drawScore(engine, 0, 8, engine.statistics.lines.toString(), BASE)
 				} else {
-					receiver.drawScoreFont(
+					receiver.drawScore(
 						engine,
 						0,
 						8,
-						engine.statistics.lines.toString()+"/"+tableLevelChange[engine.statistics.level+1]
-					)
+						engine.statistics.lines.toString()+"/"+tableLevelChange[engine.statistics.level+1],
+						BASE)
 				}
-				receiver.drawScoreFont(engine, 0, 10, "LEVEL", 8f)
-				receiver.drawScoreFont(engine, 0, 11, (engine.statistics.level+1).toString())
-				receiver.drawScoreFont(engine, 10, 10, "QUADS", 8f)
-				receiver.drawScoreFont(engine, 10, 11, "$quads", 6f)
+				receiver.drawScore(engine, 0, 10, "LEVEL", BASE, 8f)
+				receiver.drawScore(engine, 0, 11, (engine.statistics.level+1).toString(), BASE)
+				receiver.drawScore(engine, 10, 10, "QUADS", BASE, 8f)
+				receiver.drawScore(engine, 10, 11, "$quads", BASE, 6f)
 				if(gametype!=4&&gametype!=5) {
-					receiver.drawScoreFont(engine, 0, 13, "CHAIN", 8f)
-					receiver.drawScoreFont(engine, 0, 14, "$ren", COLOR.RED)
+					receiver.drawScore(engine, 0, 13, "CHAIN", BASE, 8f)
+					receiver.drawScore(engine, 0, 14, "$ren", BASE, COLOR.RED)
 				} else {
-					receiver.drawScoreFont(engine, 0, 13, "ALL CLEARS", 8f)
-					receiver.drawScoreFont(engine, 0, 14, "$allclears", COLOR.RED)
+					receiver.drawScore(engine, 0, 13, "ALL CLEARS", BASE, 8f)
+					receiver.drawScore(engine, 0, 14, "$allclears", BASE, COLOR.RED)
 				}
-				receiver.drawScoreFont(engine, 10, 13, "MULTIPLIER", 8f)
-				receiver.drawScoreFont(engine, 10, 14, "${BaseFont.CROSS}$scoreRate%", 5f)
-				receiver.drawScoreFont(engine, 0, 17, "TIME LEFT", 2f)
-				receiver.drawScoreFont(engine, 0, 18, currenttime.toTimeStr)
-				receiver.drawScoreFont(engine, 10, 17, "TOTAL TIME", 9f)
-				receiver.drawScoreFont(engine, 10, 18, engine.statistics.time.toTimeStr)
+				receiver.drawScore(engine, 10, 13, "MULTIPLIER", BASE, 8f)
+				receiver.drawScore(engine, 10, 14, "${BaseFont.CROSS}$scoreRate%", BASE, 5f)
+				receiver.drawScore(engine, 0, 17, "TIME LEFT", BASE, 2f)
+				receiver.drawScore(engine, 0, 18, currenttime.toTimeStr, BASE)
+				receiver.drawScore(engine, 10, 17, "TOTAL TIME", BASE, 9f)
+				receiver.drawScore(engine, 10, 18, engine.statistics.time.toTimeStr, BASE)
 			}
 		}
 	}
@@ -386,14 +389,14 @@ class ScoreAttackRun:AbstractMode() {
 	}
 
 	override fun renderResult(engine:GameEngine) {
-		receiver.drawMenuFont(engine, 0, 0, "FINAL SCORE", COLOR.PURPLE)
-		receiver.drawMenuFont(engine, 0, 1, formatScore(score), COLOR.YELLOW)
-		receiver.drawMenuFont(engine, 0, 2, "QUADS", COLOR.PURPLE)
-		receiver.drawMenuFont(engine, 0, 3, "$quads", COLOR.CYAN)
-		receiver.drawMenuFont(engine, 0, 4, "MAX CHAIN", COLOR.PURPLE)
-		receiver.drawMenuFont(engine, 0, 5, "$maxchain", COLOR.RED)
-		receiver.drawMenuFont(engine, 0, 6, "MAX MULTI.", COLOR.PURPLE)
-		receiver.drawMenuFont(engine, 0, 7, "${BaseFont.CROSS}$maxmult", COLOR.YELLOW)
+		receiver.drawMenu(engine, 0, 0, "FINAL SCORE", BASE, COLOR.PURPLE)
+		receiver.drawMenu(engine, 0, 1, formatScore(score), BASE, COLOR.YELLOW)
+		receiver.drawMenu(engine, 0, 2, "QUADS", BASE, COLOR.PURPLE)
+		receiver.drawMenu(engine, 0, 3, "$quads", BASE, COLOR.CYAN)
+		receiver.drawMenu(engine, 0, 4, "MAX CHAIN", BASE, COLOR.PURPLE)
+		receiver.drawMenu(engine, 0, 5, "$maxchain", BASE, COLOR.RED)
+		receiver.drawMenu(engine, 0, 6, "MAX MULTI.", BASE, COLOR.PURPLE)
+		receiver.drawMenu(engine, 0, 7, "${BaseFont.CROSS}$maxmult", BASE, COLOR.YELLOW)
 		drawResultStats(engine, receiver, 8, COLOR.PURPLE, Statistic.LINES, Statistic.LEVEL, Statistic.LPM, Statistic.PPS)
 	}
 
@@ -437,7 +440,7 @@ class ScoreAttackRun:AbstractMode() {
 		private enum class Gametype(label:String? = null) {
 			Regular, Spin, MaxSpeed, SpinMax("Spin MaxSpeed"), Mega, MegaMax("Mega MaxSpeed");
 
-			val label:String = label ?: name
+			val label:String = label?:name
 
 		}
 

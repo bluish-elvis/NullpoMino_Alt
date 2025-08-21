@@ -117,6 +117,7 @@ abstract class ResourceHolder {
 	internal open val imgFontNano:ResourceImage<*> = ResourceImageStr("font_nano")
 	/** Number fonts */
 	internal open val imgNum:List<ResourceImage<*>> = listOf("small", "big").map {ResourceImageStr("number_$it")}
+	internal open val imgNumT:ResourceImage<*> = ResourceImageStr("number_tall")
 	/** Grade fonts */
 	internal open val imgGrade:List<ResourceImage<*>> = listOf("small", "big").map {ResourceImageStr("grade_$it")}
 	/** Medal fonts */
@@ -210,7 +211,7 @@ abstract class ResourceHolder {
 
 		flattenList<ResourceImage<*>>(
 			listOf(
-				imgBadges, imgFont, imgFontNano, imgNum, imgGrade, imgFontMedal, imgCursor,
+				imgBadges, imgFont, imgFontNano, imgNum, imgNumT, imgGrade, imgFontMedal, imgCursor,
 				imgFrame, imgFrameOld, imgFieldBG, imgLine, imgTitleBG, imgLogo, imgLogoSmall,
 				imgMenuBG/*, imgPlayBG, imgPlayBGA*/
 			)

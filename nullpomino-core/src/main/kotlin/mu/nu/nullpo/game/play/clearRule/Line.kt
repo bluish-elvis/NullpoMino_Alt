@@ -65,7 +65,7 @@ data object Line:ClearType {
 				)
 				lastLinesY = check.linesYfolded
 				lastLineY = check.linesY.maxOrNull()?:0
-				if(frameSkin!=FRAME_SKIN_SG)playSE("line${li.coerceIn(1, 4)}")
+				if(frameSkin!=FRAME_SKIN_SG) playSE("line${li.coerceIn(1, 4)}")
 				if(li>=4) playSE("applause${(2+b2bCount).coerceIn(0, 4)}")
 				if(twist) {
 					playSE("twister")
@@ -119,7 +119,7 @@ data object Line:ClearType {
 					owner.receiver.addCombo(this, nowPieceX, nowPieceBottomY+b2b.toInt(), combo, CHAIN.COMBO)
 					if(inGame) if(combo>=statistics.maxCombo) statistics.maxCombo = combo
 				}
-			}
+			} else if(comboType==COMBO_TYPE_DISABLE) combo = 0
 
 			lineGravityTotalLines += lineClearing
 			statistics.blocks += li*fieldWidth

@@ -1,5 +1,5 @@
 /*
- Copyright (c) 2023-2024, NullNoname
+ Copyright (c) 2010-2024, NullNoname
  All rights reserved.
 
  Converted to Kotlin and modified by Venom_Nhelv as bluish-elvis
@@ -28,25 +28,15 @@
  ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  POSSIBILITY OF SUCH DAMAGE.
  */
+package mu.nu.nullpo.gui.slick.img
 
-package mu.nu.nullpo.game.subsystem.mode.menu
+import mu.nu.nullpo.gui.common.BaseFontNumTall
+import mu.nu.nullpo.gui.slick.NullpoMinoSlick
+import mu.nu.nullpo.gui.slick.ResourceHolder
 
-import mu.nu.nullpo.game.component.BGM
-import mu.nu.nullpo.game.event.EventReceiver
-import mu.nu.nullpo.game.play.GameEngine
-import mu.nu.nullpo.gui.common.BaseFont
-import mu.nu.nullpo.gui.common.BaseFont.FONT.*
+/** 普通の文字列の表示クラス */
+object FontNumTall:BaseFontNumTall() {
+	override val rainbowCount get() = NullpoMinoSlick.rainbow
+	override fun getImg(i:Int) = ResourceHolder.imgNumT
 
-class BGMMenuItem(name:String, color:EventReceiver.COLOR, defaultValue:Int = 0):
-	StringsMenuItem(name, "BGM", color, defaultValue, BGM.values.map {it.drawName}, false, false) {
-	override val valueString get() = choiceNames[value]
-	override val colMax = 1
-	override val showHeight = 2
-	override fun draw(engine:GameEngine, playerID:Int, receiver:EventReceiver, y:Int, focus:Int) {
-		val cur = focus==0
-		receiver.drawMenu(engine, 0, y, "BGM", BASE, color)
-		receiver.drawMenu(engine, 0, y+1, valueString, BASE, cur)
-		receiver.drawMenu(engine, 8, y, "%2d".format(value), NUM, cur)
-		if(cur) receiver.drawMenu(engine, 7, y, BaseFont.CURSOR, BASE, true)
-	}
 }

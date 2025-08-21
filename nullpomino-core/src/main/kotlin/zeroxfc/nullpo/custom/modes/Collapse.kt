@@ -43,6 +43,7 @@ import mu.nu.nullpo.game.component.Controller
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
 import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.game.subsystem.mode.AbstractMode
+import mu.nu.nullpo.gui.common.BaseFont.FONT.*
 import mu.nu.nullpo.gui.slick.MouseInput
 import mu.nu.nullpo.gui.slick.NullpoMinoSlick
 import mu.nu.nullpo.util.CustomProperties
@@ -555,7 +556,7 @@ class Collapse:AbstractMode() {
 		get() = if(nextFull) -1 else nextBlocks.size
 
 	private fun getSquares(engine:GameEngine, x:Int, y:Int):Int =
-		engine.field.getBlock(x, y)?.color?.let {flagSquares(engine, 0, x, y, it)} ?: 0
+		engine.field.getBlock(x, y)?.color?.let {flagSquares(engine, 0, x, y, it)}?:0
 
 	private fun flagSquares(engine:GameEngine, counter:Int, x:Int, y:Int, color:Block.COLOR):Int {
 		if(x in 0..11&&y in 0..15) {
@@ -810,52 +811,52 @@ class Collapse:AbstractMode() {
 
 	override fun renderLast(engine:GameEngine) {
 		if(owner.menuOnly) return
-		receiver.drawScoreFont(engine, 0, 0, name, COLOR.ORANGE)
-		receiver.drawScoreFont(
-			engine, 0, 1, "("+DIFFICULTY_NAMES[difficulty]+" DIFFICULTY)", COLOR.ORANGE
+		receiver.drawScore(engine, 0, 0, name, BASE, COLOR.ORANGE)
+		receiver.drawScore(
+			engine, 0, 1, "("+DIFFICULTY_NAMES[difficulty]+" DIFFICULTY)", BASE, COLOR.ORANGE
 		)
 		if(engine.stat===GameEngine.Status.SETTING||engine.stat===GameEngine.Status.RESULT&&!owner.replayMode) {
 			if(!owner.replayMode&&enableBombs&&engine.ai==null) {
 				val topY = if(receiver.nextDisplayType==2) 6 else 4
-				receiver.drawScoreFont(engine, 3, topY-1, "SCORE    LEVEL", COLOR.BLUE)
+				receiver.drawScore(engine, 3, topY-1, "SCORE    LEVEL", BASE, COLOR.BLUE)
 				if(showPlayerStats) {
 					for(i in 0..<MAX_RANKING) {
-						receiver.drawScoreFont(engine, 0, topY+i, "%2d".format(i+1), COLOR.YELLOW)
-						receiver.drawScoreFont(engine, 3, topY+i, "${rankingScorePlayer[difficulty][i]}", i==rankingRankPlayer)
-						receiver.drawScoreFont(engine, 12, topY+i, "${rankingLevelPlayer[difficulty][i]}", i==rankingRankPlayer)
+						receiver.drawScore(engine, 0, topY+i, "%2d".format(i+1), BASE, COLOR.YELLOW)
+						receiver.drawScore(engine, 3, topY+i, "${rankingScorePlayer[difficulty][i]}", BASE, i==rankingRankPlayer)
+						receiver.drawScore(engine, 12, topY+i, "${rankingLevelPlayer[difficulty][i]}", BASE, i==rankingRankPlayer)
 					}
-					receiver.drawScoreFont(engine, 0, topY+MAX_RANKING+1, "PLAYER SCORES", COLOR.BLUE)
-					receiver.drawScoreFont(engine, 0, topY+MAX_RANKING+2, engine.playerProp.nameDisplay, COLOR.WHITE, 2f)
-					receiver.drawScoreFont(engine, 0, topY+MAX_RANKING+5, "F:SWITCH RANK SCREEN", COLOR.GREEN)
+					receiver.drawScore(engine, 0, topY+MAX_RANKING+1, "PLAYER SCORES", BASE, COLOR.BLUE)
+					receiver.drawScore(engine, 0, topY+MAX_RANKING+2, engine.playerProp.nameDisplay, BASE, COLOR.WHITE, 2f)
+					receiver.drawScore(engine, 0, topY+MAX_RANKING+5, "F:SWITCH RANK SCREEN", BASE, COLOR.GREEN)
 				} else {
 					for(i in 0..<MAX_RANKING) {
-						receiver.drawScoreFont(engine, 0, topY+i, "%2d".format(i+1), COLOR.YELLOW)
-						receiver.drawScoreFont(engine, 3, topY+i, "${rankingScore[difficulty][i]}", i==rankingRank)
-						receiver.drawScoreFont(engine, 12, topY+i, "${rankingLevel[difficulty][i]}", i==rankingRank)
+						receiver.drawScore(engine, 0, topY+i, "%2d".format(i+1), BASE, COLOR.YELLOW)
+						receiver.drawScore(engine, 3, topY+i, "${rankingScore[difficulty][i]}", BASE, i==rankingRank)
+						receiver.drawScore(engine, 12, topY+i, "${rankingLevel[difficulty][i]}", BASE, i==rankingRank)
 					}
-					receiver.drawScoreFont(engine, 0, topY+MAX_RANKING+1, "LOCAL SCORES", COLOR.BLUE)
+					receiver.drawScore(engine, 0, topY+MAX_RANKING+1, "LOCAL SCORES", BASE, COLOR.BLUE)
 					if(!engine.playerProp.isLoggedIn)
-						receiver.drawScoreFont(engine, 0, topY+MAX_RANKING+2, "(NOT LOGGED IN)\n(E:LOG IN)")
+						receiver.drawScore(engine, 0, topY+MAX_RANKING+2, "(NOT LOGGED IN)\n(E:LOG IN)", BASE)
 					if(engine.playerProp.isLoggedIn)
-						receiver.drawScoreFont(engine, 0, topY+MAX_RANKING+5, "F:SWITCH RANK SCREEN", COLOR.GREEN)
+						receiver.drawScore(engine, 0, topY+MAX_RANKING+5, "F:SWITCH RANK SCREEN", BASE, COLOR.GREEN)
 				}
 			}
 		} else if(!engine.gameActive&&engine.stat===GameEngine.Status.CUSTOM) {
 			engine.playerProp.loginScreen.renderScreen(receiver, engine)
 		} else {
-			receiver.drawScoreFont(engine, 0, 3, "SCORE", COLOR.BLUE)
-			receiver.drawScoreFont(engine, 0, 4, "$scDisp")
-			receiver.drawScoreFont(engine, 0, 6, "LEVEL", COLOR.BLUE)
-			receiver.drawScoreFont(engine, 0, 7, (engine.statistics.level+1).toString())
+			receiver.drawScore(engine, 0, 3, "SCORE", BASE, COLOR.BLUE)
+			receiver.drawScore(engine, 0, 4, "$scDisp", BASE)
+			receiver.drawScore(engine, 0, 6, "LEVEL", BASE, COLOR.BLUE)
+			receiver.drawScore(engine, 0, 7, (engine.statistics.level+1).toString(), BASE)
 			if(linesLeft>=0) {
-				receiver.drawScoreFont(engine, 0, 9, "LINES LEFT", COLOR.BLUE)
-				receiver.drawScoreFont(engine, 0, 10, "$linesLeft")
+				receiver.drawScore(engine, 0, 9, "LINES LEFT", BASE, COLOR.BLUE)
+				receiver.drawScore(engine, 0, 10, "$linesLeft", BASE)
 			}
-			receiver.drawScoreFont(engine, 0, 12, "TIME", COLOR.BLUE)
-			receiver.drawScoreFont(engine, 0, 13, engine.statistics.time.toTimeStr)
+			receiver.drawScore(engine, 0, 12, "TIME", BASE, COLOR.BLUE)
+			receiver.drawScore(engine, 0, 13, engine.statistics.time.toTimeStr, BASE)
 			if(engine.playerProp.isLoggedIn) {
-				receiver.drawScoreFont(engine, 0, 15, "PLAYER", COLOR.BLUE)
-				receiver.drawScoreFont(engine, 0, 16, engine.playerProp.nameDisplay, COLOR.WHITE, 2f)
+				receiver.drawScore(engine, 0, 15, "PLAYER", BASE, COLOR.BLUE)
+				receiver.drawScore(engine, 0, 16, engine.playerProp.nameDisplay, BASE, COLOR.WHITE, 2f)
 			}
 			sTextArr.forEach {
 				val x = it.location[0]
@@ -877,25 +878,25 @@ class Collapse:AbstractMode() {
 					nOffX = ((baseDim*it.text.length-baseDim*it.text.length*rs)/2).toInt()
 					nOffY = ((baseDim-baseDim*rs)/2).toInt()
 				}
-				if(it.lifeTime/2%2==0&&it.largeClear) receiver.drawDirectFont(
+				if(it.lifeTime/2%2==0&&it.largeClear) receiver.drawFont(
 					x+nOffX,
 					y+nOffY,
 					it.text,
-					COLOR.YELLOW,
+					BASE, COLOR.YELLOW,
 					scale
-				) else receiver.drawDirectFont(x+nOffX, y+nOffY, it.text, COLOR.ORANGE, scale)
+				) else receiver.drawFont(x+nOffX, y+nOffY, it.text, BASE, COLOR.ORANGE, scale)
 			}
-			receiver.drawMenuFont(engine, curFX, curFY, "f", COLOR.YELLOW)
+			receiver.drawMenu(engine, curFX, curFY, "f", BASE, COLOR.YELLOW)
 
 			if(localState==LOCALSTATE_TRANSITION) {
 				val s = "$bScore"
 				val l = s.length
 				val offset = (12-l)/2
-				receiver.drawMenuFont(
-					engine, 2, 6, "LEVEL UP", if(engine.statc[0]/2%2==0) COLOR.YELLOW else COLOR.ORANGE
+				receiver.drawMenu(
+					engine, 2, 6, "LEVEL UP", BASE, if(engine.statc[0]/2%2==0) COLOR.YELLOW else COLOR.ORANGE
 				)
-				receiver.drawMenuFont(engine, 0, 8, "BONUS POINTS", COLOR.YELLOW)
-				receiver.drawMenuFont(engine, offset, 9, s)
+				receiver.drawMenu(engine, 0, 8, "BONUS POINTS", BASE, COLOR.YELLOW)
+				receiver.drawMenu(engine, offset, 9, s, BASE)
 			}
 
 //			receiver.drawScoreFont(engine, playerID, 0, 15, "MOUSE COORDS", EventReceiver.COLOR.BLUE);
@@ -913,27 +914,28 @@ class Collapse:AbstractMode() {
 				val l = s.length
 				val offset = (12-l)/2
 				if(acTime in 0..119) {
-					receiver.drawMenuFont(
+					receiver.drawMenu(
 						engine,
 						1,
 						6,
 						"ALL CLEAR!",
+						BASE,
 						if(engine.statistics.time/2%2==0) COLOR.YELLOW else COLOR.ORANGE
 					)
-					receiver.drawMenuFont(engine, 0, 8, "BONUS POINTS", COLOR.YELLOW)
-					receiver.drawMenuFont(engine, offset, 9, s)
+					receiver.drawMenu(engine, 0, 8, "BONUS POINTS", BASE, COLOR.YELLOW)
+					receiver.drawMenu(engine, offset, 9, s, BASE)
 				}
 			}
 		}
 	}
 
 	override fun renderResult(engine:GameEngine) {
-		receiver.drawMenuFont(engine, 0, 0, "SCORE", COLOR.BLUE)
-		receiver.drawMenuFont(engine, 0, 1, "%12s".format(engine.statistics.score))
-		receiver.drawMenuFont(engine, 0, 2, "LEVEL", COLOR.BLUE)
-		receiver.drawMenuFont(engine, 0, 3, "%12s".format(engine.statistics.level+1))
-		receiver.drawMenuFont(engine, 0, 4, "TIME", COLOR.BLUE)
-		receiver.drawMenuFont(engine, 0, 5, "%12s".format(engine.statistics.time.toTimeStr))
+		receiver.drawMenu(engine, 0, 0, "SCORE", BASE, COLOR.BLUE)
+		receiver.drawMenu(engine, 0, 1, "%12s".format(engine.statistics.score), BASE)
+		receiver.drawMenu(engine, 0, 2, "LEVEL", BASE, COLOR.BLUE)
+		receiver.drawMenu(engine, 0, 3, "%12s".format(engine.statistics.level+1), BASE)
+		receiver.drawMenu(engine, 0, 4, "TIME", BASE, COLOR.BLUE)
+		receiver.drawMenu(engine, 0, 5, "%12s".format(engine.statistics.time.toTimeStr), BASE)
 	}
 	/**
 	 * Load settings from [prop]

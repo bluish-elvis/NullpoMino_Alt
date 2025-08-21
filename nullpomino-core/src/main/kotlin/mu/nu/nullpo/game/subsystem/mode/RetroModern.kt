@@ -40,6 +40,7 @@ import mu.nu.nullpo.game.event.ScoreEvent
 import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.game.subsystem.mode.menu.*
 import mu.nu.nullpo.gui.common.BaseFont
+import mu.nu.nullpo.gui.common.BaseFont.FONT.*
 import mu.nu.nullpo.util.CustomProperties
 import mu.nu.nullpo.util.GeneralUtil.plus
 import mu.nu.nullpo.util.GeneralUtil.toTimeStr
@@ -211,42 +212,43 @@ class RetroModern:AbstractMode() {
 	}
 
 	override fun renderFirst(engine:GameEngine) {
-		if(engine.gameActive&&engine.ending==2&&rollTime>ROLLTIMELIMIT-3600) receiver.drawStaffRoll(engine, (rollTime-ROLLTIMELIMIT+3600)/3600f)
+		if(engine.gameActive&&engine.ending==2&&rollTime>ROLLTIMELIMIT-3600) receiver.drawStaffRoll(engine,
+			(rollTime-ROLLTIMELIMIT+3600)/3600f)
 	}
 	/** Renders HUD (leaderboard or game statistics) */
 	override fun renderLast(engine:GameEngine) {
-		receiver.drawScoreFont(engine, 0, 0, name, color = COLOR.COBALT)
-		receiver.drawScoreFont(engine, 0, 1, "(${GAMETYPE_NAME[gameType]} SPEED)", COLOR.COBALT)
+		receiver.drawScore(engine, 0, 0, name, BASE, color = COLOR.COBALT)
+		receiver.drawScore(engine, 0, 1, "(${GAMETYPE_NAME[gameType]} SPEED)", BASE, COLOR.COBALT)
 
 		if(engine.stat==GameEngine.Status.SETTING||engine.stat==GameEngine.Status.RESULT&&!owner.replayMode) {
 			// Leaderboard
 			if(!owner.replayMode&&!big&&startLevel==0&&engine.ai==null) {
 				val topY = if(receiver.nextDisplayType==2) 6 else 4
-				receiver.drawScoreFont(engine, 2, topY-1, "SCORE LINE LV TIME", color = COLOR.BLUE)
+				receiver.drawScore(engine, 2, topY-1, "SCORE LINE LV TIME", BASE, color = COLOR.BLUE)
 
 				for(i in 0..<rankingMax) {
-					receiver.drawScoreGrade(engine, 0, topY+i, "%2d".format(i+1), COLOR.YELLOW)
-					receiver.drawScoreNum(engine, 2, topY+i, "${rankingScore[gameType][i]}", i==rankingRank)
-					receiver.drawScoreNum(engine, 8.8f, topY+i, "%3d".format(rankingLines[gameType][i]), i==rankingRank)
-					receiver.drawScoreNum(engine, 13, topY+i, "%2d".format(rankingLevel[gameType][i]), i==rankingRank)
-					receiver.drawScoreNum(engine, 15, topY+i, rankingTime[gameType][i].toTimeStr, i==rankingRank)
+					receiver.drawScore(engine, 0, topY+i, "%2d".format(i+1), GRADE, COLOR.YELLOW)
+					receiver.drawScore(engine, 2, topY+i, "${rankingScore[gameType][i]}", NUM, i==rankingRank)
+					receiver.drawScore(engine, 8.8f, topY+i, "%3d".format(rankingLines[gameType][i]), NUM, i==rankingRank)
+					receiver.drawScore(engine, 13, topY+i, "%2d".format(rankingLevel[gameType][i]), NUM, i==rankingRank)
+					receiver.drawScore(engine, 15, topY+i, rankingTime[gameType][i].toTimeStr, NUM, i==rankingRank)
 				}
 			}
 		} else {
 			// Game statistics
-			receiver.drawScoreFont(engine, 0, 3, "Score", COLOR.BLUE)
-			receiver.drawScoreNum(engine, 5, 3, "+$lastScore")
+			receiver.drawScore(engine, 0, 3, "Score", BASE, COLOR.BLUE)
+			receiver.drawScore(engine, 5, 3, "+$lastScore", NUM)
 			val scGet = scDisp<engine.statistics.score
-			receiver.drawScoreNum(engine, 0, 4, "$scDisp", scGet, 2f)
+			receiver.drawScore(engine, 0, 4, "$scDisp", NUM, scGet, 2f)
 //			if(lineCount>=3)  5 else 1
-			receiver.drawScoreFont(engine, 0, 6, "Bonus\n${BaseFont.CURSOR}", COLOR.BLUE)
-			receiver.drawDirectFont(receiver.scoreX(engine,1)+lineSlot.fold(0f) {s, it ->
+			receiver.drawScore(engine, 0, 6, "Bonus\n${BaseFont.CURSOR}", BASE, COLOR.BLUE)
+			receiver.drawFont(receiver.scoreX(engine, 1)+lineSlot.fold(0f) {s, it ->
 				s+when {
 					it in 1..3 -> 10
 					it>=4 -> 32
 					else -> 0
 				}
-			}, receiver.scoreY(engine,7), BaseFont.DOWN_S, COLOR.BLUE)
+			}, receiver.scoreY(engine, 7), BaseFont.DOWN_S, BASE, COLOR.BLUE)
 			receiver.drawScoreBadges(engine, 1, 7, 200, lineSlot.fold(0) {s, it ->
 				s+when {
 					it==1 -> 1
@@ -257,23 +259,23 @@ class RetroModern:AbstractMode() {
 				}
 			})
 
-			receiver.drawScoreFont(engine, 0, 10, "LINE", COLOR.BLUE)
-			receiver.drawScoreNum(engine, 0, 11, "%03d/%03d".format(engine.statistics.lines, totalNorma), scale = 2f)
+			receiver.drawScore(engine, 0, 10, "LINE", BASE, COLOR.BLUE)
+			receiver.drawScore(engine, 0, 11, "%03d/%03d".format(engine.statistics.lines, totalNorma), NUM, scale = 2f)
 
-			receiver.drawScoreFont(engine, 0, 13, "Level", COLOR.BLUE)
+			receiver.drawScore(engine, 0, 13, "Level", BASE, COLOR.BLUE)
 			val lvDem = (if(rollTime>0) rollTime*100/ROLLTIMELIMIT
 			else if(engine.statistics.level<levelNorma.size) norm*100/levelNorma[engine.statistics.level]
 			else 0)%100
-			receiver.drawScoreNum(engine, 5, 13, "%02d.%02d".format(engine.statistics.level, lvDem), scale = 2f)
+			receiver.drawScore(engine, 5, 13, "%02d.%02d".format(engine.statistics.level, lvDem), NUM, scale = 2f)
 
-			receiver.drawScoreFont(engine, 0, 14, "Time", COLOR.BLUE)
-			receiver.drawScoreNum(engine, 0, 15, engine.statistics.time.toTimeStr, scale = 2f)
+			receiver.drawScore(engine, 0, 14, "Time", BASE, COLOR.BLUE)
+			receiver.drawScore(engine, 0, 15, engine.statistics.time.toTimeStr, NUM, scale = 2f)
 
 			// Roll 残り time
 			if(rollTime>0) {
 				val time = ROLLTIMELIMIT-rollTime
-				receiver.drawScoreFont(engine, 0, 15, "FLASH BACK", COLOR.CYAN)
-				receiver.drawScoreNum(engine, 0, 16, time.toTimeStr, time>0&&time<10*60, 2f)
+				receiver.drawScore(engine, 0, 15, "FLASH BACK", BASE, COLOR.CYAN)
+				receiver.drawScore(engine, 0, 16, time.toTimeStr, NUM, time>0&&time<10*60, 2f)
 			}
 		}
 	}
@@ -384,11 +386,13 @@ class RetroModern:AbstractMode() {
 			else -> 0
 		}*if(lineCount>=3) 5 else 1
 		receiver.drawMenuBadges(engine, 2, engine.lastLineY-if(num>=100000) if(num>=500000) 3 else 1 else 0, num)
-		receiver.drawMenuNum(engine, 4, engine.lastLineY, "$lastScore", COLOR.CYAN)
+		receiver.drawMenu(engine, 4, engine.lastLineY, "$lastScore", NUM, COLOR.CYAN)
 
 		if(engine.split) when(engine.lineClearing) {
-			2 -> receiver.drawMenuFont(engine, 0f, engine.lastLinesY.minOf {it.average().toFloat()}, "SPLIT TWIN", COLOR.PURPLE)
-			3 -> receiver.drawMenuFont(engine, 0f, engine.lastLinesY.minOf {it.average().toFloat()}, "1.2.TRIPLE", COLOR.PURPLE)
+			2 -> receiver.drawMenu(engine, 0f, engine.lastLinesY.minOf {it.average().toFloat()}, "SPLIT TWIN", BASE,
+				COLOR.PURPLE)
+			3 -> receiver.drawMenu(engine, 0f, engine.lastLinesY.minOf {it.average().toFloat()}, "1.2.TRIPLE", BASE,
+				COLOR.PURPLE)
 		}
 	}
 
@@ -500,25 +504,25 @@ class RetroModern:AbstractMode() {
 		val col = COLOR.WHITE
 
 		val cY = (engine.fieldHeight-1)
-		receiver.drawMenuFont(engine, 0f, cY/3f, "EXCELLENT!", COLOR.ORANGE, 1f)
+		receiver.drawMenu(engine, 0f, cY/3f, "EXCELLENT!", BASE, COLOR.ORANGE, 1f)
 		if(engine.statc[0]>=100) {
-			receiver.drawMenuFont(engine, 2f, 8f, "BUT...", col)
-			receiver.drawMenuFont(engine, -.25f, 9f, "THIS IS NOT", col)
-			receiver.drawMenuFont(engine, .5f, 10f, "OVER YET!", col)
+			receiver.drawMenu(engine, 2f, 8f, "BUT...", BASE, col)
+			receiver.drawMenu(engine, -.25f, 9f, "THIS IS NOT", BASE, col)
+			receiver.drawMenu(engine, .5f, 10f, "OVER YET!", BASE, col)
 		}
 	}
 
 	override fun renderExcellent(engine:GameEngine) {
 		val col = COLOR.WHITE
 
-		receiver.drawMenuFont(engine, -2f, +11f, "YOU'VE REACHED", col)
-		receiver.drawMenuFont(engine, -.5f, 12f, "THE EDGE OF", col)
-		receiver.drawMenuFont(engine, -1f, 13f, "THIS JOURNEY", col)
+		receiver.drawMenu(engine, -2f, +11f, "YOU'VE REACHED", BASE, col)
+		receiver.drawMenu(engine, -.5f, 12f, "THE EDGE OF", BASE, col)
+		receiver.drawMenu(engine, -1f, 13f, "THIS JOURNEY", BASE, col)
 		if(special) {
-			receiver.drawMenuFont(engine, 0f, 2f, "C.C.W.ONLY", col)
-			receiver.drawMenuFont(engine, 2.5f, 3f, "BONUS", col)
-			receiver.drawMenuNum(
-				engine, .5f, 4f, "+ 10000000", when {
+			receiver.drawMenu(engine, 0f, 2f, "C.C.W.ONLY", BASE, col)
+			receiver.drawMenu(engine, 2.5f, 3f, "BONUS", BASE, col)
+			receiver.drawMenu(
+				engine, .5f, 4f, "+ 10000000", NUM, when {
 					engine.statc[0]%4==0 -> COLOR.YELLOW
 					engine.statc[0]%2==0 -> col
 					else -> COLOR.ORANGE
@@ -529,7 +533,7 @@ class RetroModern:AbstractMode() {
 
 	/** Renders game result screen */
 	override fun renderResult(engine:GameEngine) {
-		receiver.drawMenuFont(engine, 0, 1, "PLAY DATA", COLOR.ORANGE)
+		receiver.drawMenu(engine, 0, 1, "PLAY DATA", BASE, COLOR.ORANGE)
 
 		drawResultStats(
 			engine, receiver, 3, COLOR.BLUE, Statistic.SCORE, Statistic.LINES, Statistic.LEVEL, Statistic.TIME

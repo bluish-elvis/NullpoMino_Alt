@@ -43,6 +43,7 @@ import mu.nu.nullpo.game.play.LineGravity
 import mu.nu.nullpo.game.play.LineGravity.CASCADE.canCascade
 import mu.nu.nullpo.game.play.clearRule.Color
 import mu.nu.nullpo.game.subsystem.mode.AbstractMode
+import mu.nu.nullpo.gui.common.BaseFont.FONT.*
 import mu.nu.nullpo.gui.common.GameKeyDummy.Companion.MAX_PLAYERS
 import mu.nu.nullpo.util.CustomProperties
 import mu.nu.nullpo.util.GeneralUtil.toTimeStr
@@ -346,7 +347,7 @@ abstract class AvalancheVSDummyMode:AbstractMode() {
 		field?.run {
 			reset()
 			//field.readProperty(prop, id);
-			stringToField(prop?.getProperty("values.$id", "") ?: "")
+			stringToField(prop?.getProperty("values.$id", "")?:"")
 			setAllAttribute(true, Block.ATTRIBUTE.VISIBLE, Block.ATTRIBUTE.OUTLINE)
 			setAllAttribute(false, Block.ATTRIBUTE.SELF_PLACED)
 		}
@@ -386,9 +387,9 @@ abstract class AvalancheVSDummyMode:AbstractMode() {
 		if(propFeverMap[playerID].isNullOrEmpty()||forceReload) {
 			propFeverMap[playerID] = receiver.loadProperties(
 				this::class.java.getResource("map/avalanche/${FEVER_MAPS[map]}.map")!!.path)
-			feverChainMin[playerID] = propFeverMap[playerID]?.getProperty("minChain", 3) ?: 3
-			feverChainMax[playerID] = propFeverMap[playerID]?.getProperty("maxChain", 15) ?: 15
-			val subsets = propFeverMap[playerID]?.getProperty("sets") ?: ""
+			feverChainMin[playerID] = propFeverMap[playerID]?.getProperty("minChain", 3)?:3
+			feverChainMax[playerID] = propFeverMap[playerID]?.getProperty("maxChain", 15)?:15
+			val subsets = propFeverMap[playerID]?.getProperty("sets")?:""
 			feverMapSubsets[playerID] = subsets.split(Regex(",")).dropLastWhile {it.isEmpty()}
 		}
 	}
@@ -403,7 +404,7 @@ abstract class AvalancheVSDummyMode:AbstractMode() {
 		}
 
 		engine.frameSkin = PLAYER_COLOR_FRAME[playerID]
-		engine.clearMode = Color(4,true,true,true)
+		engine.clearMode = Color(4, true, true, true)
 		engine.ignoreHidden = true
 		engine.garbageColorClear = true
 		engine.lineGravityType = LineGravity.CASCADE
@@ -625,7 +626,7 @@ abstract class AvalancheVSDummyMode:AbstractMode() {
 			stringToField(
 				propFeverMap[pid]?.getProperty(
 					"${feverMapSubsets[pid][subset]}.${numColors[pid]}colors.${chain}chain"
-				) ?: ""
+				)?:""
 			)
 			setBlockLinkByColor()
 			setAllAttribute(false, Block.ATTRIBUTE.GARBAGE, Block.ATTRIBUTE.ANTIGRAVITY)
@@ -651,12 +652,12 @@ abstract class AvalancheVSDummyMode:AbstractMode() {
 				winnerID = -1
 				owner.engine[0].stat = GameEngine.Status.GAMEOVER
 				owner.engine[1].stat = GameEngine.Status.GAMEOVER
-			} else if(p2Lose&&!p1Lose) {
+			} else if(p2Lose) {
 				// 1P win
 				winnerID = 0
 				owner.engine[0].stat = GameEngine.Status.EXCELLENT
 				owner.engine[1].stat = GameEngine.Status.GAMEOVER
-			} else if(p1Lose&&!p2Lose) {
+			} else if(p1Lose) {
 				// 2P win
 				winnerID = 1
 				owner.engine[0].stat = GameEngine.Status.GAMEOVER
@@ -674,7 +675,7 @@ abstract class AvalancheVSDummyMode:AbstractMode() {
 		}
 	}
 
-	override fun pieceLocked(engine: GameEngine, clear: Int, finesse: Boolean) {
+	override fun pieceLocked(engine:GameEngine, clear:Int, finesse:Boolean) {
 		cleared[engine.playerID] = false
 		ojamaDrop[engine.playerID] = false
 	}
@@ -703,11 +704,12 @@ abstract class AvalancheVSDummyMode:AbstractMode() {
 		val textHeight = if(engine.displaySize==1) 11 else engine.field.height+1
 		val baseX = if(engine.displaySize==1) 1 else -2
 		if(engine.chain>0&&chainDisplay[pid]>0&&chainDisplayType[pid]!=CHAIN_DISPLAY_NONE)
-			receiver.drawMenuFont(
-				engine, baseX+if(engine.chain>9) 0 else 1, textHeight, "${engine.chain} CHAIN!", getChainColor(engine)
+			receiver.drawMenu(
+				engine, baseX+if(engine.chain>9) 0 else 1, textHeight, "${engine.chain} CHAIN!", BASE,
+				getChainColor(engine)
 			)
 		if(zenKeshi[pid]||zenKeshiDisplay[pid]>0)
-			receiver.drawMenuFont(engine, baseX+1, textHeight+1, "ZENKESHI!", COLOR.YELLOW)
+			receiver.drawMenu(engine, baseX+1, textHeight+1, "ZENKESHI!", BASE, COLOR.YELLOW)
 	}
 
 	protected open fun getChainColor(engine:GameEngine):COLOR = engine.playerID.let {pid ->
@@ -727,9 +729,9 @@ abstract class AvalancheVSDummyMode:AbstractMode() {
 		for(i in 0..<if(dangerColumnDouble[playerID]&&!big[playerID]) 2 else 1)
 			if(engine.field.getBlockEmpty(baseX+i, 0))
 				when {
-					big[playerID] -> receiver.drawMenuFont(engine, 2, 0, "\u0085", COLOR.RED, 2f)
-					engine.displaySize==1 -> receiver.drawMenuFont(engine, 4+i*2, 0, "\u0085", COLOR.RED, 2f)
-					else -> receiver.drawMenuFont(engine, 2+i, 0, "\u0085", COLOR.RED)
+					big[playerID] -> receiver.drawMenu(engine, 2, 0, "\u0085", BASE, COLOR.RED, 2f)
+					engine.displaySize==1 -> receiver.drawMenu(engine, 4+i*2, 0, "\u0085", BASE, COLOR.RED, 2f)
+					else -> receiver.drawMenu(engine, 2+i, 0, "\u0085", BASE, COLOR.RED)
 				}
 	}
 
@@ -738,49 +740,49 @@ abstract class AvalancheVSDummyMode:AbstractMode() {
 			for(y in 0..<engine.field.height) {
 				val hard = engine.field.getBlock(x, y)!!.hard
 				if(hard>0)
-					if(engine.displaySize==1) receiver.drawMenuFont(engine, x*2, y*2, "$hard", COLOR.YELLOW, 2f)
-					else receiver.drawMenuFont(engine, x, y, "$hard", COLOR.YELLOW)
+					if(engine.displaySize==1) receiver.drawMenu(engine, x*2, y*2, "$hard", BASE, COLOR.YELLOW, 2f)
+					else receiver.drawMenu(engine, x, y, "$hard", BASE, COLOR.YELLOW)
 			}
 	}
 
 	protected fun drawScores(engine:GameEngine, x:Int, y:Int, headerColor:COLOR) {
 		var y = y
-		receiver.drawScoreFont(engine, x, y, "Score", headerColor)
+		receiver.drawScore(engine, x, y, "Score", BASE, headerColor)
 		y++
-		receiver.drawScoreFont(engine, x, y, "1P: ", COLOR.RED)
+		receiver.drawScore(engine, x, y, "1P: ", BASE, COLOR.RED)
 		if(scgettime[0]>0&&lastscores[0]>0&&lastmultiplier[0]>0)
-			receiver.drawScoreFont(engine, x+4, y, "+${lastscores[0]}e${lastmultiplier[0]}", COLOR.RED)
-		else receiver.drawScoreFont(engine, x+4, y, "${score[0]}", COLOR.RED)
+			receiver.drawScore(engine, x+4, y, "+${lastscores[0]}e${lastmultiplier[0]}", BASE, COLOR.RED)
+		else receiver.drawScore(engine, x+4, y, "${score[0]}", BASE, COLOR.RED)
 		y++
-		receiver.drawScoreFont(engine, x, y, "2P: ", COLOR.BLUE)
+		receiver.drawScore(engine, x, y, "2P: ", BASE, COLOR.BLUE)
 		if(scgettime[1]>0&&lastscores[1]>0&&lastmultiplier[1]>0)
-			receiver.drawScoreFont(engine, x+4, y, "+${lastscores[1]}e${lastmultiplier[1]}", COLOR.BLUE)
-		else receiver.drawScoreFont(engine, x+4, y, "${score[1]}", COLOR.BLUE)
+			receiver.drawScore(engine, x+4, y, "+${lastscores[1]}e${lastmultiplier[1]}", BASE, COLOR.BLUE)
+		else receiver.drawScore(engine, x+4, y, "${score[1]}", BASE, COLOR.BLUE)
 	}
 
 	protected fun drawOjama(engine:GameEngine, x:Int, y:Int, headerColor:COLOR) {
-		receiver.drawScoreFont(engine, x, y, "OJAMA", headerColor)
+		receiver.drawScore(engine, x, y, "OJAMA", BASE, headerColor)
 		val ojamaStr1P = "${ojama[0]}${if(ojamaAdd[0]>0) "(+${ojamaAdd[0]})" else ""}"
 		val ojamaStr2P = "${ojama[1]}${if(ojamaAdd[1]>0) "(+${ojamaAdd[1]})" else ""}"
-		receiver.drawScoreFont(engine, x, y+1, "1P:", COLOR.RED)
-		receiver.drawScoreFont(engine, x+4, y+1, ojamaStr1P, ojama[0]>0)
-		receiver.drawScoreFont(engine, x, y+2, "2P:", COLOR.BLUE)
-		receiver.drawScoreFont(engine, x+4, y+2, ojamaStr2P, ojama[1]>0)
+		receiver.drawScore(engine, x, y+1, "1P:", BASE, COLOR.RED)
+		receiver.drawScore(engine, x+4, y+1, ojamaStr1P, BASE, ojama[0]>0)
+		receiver.drawScore(engine, x, y+2, "2P:", BASE, COLOR.BLUE)
+		receiver.drawScore(engine, x+4, y+2, ojamaStr2P, BASE, ojama[1]>0)
 	}
 
 	protected fun drawAttack(engine:GameEngine, x:Int, y:Int, headerColor:COLOR) {
-		receiver.drawScoreFont(engine, x, y, "ATTACK", headerColor)
-		receiver.drawScoreFont(engine, x, y+1, "1P: ${ojamaSent[0]}", COLOR.RED)
-		receiver.drawScoreFont(engine, x, y+2, "2P: ${ojamaSent[1]}", COLOR.BLUE)
+		receiver.drawScore(engine, x, y, "ATTACK", BASE, headerColor)
+		receiver.drawScore(engine, x, y+1, "1P: ${ojamaSent[0]}", BASE, COLOR.RED)
+		receiver.drawScore(engine, x, y+2, "2P: ${ojamaSent[1]}", BASE, COLOR.BLUE)
 	}
 
 	/* Render results screen */
 	override fun renderResult(engine:GameEngine) {
-		receiver.drawMenuFont(engine, 0, 1, "RESULT", COLOR.ORANGE)
+		receiver.drawMenu(engine, 0, 1, "RESULT", BASE, COLOR.ORANGE)
 		when(winnerID) {
-			-1 -> receiver.drawMenuFont(engine, 6, 2, "DRAW", COLOR.GREEN)
-			engine.playerID -> receiver.drawMenuFont(engine, 6, 2, "WIN!", COLOR.YELLOW)
-			else -> receiver.drawMenuFont(engine, 6, 2, "LOSE", COLOR.WHITE)
+			-1 -> receiver.drawMenu(engine, 6, 2, "DRAW", BASE, COLOR.GREEN)
+			engine.playerID -> receiver.drawMenu(engine, 6, 2, "WIN!", BASE, COLOR.YELLOW)
+			else -> receiver.drawMenu(engine, 6, 2, "LOSE", BASE, COLOR.WHITE)
 		}
 
 		val apm = ojamaSent[engine.playerID]*3600f/engine.statistics.time

@@ -36,6 +36,7 @@ import mu.nu.nullpo.game.event.EventReceiver.COLOR
 import mu.nu.nullpo.game.event.ScoreEvent
 import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.game.subsystem.mode.menu.*
+import mu.nu.nullpo.gui.common.BaseFont.FONT.*
 import mu.nu.nullpo.util.CustomProperties
 import mu.nu.nullpo.util.GeneralUtil.toTimeStr
 
@@ -143,7 +144,7 @@ class RetroA:AbstractMode() {
 //			ruleOpt.softdropGravitySpeedLimit = false
 			owSDSpd = 1
 
-			owner.bgMan.bg = if(gameType==GAMETYPE.PRESSURE) 0 else minOf(startLevel,19)
+			owner.bgMan.bg = if(gameType==GAMETYPE.PRESSURE) 0 else minOf(startLevel, 19)
 			frameSkin = GameEngine.FRAME_SKIN_GB
 		}
 	}
@@ -192,39 +193,39 @@ class RetroA:AbstractMode() {
 
 	/** Renders HUD (leaderboard or game statistics) */
 	override fun renderLast(engine:GameEngine) {
-		receiver.drawScoreFont(engine, 0, 0, name, COLOR.GREEN)
-		receiver.drawScoreFont(engine, 0, 1, "(${gameType.name})", COLOR.GREEN)
+		receiver.drawScore(engine, 0, 0, name, BASE, COLOR.GREEN)
+		receiver.drawScore(engine, 0, 1, "(${gameType.name})", BASE, COLOR.GREEN)
 
 		if(engine.stat==GameEngine.Status.SETTING||engine.stat==GameEngine.Status.RESULT&&!owner.replayMode) {
 			if(!owner.replayMode&&!big&&engine.ai==null) {
-				receiver.drawScoreFont(engine, 3, 3, "SCORE    LINE LV.", COLOR.BLUE)
+				receiver.drawScore(engine, 3, 3, "SCORE    LINE LV.", BASE, COLOR.BLUE)
 
 				for(i in 0..<rankingMax) {
-					receiver.drawScoreGrade(
-						engine, 0, 4+i, "%2d".format(i+1), if(rankingRank==i) COLOR.RAINBOW else COLOR.YELLOW
+					receiver.drawScore(
+						engine, 0, 4+i, "%2d".format(i+1), GRADE, if(rankingRank==i) COLOR.RAINBOW else COLOR.YELLOW
 					)
-					receiver.drawScoreNum(engine, 3, 4+i, "${rankingScore[gameType.ordinal][i]}", i==rankingRank)
-					receiver.drawScoreNum(engine, 12, 4+i, "${rankingLines[gameType.ordinal][i]}", i==rankingRank)
-					receiver.drawScoreNum(
-						engine, 17, 4+i, "%02d".format(rankingLevel[gameType.ordinal][i]), i==rankingRank
+					receiver.drawScore(engine, 3, 4+i, "${rankingScore[gameType.ordinal][i]}", NUM, i==rankingRank)
+					receiver.drawScore(engine, 12, 4+i, "${rankingLines[gameType.ordinal][i]}", NUM, i==rankingRank)
+					receiver.drawScore(
+						engine, 17, 4+i, "%02d".format(rankingLevel[gameType.ordinal][i]), NUM, i==rankingRank
 					)
 				}
 			}
 		} else {
-			receiver.drawScoreFont(engine, 0, 3, "Score", COLOR.BLUE)
-			receiver.drawScoreFont(engine, 6, 3, "(+$lastScore)")
-			receiver.drawScoreNum(engine, 0, 4, "$scDisp", 2f)
+			receiver.drawScore(engine, 0, 3, "Score", BASE, COLOR.BLUE)
+			receiver.drawScore(engine, 6, 3, "(+$lastScore)", BASE)
+			receiver.drawScore(engine, 0, 4, "$scDisp", NUM, 2f)
 
 			val strLine = "$loons"
 
-			receiver.drawScoreFont(engine, 0, 6, "Lines", COLOR.BLUE)
-			receiver.drawScoreNum(engine, 0, 7, strLine, 2f)
+			receiver.drawScore(engine, 0, 6, "Lines", BASE, COLOR.BLUE)
+			receiver.drawScore(engine, 0, 7, strLine, NUM, 2f)
 
-			receiver.drawScoreFont(engine, 0, 9, "Level", COLOR.BLUE)
-			receiver.drawScoreFont(engine, 0, 10, "%02d".format(engine.statistics.level))
+			receiver.drawScore(engine, 0, 9, "Level", BASE, COLOR.BLUE)
+			receiver.drawScore(engine, 0, 10, "%02d".format(engine.statistics.level), BASE)
 
-			receiver.drawScoreFont(engine, 0, 12, "Time", COLOR.BLUE)
-			receiver.drawScoreNum(engine, 0, 13, engine.statistics.time.toTimeStr, 2f)
+			receiver.drawScore(engine, 0, 12, "Time", BASE, COLOR.BLUE)
+			receiver.drawScore(engine, 0, 13, engine.statistics.time.toTimeStr, NUM, 2f)
 		}
 	}
 
@@ -313,15 +314,15 @@ class RetroA:AbstractMode() {
 
 	/** Renders game result screen */
 	override fun renderResult(engine:GameEngine) {
-		receiver.drawMenuFont(engine, 0, 1, "PLAY DATA", COLOR.ORANGE)
+		receiver.drawMenu(engine, 0, 1, "PLAY DATA", BASE, COLOR.ORANGE)
 
 		drawResultStats(engine, receiver, 3, COLOR.BLUE, Statistic.SCORE)
 
-		receiver.drawMenuFont(engine, 0, 5, "Lines", COLOR.BLUE)
+		receiver.drawMenu(engine, 0, 5, "Lines", BASE, COLOR.BLUE)
 		val strLines = "%10d".format(loons)
-		receiver.drawMenuFont(engine, 0, 6, strLines)
+		receiver.drawMenu(engine, 0, 6, strLines, BASE)
 		val strFour = "%10s".format("+%d".format(engine.statistics.totalQuadruple))
-		receiver.drawMenuFont(engine, 0, 7, strFour)
+		receiver.drawMenu(engine, 0, 7, strFour, BASE)
 
 		drawResultStats(engine, receiver, 8, COLOR.BLUE, Statistic.LEVEL, Statistic.TIME)
 		drawResult(engine, receiver, 12, COLOR.BLUE, "EFFICIENCY", "%1.3f".format(efficiency))

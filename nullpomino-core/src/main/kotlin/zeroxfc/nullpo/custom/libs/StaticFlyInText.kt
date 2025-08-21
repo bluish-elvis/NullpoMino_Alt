@@ -37,6 +37,7 @@
 package zeroxfc.nullpo.custom.libs
 
 import mu.nu.nullpo.game.event.EventReceiver
+import mu.nu.nullpo.gui.common.BaseFont.FONT.BASE
 import kotlin.random.Random
 
 /**
@@ -70,10 +71,10 @@ class StaticFlyInText(private val mainString:String  // String to draw
 		var sMod = 16
 		if(textScale==2.0f) sMod = 32
 		if(textScale==0.5f) sMod = 16
-		val position:List<Pair<Vector, Vector>> = (mainString.indices).map { i ->
+		val position:List<Pair<Vector, Vector>> = (mainString.indices).map {i ->
 			var startX = 0
 			var startY = 0
-			var position: Vector = Vector.zero()
+			var position:Vector = Vector.zero()
 			val dec1 = positionRandomizer.nextFloat()
 			val dec2 = positionRandomizer.nextFloat()
 			if(dec1<.5f) {
@@ -106,9 +107,10 @@ class StaticFlyInText(private val mainString:String  // String to draw
 	/** Draws the text at its current position.*/
 	fun draw(receiver:EventReceiver) {
 		for(j in letterPositions.indices) {
-			receiver.drawDirectFont(
+			receiver.drawFont(
 				letterPositions[j].x.toInt(), letterPositions[j].y.toInt(), "${mainString[j]}",
-				textColor, textScale
+				BASE, textColor,
+				textScale
 			)
 		}
 	}

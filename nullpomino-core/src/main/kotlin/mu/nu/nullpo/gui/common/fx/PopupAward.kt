@@ -36,6 +36,7 @@ import mu.nu.nullpo.game.event.EventReceiver
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
 import mu.nu.nullpo.game.event.ScoreEvent
 import mu.nu.nullpo.gui.common.AbstractRenderer
+import mu.nu.nullpo.gui.common.BaseFont.FONT.BASE
 
 class PopupAward(x:Float, y:Float, val event:ScoreEvent, val moveTime:Int, val ex:Float = 0f):SpriteSheet(x, y) {
 	val ox = x
@@ -59,45 +60,46 @@ class PopupAward(x:Float, y:Float, val event:ScoreEvent, val moveTime:Int, val e
 		val ev = event
 		val x = x.toInt()
 		val y = y.toInt()
-		val strPieceName = ev.piece?.id?.let {Piece.Shape.names[it]} ?: ""
+		val strPieceName = ev.piece?.id?.let {Piece.Shape.names[it]}?:""
 
 		when {
-			ev.lines==1 -> r.drawDirectFont(
+			ev.lines==1 -> r.drawFont(
 				x-48,
 				y,
 				"SINGLE",
-				color = if(ev.twistType==null) COLOR.COBALT else COLOR.BLUE,
+				BASE, color = if(ev.twistType==null) COLOR.COBALT else COLOR.BLUE,
 				alpha = alpha
 			)
 			ev.lines==2 -> {
 				if(!ev.split)
-					r.drawDirectFont(x-48, y, "DOUBLE", color = if(ev.twistType==null) COLOR.BLUE else COLOR.CYAN, alpha = alpha)
-				else r.drawDirectFont(x-80, y, "SPLIT TWIN", color = COLOR.PURPLE, alpha = alpha)
+					r.drawFont(x-48, y, "DOUBLE", BASE, color = if(ev.twistType==null) COLOR.BLUE else COLOR.CYAN, alpha = alpha)
+				else r.drawFont(x-80, y, "SPLIT TWIN", BASE, color = COLOR.PURPLE, alpha = alpha)
 			}
 			ev.lines==3 -> {
 				if(!ev.split)
-					r.drawDirectFont(x-48, y, "TRIPLE", color = COLOR.GREEN, alpha = alpha)
-				else r.drawDirectFont(x-80, y, "1.2.TRIPLE", color = COLOR.CYAN, alpha = alpha)
+					r.drawFont(x-48, y, "TRIPLE", BASE, color = COLOR.GREEN, alpha = alpha)
+				else r.drawFont(x-80, y, "1.2.TRIPLE", BASE, color = COLOR.CYAN, alpha = alpha)
 			}
-			ev.lines>=4 -> r.drawDirectFont(x-72, y, "QUADRUPLE", color = EventReceiver.getRainbowColor(ticks), alpha = alpha)
+			ev.lines>=4 -> r.drawFont(x-72, y, "QUADRUPLE", BASE, color = EventReceiver.getRainbowColor(ticks), alpha = alpha)
 		}
 		if(ev.twistType!=null) when {
 			ev.twistType.mini -> {
-				r.drawDirectFont(x-80, y-16, "MINI", color = if(ev.b2b>0) COLOR.CYAN else COLOR.BLUE, alpha = alpha)
+				r.drawFont(x-80, y-16, "MINI", BASE, color = if(ev.b2b>0) COLOR.CYAN else COLOR.BLUE, alpha = alpha)
 				ev.piece?.let {r.drawPiece(x-32, y, it, 0.5f, alpha = alpha)}
-				r.drawDirectFont(x-16, y, "$strPieceName-TWIST", color = if(ev.b2b>0) COLOR.PINK else COLOR.PURPLE, alpha = alpha)
+				r.drawFont(x-16, y, "$strPieceName-TWIST", BASE, color = if(ev.b2b>0) COLOR.PINK else COLOR.PURPLE, alpha = alpha)
 			}
 			ev.twistType.ez -> {
 				ev.piece?.let {r.drawPiece(x-16, y, it, 0.5f, alpha = alpha)}
-				r.drawDirectFont(x-54, y-8, "EZ", color = COLOR.ORANGE, alpha = alpha)
-				r.drawDirectFont(x+54, y-8, "TRICK", color = COLOR.ORANGE, alpha = alpha)
+				r.drawFont(x-54, y-8, "EZ", BASE, color = COLOR.ORANGE, alpha = alpha)
+				r.drawFont(x+54, y-8, "TRICK", BASE, color = COLOR.ORANGE, alpha = alpha)
 			}
 			else -> {
 				ev.piece?.let {r.drawPiece(x-64, y, it, 0.5f, alpha = alpha)}
-				r.drawDirectFont(
+				r.drawFont(
 					x-32,
 					y-8,
 					"-TWISTER",
+					BASE,
 					color = if(ev.lines==3) EventReceiver.getRainbowColor(ticks) else if(ev.b2b>0) COLOR.PINK else COLOR.PURPLE,
 					alpha = alpha
 				)

@@ -37,6 +37,7 @@ import mu.nu.nullpo.game.component.Piece
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
 import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.game.subsystem.ai.DummyAI
+import mu.nu.nullpo.gui.common.BaseFont.FONT.*
 import mu.nu.nullpo.util.GeneralUtil.getOX
 import org.apache.logging.log4j.LogManager
 import kotlin.math.abs
@@ -617,7 +618,7 @@ open class PoochyBot:DummyAI(), Runnable {
 		 * pieceHold = new Piece(engine.holdPieceObject); */
 		val nowX = if(inARE) engine.getSpawnPosX(pieceNow, fld) else engine.nowPieceX
 		val nowY = if(inARE) engine.getSpawnPosY(pieceNow) else engine.nowPieceY
-		val nowRt = if(inARE) engine.ruleOpt.pieceDefaultDirection[pieceNow?.id ?: 0] else pieceNow?.direction ?: 0
+		val nowRt = if(inARE) engine.ruleOpt.pieceDefaultDirection[pieceNow?.id?:0] else pieceNow?.direction?:0
 		if(pieceHold==null) pieceHold = (if(inARE||pieceNow==null) engine.getNextObjectCopy(engine.nextPieceCount+1)
 		else engine.getNextObjectCopy(engine.nextPieceCount))
 		pieceNow = checkOffset(pieceNow, engine)
@@ -1490,8 +1491,8 @@ open class PoochyBot:DummyAI(), Runnable {
 	override fun renderState(engine:GameEngine, playerID:Int) {
 		super.renderState(engine, playerID)
 		engine.owner.receiver.run {
-			drawMenuFont(engine, 0, 7, "IN ARE:", COLOR.BLUE, .5f)
-			drawMenuFont(engine, 7, 7, inARE.getOX, .5f)
+			drawMenu(engine, 0, 7, "IN ARE:", BASE, COLOR.BLUE, .5f)
+			drawMenu(engine, 7, 7, inARE.getOX, BASE, .5f)
 		}
 	}
 
@@ -1539,7 +1540,8 @@ open class PoochyBot:DummyAI(), Runnable {
 	private class ThinkRequestMutex:Object() {
 		var active = false
 
-		@Synchronized fun newRequest() {
+		@Synchronized
+		fun newRequest() {
 			active = true
 			notifyAll()
 		}
@@ -1608,7 +1610,8 @@ open class PoochyBot:DummyAI(), Runnable {
 		 */
 		@Deprecated(
 			"Workaround for the bug in Field.getHighestBlockY(int).\n"+"\t  The bug has since been fixed as of NullpoMino v6.5, so\n"+"\t  fld.getHighestBlockY(x) should be equivalent."
-		) fun getColumnDepth(fld:Field, x:Int):Int {
+		)
+		fun getColumnDepth(fld:Field, x:Int):Int {
 			val maxY = fld.height-1
 			var result = fld.getHighestBlockY(x)
 			if(result==maxY&&fld.getBlockEmpty(x, maxY)) result++

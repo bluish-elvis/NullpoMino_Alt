@@ -39,6 +39,7 @@ import mu.nu.nullpo.game.net.NetUtil
 import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.game.subsystem.mode.menu.*
 import mu.nu.nullpo.gui.common.BaseFont
+import mu.nu.nullpo.gui.common.BaseFont.FONT.*
 import mu.nu.nullpo.util.CustomProperties
 import mu.nu.nullpo.util.GeneralUtil.toInt
 import mu.nu.nullpo.util.GeneralUtil.toTimeStr
@@ -92,7 +93,7 @@ class GrandOrders:NetDummyMode() {
 	private val nextLv get() = nowMission.norm
 
 	private val itemLevel =
-		LevelMenuItem("startlevel", "LEVEL", COLOR.RED, 0, 0..(courses.maxOfOrNull {it.goalLevel} ?: 0), true, true)
+		LevelMenuItem("startlevel", "LEVEL", COLOR.RED, 0, 0..(courses.maxOfOrNull {it.goalLevel}?:0), true, true)
 	/** Selected starting level */
 	private var startLevel:Int by DelegateMenuItem(itemLevel)
 
@@ -235,7 +236,8 @@ class GrandOrders:NetDummyMode() {
 
 	/** Main routine for game setup screen */
 	override fun onSettingChanged(engine:GameEngine) {
-		if(startLevel>nowCourse.goalLevel-1) startLevel = if(menuCursor!=menu.items.indexOf(itemLevel)) 0 else nowCourse.goalLevel-1
+		if(startLevel>nowCourse.goalLevel-1) startLevel =
+			if(menuCursor!=menu.items.indexOf(itemLevel)) 0 else nowCourse.goalLevel-1
 		engine.owner.bgMan.bg = startLevel
 		engine.statistics.level = startLevel
 		missionPos = engine.statistics.level
@@ -271,15 +273,15 @@ class GrandOrders:NetDummyMode() {
 	override fun renderLast(engine:GameEngine) {
 		if(owner.menuOnly) return
 
-		receiver.drawScoreFont(engine, 0, -1, name, COLOR.PURPLE)
-		receiver.drawScoreFont(engine, 0, 0, "TIME ATTACK", COLOR.PURPLE, .75f)
-		receiver.drawScoreFont(engine, 0, 1, "${nowCourse.showName} COURSE", COLOR.PURPLE)
+		receiver.drawScore(engine, 0, -1, name, BASE, COLOR.PURPLE)
+		receiver.drawScore(engine, 0, 0, "TIME ATTACK", BASE, COLOR.PURPLE, .75f)
+		receiver.drawScore(engine, 0, 1, "${nowCourse.showName} COURSE", BASE, COLOR.PURPLE)
 		//receiver.drawScore(engine, playerID, -1, -4*2, "DECORATION", scale = .5f);
 		//receiver.drawScoreBadges(engine, playerID,0,-3,100,decoration);
 		//receiver.drawScoreBadges(engine, playerID,5,-4,100,decTemp);
 		if(engine.stat==GameEngine.Status.SETTING||engine.stat==GameEngine.Status.RESULT&&!owner.replayMode) {
 			if(!owner.replayMode&&startLevel==0&&!big&&engine.ai==null&&!netIsWatch) {
-				receiver.drawScoreFont(engine, 8, 3, "Time", COLOR.BLUE)
+				receiver.drawScore(engine, 8, 3, "Time", BASE, COLOR.BLUE)
 
 				for(i in 0..<rankingMax) {
 					val cleared = rankingRollClear[goalType][i]>0
@@ -288,35 +290,36 @@ class GrandOrders:NetDummyMode() {
 						rankingRollClear[goalType][i]==2 -> COLOR.ORANGE
 						else -> COLOR.WHITE
 					}
-					receiver.drawScoreGrade(engine, 0, 4+i, "%2d".format(i+1), if(i==rankingRank) COLOR.RED else COLOR.YELLOW)
-					receiver.drawScoreNum(engine, 8, 4+i, rankingTime[goalType][i].toTimeStr, gColor)
-					receiver.drawScoreNano(engine, 10, 4+i, if(cleared) "LIVES\nREMAINED" else "LINES\nCLEARED", gColor, .5f)
-					receiver.drawScoreNum(
-						engine, 2, 4+i, "%3d".format(if(cleared) rankingLives[goalType][i] else rankingLines[goalType][i]), gColor
+					receiver.drawScore(engine, 0, 4+i, "%2d".format(i+1), GRADE, if(i==rankingRank) COLOR.RED else COLOR.YELLOW)
+					receiver.drawScore(engine, 8, 4+i, rankingTime[goalType][i].toTimeStr, NUM, gColor)
+					receiver.drawScore(engine, 10, 4+i, if(cleared) "LIVES\nREMAINED" else "LINES\nCLEARED", NANO, gColor, .5f)
+					receiver.drawScore(
+						engine, 2, 4+i,
+						"%3d".format(if(cleared) rankingLives[goalType][i] else rankingLines[goalType][i]), NUM, gColor
 					)
 				}
 			}
 		} else {
-			receiver.drawScoreFont(engine, 0, 3, "Missions", COLOR.BLUE)
-			receiver.drawScoreNum(engine, 5, 2, "%02d".format(engine.statistics.level+1), 2f)
-			receiver.drawScoreNum(engine, 8, 3, "/%3d".format(nowCourse.goalLevel))
+			receiver.drawScore(engine, 0, 3, "Missions", BASE, COLOR.BLUE)
+			receiver.drawScore(engine, 5, 2, "%02d".format(engine.statistics.level+1), NUM, 2f)
+			receiver.drawScore(engine, 8, 3, "/%3d".format(nowCourse.goalLevel), NUM)
 
-			receiver.drawScoreFont(engine, 0, 6, nowMission.showName, COLOR.BLUE)
+			receiver.drawScore(engine, 0, 6, nowMission.showName, BASE, COLOR.BLUE)
 			receiver.drawScoreSpeed(engine, 0, 7, engine.speed.rank, 6f)
-			receiver.drawScoreNum(engine, 0, 8, "%3d/%3d".format(norm, nextLv))
+			receiver.drawScore(engine, 0, 8, "%3d/%3d".format(norm, nextLv), NUM)
 
-			receiver.drawScoreFont(engine, 0, 10, "TIME LIMIT", COLOR.BLUE)
-			receiver.drawScoreNum(engine, 0, 11, levelTimer.toTimeStr, levelTimer in 1..<600&&levelTimer%4==0, 2f)
+			receiver.drawScore(engine, 0, 10, "TIME LIMIT", BASE, COLOR.BLUE)
+			receiver.drawScore(engine, 0, 11, levelTimer.toTimeStr, NUM, levelTimer in 1..<600&&levelTimer%4==0, 2f)
 
-			receiver.drawScoreFont(engine, 0, 13, "TOTAL TIME", COLOR.BLUE)
-			receiver.drawScoreNum(engine, 0, 14, engine.statistics.time.toTimeStr, 2f)
+			receiver.drawScore(engine, 0, 13, "TOTAL TIME", BASE, COLOR.BLUE)
+			receiver.drawScore(engine, 0, 14, engine.statistics.time.toTimeStr, NUM, 2f)
 
 			// Remaining ending time
 			if(engine.gameActive&&engine.ending==2&&engine.staffrollEnable) {
 				var time = ROLLTIMELIMIT-rollTime
 				if(time<0) time = 0
-				receiver.drawScoreFont(engine, 0, 17, "ROLL TIME", COLOR.BLUE)
-				receiver.drawScoreNum(engine, 0, 18, time.toTimeStr, time>0&&time<10*60, 2f)
+				receiver.drawScore(engine, 0, 17, "ROLL TIME", BASE, COLOR.BLUE)
+				receiver.drawScore(engine, 0, 18, time.toTimeStr, NUM, time>0&&time<10*60, 2f)
 			}
 
 			// Section time
@@ -324,7 +327,7 @@ class GrandOrders:NetDummyMode() {
 				val x = if(receiver.nextDisplayType==2) 25 else 12
 				val y = if(receiver.nextDisplayType==2) 4 else 2
 
-				receiver.drawScoreFont(engine, x, y, "SECTION TIME", COLOR.BLUE)
+				receiver.drawScore(engine, x, y, "SECTION TIME", BASE, COLOR.BLUE)
 
 				val l = maxOf(0, engine.statistics.level-20)
 				var i = l
@@ -332,12 +335,12 @@ class GrandOrders:NetDummyMode() {
 					if(sectionTime[i]>0) {
 						val strSeparator = if(i==engine.statistics.level&&engine.ending==0) "+" else "-"
 						val strSectionTime = "%2d%s%s".format(i+1, strSeparator, sectionTime[i].toTimeStr)
-						receiver.drawScoreNum(engine, x+1, y+1+i-l, strSectionTime)
+						receiver.drawScore(engine, x+1, y+1+i-l, strSectionTime, NUM)
 					}
 					i++
 				}
-				receiver.drawScoreFont(engine, 0, 13, "AVERAGE", COLOR.BLUE)
-				receiver.drawScoreNum(engine, 0, 14, (engine.statistics.time/(sectionsDone+1)).toTimeStr, 2f)
+				receiver.drawScore(engine, 0, 13, "AVERAGE", BASE, COLOR.BLUE)
+				receiver.drawScore(engine, 0, 14, (engine.statistics.time/(sectionsDone+1)).toTimeStr, NUM, 2f)
 			}
 		}
 		super.renderLast(engine)
@@ -474,8 +477,9 @@ class GrandOrders:NetDummyMode() {
 
 	/** Renders game result screen */
 	override fun renderResult(engine:GameEngine) {
-		if(!netIsWatch) receiver.drawMenuFont(
-			engine, 0, 0, "${BaseFont.UP_S}${BaseFont.DOWN_S} PAGE${engine.statc[1]+1}/3", COLOR.RED
+		if(!netIsWatch) receiver.drawMenu(
+			engine, 0, 0, "${BaseFont.UP_S}${BaseFont.DOWN_S} PAGE${engine.statc[1]+1}/3", BASE,
+			COLOR.RED
 		)
 
 		if(engine.statc[1]==0) {
@@ -484,11 +488,11 @@ class GrandOrders:NetDummyMode() {
 				1 -> COLOR.GREEN
 				else -> COLOR.RED
 			}
-			receiver.drawMenuFont(engine, 0, 1, "LIFE REMAINED", COLOR.BLUE, .8f)
-			receiver.drawMenuNum(engine, 7, 1, "%2d".format(engine.lives), gcolor, 2f)
+			receiver.drawMenu(engine, 0, 1, "LIFE REMAINED", BASE, COLOR.BLUE, .8f)
+			receiver.drawMenu(engine, 7, 1, "%2d".format(engine.lives), NUM, gcolor, 2f)
 
-			receiver.drawMenuNum(engine, 0, 2, "%04d".format(norm), gcolor, 2f)
-			receiver.drawMenuFont(engine, 6, 3, "Lines", COLOR.BLUE, .8f)
+			receiver.drawMenu(engine, 0, 2, "%04d".format(norm), NUM, gcolor, 2f)
+			receiver.drawMenu(engine, 6, 3, "Lines", BASE, COLOR.BLUE, .8f)
 
 			drawResultStats(
 				engine, receiver, 4, COLOR.BLUE, Statistic.LPM, Statistic.TIME, Statistic.PPS, Statistic.PIECE
@@ -497,25 +501,26 @@ class GrandOrders:NetDummyMode() {
 			drawResultNetRank(engine, receiver, 16, COLOR.BLUE, netRankingRank[0])
 			drawResultNetRankDaily(engine, receiver, 18, COLOR.BLUE, netRankingRank[1])
 		} else if(engine.statc[1]==1||engine.statc[1]==2) {
-			receiver.drawMenuFont(engine, 0, 2, "SECTION", COLOR.BLUE)
+			receiver.drawMenu(engine, 0, 2, "SECTION", BASE, COLOR.BLUE)
 
 			var i = 0
 			var x:Int
 			while(i<10&&i<sectionTime.size-engine.statc[1]*10) {
 				x = i+engine.statc[1]*10-10
-				if(x>=0) if(sectionTime[x]>0) receiver.drawMenuNum(engine, 2, 3+i, sectionTime[x].toTimeStr)
+				if(x>=0) if(sectionTime[x]>0) receiver.drawMenu(engine, 2, 3+i, sectionTime[x].toTimeStr, NUM)
 				i++
 			}
 			if(sectionAvgTime>0) {
-				receiver.drawMenuFont(engine, 0, 14, "AVERAGE", COLOR.BLUE)
-				receiver.drawMenuFont(engine, 2, 15, sectionAvgTime.toTimeStr)
+				receiver.drawMenu(engine, 0, 14, "AVERAGE", BASE, COLOR.BLUE)
+				receiver.drawMenu(engine, 2, 15, sectionAvgTime.toTimeStr, BASE)
 			}
 		}
 
-		if(netIsPB) receiver.drawMenuFont(engine, 2, 20, "NEW PB", COLOR.ORANGE)
+		if(netIsPB) receiver.drawMenu(engine, 2, 20, "NEW PB", BASE, COLOR.ORANGE)
 
-		if(netIsNetPlay&&netReplaySendStatus==1) receiver.drawMenuFont(engine, 0, 21, "SENDING...", COLOR.PINK)
-		else if(netIsNetPlay&&!netIsWatch&&netReplaySendStatus==2) receiver.drawMenuFont(engine, 1, 21, "A: RETRY", COLOR.RED)
+		if(netIsNetPlay&&netReplaySendStatus==1) receiver.drawMenu(engine, 0, 21, "SENDING...", BASE, COLOR.PINK)
+		else if(netIsNetPlay&&!netIsWatch&&netReplaySendStatus==2) receiver.drawMenu(engine, 1, 21, "A: RETRY", BASE,
+			COLOR.RED)
 	}
 
 	/** Additional routine for game result screen */
@@ -1134,7 +1139,7 @@ class GrandOrders:NetDummyMode() {
 					else -> listOf(Mission.LevelStar(1, 6, 70))
 				}
 			}
-			val goalLevel by lazy { missions.size}
+			val goalLevel by lazy {missions.size}
 
 			/** BGM table */
 			val bgmList by lazy {

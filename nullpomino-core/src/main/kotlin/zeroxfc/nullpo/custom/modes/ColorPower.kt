@@ -49,6 +49,7 @@ import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.game.subsystem.mode.menu.BooleanMenuItem
 import mu.nu.nullpo.game.subsystem.mode.menu.DelegateMenuItem
 import mu.nu.nullpo.game.subsystem.mode.menu.MenuList
+import mu.nu.nullpo.gui.common.BaseFont.FONT.*
 import mu.nu.nullpo.gui.slick.img.ext.RendererExtension
 import mu.nu.nullpo.util.CustomProperties
 import mu.nu.nullpo.util.GeneralUtil.toTimeStr
@@ -332,7 +333,7 @@ class ColorPower:MarathonModeBase() {
 
 		//int x = (16 * engine.nowPieceX) + 4 + receiver.fieldX(engine, playerID) + (16 * engine.nowPieceObject.getWidth() / 2);
 		//int y = (16 * engine.nowPieceY) + 52 + receiver.fieldY(engine, playerID) + (16 * engine.nowPieceObject.getHeight() / 2);
-		val baseX= 16*engine.nowPieceX+receiver.fieldX(engine)
+		val baseX = 16*engine.nowPieceX+receiver.fieldX(engine)
 		val baseY = 16*engine.nowPieceY+receiver.fieldY(engine)
 		engine.nowPieceObject?.let {cPiece ->
 			for(i in 1..fall) {
@@ -376,79 +377,86 @@ class ColorPower:MarathonModeBase() {
 		 */
 	override fun renderLast(engine:GameEngine) {
 		if(owner.menuOnly) return
-		receiver.drawScoreFont(engine, 0, 0, "${if(ruleBoundMode) "RULEBOUND " else ""}$name", COLOR.GREEN)
-		receiver.drawScoreFont(
-			engine, 0, 1, if(tableGameClearLines[goalType]==-1) "(Endless run)" else "(${tableGameClearLines[goalType]} Lines run)",
+		receiver.drawScore(engine, 0, 0, "${if(ruleBoundMode) "RULEBOUND " else ""}$name", BASE, COLOR.GREEN)
+		receiver.drawScore(
+			engine, 0, 1,
+			if(tableGameClearLines[goalType]==-1) "(Endless run)" else "(${tableGameClearLines[goalType]} Lines run)",
+			BASE,
 			COLOR.GREEN
 		)
 		if(engine.stat===GameEngine.Status.SETTING||engine.stat===GameEngine.Status.RESULT&&!owner.replayMode) {
 			if(!owner.replayMode&&!big&&engine.ai==null) {
 				val topY = if(receiver.nextDisplayType==2) 6 else 4
-				receiver.drawScoreFont(engine, 3, topY-1, "SCORE  LINE TIME", COLOR.BLUE)
+				receiver.drawScore(engine, 3, topY-1, "SCORE  LINE TIME", BASE, COLOR.BLUE)
 				if(showPlayerStats) {
 					for(i in 0..<rankingMax) {
-						receiver.drawScoreFont(engine, 0, topY+i, "%2d".format(i+1), COLOR.YELLOW)
+						receiver.drawScore(engine, 0, topY+i, "%2d".format(i+1), BASE, COLOR.YELLOW)
 						val s = "${rankingScorePlayer[if(ruleBoundMode) 1 else 0][goalType][i]}"
 						val isLong = s.length>6&&receiver.nextDisplayType!=2
-						receiver.drawScoreFont(
-							engine, if(isLong) 6 else 3, if(isLong) (topY+i)*2 else topY+i, s, i==rankingRankPlayer,
+						receiver.drawScore(
+							engine, if(isLong) 6 else 3, if(isLong) (topY+i)*2 else topY+i, s, BASE,
+							i==rankingRankPlayer,
 							if(isLong) .5f else 1f
 						)
-						receiver.drawScoreFont(
+						receiver.drawScore(
 							engine, 10, topY+i, "${rankingLinesPlayer[if(ruleBoundMode) 1 else 0][goalType][i]}",
+							BASE,
 							i==rankingRankPlayer
 						)
-						receiver.drawScoreFont(
+						receiver.drawScore(
 							engine, 15, topY+i, rankingTimePlayer[if(ruleBoundMode) 1 else 0][goalType][i].toTimeStr,
-							i==rankingRankPlayer
+							BASE, i==rankingRankPlayer
 						)
 					}
-					receiver.drawScoreFont(engine, 0, topY+rankingMax+1, "PLAYER SCORES", COLOR.BLUE)
-					receiver.drawScoreFont(engine, 0, topY+rankingMax+2, engine.playerProp.nameDisplay, COLOR.WHITE, 2f)
-					receiver.drawScoreFont(engine, 0, topY+rankingMax+5, "F:SWITCH RANK SCREEN", COLOR.GREEN)
+					receiver.drawScore(engine, 0, topY+rankingMax+1, "PLAYER SCORES", BASE, COLOR.BLUE)
+					receiver.drawScore(engine, 0, topY+rankingMax+2, engine.playerProp.nameDisplay, BASE, COLOR.WHITE, 2f)
+					receiver.drawScore(engine, 0, topY+rankingMax+5, "F:SWITCH RANK SCREEN", BASE, COLOR.GREEN)
 				} else {
 					for(i in 0..<rankingMax) {
-						receiver.drawScoreFont(engine, 0, topY+i, "%2d".format(i+1), COLOR.YELLOW)
+						receiver.drawScore(engine, 0, topY+i, "%2d".format(i+1), BASE, COLOR.YELLOW)
 						val s = "${rankingScore[if(ruleBoundMode) 1 else 0][goalType][i]}"
 						val isLong = s.length>6&&receiver.nextDisplayType!=2
-						receiver.drawScoreFont(
-							engine, if(isLong) 6 else 3, if(isLong) (topY+i)*2 else topY+i, s, i==rankingRank, if(isLong) .5f else 1f
+						receiver.drawScore(
+							engine, if(isLong) 6 else 3, if(isLong) (topY+i)*2 else topY+i, s, BASE, i==rankingRank,
+							if(isLong) .5f else 1f
 						)
-						receiver.drawScoreFont(
-							engine, 10, topY+i, "${rankingLines[if(ruleBoundMode) 1 else 0][goalType][i]}", i==rankingRank
+						receiver.drawScore(
+							engine, 10, topY+i, "${rankingLines[if(ruleBoundMode) 1 else 0][goalType][i]}", BASE,
+							i==rankingRank
 						)
-						receiver.drawScoreFont(
-							engine, 15, topY+i, rankingTime[if(ruleBoundMode) 1 else 0][goalType][i].toTimeStr, i==rankingRank
+						receiver.drawScore(
+							engine, 15, topY+i, rankingTime[if(ruleBoundMode) 1 else 0][goalType][i].toTimeStr, BASE,
+							i==rankingRank
 						)
 					}
-					receiver.drawScoreFont(engine, 0, topY+rankingMax+1, "LOCAL SCORES", COLOR.BLUE)
+					receiver.drawScore(engine, 0, topY+rankingMax+1, "LOCAL SCORES", BASE, COLOR.BLUE)
 					if(!engine.playerProp.isLoggedIn)
-						receiver.drawScoreFont(engine, 0, topY+rankingMax+2, "(NOT LOGGED IN)\n(E:LOG IN)")
+						receiver.drawScore(engine, 0, topY+rankingMax+2, "(NOT LOGGED IN)\n(E:LOG IN)", BASE)
 					if(engine.playerProp.isLoggedIn)
-						receiver.drawScoreFont(engine, 0, topY+rankingMax+5, "F:SWITCH RANK SCREEN", COLOR.GREEN)
+						receiver.drawScore(engine, 0, topY+rankingMax+5, "F:SWITCH RANK SCREEN", BASE, COLOR.GREEN)
 				}
 			}
 		} else if(engine.stat===GameEngine.Status.CUSTOM&&!engine.gameActive)
 			engine.playerProp.loginScreen.renderScreen(receiver, engine) else {
-			receiver.drawScoreFont(engine, 0, 3, "LINE", COLOR.BLUE)
-			receiver.drawScoreNum(engine, 5, 2, engine.statistics.lines.toString(), 2f)
+			receiver.drawScore(engine, 0, 3, "LINE", BASE, COLOR.BLUE)
+			receiver.drawScore(engine, 5, 2, engine.statistics.lines.toString(), NUM, 2f)
 
-			receiver.drawScoreFont(engine, 0, 4, "Score", COLOR.BLUE)
-			receiver.drawScoreNum(engine, 5, 4, "+$lastScore")
+			receiver.drawScore(engine, 0, 4, "Score", BASE, COLOR.BLUE)
+			receiver.drawScore(engine, 5, 4, "+$lastScore", NUM)
 			val scget = scDisp<engine.statistics.score
-			receiver.drawScoreNum(engine, 0, 5, "$scDisp", scget, 2f)
+			receiver.drawScore(engine, 0, 5, "$scDisp", NUM, scget, 2f)
 
-			receiver.drawScoreFont(engine, 0, 8, "Level", COLOR.BLUE)
-			receiver.drawScoreNum(
+			receiver.drawScore(engine, 0, 8, "Level", BASE, COLOR.BLUE)
+			receiver.drawScore(
 				engine, 5, 8,
 				"%.1f".format(
 					engine.statistics.level.toFloat()+
 						if(engine.statistics.level>=19&&tableGameClearLines[goalType]<0) 1f else engine.statistics.lines%10*0.1f+1f
-				), 2f
+				), NUM, 2f
 			)
 
-			receiver.drawScoreFont(engine, 0, 9, "Time", COLOR.BLUE)
-			receiver.drawScoreNum(engine, 0, 10, engine.statistics.time.toTimeStr, 2f)
+			receiver.drawScore(engine, 0, 9, "Time", BASE, COLOR.BLUE)
+			receiver.drawScore(engine, 0, 10, engine.statistics.time.toTimeStr, NUM, 2f)
 
 			// Power-up progess
 			var scale = 1f
@@ -457,51 +465,60 @@ class ColorPower:MarathonModeBase() {
 				scale = 0.5f
 				base = 24
 			}
-			receiver.drawScoreFont(
-				engine, 10/scale, base/scale, "POWER-UPS", COLOR.PINK, scale
+			receiver.drawScore(
+				engine, 10/scale, base/scale, "POWER-UPS", BASE, COLOR.PINK, scale
 			)
-			receiver.drawScoreFont(
+			receiver.drawScore(
 				engine, 10/scale, base+1/scale, "  GREY:"+"%d/%d".format(meterValues[0], POWER_METER_MAX),
+				BASE,
 				POWERUP_TEXT_COLORS[0], scale
 			)
-			receiver.drawScoreFont(
+			receiver.drawScore(
 				engine, 10/scale, base+2/scale, "   RED:"+"%d/%d".format(meterValues[1], POWER_METER_MAX),
+				BASE,
 				POWERUP_TEXT_COLORS[1], scale
 			)
-			receiver.drawScoreFont(
+			receiver.drawScore(
 				engine, 10/scale, base+3/scale, "ORANGE:"+"%d/%d".format(meterValues[2], POWER_METER_MAX),
+				BASE,
 				POWERUP_TEXT_COLORS[2], scale
 			)
-			receiver.drawScoreFont(
+			receiver.drawScore(
 				engine, 10/scale, base+4/scale, "YELLOW:"+"%d/%d".format(meterValues[3], POWER_METER_MAX),
+				BASE,
 				POWERUP_TEXT_COLORS[3], scale
 			)
-			receiver.drawScoreFont(
+			receiver.drawScore(
 				engine, 10/scale, base+5/scale, " GREEN:"+"%d/%d".format(meterValues[4], POWER_METER_MAX),
+				BASE,
 				POWERUP_TEXT_COLORS[4], scale
 			)
-			receiver.drawScoreFont(
+			receiver.drawScore(
 				engine, 10/scale, base+6/scale, "  CYAN:"+"%d/%d".format(meterValues[5], POWER_METER_MAX),
+				BASE,
 				POWERUP_TEXT_COLORS[5], scale
 			)
-			receiver.drawScoreFont(
+			receiver.drawScore(
 				engine, 10/scale, base+7/scale, "  BLUE:"+"%d/%d".format(meterValues[6], POWER_METER_MAX),
+				BASE,
 				POWERUP_TEXT_COLORS[6], scale
 			)
-			receiver.drawScoreFont(
+			receiver.drawScore(
 				engine, 10/scale, base+8/scale, "PURPLE:"+"%d/%d".format(meterValues[7], POWER_METER_MAX),
+				BASE,
 				POWERUP_TEXT_COLORS[7], scale
 			)
-			receiver.drawScoreFont(engine, 0, 15, "MULTI.", COLOR.BLUE)
-			receiver.drawScoreFont(engine, 0, 16, "$scoreMultiplier"+"X")
-			receiver.drawScoreFont(engine, 0, 18, "LIVES", COLOR.GREEN)
-			receiver.drawScoreFont(
-				engine, 0, 19, if(engine.stat!==GameEngine.Status.GAMEOVER) "${(engine.lives+1)}/5" else "$l/5"
-			)
+			receiver.drawScore(engine, 0, 15, "MULTI.", BASE, COLOR.BLUE)
+			receiver.drawScore(engine, 0, 16, "$scoreMultiplier"+"X", BASE)
+			receiver.drawScore(engine, 0, 18, "LIVES", BASE, COLOR.GREEN)
+			receiver.drawScore(
+				engine, 0, 19, if(engine.stat!==GameEngine.Status.GAMEOVER) "${(engine.lives+1)}/5" else "$l/5",
+				BASE)
 			if(engine.playerProp.isLoggedIn||engine.playerName.isNotEmpty()) {
-				receiver.drawScoreFont(engine, 0, 21, "PLAYER", COLOR.BLUE)
-				receiver.drawScoreFont(
+				receiver.drawScore(engine, 0, 21, "PLAYER", BASE, COLOR.BLUE)
+				receiver.drawScore(
 					engine, 0, 22, if(owner.replayMode) engine.playerName else engine.playerProp.nameDisplay,
+					BASE,
 					COLOR.WHITE,
 					2f
 				)
@@ -520,17 +537,18 @@ class ColorPower:MarathonModeBase() {
 			engine.field.let {
 				if(engine.stat===GameEngine.Status.CUSTOM&&customTimer<120&&!(currentActivePower==0&&engine.lives>=4)) {
 					val offset = (10-POWERUP_NAMES[currentActivePower].length)/2
-					receiver.drawMenuFont(
-						engine, offset, it.height/2, POWERUP_NAMES[currentActivePower], POWERUP_TEXT_COLORS[currentActivePower]
+					receiver.drawMenu(
+						engine, offset, it.height/2, POWERUP_NAMES[currentActivePower], BASE,
+						POWERUP_TEXT_COLORS[currentActivePower]
 					)
-					receiver.drawMenuFont(engine, 0, it.height/2+1, "ACTIVATED!")
+					receiver.drawMenu(engine, 0, it.height/2+1, "ACTIVATED!", BASE)
 				} else if(currentActivePower==0&&customTimer<120&&engine.stat===GameEngine.Status.CUSTOM&&engine.lives>=4) {
 					val offset = (10-"SMALL SCORE BONUS".length)/2
-					receiver.drawMenuFont(engine, 0, it.height/2-1, "LIVES FULL!", COLOR.PINK)
-					receiver.drawMenuFont(
-						engine, offset, it.height/2+1, "SMALL SCORE BONUS", COLOR.PINK
+					receiver.drawMenu(engine, 0, it.height/2-1, "LIVES FULL!", BASE, COLOR.PINK)
+					receiver.drawMenu(
+						engine, offset, it.height/2+1, "SMALL SCORE BONUS", BASE, COLOR.PINK
 					)
-					receiver.drawMenuFont(engine, 0, it.height/2+2, "ACTIVATED!")
+					receiver.drawMenu(engine, 0, it.height/2+2, "ACTIVATED!", BASE)
 				}
 			}
 		}
@@ -682,7 +700,7 @@ class ColorPower:MarathonModeBase() {
 		} else {
 			showPlayerStats = false
 			engine.isInGame = true
-			val s:Boolean = engine.playerProp.loginScreen.updateScreen(engine)
+			engine.playerProp.loginScreen.updateScreen(engine)
 			if(engine.playerProp.isLoggedIn) {
 				loadRankingPlayer(engine.playerProp)
 				loadSetting(engine, engine.playerProp.propProfile)

@@ -37,6 +37,7 @@
 package zeroxfc.nullpo.custom.libs
 
 import mu.nu.nullpo.game.event.EventReceiver
+import mu.nu.nullpo.gui.common.BaseFont.FONT.BASE
 
 class ScrollingMarqueeText(  // Strings that make up the headings
 	headings:Array<String>,   // Strings that fill the info under the headings
@@ -60,13 +61,13 @@ class ScrollingMarqueeText(  // Strings that make up the headings
 			(40*SIZES[size]/SCALES_FLOAT[size]).toInt()-(progress*(40*SIZES[size]+(mainHeadingString.length+EXCESS_LENGTH)*SIZES[size])).toInt()
 		val mainOffset2 =
 			(40*SIZES[size]/SCALES_FLOAT[size]).toInt()-(progress*(40*SIZES[size]+(mainTextString.length+EXCESS_LENGTH)*SIZES[size])).toInt()
-		receiver.drawDirectFont(
+		receiver.drawFont(
 			mainOffset1, (y*SIZES[size]).toInt(),
-			mainHeadingString, headingColor, SCALES_FLOAT[size]
+			mainHeadingString, BASE, headingColor, SCALES_FLOAT[size]
 		)
-		receiver.drawDirectFont(
+		receiver.drawFont(
 			mainOffset2, (y*SIZES[size]).toInt(),
-			mainTextString, textColor, SCALES_FLOAT[size]
+			mainTextString, BASE, textColor, SCALES_FLOAT[size]
 		)
 	}
 

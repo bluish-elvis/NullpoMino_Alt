@@ -42,6 +42,7 @@ import mu.nu.nullpo.game.net.NetUtil
 import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.game.subsystem.mode.menu.*
 import mu.nu.nullpo.gui.common.BaseFont
+import mu.nu.nullpo.gui.common.BaseFont.FONT.*
 import mu.nu.nullpo.gui.net.NetLobbyFrame
 import mu.nu.nullpo.util.CustomProperties
 import mu.nu.nullpo.util.GeneralUtil.toTimeStr
@@ -79,9 +80,10 @@ class MarathonPlus:NetDummyMode() {
 		override val showHeight = 3
 		override fun draw(engine:GameEngine, playerID:Int, receiver:EventReceiver, y:Int, focus:Int) {
 			super.draw(engine, playerID, receiver, y, focus)
-			receiver.drawMenuNano(
+			receiver.drawMenu(
 				engine, 1, y+2,
 				"${if(startLevel) if(goalType>0) 100 else "???" else tableGameClearLines[value]} LINES",
+				NANO,
 				if(focus==0) COLOR.RAINBOW else COLOR.WHITE
 			)
 		}
@@ -286,26 +288,27 @@ class MarathonPlus:NetDummyMode() {
 	override fun renderLast(engine:GameEngine) {
 		if(owner.menuOnly) return
 
-		receiver.drawScoreFont(engine, 0, 0, "Marathon +", COLOR.GREEN)
-		if(goalType!=0) receiver.drawScoreFont(
+		receiver.drawScore(engine, 0, 0, "Marathon +", BASE, COLOR.GREEN)
+		if(goalType!=0) receiver.drawScore(
 			engine, 0, 1, if(startLevel) "(Time Attack Mode)" else "(Score Attack Mode)",
+			BASE,
 			COLOR.GREEN
 		)
 
 		if(engine.stat==GameEngine.Status.SETTING||engine.stat==GameEngine.Status.RESULT&&!owner.replayMode) {
 			if(!owner.replayMode&&!big&&engine.ai==null) {
 				val topY = if(receiver.nextDisplayType==2) 6 else 4
-				receiver.drawScoreFont(engine, 2, topY-1, "SCORE   LINE TIME", COLOR.BLUE)
+				receiver.drawScore(engine, 2, topY-1, "SCORE   LINE TIME", BASE, COLOR.BLUE)
 				val gameType = typeSerial(goalType, turbo, startLevel)
 				for(i in 0..<rankingMax) {
-					receiver.drawScoreGrade(engine, 0, topY+i, "%2d".format(i+1), COLOR.YELLOW)
-					receiver.drawScoreNum(engine, 2, topY+i, "${rankingScore[gameType][i]}", i==rankingRank)
-					receiver.drawScoreNum(engine, 10, topY+i, "${rankingLines[gameType][i]}", i==rankingRank)
-					receiver.drawScoreNum(engine, 15, topY+i, rankingTime[gameType][i].toTimeStr, i==rankingRank)
+					receiver.drawScore(engine, 0, topY+i, "%2d".format(i+1), GRADE, COLOR.YELLOW)
+					receiver.drawScore(engine, 2, topY+i, "${rankingScore[gameType][i]}", NUM, i==rankingRank)
+					receiver.drawScore(engine, 10, topY+i, "${rankingLines[gameType][i]}", NUM, i==rankingRank)
+					receiver.drawScore(engine, 15, topY+i, rankingTime[gameType][i].toTimeStr, NUM, i==rankingRank)
 				}
 			}
 		} else {
-			receiver.drawScoreFont(engine, 0, 3, "LINE", COLOR.BLUE)
+			receiver.drawScore(engine, 0, 3, "LINE", BASE, COLOR.BLUE)
 			val level = engine.statistics.level
 			var strLine = String.format(
 				if(startLevel) "%03d/100"
@@ -313,29 +316,30 @@ class MarathonPlus:NetDummyMode() {
 				else "%3d/%3d", engine.statistics.lines, nextsec
 			)
 			if(level>=tableGameClearLevel[goalType]&&!startLevel) strLine += "/$bonusLines"
-			receiver.drawScoreNum(engine, 5, 2, strLine, 2f)
+			receiver.drawScore(engine, 5, 2, strLine, NUM, 2f)
 			val scGet:Boolean = scDisp<engine.statistics.score
-			receiver.drawScoreFont(engine, 0, 4, "Score", COLOR.BLUE)
-			receiver.drawScoreNum(engine, 5, 4, "+$lastScore")
-			receiver.drawScoreNum(engine, 0, 5, "$scDisp", scGet, 2f)
+			receiver.drawScore(engine, 0, 4, "Score", BASE, COLOR.BLUE)
+			receiver.drawScore(engine, 5, 4, "+$lastScore", NUM)
+			receiver.drawScore(engine, 0, 5, "$scDisp", NUM, scGet, 2f)
 
-			receiver.drawScoreFont(engine, 0, 7, "Level", COLOR.BLUE)
-			receiver.drawScoreNum(engine, 5, 7, "$level/"+tableGameClearLevel[goalType], 2f)
-			receiver.drawScoreFont(engine, 0, 8, "Time", COLOR.BLUE)
-			receiver.drawScoreNum(engine, 0, 9, engine.statistics.time.toTimeStr, 2f)
+			receiver.drawScore(engine, 0, 7, "Level", BASE, COLOR.BLUE)
+			receiver.drawScore(engine, 5, 7, "$level/"+tableGameClearLevel[goalType], NUM, 2f)
+			receiver.drawScore(engine, 0, 8, "Time", BASE, COLOR.BLUE)
+			receiver.drawScore(engine, 0, 9, engine.statistics.time.toTimeStr, NUM, 2f)
 			if(engine.ending==2) {
 				val remainRollTime = maxOf(0, bonusTimeMax-bonusTime)
 
-				receiver.drawScoreFont(engine, 0, 11, "BONUS", COLOR.RED)
-				receiver.drawScoreNum(
-					engine, 0, 12, remainRollTime.toTimeStr, remainRollTime>0&&remainRollTime<10*60,
+				receiver.drawScore(engine, 0, 11, "BONUS", BASE, COLOR.RED)
+				receiver.drawScore(
+					engine, 0, 12, remainRollTime.toTimeStr, NUM, remainRollTime>0&&remainRollTime<10*60,
 					2f
 				)
 			} else if(goalType==3&&!startLevel) {
-				receiver.drawScoreFont(engine, 0, 11, "BONUS", COLOR.RED)
-				receiver.drawScoreNum(engine, 6, 11, bonusTime.toTimeStr, bonusTime>0&&bonusTime<10*60)
-				receiver.drawScoreNum(
-					engine, 0, 12, (bonusTime*(1+engine.lives)*10).toString(), bonusTime>0&&bonusTime<10*60, 2f
+				receiver.drawScore(engine, 0, 11, "BONUS", BASE, COLOR.RED)
+				receiver.drawScore(engine, 6, 11, bonusTime.toTimeStr, NUM, bonusTime>0&&bonusTime<10*60)
+				receiver.drawScore(
+					engine, 0, 12, (bonusTime*(1+engine.lives)*10).toString(), NUM, bonusTime>0&&bonusTime<10*60,
+					2f
 				)
 			}
 		}
@@ -492,7 +496,7 @@ class MarathonPlus:NetDummyMode() {
 					nextsec += normMax
 					norm -= normMax
 					bonusTime += (80+engine.speed.lockDelay+engine.speed.are)*normMax
-					receiver.setBGSpd(owner, .5f+goalType*.4f+turbo*.5f+lv*.01f,owner.bgMan.nextBg)
+					receiver.setBGSpd(owner, .5f+goalType*.4f+turbo*.5f+lv*.01f, owner.bgMan.nextBg)
 					engine.playSE("levelup")
 				} else {
 					if(lv==50) engine.playSE("levelup_section")
@@ -570,14 +574,14 @@ class MarathonPlus:NetDummyMode() {
 	/* Render bonus level unlocked screen */
 	override fun renderCustom(engine:GameEngine) {
 		if(engine.statc[0]>=90) {
-			receiver.drawMenuFont(engine, 0, 8, "EXCELLENT!", COLOR.ORANGE)
+			receiver.drawMenu(engine, 0, 8, "EXCELLENT!", BASE, COLOR.ORANGE)
 
-			receiver.drawMenuFont(engine, 0, 10, "HERE COMES", COLOR.ORANGE)
-			receiver.drawMenuFont(
-				engine, 1, 11, "BONUS", if(engine.statc[0]%2==0) COLOR.YELLOW else COLOR.WHITE
+			receiver.drawMenu(engine, 0, 10, "HERE COMES", BASE, COLOR.ORANGE)
+			receiver.drawMenu(
+				engine, 1, 11, "BONUS", BASE, if(engine.statc[0]%2==0) COLOR.YELLOW else COLOR.WHITE
 			)
-			receiver.drawMenuFont(
-				engine, 4, 12, "Level", if(engine.statc[0]%2==1) COLOR.YELLOW else COLOR.WHITE
+			receiver.drawMenu(
+				engine, 4, 12, "Level", BASE, if(engine.statc[0]%2==1) COLOR.YELLOW else COLOR.WHITE
 			)
 		}
 	}
@@ -590,7 +594,7 @@ class MarathonPlus:NetDummyMode() {
 
 	/* Render results screen */
 	override fun renderResult(engine:GameEngine) {
-		receiver.drawMenuFont(engine, 0, 0, "${BaseFont.UP_S}${BaseFont.DOWN_S} PAGE${(engine.statc[1]+1)}/2", COLOR.RED)
+		receiver.drawMenu(engine, 0, 0, "${BaseFont.UP_S}${BaseFont.DOWN_S} PAGE${(engine.statc[1]+1)}/2", BASE, COLOR.RED)
 
 		if(engine.statc[1]==0) {
 
@@ -609,13 +613,13 @@ class MarathonPlus:NetDummyMode() {
 				drawResult(engine, receiver, 13, COLOR.BLUE, "BONUS TIME", "%10s".format(bonusTime.toTimeStr))
 			}
 		}
-		if(netIsPB) receiver.drawMenuFont(engine, 2, 21, "NEW PB", COLOR.ORANGE)
+		if(netIsPB) receiver.drawMenu(engine, 2, 21, "NEW PB", BASE, COLOR.ORANGE)
 
 		if(netIsNetPlay&&netReplaySendStatus==1)
-			receiver.drawMenuFont(engine, 0, 22, "SENDING...", COLOR.PINK)
+			receiver.drawMenu(engine, 0, 22, "SENDING...", BASE, COLOR.PINK)
 		else if(netIsNetPlay&&!netIsWatch
 			&&netReplaySendStatus==2)
-			receiver.drawMenuFont(engine, 1, 22, "A: RETRY", COLOR.RED)
+			receiver.drawMenu(engine, 1, 22, "A: RETRY", BASE, COLOR.RED)
 	}
 
 	/* Results screen */
@@ -883,7 +887,6 @@ class MarathonPlus:NetDummyMode() {
 		private val GAMETYPE_MAX = tableGameClearLevel.size
 
 		private val TURBO_MAX = minOf(tableSpeed.size, tableDenominator.size)
-
 
 		/** Number of ranking types */
 		private val RANKING_TYPE = GAMETYPE_MAX*TURBO_MAX*2

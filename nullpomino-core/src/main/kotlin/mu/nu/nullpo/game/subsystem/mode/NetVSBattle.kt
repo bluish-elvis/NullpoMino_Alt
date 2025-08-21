@@ -38,6 +38,7 @@ import mu.nu.nullpo.game.event.ScoreEvent
 import mu.nu.nullpo.game.net.NetPlayerClient
 import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.game.play.GameManager
+import mu.nu.nullpo.gui.common.BaseFont.FONT.*
 import mu.nu.nullpo.gui.net.NetLobbyFrame
 import mu.nu.nullpo.util.GeneralUtil.toTimeStr
 import java.io.IOException
@@ -420,7 +421,7 @@ class NetVSBattle:NetDummyVSMode() {
 			if(hurryUpStarted) {
 				hurryUpCount++
 
-				if(hurryUpCount%netCurrentRoomInfo!!.hurryUpInterval==0) engine.field.addHurryupFloor(1, engine.blkSkin)
+				if(hurryUpCount%netCurrentRoomInfo!!.hurryUpInterval==0) engine.field.addHurryUpFloor(1, engine.blkSkin)
 			} else
 				hurryUpCount = netCurrentRoomInfo!!.hurryUpInterval-1
 		return 0
@@ -501,7 +502,7 @@ class NetVSBattle:NetDummyVSMode() {
 				else if(garbage[pid]>=GARBAGE_DENOMINATOR*3) COLOR.ORANGE
 				else if(garbage[pid]>=GARBAGE_DENOMINATOR) COLOR.YELLOW
 				else COLOR.WHITE
-				receiver.drawDirectNum(x+96, y+372, garbage[pid].toFloat()/GARBAGE_DENOMINATOR, 5 to 2, fontColor, 1f)
+				receiver.drawNum(x+96, y+372, garbage[pid].toFloat()/GARBAGE_DENOMINATOR, 5 to 2, fontColor, 1f)
 			}
 
 			// Target
@@ -510,7 +511,7 @@ class NetVSBattle:NetDummyVSMode() {
 				val fontcolor = if(targetTimer>=netCurrentRoomInfo!!.targetTimer-20&&targetTimer%2==0)
 					COLOR.WHITE else COLOR.GREEN
 
-				receiver.drawMenuFont(engine, 2, 12, "TARGET", fontcolor)
+				receiver.drawMenu(engine, 2, 12, "TARGET", BASE, fontcolor)
 			}
 		}
 
@@ -518,106 +519,106 @@ class NetVSBattle:NetDummyVSMode() {
 		if(pid==0&&netVSIsPractice&&netVSIsPracticeExitAllowed
 			&&engine.stat!=GameEngine.Status.RESULT)
 			if(lastevent[pid]==EVENT_NONE||scgettime[pid]>=120)
-				receiver.drawMenuFont(
+				receiver.drawMenu(
 					engine, 0, 21, "F("
 						+receiver.getKeyNameByButtonID(engine, Controller.BUTTON_F)
-						+" KEY):\n END GAME", COLOR.PURPLE
+						+" KEY):\n END GAME", BASE, COLOR.PURPLE
 				)
 
 		// Hurry Up
 		if(netCurrentRoomInfo!=null&&pid==0)
 			if(netCurrentRoomInfo!!.hurryUpSeconds>=0&&hurryUpShowFrames>0
 				&&!netVSIsPractice&&hurryUpStarted)
-				receiver.drawDirectFont(pid, 256-8, 32, "HURRY UP!", hurryUpShowFrames%2==0)
+				receiver.drawFont(256-8, 32, "HURRY UP!", BASE, pid, hurryUpShowFrames%2==0)
 
 		// Bottom message
 		if(netVSPlayerExist[pid]&&engine.isVisible)
 		// K.O.
 			if(playerKObyYou[pid]) {
 				if(engine.displaySize!=-1)
-					receiver.drawMenuFont(engine, 3, 21, "K.O.", COLOR.PINK)
+					receiver.drawMenu(engine, 3, 21, "K.O.", BASE, COLOR.PINK)
 				else
-					receiver.drawDirectFont(x+4+24, y+168, "K.O.", COLOR.PINK, .5f)
+					receiver.drawFont(x+4+24, y+168, "K.O.", BASE, COLOR.PINK, .5f)
 			} else if(lastevent[pid]!=EVENT_NONE&&scgettime[pid]<120) {
 				val strPieceName = Piece.Shape.names[lastpiece[pid]]
 
 				if(engine.displaySize!=-1) {
 					when(lastevent[pid]) {
-						EVENT_SINGLE -> receiver.drawMenuFont(engine, 2, 21, "SINGLE", COLOR.COBALT)
-						EVENT_DOUBLE -> receiver.drawMenuFont(engine, 2, 21, "DOUBLE", COLOR.BLUE)
-						EVENT_TRIPLE -> receiver.drawMenuFont(engine, 2, 21, "TRIPLE", COLOR.GREEN)
+						EVENT_SINGLE -> receiver.drawMenu(engine, 2, 21, "SINGLE", BASE, COLOR.COBALT)
+						EVENT_DOUBLE -> receiver.drawMenu(engine, 2, 21, "DOUBLE", BASE, COLOR.BLUE)
+						EVENT_TRIPLE -> receiver.drawMenu(engine, 2, 21, "TRIPLE", BASE, COLOR.GREEN)
 						EVENT_FOUR -> if(lastb2b[pid])
-							receiver.drawMenuFont(engine, 3, 21, "FOUR", COLOR.RED)
+							receiver.drawMenu(engine, 3, 21, "FOUR", BASE, COLOR.RED)
 						else
-							receiver.drawMenuFont(engine, 3, 21, "FOUR", COLOR.ORANGE)
+							receiver.drawMenu(engine, 3, 21, "FOUR", BASE, COLOR.ORANGE)
 						EVENT_TWIST_SINGLE_MINI -> if(lastb2b[pid])
-							receiver.drawMenuFont(engine, 1, 21, "$strPieceName-MINI-S", COLOR.RED)
+							receiver.drawMenu(engine, 1, 21, "$strPieceName-MINI-S", BASE, COLOR.RED)
 						else
-							receiver.drawMenuFont(engine, 1, 21, "$strPieceName-MINI-S", COLOR.ORANGE)
+							receiver.drawMenu(engine, 1, 21, "$strPieceName-MINI-S", BASE, COLOR.ORANGE)
 						EVENT_TWIST_SINGLE -> if(lastb2b[pid])
-							receiver.drawMenuFont(engine, 1, 21, "$strPieceName-SINGLE", COLOR.RED)
+							receiver.drawMenu(engine, 1, 21, "$strPieceName-SINGLE", BASE, COLOR.RED)
 						else
-							receiver.drawMenuFont(engine, 1, 21, "$strPieceName-SINGLE", COLOR.ORANGE)
+							receiver.drawMenu(engine, 1, 21, "$strPieceName-SINGLE", BASE, COLOR.ORANGE)
 						EVENT_TWIST_DOUBLE_MINI -> if(lastb2b[pid])
-							receiver.drawMenuFont(engine, 1, 21, "$strPieceName-MINI-D", COLOR.RED)
+							receiver.drawMenu(engine, 1, 21, "$strPieceName-MINI-D", BASE, COLOR.RED)
 						else
-							receiver.drawMenuFont(engine, 1, 21, "$strPieceName-MINI-D", COLOR.ORANGE)
+							receiver.drawMenu(engine, 1, 21, "$strPieceName-MINI-D", BASE, COLOR.ORANGE)
 						EVENT_TWIST_DOUBLE -> if(lastb2b[pid])
-							receiver.drawMenuFont(engine, 1, 21, "$strPieceName-DOUBLE", COLOR.RED)
+							receiver.drawMenu(engine, 1, 21, "$strPieceName-DOUBLE", BASE, COLOR.RED)
 						else
-							receiver.drawMenuFont(engine, 1, 21, "$strPieceName-DOUBLE", COLOR.ORANGE)
+							receiver.drawMenu(engine, 1, 21, "$strPieceName-DOUBLE", BASE, COLOR.ORANGE)
 						EVENT_TWIST_TRIPLE -> if(lastb2b[pid])
-							receiver.drawMenuFont(engine, 1, 21, "$strPieceName-TRIPLE", COLOR.RED)
+							receiver.drawMenu(engine, 1, 21, "$strPieceName-TRIPLE", BASE, COLOR.RED)
 						else
-							receiver.drawMenuFont(engine, 1, 21, "$strPieceName-TRIPLE", COLOR.ORANGE)
+							receiver.drawMenu(engine, 1, 21, "$strPieceName-TRIPLE", BASE, COLOR.ORANGE)
 						EVENT_TWIST_EZ -> if(lastb2b[pid])
-							receiver.drawMenuFont(engine, 3, 21, "EZ-$strPieceName", COLOR.RED)
+							receiver.drawMenu(engine, 3, 21, "EZ-$strPieceName", BASE, COLOR.RED)
 						else
-							receiver.drawMenuFont(engine, 3, 21, "EZ-$strPieceName", COLOR.ORANGE)
+							receiver.drawMenu(engine, 3, 21, "EZ-$strPieceName", BASE, COLOR.ORANGE)
 					}
 
 					if(lastcombo[pid]>=2)
-						receiver.drawMenuFont(engine, 2, 22, "${(lastcombo[pid]-1)}COMBO", COLOR.CYAN)
+						receiver.drawMenu(engine, 2, 22, "${(lastcombo[pid]-1)}COMBO", BASE, COLOR.CYAN)
 				} else {
 					var x2 = 8
 					if(Objects.requireNonNull(netCurrentRoomInfo)!!.useFractionalGarbage&&garbage[pid]>0) x2 = 0
 
 					when(lastevent[pid]) {
-						EVENT_SINGLE -> receiver.drawDirectFont(x+4+16, y+168, "SINGLE", COLOR.COBALT, .5f)
-						EVENT_DOUBLE -> receiver.drawDirectFont(x+4+16, y+168, "DOUBLE", COLOR.BLUE, .5f)
-						EVENT_TRIPLE -> receiver.drawDirectFont(x+4+16, y+168, "TRIPLE", COLOR.GREEN, .5f)
+						EVENT_SINGLE -> receiver.drawFont(x+4+16, y+168, "SINGLE", BASE, COLOR.COBALT, .5f)
+						EVENT_DOUBLE -> receiver.drawFont(x+4+16, y+168, "DOUBLE", BASE, COLOR.BLUE, .5f)
+						EVENT_TRIPLE -> receiver.drawFont(x+4+16, y+168, "TRIPLE", BASE, COLOR.GREEN, .5f)
 						EVENT_FOUR -> if(lastb2b[pid])
-							receiver.drawDirectFont(x-4, y+168, "QUADRUPLE", COLOR.RED, .5f)
+							receiver.drawFont(x-4, y+168, "QUADRUPLE", BASE, COLOR.RED, .5f)
 						else
-							receiver.drawDirectFont(x-4, y+168, "QUADRUPLE", COLOR.ORANGE, .5f)
+							receiver.drawFont(x-4, y+168, "QUADRUPLE", BASE, COLOR.ORANGE, .5f)
 						EVENT_TWIST_SINGLE_MINI -> if(lastb2b[pid])
-							receiver.drawDirectFont(x+4+x2, y+168, "$strPieceName-MINI-S", COLOR.RED, .5f)
+							receiver.drawFont(x+4+x2, y+168, "$strPieceName-MINI-S", BASE, COLOR.RED, .5f)
 						else
-							receiver.drawDirectFont(x+4+x2, y+168, "$strPieceName-MINI-S", COLOR.ORANGE, .5f)
+							receiver.drawFont(x+4+x2, y+168, "$strPieceName-MINI-S", BASE, COLOR.ORANGE, .5f)
 						EVENT_TWIST_SINGLE -> if(lastb2b[pid])
-							receiver.drawDirectFont(x+4+x2, y+168, "$strPieceName-SINGLE", COLOR.RED, .5f)
+							receiver.drawFont(x+4+x2, y+168, "$strPieceName-SINGLE", BASE, COLOR.RED, .5f)
 						else
-							receiver.drawDirectFont(x+4+x2, y+168, "$strPieceName-SINGLE", COLOR.ORANGE, .5f)
+							receiver.drawFont(x+4+x2, y+168, "$strPieceName-SINGLE", BASE, COLOR.ORANGE, .5f)
 						EVENT_TWIST_DOUBLE_MINI -> if(lastb2b[pid])
-							receiver.drawDirectFont(x+4+x2, y+168, "$strPieceName-MINI-D", COLOR.RED, .5f)
+							receiver.drawFont(x+4+x2, y+168, "$strPieceName-MINI-D", BASE, COLOR.RED, .5f)
 						else
-							receiver.drawDirectFont(x+4+x2, y+168, "$strPieceName-MINI-D", COLOR.ORANGE, .5f)
+							receiver.drawFont(x+4+x2, y+168, "$strPieceName-MINI-D", BASE, COLOR.ORANGE, .5f)
 						EVENT_TWIST_DOUBLE -> if(lastb2b[pid])
-							receiver.drawDirectFont(x+4+x2, y+168, "$strPieceName-DOUBLE", COLOR.RED, .5f)
+							receiver.drawFont(x+4+x2, y+168, "$strPieceName-DOUBLE", BASE, COLOR.RED, .5f)
 						else
-							receiver.drawDirectFont(x+4+x2, y+168, "$strPieceName-DOUBLE", COLOR.ORANGE, .5f)
+							receiver.drawFont(x+4+x2, y+168, "$strPieceName-DOUBLE", BASE, COLOR.ORANGE, .5f)
 						EVENT_TWIST_TRIPLE -> if(lastb2b[pid])
-							receiver.drawDirectFont(x+4+x2, y+168, "$strPieceName-TRIPLE", COLOR.RED, .5f)
+							receiver.drawFont(x+4+x2, y+168, "$strPieceName-TRIPLE", BASE, COLOR.RED, .5f)
 						else
-							owner.receiver.drawDirectFont(x+4+x2, y+168, "$strPieceName-TRIPLE", COLOR.ORANGE, .5f)
+							owner.receiver.drawFont(x+4+x2, y+168, "$strPieceName-TRIPLE", BASE, COLOR.ORANGE, .5f)
 						EVENT_TWIST_EZ -> if(lastb2b[pid])
-							owner.receiver.drawDirectFont(x+4+24, y+168, "EZ-$strPieceName", COLOR.RED, .5f)
+							owner.receiver.drawFont(x+4+24, y+168, "EZ-$strPieceName", BASE, COLOR.RED, .5f)
 						else
-							owner.receiver.drawDirectFont(x+4+24, y+168, "EZ-$strPieceName", COLOR.ORANGE, .5f)
+							owner.receiver.drawFont(x+4+24, y+168, "EZ-$strPieceName", BASE, COLOR.ORANGE, .5f)
 					}
 
 					if(lastcombo[pid]>=2)
-						owner.receiver.drawDirectFont(x+4+16, y+176, ("${(lastcombo[pid]-1)}COMBO"), COLOR.CYAN, .5f)
+						owner.receiver.drawFont(x+4+16, y+176, "${(lastcombo[pid]-1)}COMBO", BASE, COLOR.CYAN, .5f)
 				}
 			} else if(!netVSIsPractice||pid!=0) {
 				val strTemp = "${netVSPlayerWinCount[pid]}/${netVSPlayerPlayCount[pid]}"
@@ -625,9 +626,9 @@ class NetVSBattle:NetDummyVSMode() {
 				if(engine.displaySize!=-1) {
 					var y2 = 21
 					if(engine.stat==GameEngine.Status.RESULT) y2 = 22
-					owner.receiver.drawMenuFont(engine, 0, y2, strTemp, COLOR.WHITE)
+					owner.receiver.drawMenu(engine, 0, y2, strTemp, BASE, COLOR.WHITE)
 				} else
-					owner.receiver.drawDirectFont(x+4, y+168, strTemp, COLOR.WHITE, .5f)
+					owner.receiver.drawFont(x+4, y+168, strTemp, BASE, COLOR.WHITE, .5f)
 			}// Games count
 		// Line clear event
 	}

@@ -36,6 +36,7 @@ import mu.nu.nullpo.game.event.EventReceiver.COLOR
 import mu.nu.nullpo.game.event.ScoreEvent
 import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.game.subsystem.mode.menu.*
+import mu.nu.nullpo.gui.common.BaseFont.FONT.*
 import mu.nu.nullpo.util.CustomProperties
 import mu.nu.nullpo.util.GeneralUtil.toTimeStr
 
@@ -201,52 +202,53 @@ class RetroS:AbstractMode() {
 
 	/** Renders HUD (leaderboard or game statistics) */
 	override fun renderLast(engine:GameEngine) {
-		receiver.drawScoreFont(engine, 0, 0, name, COLOR.GREEN)
-		receiver.drawScoreFont(engine, 0, 1, "(${GAMETYPE_NAME[gameType]} SPEED)", COLOR.GREEN)
+		receiver.drawScore(engine, 0, 0, name, BASE, COLOR.GREEN)
+		receiver.drawScore(engine, 0, 1, "(${GAMETYPE_NAME[gameType]} SPEED)", BASE, COLOR.GREEN)
 
 		if(engine.stat==GameEngine.Status.SETTING||engine.stat==GameEngine.Status.RESULT&&!owner.replayMode) {
 			// Leaderboard
 			if(!owner.replayMode&&!big&&startLevel==0&&engine.ai==null) {
 				val topY = if(receiver.nextDisplayType==2) 6 else 4
-				receiver.drawScoreFont(engine, 0, topY-1, "SCORE LINE LV TIME", COLOR.BLUE)
+				receiver.drawScore(engine, 0, topY-1, "SCORE LINE LV TIME", BASE, COLOR.BLUE)
 
 				for(i in 0..<rankingMax) {
-					receiver.drawScoreGrade(engine, 0, topY+i, "${i+1}", COLOR.YELLOW)
-					receiver.drawScoreNum(
+					receiver.drawScore(engine, 0, topY+i, "${i+1}", GRADE, COLOR.YELLOW)
+					receiver.drawScore(
 						engine, 2, topY+i,
 						if(rankingScore[gameType][i]>=0) "%6d".format(rankingScore[gameType][i])
-						else rankingScore[gameType][i].toTimeStr, i==rankingRank
+						else rankingScore[gameType][i].toTimeStr, NUM, i==rankingRank
 					)
-					receiver.drawScoreNum(
+					receiver.drawScore(
 						engine, 8, topY+i,
 						if(rankingLines[gameType][i]>=0) "%3d".format(rankingLines[gameType][i])
-						else rankingLines[gameType][i].toTimeStr, i==rankingRank
+						else rankingLines[gameType][i].toTimeStr, NUM, i==rankingRank
 					)
-					receiver.drawScoreNum(
+					receiver.drawScore(
 						engine, 11, topY+i,
 						if(rankingLevel[gameType][i]>=0) "%2d".format(rankingLevel[gameType][i])
-						else rankingLevel[gameType][i].toTimeStr, i==rankingRank
+						else rankingLevel[gameType][i].toTimeStr, NUM, i==rankingRank
 					)
-					receiver.drawScoreNum(engine, 15, topY+i, rankingTime[gameType][i].toTimeStr, i==rankingRank)
+					receiver.drawScore(engine, 15, topY+i, rankingTime[gameType][i].toTimeStr, NUM, i==rankingRank)
 				}
 			}
 		} else {
 			// Game statistics
-			receiver.drawScoreFont(engine, 1, 3, "SCORE", COLOR.CYAN)
-			receiver.drawScoreFont(engine, 0, 4, "%6d".format(scDisp), COLOR.CYAN)
+			receiver.drawScore(engine, 1, 3, "SCORE", BASE, COLOR.CYAN)
+			receiver.drawScore(engine, 0, 4, "%6d".format(scDisp), BASE, COLOR.CYAN)
 
-			receiver.drawScoreFont(engine, 1, 6, "LINES", COLOR.CYAN)
-			receiver.drawScoreFont(engine, 0, 7, "%6d".format(engine.statistics.lines), COLOR.CYAN)
+			receiver.drawScore(engine, 1, 6, "LINES", BASE, COLOR.CYAN)
+			receiver.drawScore(engine, 0, 7, "%6d".format(engine.statistics.lines), BASE, COLOR.CYAN)
 
-			receiver.drawScoreFont(engine, 1, 9, "LEVEL", COLOR.CYAN)
-			receiver.drawScoreFont(engine, 0, 10, "%6d".format(engine.statistics.level), COLOR.CYAN)
+			receiver.drawScore(engine, 1, 9, "LEVEL", BASE, COLOR.CYAN)
+			receiver.drawScore(engine, 0, 10, "%6d".format(engine.statistics.level), BASE, COLOR.CYAN)
 
-			receiver.drawScoreFont(engine, 0, 13, "Time", COLOR.BLUE)
-			receiver.drawScoreFont(engine, 0, 14, engine.statistics.time.toTimeStr, COLOR.BLUE)
+			receiver.drawScore(engine, 0, 13, "Time", BASE, COLOR.BLUE)
+			receiver.drawScore(engine, 0, 14, engine.statistics.time.toTimeStr, BASE, COLOR.BLUE)
 
-			receiver.drawScoreNano(engine, 0, 31, "${4-linesAfterLastLevelUp} LINES TO GO", COLOR.CYAN, .5f)
-			receiver.drawScoreNano(
+			receiver.drawScore(engine, 0, 31, "${4-linesAfterLastLevelUp} LINES TO GO", NANO, COLOR.CYAN, .5f)
+			receiver.drawScore(
 				engine, 0, 32, "OR "+(levelTime[minOf(engine.statistics.level, 15)]-levelTimer).toTimeStr,
+				NANO,
 				COLOR.CYAN, .5f
 			)
 		}
@@ -340,7 +342,7 @@ class RetroS:AbstractMode() {
 
 	/** Renders game result screen */
 	override fun renderResult(engine:GameEngine) {
-		receiver.drawMenuFont(engine, 0, 1, "PLAY DATA", COLOR.ORANGE)
+		receiver.drawMenu(engine, 0, 1, "PLAY DATA", BASE, COLOR.ORANGE)
 
 		drawResultStats(
 			engine, receiver, 3, COLOR.BLUE, Statistic.SCORE, Statistic.LINES, Statistic.LEVEL, Statistic.TIME

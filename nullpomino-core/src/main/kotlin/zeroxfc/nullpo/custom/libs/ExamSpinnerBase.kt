@@ -41,6 +41,7 @@ import mu.nu.nullpo.game.component.Piece
 import mu.nu.nullpo.game.event.EventReceiver
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
 import mu.nu.nullpo.game.play.GameEngine
+import mu.nu.nullpo.gui.common.BaseFont.FONT.GRADE
 import mu.nu.nullpo.gui.common.ResourceImage
 import org.apache.logging.log4j.LogManager
 import org.jetbrains.kotlin.utils.keysToMap
@@ -108,11 +109,11 @@ abstract class ExamSpinnerBase private constructor(private val gradeText:String,
 	constructor(hText:String?, subLabel:String?, gLabel:String, opt:List<String>?, result:Int, _close:Boolean)
 		:this(gLabel, result, _close, true) {
 		log.debug("Custom ExamSpinner object created.")
-		header = hText ?: "PROMOTION\nEXAM"
-		subheading = subLabel ?: "QUALIFY\nGRADE"
+		header = hText?:"PROMOTION\nEXAM"
+		subheading = subLabel?:"QUALIFY\nGRADE"
 		possibilities = opt?.let {
 			it.takeIf {it.size>=2}?.take(2)
-		} ?: listOf("PASS", "FAIL")
+		}?:listOf("PASS", "FAIL")
 	}
 	/**
 	 * Draws the spinner to the screen.
@@ -121,7 +122,8 @@ abstract class ExamSpinnerBase private constructor(private val gradeText:String,
 	 * @param engine   Current `GameEngine` instance
 	 * @param flag     Yellow text?
 	 */
-	@JvmOverloads fun draw(receiver:EventReceiver, engine:GameEngine, flag:Boolean = lifeTime/2%2==0) {
+	@JvmOverloads
+	fun draw(receiver:EventReceiver, engine:GameEngine, flag:Boolean = lifeTime/2%2==0) {
 		val baseX = receiver.fieldX(engine)+4f
 		val baseY = receiver.fieldY(engine)+52f
 		val size = 16
@@ -169,13 +171,13 @@ abstract class ExamSpinnerBase private constructor(private val gradeText:String,
 					splitPossibilityText[i%2].forEachIndexed {x, c ->
 						if(it%320<=160) GameTextUtilities.drawDirectTextAlign(
 							receiver, baseX+it%320, pby+size*x, GameTextUtilities.ALIGN_MIDDLE_MIDDLE,
-							c, if(i%2==0)color else COLOR.COBALT, 1f
+							c, if(i%2==0) color else COLOR.COBALT, 1f
 						)
 					}
 				} else if(lifeTime<spinDuration+120) {
 					val offset = lifeTime%3-1
 					// FailShake
-					splitPossibilityText[(selectedOutcome+1)%2].forEachIndexed {i ,it->
+					splitPossibilityText[(selectedOutcome+1)%2].forEachIndexed {i, it ->
 						GameTextUtilities.drawDirectTextAlign(
 							receiver, hbx, pby+size*i, GameTextUtilities.ALIGN_MIDDLE_MIDDLE, it,
 							if(selectedOutcome==0) color else COLOR.COBALT, 1f
@@ -190,14 +192,14 @@ abstract class ExamSpinnerBase private constructor(private val gradeText:String,
 					if(lifeTime==spinDuration+120)
 						receiver.blockBreak(engine, (13..17).keysToMap {(3..7).keysToMap {HUGE_O.block.first()}})
 
-						splitPossibilityText[selectedOutcome].forEachIndexed {i ,it->
-							GameTextUtilities.drawDirectTextAlign(
-								receiver, hbx, pby+size*i, GameTextUtilities.ALIGN_MIDDLE_MIDDLE, it,
-								if(selectedOutcome==0) color else COLOR.COBALT, 1f
-							)
-						}
+					splitPossibilityText[selectedOutcome].forEachIndexed {i, it ->
+						GameTextUtilities.drawDirectTextAlign(
+							receiver, hbx, pby+size*i, GameTextUtilities.ALIGN_MIDDLE_MIDDLE, it,
+							if(selectedOutcome==0) color else COLOR.COBALT, 1f
+						)
+					}
 				}
-			} else if(lifeTime>=60) splitPossibilityText[selectedOutcome].forEachIndexed {i ,it->
+			} else if(lifeTime>=60) splitPossibilityText[selectedOutcome].forEachIndexed {i, it ->
 				GameTextUtilities.drawDirectTextAlign(
 					receiver, hbx, pby+size*i, GameTextUtilities.ALIGN_MIDDLE_MIDDLE, it,
 					if(selectedOutcome==0) color else COLOR.COBALT, 1f
@@ -219,7 +221,7 @@ abstract class ExamSpinnerBase private constructor(private val gradeText:String,
 				SOURCE_DETAILS[1][1][1], SOURCE_DETAILS[1][0][0], SOURCE_DETAILS[1][0][1], SOURCE_DETAILS[1][1][0],
 				SOURCE_DETAILS[1][1][1], 1f, Triple(1f, 1f, b)
 			)
-			receiver.drawMenuGrade(engine, 5-gradeText.length, 9, gradeText, color, 2f)
+			receiver.drawMenu(engine, 5-gradeText.length, 9, gradeText, GRADE, color, 2f)
 
 			// NEW CODE GOES HERE.
 			if(close) {
@@ -310,7 +312,7 @@ abstract class ExamSpinnerBase private constructor(private val gradeText:String,
 				val j = lifeTime.toFloat()/spinDuration
 				// StringBuilder sb = new StringBuilder();
 				// sb.append("[");
-				endXs.zip(startXs).forEachIndexed { i, (e,s) ->
+				endXs.zip(startXs).forEachIndexed {i, (e, s) ->
 					val res = Interpolation.smoothStep(e*1f, s*1f, j, 64f)
 					// sb.append(res).append(", ");
 					endXs[i] = res.toInt()

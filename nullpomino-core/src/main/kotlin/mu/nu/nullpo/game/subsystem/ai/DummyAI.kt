@@ -31,9 +31,10 @@
 package mu.nu.nullpo.game.subsystem.ai
 
 import mu.nu.nullpo.game.component.Controller
-import mu.nu.nullpo.game.event.EventReceiver
+import mu.nu.nullpo.game.event.EventReceiver.COLOR
 import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.game.play.GameManager
+import mu.nu.nullpo.gui.common.BaseFont.FONT.NANO
 import mu.nu.nullpo.util.GeneralUtil.getOX
 
 /** DummyAI - Base class for AI players */
@@ -70,7 +71,8 @@ open class DummyAI:AIPlayer, Runnable {
 	/** To stop a thread time  */
 	protected var thinkDelay = 0
 	/** When true,Running thread  */
-	@Volatile var threadRunning = false
+	@Volatile
+	var threadRunning = false
 	/** Thread for executing the think routine  */
 	var thread:Thread? = null
 
@@ -84,29 +86,29 @@ open class DummyAI:AIPlayer, Runnable {
 
 	override fun renderState(engine:GameEngine, playerID:Int) {
 		engine.owner.receiver.run {
-			drawMenuFont(engine, 0, 0, name, EventReceiver.COLOR.GREEN, 0.5f)
-			drawMenuFont(engine, 5, 1, "X", EventReceiver.COLOR.BLUE, 0.5f)
-			drawMenuFont(engine, 8, 1, "Y", EventReceiver.COLOR.BLUE, 0.5f)
-			drawMenuFont(engine, 11, 1, "RT", EventReceiver.COLOR.BLUE, 0.5f)
-			drawMenuFont(engine, 0, 2, "BEST:", EventReceiver.COLOR.BLUE, 0.5f)
-			drawMenuFont(engine, 5, 2, "$bestX", 0.5f)
-			drawMenuFont(engine, 8, 2, "$bestY", 0.5f)
-			drawMenuFont(engine, 11, 2, "$bestRt", 0.5f)
-			drawMenuFont(engine, 0, 3, "SUB:", EventReceiver.COLOR.BLUE, 0.5f)
-			drawMenuFont(engine, 5, 3, "$bestXSub", 0.5f)
-			drawMenuFont(engine, 8, 3, "$bestYSub", 0.5f)
-			drawMenuFont(engine, 11, 3, "$bestRtSub", 0.5f)
-			drawMenuFont(engine, 0, 4, "NOW:", EventReceiver.COLOR.BLUE, 0.5f)
+			drawMenu(engine, 0, 0, name, NANO, COLOR.GREEN, .5f)
+			drawMenu(engine, 5, 1, "X", NANO, COLOR.BLUE, .5f)
+			drawMenu(engine, 8, 1, "Y", NANO, COLOR.BLUE, .5f)
+			drawMenu(engine, 11, 1, "RT", NANO, COLOR.BLUE, .5f)
+			drawMenu(engine, 0, 2, "BEST:", NANO, COLOR.BLUE, .5f)
+			drawMenu(engine, 5, 2, "$bestX", NANO, .5f)
+			drawMenu(engine, 8, 2, "$bestY", NANO, .5f)
+			drawMenu(engine, 11, 2, "$bestRt", NANO, .5f)
+			drawMenu(engine, 0, 3, "SUB:", NANO, COLOR.BLUE, .5f)
+			drawMenu(engine, 5, 3, "$bestXSub", NANO, .5f)
+			drawMenu(engine, 8, 3, "$bestYSub", NANO, .5f)
+			drawMenu(engine, 11, 3, "$bestRtSub", NANO, .5f)
+			drawMenu(engine, 0, 4, "NOW:", NANO, COLOR.BLUE, .5f)
 			if(engine.nowPieceObject==null)
-				drawMenuFont(engine, 5, 4, "-- -- --", 0.5f) else {
-				drawMenuFont(engine, 5, 4, "${engine.nowPieceX}", 0.5f)
-				drawMenuFont(engine, 8, 4, "${engine.nowPieceY}", 0.5f)
-				drawMenuFont(engine, 11, 4, "${engine.nowPieceObject?.direction ?: "--"}", 0.5f)
+				drawMenu(engine, 5, 4, "-- -- --", NANO, .5f) else {
+				drawMenu(engine, 5, 4, "${engine.nowPieceX}", NANO, .5f)
+				drawMenu(engine, 8, 4, "${engine.nowPieceY}", NANO, .5f)
+				drawMenu(engine, 11, 4, "${engine.nowPieceObject?.direction?:"--"}", NANO, .5f)
 			}
-			drawMenuFont(engine, 0, 5, "MOVE SCORE:", EventReceiver.COLOR.BLUE, 0.5f)
-			drawMenuFont(engine, 13, 5, "$bestPts", bestPts<=0, 0.5f)
-			drawMenuFont(engine, 0, 6, "THINK ACTIVE:", EventReceiver.COLOR.BLUE, 0.5f)
-			drawMenuFont(engine, 15, 6, thinking.getOX, 0.5f)
+			drawMenu(engine, 0, 5, "MOVE SCORE:", NANO, COLOR.BLUE, .5f)
+			drawMenu(engine, 13, 5, "$bestPts", NANO, bestPts<=0, .5f)
+			drawMenu(engine, 0, 6, "THINK ACTIVE:", NANO, COLOR.BLUE, .5f)
+			drawMenu(engine, 15, 6, thinking.getOX, NANO, .5f)
 		}
 	}
 

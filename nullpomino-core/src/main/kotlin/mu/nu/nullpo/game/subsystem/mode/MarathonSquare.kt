@@ -38,6 +38,8 @@ import mu.nu.nullpo.game.event.EventReceiver
 import mu.nu.nullpo.game.event.ScoreEvent
 import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.game.play.LineGravity
+import mu.nu.nullpo.gui.common.BaseFont.FONT.BASE
+import mu.nu.nullpo.gui.common.BaseFont.FONT.GRADE
 import mu.nu.nullpo.util.CustomProperties
 import mu.nu.nullpo.util.GeneralUtil.toTimeStr
 
@@ -230,7 +232,7 @@ class MarathonSquare:AbstractMode() {
 
 	/* Renders HUD (leaderboard or game statistics) */
 	override fun renderLast(engine:GameEngine) {
-		receiver.drawScoreFont(engine, 0, 0, "SQUARE (${GAMETYPE_NAME[gametype]})", EventReceiver.COLOR.COBALT)
+		receiver.drawScore(engine, 0, 0, "SQUARE (${GAMETYPE_NAME[gametype]})", BASE, EventReceiver.COLOR.COBALT)
 
 		if(engine.stat==GameEngine.Status.SETTING||engine.stat==GameEngine.Status.RESULT&&!owner.replayMode) {
 			if(!owner.replayMode&&engine.ai==null) {
@@ -238,51 +240,51 @@ class MarathonSquare:AbstractMode() {
 				val topY = if(receiver.nextDisplayType==2&&gametype==0) 6 else 4
 
 				when(gametype) {
-					0 -> receiver.drawScoreFont(engine, 3, topY-1, "SCORE SQUARE TIME", EventReceiver.COLOR.BLUE, scale)
-					1 -> receiver.drawScoreFont(engine, 3, 3, "SCORE SQUARE", EventReceiver.COLOR.BLUE)
-					2 -> receiver.drawScoreFont(engine, 3, 3, "TIME     SQUARE", EventReceiver.COLOR.BLUE)
+					0 -> receiver.drawScore(engine, 3, topY-1, "SCORE SQUARE TIME", BASE, EventReceiver.COLOR.BLUE, scale)
+					1 -> receiver.drawScore(engine, 3, 3, "SCORE SQUARE", BASE, EventReceiver.COLOR.BLUE)
+					2 -> receiver.drawScore(engine, 3, 3, "TIME     SQUARE", BASE, EventReceiver.COLOR.BLUE)
 				}
 
 				for(i in 0..<rankingMax) {
-					receiver.drawScoreGrade(engine, 0, topY+i, "%2d".format(i+1), EventReceiver.COLOR.YELLOW, scale)
+					receiver.drawScore(engine, 0, topY+i, "%2d".format(i+1), GRADE, EventReceiver.COLOR.YELLOW, scale)
 					when(gametype) {
 						0 -> {
-							receiver.drawScoreFont(engine, 3, topY+i, "${rankingScore[gametype][i]}", i==rankingRank, scale)
-							receiver.drawScoreFont(engine, 9, topY+i, "${rankingSquares[gametype][i]}", i==rankingRank, scale)
-							receiver.drawScoreFont(
-								engine, 16, topY+i, rankingTime[gametype][i].toTimeStr, i==rankingRank,
+							receiver.drawScore(engine, 3, topY+i, "${rankingScore[gametype][i]}", BASE, i==rankingRank, scale)
+							receiver.drawScore(engine, 9, topY+i, "${rankingSquares[gametype][i]}", BASE, i==rankingRank, scale)
+							receiver.drawScore(
+								engine, 16, topY+i, rankingTime[gametype][i].toTimeStr, BASE, i==rankingRank,
 								scale
 							)
 						}
 						1 -> {
-							receiver.drawScoreFont(engine, 3, 4+i, "${rankingScore[gametype][i]}", i==rankingRank)
-							receiver.drawScoreFont(engine, 9, 4+i, "${rankingSquares[gametype][i]}", i==rankingRank)
+							receiver.drawScore(engine, 3, 4+i, "${rankingScore[gametype][i]}", BASE, i==rankingRank)
+							receiver.drawScore(engine, 9, 4+i, "${rankingSquares[gametype][i]}", BASE, i==rankingRank)
 						}
 						2 -> {
-							receiver.drawScoreFont(engine, 3, 4+i, rankingTime[gametype][i].toTimeStr, i==rankingRank)
-							receiver.drawScoreFont(engine, 12, 4+i, "${rankingSquares[gametype][i]}", i==rankingRank)
+							receiver.drawScore(engine, 3, 4+i, rankingTime[gametype][i].toTimeStr, BASE, i==rankingRank)
+							receiver.drawScore(engine, 12, 4+i, "${rankingSquares[gametype][i]}", BASE, i==rankingRank)
 						}
 					}
 				}
 			}
 		} else {
-			receiver.drawScoreFont(engine, 0, 3, "Score", EventReceiver.COLOR.BLUE)
-			receiver.drawScoreFont(engine, 0, 4, "${engine.statistics.score}(+$lastScore)")
+			receiver.drawScore(engine, 0, 3, "Score", BASE, EventReceiver.COLOR.BLUE)
+			receiver.drawScore(engine, 0, 4, "${engine.statistics.score}(+$lastScore)", BASE)
 
-			receiver.drawScoreFont(engine, 0, 6, "LINE", EventReceiver.COLOR.BLUE)
-			receiver.drawScoreFont(engine, 0, 7, "${engine.statistics.lines}")
+			receiver.drawScore(engine, 0, 6, "LINE", BASE, EventReceiver.COLOR.BLUE)
+			receiver.drawScore(engine, 0, 7, "${engine.statistics.lines}", BASE)
 
-			receiver.drawScoreFont(engine, 0, 9, "SQUARE", EventReceiver.COLOR.BLUE)
-			receiver.drawScoreFont(engine, 0, 10, "$squares")
+			receiver.drawScore(engine, 0, 9, "SQUARE", BASE, EventReceiver.COLOR.BLUE)
+			receiver.drawScore(engine, 0, 10, "$squares", BASE)
 
-			receiver.drawScoreFont(engine, 0, 12, "Time", EventReceiver.COLOR.BLUE)
+			receiver.drawScore(engine, 0, 12, "Time", BASE, EventReceiver.COLOR.BLUE)
 			if(gametype==1) {
 				// Ultra timer
 				val time = maxOf(0, ULTRA_MAX_TIME-engine.statistics.time)
-				receiver.drawScoreFont(engine, 0, 13, time.toTimeStr, getTimeFontColor(time))
+				receiver.drawScore(engine, 0, 13, time.toTimeStr, BASE, getTimeFontColor(time))
 			} else
 			// Normal timer
-				receiver.drawScoreFont(engine, 0, 13, engine.statistics.time.toTimeStr)
+				receiver.drawScore(engine, 0, 13, engine.statistics.time.toTimeStr, BASE)
 		}
 	}
 
@@ -451,7 +453,7 @@ class MarathonSquare:AbstractMode() {
 	}
 
 	/* Check for squares when piece locks */
-	override fun pieceLocked(engine: GameEngine, lines: Int, finesse: Boolean) {
+	override fun pieceLocked(engine:GameEngine, lines:Int, finesse:Boolean) {
 		val sq = engine.field.checkForSquares()
 		squares += sq[0]+sq[1]
 		if(sq[0]==0&&sq[1]>0)
@@ -461,7 +463,7 @@ class MarathonSquare:AbstractMode() {
 
 	/* Results screen */
 	override fun renderResult(engine:GameEngine) {
-		receiver.drawMenuFont(engine, 0, 1, "PLAY DATA", EventReceiver.COLOR.ORANGE)
+		receiver.drawMenu(engine, 0, 1, "PLAY DATA", BASE, EventReceiver.COLOR.ORANGE)
 
 		drawResult(
 			engine, receiver, 3, EventReceiver.COLOR.BLUE, "Score", "%10d".format(engine.statistics.score),
@@ -561,7 +563,7 @@ class MarathonSquare:AbstractMode() {
 				}
 				gametype==2&&sc>=SPRINT_MAX_SCORE
 					// Sprint
-				-> if(time<rankingTime[type][i]||rankingTime[type][i]<0)
+					-> if(time<rankingTime[type][i]||rankingTime[type][i]<0)
 					return i
 				else if(time==rankingTime[type][i]&&sq>rankingSquares[type][i]) return i
 			}

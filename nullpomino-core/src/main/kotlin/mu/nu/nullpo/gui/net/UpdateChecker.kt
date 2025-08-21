@@ -34,7 +34,7 @@ import kotlinx.serialization.Serializable
 import org.apache.logging.log4j.LogManager
 import java.io.InputStreamReader
 import java.net.URI
-import java.util.LinkedList
+import java.util.*
 import java.util.regex.Pattern
 
 /** 新Versionチェッカー */
@@ -52,9 +52,10 @@ class UpdateChecker:Runnable {
 		listeners.forEach {it.onUpdateCheckerEnd(status)}
 	}
 	@Serializable
-	data class Config(var enable:Boolean, var url:String){
-		constructor():this(true,"")
+	data class Config(var enable:Boolean, var url:String) {
+		constructor():this(true, "")
 	}
+
 	companion object {
 		/** Log */
 		internal val log = LogManager.getLogger()
@@ -63,7 +64,7 @@ class UpdateChecker:Runnable {
 		/* TODO: Find an actual place to put the NullpoUpdate.xml file, possible
 * on github pages. For now, just use the v7.5.0 file as a classpath
 * resource. */
-		val DEFAULT_XML_URL = UpdateChecker::class.java.getResource("NullpoUpdate.xml")?.path ?: ""
+		val DEFAULT_XML_URL = UpdateChecker::class.java.getResource("NullpoUpdate.xml")?.path?:""
 
 		/** 状態の定数 */
 		const val STATUS_INACTIVE = 0
@@ -183,62 +184,54 @@ class UpdateChecker:Runnable {
 		 * @return 最新版のメジャーVersion(float型)
 		 */
 		val latestMajorVersionAsFloat:Float
-			get() {
-				var resultVersion = 0f
+			get() =
 				if(strLatestVersion.isNotEmpty()) {
 					val strDot = if(strLatestVersion.contains("_")) "_" else "."
 					val strSplit = strLatestVersion.split(strDot.toRegex()).dropLastWhile {it.isEmpty()}
 
-					if(strSplit.size>=2) {
-						val strTemp = "${strSplit[0]}.${strSplit[1]}"
-						try {
-							resultVersion = strTemp.toFloat()
-						} catch(_:NumberFormatException) {
-						}
+					val strTemp = strSplit.take(2).joinToString(".")
+					try {
+						strTemp.toFloat()
+					} catch(_:NumberFormatException) {
+						0f
 					}
-				}
-				return resultVersion
-			}
+				} else 0f
 
 		/** 最新版のマイナーVersionを取得
-		 * @return 最新版のマイナーVersion(int型)
+		 * @return 最新版のマイナーVersion(float型)
 		 */
-		val latestMinorVersionAsInt:Int
-			get() {
-				var resultVersion = 0
+		val latestMinorVersionAsFloat:Float
+			get() =
 				if(strLatestVersion.isNotEmpty()) {
 					val strDot = if(strLatestVersion.contains("_")) "_" else "."
 					val strSplit = strLatestVersion.split(strDot.toRegex()).dropLastWhile {it.isEmpty()}
 
-					if(strSplit.isNotEmpty()) {
-						val strTemp = strSplit[strSplit.size-1]
-						try {
-							resultVersion = strTemp.toInt()
-						} catch(_:NumberFormatException) {
-						}
+					val strTemp = strSplit.drop(2).take(2).joinToString(".")
+					try {
+						strTemp.toFloat()
+					} catch(_:NumberFormatException) {
+						0f
 					}
-				}
-				return resultVersion
-			}
+				} else 0f
 
 		/** 最新版のVersion numberのString型表現を取得
 		 * @return 最新版のVersion numberのString型表現("7.0.0"など)
 		 */
 		val latestVersionFullString:String
-			get() = "$latestMajorVersionAsFloat.$latestMinorVersionAsInt"
+			get() = "$latestMajorVersionAsFloat.$latestMinorVersionAsFloat"
 
 		/** Current versionよりも最新版のVersionの方が新しいか判定
 		 * @param nowMajor Current メジャーVersion
 		 * @param nowMinor Current マイナーVersion
 		 * @return 最新版の方が新しいとtrue
 		 */
-		fun isNewVersionAvailable(nowMajor:Float, nowMinor:Int):Boolean {
+		fun isNewVersionAvailable(nowMajor:Number, nowMinor:Number):Boolean {
 			if(!isCompleted) return false
 
 			val latestMajor = latestMajorVersionAsFloat
-			val latestMinor = latestMinorVersionAsInt
+			val latestMinor = latestMinorVersionAsFloat
 
-			return if(latestMajor>nowMajor) true else latestMajor==nowMajor&&latestMinor>nowMinor
+			return latestMajor>nowMajor.toFloat() || latestMajor==nowMajor.toFloat()&&latestMinor>nowMinor.toFloat()
 		}
 
 		/** Version check

@@ -44,13 +44,9 @@ import mu.nu.nullpo.game.event.ScoreEvent
 import mu.nu.nullpo.game.net.NetUtil.urlEncode
 import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.game.subsystem.mode.NetDummyMode
-import mu.nu.nullpo.game.subsystem.mode.menu.BooleanMenuItem
-import mu.nu.nullpo.game.subsystem.mode.menu.DelegateMenuItem
-import mu.nu.nullpo.game.subsystem.mode.menu.IntegerMenuItem
-import mu.nu.nullpo.game.subsystem.mode.menu.LevelMenuItem
-import mu.nu.nullpo.game.subsystem.mode.menu.MenuList
-import mu.nu.nullpo.game.subsystem.mode.menu.StringsMenuItem
+import mu.nu.nullpo.game.subsystem.mode.menu.*
 import mu.nu.nullpo.game.subsystem.mode.rankMapType
+import mu.nu.nullpo.gui.common.BaseFont.FONT.*
 import mu.nu.nullpo.util.CustomProperties
 import mu.nu.nullpo.util.GeneralUtil.toTimeStr
 
@@ -59,7 +55,8 @@ MARATHON Mode
  */
 open class MarathonModeBase:NetDummyMode() {
 	/** Current BGM*/
-	@JvmField var bgmLv = 0
+	@JvmField
+	var bgmLv = 0
 
 	val itemLevel = LevelMenuItem("startlevel", "LEVEL", COLOR.BLUE, 0, 0..19)
 	/** Level at start time */
@@ -74,9 +71,11 @@ open class MarathonModeBase:NetDummyMode() {
 	/** Big*/
 	var big:Boolean by DelegateMenuItem(itemBig)
 	/** Version*/
-	@JvmField var version = 0
+	@JvmField
+	var version = 0
 	/** Current round's ranking position */
-	@JvmField var rankingRank = 0
+	@JvmField
+	var rankingRank = 0
 	/** Rankings' scores */
 	private val rankingScore = List(RANKING_TYPE) {MutableList(rankingMax) {0L}}
 	/** Rankings' line counts*/
@@ -222,7 +221,7 @@ open class MarathonModeBase:NetDummyMode() {
      */
 	override fun renderLast(engine:GameEngine) {
 		if(owner.menuOnly) return
-		receiver.drawScoreFont(engine, 0, 0, name, COLOR.GREEN)
+		receiver.drawScore(engine, 0, 0, name, BASE, COLOR.GREEN)
 
 		// NET: Number of spectators
 		netDrawSpectatorsCount(engine, 0, 18)
@@ -263,10 +262,10 @@ open class MarathonModeBase:NetDummyMode() {
 		drawResultRank(engine, receiver, 12, COLOR.BLUE, rankingRank)
 		drawResultNetRank(engine, receiver, 14, COLOR.BLUE, netRankingRank[0])
 		drawResultNetRankDaily(engine, receiver, 16, COLOR.BLUE, netRankingRank[1])
-		if(netIsPB) receiver.drawMenuFont(engine, 2, 21, "NEW PB", COLOR.RAINBOW)
-		if(netIsNetPlay&&netReplaySendStatus==1) receiver.drawMenuFont(engine, 0, 22, "SENDING...", COLOR.PINK)
+		if(netIsPB) receiver.drawMenu(engine, 2, 21, "NEW PB", BASE, COLOR.RAINBOW)
+		if(netIsNetPlay&&netReplaySendStatus==1) receiver.drawMenu(engine, 0, 22, "SENDING...", BASE, COLOR.PINK)
 		else if(netIsNetPlay&&!netIsWatch&&netReplaySendStatus==2)
-			receiver.drawMenuFont(engine, 1, 22, "A: RETRY", COLOR.RED)
+			receiver.drawMenu(engine, 1, 22, "A: RETRY", BASE, COLOR.RED)
 	}
 	/*
      * Called when saving replay
@@ -402,13 +401,17 @@ open class MarathonModeBase:NetDummyMode() {
 		/** Current version */
 		const val CURRENT_VERSION = 2
 		/** Fall velocity table (numerators) */
-		@JvmField val tableGravity = intArrayOf(1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 465, 731, 1280, 1707, -1, -1, -1)
+		@JvmField
+		val tableGravity = intArrayOf(1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 465, 731, 1280, 1707, -1, -1, -1)
 		/** Fall velocity table (denominators) */
-		@JvmField val tableDenominator = intArrayOf(63, 50, 39, 30, 22, 16, 12, 8, 6, 4, 3, 2, 1, 256, 256, 256, 256, 256, 256, 256)
+		@JvmField
+		val tableDenominator = intArrayOf(63, 50, 39, 30, 22, 16, 12, 8, 6, 4, 3, 2, 1, 256, 256, 256, 256, 256, 256, 256)
 		/** Line counts when BGM changes occur */
-		@JvmField val tableBGMChange = intArrayOf(50, 100, 150, 200, -1)
+		@JvmField
+		val tableBGMChange = intArrayOf(50, 100, 150, 200, -1)
 		/** Line counts when game ending occurs */
-		@JvmField val tableGameClearLines = intArrayOf(150, 200, -1)
+		@JvmField
+		val tableGameClearLines = intArrayOf(150, 200, -1)
 		/** Number of ranking types */
 		const val RANKING_TYPE = 3
 		/** Number of game types */

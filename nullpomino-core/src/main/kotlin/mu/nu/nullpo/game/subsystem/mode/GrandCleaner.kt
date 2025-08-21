@@ -40,6 +40,7 @@ import mu.nu.nullpo.game.event.ScoreEvent
 import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.game.subsystem.mode.menu.*
 import mu.nu.nullpo.gui.common.BaseFont
+import mu.nu.nullpo.gui.common.BaseFont.FONT.*
 import mu.nu.nullpo.util.CustomProperties
 import mu.nu.nullpo.util.GeneralUtil.plus
 import mu.nu.nullpo.util.GeneralUtil.times
@@ -91,7 +92,7 @@ class GrandCleaner:AbstractMode() {
 		val level get() = st.level
 		val time get() = st.time.let {if(it<0) Int.MAX_VALUE else it}
 		override operator fun compareTo(other:ScoreData):Int =
-			compareValuesBy(this, other, {it.clears},  {-it.time}, {-it.level})
+			compareValuesBy(this, other, {it.clears}, {-it.time}, {-it.level})
 	}
 
 	val rankingMode get() = easyPiece+timeTrial*2+queueType*4
@@ -216,46 +217,47 @@ class GrandCleaner:AbstractMode() {
 
 	/* Render score */
 	override fun renderLast(engine:GameEngine) {
-		receiver.drawScoreFont(
-			engine, 0, 0, "GRAND Cleaner", COLOR.RED
+		receiver.drawScore(
+			engine, 0, 0, "GRAND Cleaner", BASE, COLOR.RED
 		)
 
-		receiver.drawScoreFont(engine, -1, -4*2, "DECORATION", scale = .5f)
+		receiver.drawScore(engine, -1, -4*2, "DECORATION", BASE, scale = .5f)
 		receiver.drawScoreBadges(engine, 0, -3, 100, decoration)
 		receiver.drawScoreBadges(engine, 5, -4, 100, decTemp)
 		if(engine.stat==GameEngine.Status.SETTING||engine.stat==GameEngine.Status.RESULT&&!owner.replayMode) {
 			if(!always20g&&engine.ai==null) {
 				val topY = if(receiver.nextDisplayType==2) 5 else 3
 
-				receiver.drawScoreFont(engine, 2, topY-1, "CLEAR TIME LEVEL", COLOR.PINK)
+				receiver.drawScore(engine, 2, topY-1, "CLEAR TIME LEVEL", BASE, COLOR.PINK)
 				val type = queueType
 
 				ranking.forEachIndexed {i, it ->
-					receiver.drawScoreGrade(
-						engine, 0, topY+i, "%2d".format(i+1), if(rankingRank==i) COLOR.RAINBOW else COLOR.YELLOW
+					receiver.drawScore(
+						engine, 0, topY+i, "%2d".format(i+1), GRADE,
+						when {
+							i==rankingRank -> COLOR.RAINBOW
+							it.level>=1000 -> COLOR.GREEN
+							it.clears>=MAX_CLEAR_TOTAL -> COLOR.ORANGE
+							else -> COLOR.YELLOW
+						}
 					)
-					val color = when {
-						it.level>=1000 -> COLOR.GREEN
-						it.clears>=MAX_CLEAR_TOTAL -> COLOR.ORANGE
-						else -> COLOR.WHITE
-					}
-					receiver.drawScoreNum(engine, 3, topY+i, "%3d".format(it.clears), i==rankingRank)
-					receiver.drawScoreNum(engine, 7, topY+i, it.time.toTimeStr, i==rankingRank)
-					receiver.drawScoreNum(engine, 13, topY+i, "%4d".format(it.level), i==rankingRank)
+					receiver.drawScore(engine, 3, topY+i, "%3d".format(it.clears), NUM, i==rankingRank)
+					receiver.drawScore(engine, 7, topY+i, it.time.toTimeStr, NUM, i==rankingRank)
+					receiver.drawScore(engine, 13, topY+i, "%4d".format(it.level), NUM, i==rankingRank)
 
 				}
 			}
 		} else {
-			receiver.drawScoreFont(engine, 0, 11, "All Clears", COLOR.PINK)
-			receiver.drawScoreNum(engine, 1, 12, "%3d".format(engine.statistics.bravos), scgetdisp>0, 2f)
+			receiver.drawScore(engine, 0, 11, "All Clears", BASE, COLOR.PINK)
+			receiver.drawScore(engine, 1, 12, "%3d".format(engine.statistics.bravos), NUM, scgetdisp>0, 2f)
 
 			//  level
-			receiver.drawScoreFont(engine, 0, 11, "Level", COLOR.PINK)
-			receiver.drawScoreNum(engine, 1, 12, "%3d".format(maxOf(0, engine.statistics.level)))
+			receiver.drawScore(engine, 0, 11, "Level", BASE, COLOR.PINK)
+			receiver.drawScore(engine, 1, 12, "%3d".format(maxOf(0, engine.statistics.level)), NUM)
 
 			// Time limit
-			receiver.drawScoreNum(
-				engine, 0, 20, timeLimit.toTimeStr, engine.timerActive&&timeLimit<600&&timeLimit%4==0, 2f
+			receiver.drawScore(
+				engine, 0, 20, timeLimit.toTimeStr, NUM, engine.timerActive&&timeLimit<600&&timeLimit%4==0, 2f
 			)
 
 		}
@@ -383,10 +385,10 @@ class GrandCleaner:AbstractMode() {
 
 	/* Render results screen */
 	override fun renderResult(engine:GameEngine) {
-		receiver.drawMenuFont(engine, 0, 0, "${BaseFont.UP_S}${BaseFont.DOWN_S} PAGE${engine.statc[1]+1}/3", COLOR.RED)
+		receiver.drawMenu(engine, 0, 0, "${BaseFont.UP_S}${BaseFont.DOWN_S} PAGE${engine.statc[1]+1}/3", BASE, COLOR.RED)
 
-		receiver.drawMenuFont(engine, 5, 2, "ALL\nCLEARs", COLOR.PINK)
-		receiver.drawMenuFont(engine, -.25f, 2, "%3d".format(engine.statistics.bravos), 2f)
+		receiver.drawMenu(engine, 5, 2, "ALL\nCLEARs", BASE, COLOR.PINK)
+		receiver.drawMenu(engine, -.25f, 2, "%3d".format(engine.statistics.bravos), BASE, 2f)
 
 		drawResultStats(engine, receiver, 6, COLOR.PINK, Statistic.LINES, Statistic.LEVEL_MANIA, Statistic.PIECE,
 			Statistic.TIME)

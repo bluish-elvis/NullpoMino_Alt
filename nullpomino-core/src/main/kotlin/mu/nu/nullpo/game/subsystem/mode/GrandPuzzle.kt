@@ -38,6 +38,7 @@ import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.game.play.GameManager
 import mu.nu.nullpo.game.subsystem.mode.menu.*
 import mu.nu.nullpo.gui.common.BaseFont
+import mu.nu.nullpo.gui.common.BaseFont.FONT.*
 import mu.nu.nullpo.util.CustomProperties
 import mu.nu.nullpo.util.GeneralUtil.toInt
 import mu.nu.nullpo.util.GeneralUtil.toTimeStr
@@ -361,7 +362,7 @@ class GrandPuzzle:AbstractMode() {
 			propStageSet[id]?.load(LEVEL_DIR+"custom$id.map")
 		} else {
 			log.debug("Loading stage set from default set")
-			propStageSet[-1]?.loadXML(this::class.java.getResource("/map/gemmania.map.xml")!!.path)
+			propStageSet[-1]?.loadXML(this::class.java.getResource("/map/gemmania.map")!!.path)
 		}
 	}
 
@@ -385,6 +386,7 @@ class GrandPuzzle:AbstractMode() {
 		field.readProperty(prop, id)
 		field.setAllAttribute(true, Block.ATTRIBUTE.VISIBLE, Block.ATTRIBUTE.OUTLINE)
 		field.setAllAttribute(false, Block.ATTRIBUTE.SELF_PLACED)
+		field.setBlockLinkByColor()
 		limittimeStart = prop.getProperty("$id.gemmania.limittimeStart", 3600*3)
 		stagetimeStart = prop.getProperty("$id.gemmania.stagetimeStart", 3600)
 		stagebgm = prop.getProperty("$id.gemmania.stagebgm", BGM.Puzzle(0).id)
@@ -649,7 +651,7 @@ class GrandPuzzle:AbstractMode() {
 					"SAVE" to "[SET $mapSet]"
 				)
 
-				receiver.drawMenuFont(engine, 0, 19, "EXIT-> D+E", COLOR.ORANGE)
+				receiver.drawMenu(engine, 0, 19, "EXIT-> D+E", BASE, COLOR.ORANGE)
 			}
 			// エディットMenu   stage 画面
 			Stats.EDIT_STAGE -> drawMenu(
@@ -659,7 +661,7 @@ class GrandPuzzle:AbstractMode() {
 			)
 			else -> {
 				// 普通のMenu
-				if(!engine.owner.replayMode) receiver.drawMenuFont(engine, 0, 19, "D:EDIT", COLOR.ORANGE)
+				if(!engine.owner.replayMode) receiver.drawMenu(engine, 0, 19, "D:EDIT", BASE, COLOR.ORANGE)
 				super.renderSetting(engine)
 			}
 		}
@@ -688,16 +690,16 @@ class GrandPuzzle:AbstractMode() {
 	override fun renderReady(engine:GameEngine) {
 		if(engine.statc[0]>=engine.readyStart) {
 			// トレーニング
-			if(trainingType!=0) receiver.drawMenuFont(engine, 1, 5, "TRAINING", COLOR.GREEN)
+			if(trainingType!=0) receiver.drawMenu(engine, 1, 5, "TRAINING", BASE, COLOR.GREEN)
 
 			// STAGE XX
 			if(stage>=MAX_STAGE_NORMAL) {
-				receiver.drawMenuFont(engine, 0, 7, "EX LEVEL ", COLOR.GREEN)
-				receiver.drawMenuFont(engine, 9, 7, "${stage+1-MAX_STAGE_NORMAL}")
+				receiver.drawMenu(engine, 0, 7, "EX LEVEL ", BASE, COLOR.GREEN)
+				receiver.drawMenu(engine, 9, 7, "${stage+1-MAX_STAGE_NORMAL}", BASE)
 			} else {
-				receiver.drawMenuFont(engine, 1, 7, "LEVEL", COLOR.GREEN)
+				receiver.drawMenu(engine, 1, 7, "LEVEL", BASE, COLOR.GREEN)
 				val strStage = "%2s".format(getStageName(stage))
-				receiver.drawMenuFont(engine, 7, 7, strStage)
+				receiver.drawMenu(engine, 7, 7, strStage, BASE)
 			}
 		}
 	}
@@ -716,38 +718,39 @@ class GrandPuzzle:AbstractMode() {
 
 	/* Render score */
 	override fun renderLast(engine:GameEngine) {
-		receiver.drawScoreFont(
-			engine, 0, 0, "GRAND BLOSSOM"+if(randomQueue) " (RANDOM)" else "", COLOR.RED
+		receiver.drawScore(
+			engine, 0, 0, "GRAND BLOSSOM"+if(randomQueue) " (RANDOM)" else "", BASE, COLOR.RED
 		)
 
-		receiver.drawScoreFont(engine, -1, -4*2, "DECORATION", scale = .5f)
+		receiver.drawScore(engine, -1, -4*2, "DECORATION", BASE, scale = .5f)
 		receiver.drawScoreBadges(engine, 0, -3, 100, decoration)
 		receiver.drawScoreBadges(engine, 5, -4, 100, decTemp)
 		if(engine.stat==GameEngine.Status.SETTING||engine.stat==GameEngine.Status.RESULT&&!owner.replayMode) {
 			if(startStage==0&&!always20g&&trainingType==0&&startNextc==0&&mapSet<0&&engine.ai==null) {
 				val topY = if(receiver.nextDisplayType==2) 5 else 3
 
-				receiver.drawScoreFont(engine, 3, topY-1, "STAGE CLEAR TIME", COLOR.PINK)
+				receiver.drawScore(engine, 3, topY-1, "STAGE CLEAR TIME", BASE, COLOR.PINK)
 				val type = randomQueue.toInt()
 
 				for(i in 0..<rankingMax) {
-					receiver.drawScoreGrade(
-						engine, 0, topY+i, "%2d".format(i+1), if(rankingRank==i) COLOR.RAINBOW else COLOR.YELLOW
+					receiver.drawScore(
+						engine, 0, topY+i, "%2d".format(i+1), GRADE,
+						if(rankingRank==i) COLOR.RAINBOW else COLOR.YELLOW
 					)
-					receiver.drawScoreFont(
-						engine, 3, topY+i, getStageName(rankingStage[type][i]), when {
+					receiver.drawScore(
+						engine, 3, topY+i, getStageName(rankingStage[type][i]), BASE, when {
 							rankingAllClear[type][i]==1 -> COLOR.GREEN
 							rankingAllClear[type][i]==2 -> COLOR.ORANGE
 							else -> COLOR.WHITE
 						}
 					)
-					receiver.drawScoreNum(engine, 9, topY+i, "${rankingRate[type][i]}%", i==rankingRank)
-					receiver.drawScoreNum(engine, 15, topY+i, rankingTime[type][i].toTimeStr, i==rankingRank)
+					receiver.drawScore(engine, 9, topY+i, "${rankingRate[type][i]}%", NUM, i==rankingRank)
+					receiver.drawScore(engine, 15, topY+i, rankingTime[type][i].toTimeStr, NUM, i==rankingRank)
 				}
 			}
 		} else {
-			receiver.drawScoreFont(engine, 0, 2, "LEVEL", COLOR.PINK)
-			receiver.drawScoreFont(engine, 6, 2, getStageName(stage))
+			receiver.drawScore(engine, 0, 2, "LEVEL", BASE, COLOR.PINK)
+			receiver.drawScore(engine, 6, 2, getStageName(stage), BASE)
 
 			receiver.drawScoreMedal(engine, 0, 3, "MIRROR", (gimmickMirror>0).toInt())
 			receiver.drawScoreMedal(engine, 0, 3, "ROLL ROLL", (gimmickRoll>0).toInt())
@@ -755,28 +758,28 @@ class GrandPuzzle:AbstractMode() {
 			receiver.drawScoreMedal(engine, 0, 3, "X-RAY", (gimmickXRay>0).toInt())
 			receiver.drawScoreMedal(engine, 0, 4, "COLOR", (gimmickColor>0).toInt())
 
-			receiver.drawScoreFont(engine, 0, 5, "REST", COLOR.PINK)
-			receiver.drawScoreNum(engine, 0, 6, "$rest")
+			receiver.drawScore(engine, 0, 5, "REST", BASE, COLOR.PINK)
+			receiver.drawScore(engine, 0, 6, "$rest", NUM)
 
 			if(trainingType==0) {
-				receiver.drawScoreFont(engine, 3, 8, "% CLEAR", COLOR.PINK)
-				receiver.drawScoreNum(engine, 0, 8, "$clearRate")
+				receiver.drawScore(engine, 3, 8, "% CLEAR", BASE, COLOR.PINK)
+				receiver.drawScore(engine, 0, 8, "$clearRate", NUM)
 			} else {
-				receiver.drawScoreFont(engine, 0, 8, "BEST TIME", COLOR.PINK)
-				receiver.drawScoreNum(engine, 0, 9, trainingBestTime.toTimeStr)
+				receiver.drawScore(engine, 0, 8, "BEST TIME", BASE, COLOR.PINK)
+				receiver.drawScore(engine, 0, 9, trainingBestTime.toTimeStr, NUM)
 			}
 
 			//  level
-			receiver.drawScoreFont(engine, 0, 11, "Level", COLOR.PINK)
-			receiver.drawScoreNum(engine, 1, 12, "%3d".format(maxOf(0, speedlevel)))
+			receiver.drawScore(engine, 0, 11, "Level", BASE, COLOR.PINK)
+			receiver.drawScore(engine, 1, 12, "%3d".format(maxOf(0, speedlevel)), NUM)
 			receiver.drawScoreSpeed(engine, 0, 13, if(engine.speed.gravity<0) 40 else engine.speed.gravity/128, 4)
-			receiver.drawScoreNum(engine, 1, 14, "%3d".format(nextSecLv))
+			receiver.drawScore(engine, 1, 14, "%3d".format(nextSecLv), NUM)
 
 			//  stage Time
 			if(stagetimeStart>0) {
-				receiver.drawScoreFont(engine, 0, 16, "STAGE TIME", COLOR.PINK)
-				receiver.drawScoreNum(
-					engine, 0, 17, stagetimeNow.toTimeStr, engine.timerActive
+				receiver.drawScore(engine, 0, 16, "STAGE TIME", BASE, COLOR.PINK)
+				receiver.drawScore(
+					engine, 0, 17, stagetimeNow.toTimeStr, NUM, engine.timerActive
 						&&stagetimeNow<600&&stagetimeNow%4==0, 2f
 				)
 			}
@@ -784,13 +787,15 @@ class GrandPuzzle:AbstractMode() {
 			// Time limit
 			if(limittimeStart>0) {
 				if(timeextendDisp>0) {
-					receiver.drawScoreNano(engine, 0, 19, "TIME EXTENSION", COLOR.PINK)
-					receiver.drawScoreNum(
-						engine, 0, 22, "+$timeextendSeconds", engine.timerActive&&limittimeNow<600&&limittimeNow%4==0
+					receiver.drawScore(engine, 0, 19, "TIME EXTENSION", NANO, COLOR.PINK)
+					receiver.drawScore(
+						engine, 0, 22, "+$timeextendSeconds", NUM,
+						engine.timerActive&&limittimeNow<600&&limittimeNow%4==0
 					)
 				}
-				receiver.drawScoreNum(
-					engine, 0, 20, limittimeNow.toTimeStr, engine.timerActive&&limittimeNow<600&&limittimeNow%4==0, 2f
+				receiver.drawScore(
+					engine, 0, 20, limittimeNow.toTimeStr, NUM,
+					engine.timerActive&&limittimeNow<600&&limittimeNow%4==0, 2f
 				)
 			}
 
@@ -799,7 +804,7 @@ class GrandPuzzle:AbstractMode() {
 				val y = if(receiver.nextDisplayType==2) 4 else 2
 				val x = if(receiver.nextDisplayType==2) 22 else 10
 
-				receiver.drawScoreFont(engine, x, y, "SECTION TIME", COLOR.PINK)
+				receiver.drawScore(engine, x, y, "SECTION TIME", BASE, COLOR.PINK)
 
 				for(i in sectionTime.indices)
 					if(sectionTime[i]!=0) {
@@ -811,15 +816,15 @@ class GrandPuzzle:AbstractMode() {
 							else -> "%3s%s%s".format(getStageName(i), strSeparator, sectionTime[i].toTimeStr)
 						}
 						val pos = i-maxOf(stage-14, 0)
-						if(pos>=0) receiver.drawScoreFont(engine, x, y+1+pos, strSectionTime)
+						if(pos>=0) receiver.drawScore(engine, x, y+1+pos, strSectionTime, BASE)
 					}
 
 				if(receiver.nextDisplayType==2) {
-					receiver.drawScoreFont(engine, 11, 19, "TOTAL", COLOR.PINK)
-					receiver.drawScoreNum(engine, 11, 20, engine.statistics.time.toTimeStr, 2f)
+					receiver.drawScore(engine, 11, 19, "TOTAL", BASE, COLOR.PINK)
+					receiver.drawScore(engine, 11, 20, engine.statistics.time.toTimeStr, NUM, 2f)
 				} else {
-					receiver.drawScoreFont(engine, 12, 16, "TOTAL TIME", COLOR.PINK)
-					receiver.drawScoreNum(engine, 12, 17, engine.statistics.time.toTimeStr, 2f)
+					receiver.drawScore(engine, 12, 16, "TOTAL TIME", BASE, COLOR.PINK)
+					receiver.drawScore(engine, 12, 17, engine.statistics.time.toTimeStr, NUM, 2f)
 				}
 			}
 		}
@@ -1044,7 +1049,7 @@ class GrandPuzzle:AbstractMode() {
 			else -2 // スキップ
 
 			// トレーニングでのベストTime
-			if(trainingType!=0&&clearFlag&&(cleartime<trainingBestTime||trainingBestTime<0)) trainingBestTime = cleartime
+			if(trainingType!=0&&clearFlag&&(trainingBestTime !in 0..cleartime)) trainingBestTime = cleartime
 		}
 
 		// Time limitが増える演出
@@ -1099,70 +1104,73 @@ class GrandPuzzle:AbstractMode() {
 		if(engine.statc[0]<1) return
 
 		// STAGE XX
-		receiver.drawMenuFont(engine, 1, 2, "STAGE", COLOR.GREEN)
+		receiver.drawMenu(engine, 1, 2, "STAGE", BASE, COLOR.GREEN)
 		val strStage = "%2s".format(getStageName(stage))
-		receiver.drawMenuFont(engine, 7, 2, strStage)
+		receiver.drawMenu(engine, 7, 2, strStage, BASE)
 
 		if(clearFlag) {
 			// クリア
-			receiver.drawMenuFont(
-				engine, 2, 4, "CLEAR!", if(engine.statc[0]%2==0) COLOR.ORANGE else COLOR.WHITE
+			receiver.drawMenu(
+				engine, 2, 4, "CLEAR!", BASE, if(engine.statc[0]%2==0) COLOR.ORANGE else COLOR.WHITE
 			)
 
-			receiver.drawMenuFont(engine, 0, 7, "LIMIT TIME", COLOR.PINK)
-			receiver.drawMenuFont(
+			receiver.drawMenu(engine, 0, 7, "LIMIT TIME", BASE, COLOR.PINK)
+			receiver.drawMenu(
 				engine, 1, 8, (limittimeNow+engine.statc[1]).toTimeStr,
+				BASE,
 				if(engine.statc[0]%2==0&&engine.statc[1]<timeextendStageClearSeconds*60) COLOR.ORANGE else COLOR.WHITE,
 				1.5f
 			)
 
 			if(timeextendStageClearSeconds>0) {
-				receiver.drawMenuFont(engine, 2, 10, "EXTEND", COLOR.PINK)
-				receiver.drawMenuNum(engine, 2, 11, "+%02d".format(timeextendStageClearSeconds), 2f)
-				receiver.drawMenuNano(engine, 7, 12, "SEC.", COLOR.WHITE, .5f)
+				receiver.drawMenu(engine, 2, 10, "EXTEND", BASE, COLOR.PINK)
+				receiver.drawMenu(engine, 2, 11, "+%02d".format(timeextendStageClearSeconds), NUM, 2f)
+				receiver.drawMenu(engine, 7, 12, "SEC.", NANO, COLOR.WHITE, .5f)
 			}
 
-			receiver.drawMenuFont(engine, 0, 13, "CLEAR TIME", COLOR.PINK)
-			receiver.drawMenuNum(engine, 1, 14, cleartime.toTimeStr, 1.5f)
+			receiver.drawMenu(engine, 0, 13, "CLEAR TIME", BASE, COLOR.PINK)
+			receiver.drawMenu(engine, 1, 14, cleartime.toTimeStr, NUM, 1.5f)
 
-			receiver.drawMenuFont(engine, 0, 16, "TOTAL TIME", COLOR.PINK)
-			receiver.drawMenuNum(engine, 1, 17, engine.statistics.time.toTimeStr, 1.5f)
+			receiver.drawMenu(engine, 0, 16, "TOTAL TIME", BASE, COLOR.PINK)
+			receiver.drawMenu(engine, 1, 17, engine.statistics.time.toTimeStr, NUM, 1.5f)
 		} else if(skipFlag) {
 			// スキップ
-			receiver.drawMenuFont(engine, 1, 4, "SKIPPED")
-			receiver.drawMenuNum(engine, 2, 11, "-30", if(engine.statc[0]%2==0&&engine.statc[1]<30*60) COLOR.WHITE else COLOR.RED, 2f)
-			receiver.drawMenuNano(
-				engine, 7, 12, "SEC.", if(engine.statc[0]%2==0&&engine.statc[1]<30*60) COLOR.WHITE else COLOR.RED, .5f
+			receiver.drawMenu(engine, 1, 4, "SKIPPED", BASE)
+			receiver.drawMenu(engine, 2, 11, "-30", NUM,
+				if(engine.statc[0]%2==0&&engine.statc[1]<30*60) COLOR.WHITE else COLOR.RED, 2f)
+			receiver.drawMenu(
+				engine, 7, 12, "SEC.", NANO,
+				if(engine.statc[0]%2==0&&engine.statc[1]<30*60) COLOR.WHITE else COLOR.RED, .5f
 			)
 
-			receiver.drawMenuFont(engine, 0, 10, "LIMIT TIME", COLOR.PINK)
-			receiver.drawMenuNum(
-				engine, 1, 11, (limittimeNow-engine.statc[1]).toTimeStr,
+			receiver.drawMenu(engine, 0, 10, "LIMIT TIME", BASE, COLOR.PINK)
+			receiver.drawMenu(
+				engine, 1, 11, (limittimeNow-engine.statc[1]).toTimeStr, NUM,
 				if(engine.statc[0]%2==0&&engine.statc[1]<30*60) COLOR.RED else COLOR.WHITE, 1.5f
 			)
 
 			if(trainingType==0) {
-				receiver.drawMenuFont(engine, 0, 13, "CLEAR PER.", COLOR.PINK)
-				receiver.drawMenuNum(engine, 3, 14, "$clearRate%", 2f)
+				receiver.drawMenu(engine, 0, 13, "CLEAR PER.", BASE, COLOR.PINK)
+				receiver.drawMenu(engine, 3, 14, "$clearRate%", NUM, 2f)
 			}
 
-			receiver.drawMenuFont(engine, 0, 16, "TOTAL TIME", COLOR.PINK)
-			receiver.drawMenuNum(engine, 1, 17, engine.statistics.time.toTimeStr, 1.5f)
+			receiver.drawMenu(engine, 0, 16, "TOTAL TIME", BASE, COLOR.PINK)
+			receiver.drawMenu(engine, 1, 17, engine.statistics.time.toTimeStr, NUM, 1.5f)
 		} else if(stagetimeNow<=0&&stagetimeStart>0) {
 			// Timeアップ
-			receiver.drawMenuFont(engine, 1, 0, "TIME OVER")
-			receiver.drawMenuFont(engine, 1, 5, "TRY NEXT")
+			receiver.drawMenu(engine, 1, 0, "TIME OVER", BASE)
+			receiver.drawMenu(engine, 1, 5, "TRY NEXT", BASE)
 
-			receiver.drawMenuFont(engine, 0, 10, "LIMIT TIME", COLOR.PINK)
-			receiver.drawMenuNum(engine, 1, 11, limittimeNow.toTimeStr, 1.5f)
+			receiver.drawMenu(engine, 0, 10, "LIMIT TIME", BASE, COLOR.PINK)
+			receiver.drawMenu(engine, 1, 11, limittimeNow.toTimeStr, NUM, 1.5f)
 
 			if(trainingType==0) {
-				receiver.drawMenuFont(engine, 0, 13, "CLEAR PER.", COLOR.PINK)
-				receiver.drawMenuNum(engine, 3, 14, "$clearRate%", 2f)
+				receiver.drawMenu(engine, 0, 13, "CLEAR PER.", BASE, COLOR.PINK)
+				receiver.drawMenu(engine, 3, 14, "$clearRate%", NUM, 2f)
 			}
 
-			receiver.drawMenuFont(engine, 0, 16, "TOTAL TIME", COLOR.PINK)
-			receiver.drawMenuNum(engine, 1, 17, engine.statistics.time.toTimeStr, 1.5f)
+			receiver.drawMenu(engine, 0, 16, "TOTAL TIME", BASE, COLOR.PINK)
+			receiver.drawMenu(engine, 1, 17, engine.statistics.time.toTimeStr, NUM, 1.5f)
 		}
 	}
 
@@ -1241,19 +1249,19 @@ class GrandPuzzle:AbstractMode() {
 	override fun renderGameOver(engine:GameEngine) {
 		if(engine.ending==0&&!noContinue)
 			if(engine.statc[0]>=engine.field.height+1&&engine.statc[0]<engine.field.height+1+600) {
-				receiver.drawMenuFont(engine, 1, 7, "TRY AGAIN?", COLOR.PINK)
+				receiver.drawMenu(engine, 1, 7, "TRY AGAIN?", BASE, COLOR.PINK)
 
-				receiver.drawMenuFont(engine, 3, 9+engine.statc[1]*2, BaseFont.CURSOR, COLOR.RED)
-				receiver.drawMenuFont(engine, 4, 9, "YES", engine.statc[1]==0)
-				receiver.drawMenuFont(engine, 4, 11, "NO", engine.statc[1]==1)
+				receiver.drawMenu(engine, 3, 9+engine.statc[1]*2, BaseFont.CURSOR, BASE, COLOR.RED)
+				receiver.drawMenu(engine, 4, 9, "YES", BASE, engine.statc[1]==0)
+				receiver.drawMenu(engine, 4, 11, "NO", BASE, engine.statc[1]==1)
 
 				val t = engine.field.height+1+600-engine.statc[0]
-				receiver.drawMenuFont(engine, 2, 13, "TIME ${(t-1)/60}", COLOR.GREEN)
+				receiver.drawMenu(engine, 2, 13, "TIME ${(t-1)/60}", BASE, COLOR.GREEN)
 
-				receiver.drawMenuFont(engine, 0, 16, "TOTAL TIME", COLOR.PINK)
-				receiver.drawMenuFont(engine, 1, 17, engine.statistics.time.toTimeStr)
+				receiver.drawMenu(engine, 0, 16, "TOTAL TIME", BASE, COLOR.PINK)
+				receiver.drawMenu(engine, 1, 17, engine.statistics.time.toTimeStr, BASE)
 
-				if(trainingType==0) receiver.drawMenuFont(engine, 0, 18, "+2 MINUTES", COLOR.RED)
+				if(trainingType==0) receiver.drawMenu(engine, 0, 18, "+2 MINUTES", BASE, COLOR.RED)
 			}
 	}
 
@@ -1275,7 +1283,7 @@ class GrandPuzzle:AbstractMode() {
 
 	/* Render results screen */
 	override fun renderResult(engine:GameEngine) {
-		receiver.drawMenuFont(engine, 0, 0, "${BaseFont.UP_S}${BaseFont.DOWN_S} PAGE${engine.statc[1]+1}/3", COLOR.RED)
+		receiver.drawMenu(engine, 0, 0, "${BaseFont.UP_S}${BaseFont.DOWN_S} PAGE${engine.statc[1]+1}/3", BASE, COLOR.RED)
 
 		if(engine.statc[1]==0) {
 			val gcolor = when(allClear) {
@@ -1283,24 +1291,24 @@ class GrandPuzzle:AbstractMode() {
 				2 -> COLOR.ORANGE
 				else -> COLOR.WHITE
 			}
-			receiver.drawMenuFont(engine, 0, 2, "STAGE", COLOR.PINK)
+			receiver.drawMenu(engine, 0, 2, "STAGE", BASE, COLOR.PINK)
 			val strStage = "%10s".format(getStageName(stage))
-			receiver.drawMenuFont(engine, 0, 3, strStage, gcolor)
+			receiver.drawMenu(engine, 0, 3, strStage, BASE, gcolor)
 
 			drawResult(engine, receiver, 4, COLOR.PINK, "CLEAR", clearRate)
 			drawResultStats(engine, receiver, 6, COLOR.PINK, Statistic.LINES, Statistic.PIECE, Statistic.TIME)
 			drawResultRank(engine, receiver, 12, COLOR.PINK, rankingRank)
 		} else {
-			receiver.drawMenuFont(engine, 0, 2, "SECTION${engine.statc[1]}/2", COLOR.PINK)
+			receiver.drawMenu(engine, 0, 2, "SECTION${engine.statc[1]}/2", BASE, COLOR.PINK)
 
 			var i = if(engine.statc[1]==1) 0 else 15
 			val y = if(engine.statc[1]==1) 3 else -12
 			while(i<if(engine.statc[1]==1) 15 else sectionTime.size) {
 				if(sectionTime[i]!=0)
 					when {
-						sectionTime[i]==-1 -> receiver.drawMenuNum(engine, 2, i+y, "FAILED", COLOR.RED)
-						sectionTime[i]==-2 -> receiver.drawMenuNum(engine, 2, i+y, "SKIPPED", COLOR.PURPLE)
-						else -> receiver.drawMenuNum(engine, 2, i+y, sectionTime[i].toTimeStr)
+						sectionTime[i]==-1 -> receiver.drawMenu(engine, 2, i+y, "FAILED", NUM, COLOR.RED)
+						sectionTime[i]==-2 -> receiver.drawMenu(engine, 2, i+y, "SKIPPED", NUM, COLOR.PURPLE)
+						else -> receiver.drawMenu(engine, 2, i+y, sectionTime[i].toTimeStr, NUM)
 					}
 				i++
 			}

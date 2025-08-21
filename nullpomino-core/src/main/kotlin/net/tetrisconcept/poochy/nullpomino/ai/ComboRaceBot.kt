@@ -37,6 +37,7 @@ import mu.nu.nullpo.game.component.Piece
 import mu.nu.nullpo.game.event.EventReceiver
 import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.game.subsystem.ai.DummyAI
+import mu.nu.nullpo.gui.common.BaseFont.FONT.BASE
 import mu.nu.nullpo.util.GeneralUtil.getOX
 import org.apache.log4j.Logger
 import kotlin.math.abs
@@ -621,40 +622,39 @@ class ComboRaceBot:DummyAI(), Runnable {
 	override fun renderState(engine:GameEngine, playerID:Int) {
 		super.renderState(engine, playerID)
 		engine.owner.receiver.run {
-			drawMenuFont(engine, 0, 7, "THINK REQUEST:", EventReceiver.COLOR.BLUE, .5f)
-			drawMenuFont(engine, 14, 7, (thinkRequest?.active ?: false).getOX, .5f)
-			drawMenuFont(
-				engine, 0, 8, "THINK SUCCESS:", if(thinkSuccess) EventReceiver.COLOR.BLUE else EventReceiver.COLOR.RED,
+			drawMenu(engine, 0, 7, "THINK REQUEST:", BASE, EventReceiver.COLOR.BLUE, .5f)
+			drawMenu(engine, 14, 7, (thinkRequest?.active?:false).getOX, BASE, .5f)
+			drawMenu(engine, 0, 8, "THINK SUCCESS:", BASE,
+				if(thinkSuccess) EventReceiver.COLOR.BLUE else EventReceiver.COLOR.RED,
 				.5f
 			)
-			drawMenuFont(engine, 14, 8, thinkSuccess.getOX, !thinkSuccess, .5f)
-			drawMenuFont(engine, 0, 9, "THINK COMPLETE:", EventReceiver.COLOR.BLUE, .5f)
-			drawMenuFont(engine, 15, 9, thinkComplete.getOX, .5f)
-			drawMenuFont(engine, 0, 10, "IN ARE:", EventReceiver.COLOR.BLUE, .5f)
-			drawMenuFont(engine, 7, 10, inARE.getOX, .5f)
-			drawMenuFont(engine, 0, 11, "QUEUE:", EventReceiver.COLOR.BLUE, .5f)
+			drawMenu(engine, 14, 8, thinkSuccess.getOX, BASE, !thinkSuccess, .5f)
+			drawMenu(engine, 0, 9, "THINK COMPLETE:", BASE, EventReceiver.COLOR.BLUE, .5f)
+			drawMenu(engine, 15, 9, thinkComplete.getOX, BASE, .5f)
+			drawMenu(engine, 0, 10, "IN ARE:", BASE, EventReceiver.COLOR.BLUE, .5f)
+			drawMenu(engine, 7, 10, inARE.getOX, BASE, .5f)
+			drawMenu(engine, 0, 11, "QUEUE:", BASE, EventReceiver.COLOR.BLUE, .5f)
 			var color = EventReceiver.COLOR.GREEN
 			for(i in nextQueueIDs.indices) {
 				if(i>=bestPts/1000&&color!=EventReceiver.COLOR.RED) color =
 					if(i<nextQueueIDs.size-1&&thinkComplete) EventReceiver.COLOR.RED else EventReceiver.COLOR.YELLOW
-				drawMenuFont(engine, 6+i, 11, Piece.Shape.names[nextQueueIDs[i]], color, .5f)
+				drawMenu(engine, 6+i, 11, Piece.Shape.names[nextQueueIDs[i]], BASE, color, .5f)
 			}
 			val code = fieldToCode(engine.field)
-			drawMenuFont(engine, 0, 12, "STATE:", EventReceiver.COLOR.BLUE, .5f)
-			drawMenuFont(
-				engine, 6, 12, if(code.toInt()==-1) "---" else
-					"#${fieldToIndex(engine.field)}:${Integer.toHexString(code.toInt()).uppercase()}", .5f
+			drawMenu(engine, 0, 12, "STATE:", BASE, EventReceiver.COLOR.BLUE, .5f)
+			drawMenu(engine, 6, 12, if(code.toInt()==-1) "---" else
+				"#${fieldToIndex(engine.field)}:${Integer.toHexString(code.toInt()).uppercase()}", BASE, .5f
 			)
 		}
 	}
 
 	override fun renderHint(engine:GameEngine, playerID:Int) {
 		val r = engine.owner.receiver
-		r.drawScoreFont(engine, 10, 3, "AI HINT MOVE:", EventReceiver.COLOR.GREEN)
+		r.drawScore(engine, 10, 3, "AI HINT MOVE:", BASE, EventReceiver.COLOR.GREEN)
 		if(bestPts>0&&(thinkComplete||(((thinkCurrentPieceNo>0)
 				&&(thinkCurrentPieceNo<=thinkLastPieceNo))))
 		) {
-			if(bestHold&&thinkComplete&&engine.isHoldOK) r.drawScoreFont(engine, 10, 4, "HOLD") else {
+			if(bestHold&&thinkComplete&&engine.isHoldOK) r.drawScore(engine, 10, 4, "HOLD", BASE) else {
 				val pieceNow = engine.nowPieceObject
 				val fld:Field = engine.field
 				if(pieceNow==null) return
@@ -673,9 +673,9 @@ class ComboRaceBot:DummyAI(), Runnable {
 							if(spR==Piece.DIRECTION_UP) 1 else -1
 						} else 1
 					when(spinDir) {
-						-1 -> r.drawScoreFont(engine, 10, 4, "SPIN LEFT")
-						1 -> r.drawScoreFont(engine, 10, 4, "SPIN RIGHT")
-						2 -> r.drawScoreFont(engine, 10, 4, "SPIN 180")
+						-1 -> r.drawScore(engine, 10, 4, "SPIN LEFT", BASE)
+						1 -> r.drawScore(engine, 10, 4, "SPIN RIGHT", BASE)
+						2 -> r.drawScore(engine, 10, 4, "SPIN 180", BASE)
 					}
 					return
 				}
@@ -694,9 +694,9 @@ class ComboRaceBot:DummyAI(), Runnable {
 							if(spR==Piece.DIRECTION_UP) 1 else -1
 						} else 1
 					when(spinDir) {
-						-1 -> r.drawScoreFont(engine, 10, writeY, "SPIN LEFT")
-						1 -> r.drawScoreFont(engine, 10, writeY, "SPIN RIGHT")
-						2 -> r.drawScoreFont(engine, 10, writeY, "SPIN 180")
+						-1 -> r.drawScore(engine, 10, writeY, "SPIN LEFT", BASE)
+						1 -> r.drawScore(engine, 10, writeY, "SPIN RIGHT", BASE)
+						2 -> r.drawScore(engine, 10, writeY, "SPIN 180", BASE)
 					}
 					writeY++
 				}
@@ -729,11 +729,11 @@ class ComboRaceBot:DummyAI(), Runnable {
 					} else if(nowX>bestXSub) moveDir = -1 else if(nowX<bestXSub) moveDir = 1
 				}
 				if(moveDir!=0) {
-					r.drawScoreFont(engine, 10, writeY, if(moveDir==-1) "MOVE LEFT" else "MOVE RIGHT")
+					r.drawScore(engine, 10, writeY, if(moveDir==-1) "MOVE LEFT" else "MOVE RIGHT", BASE)
 					writeY++
 				}
 				if(drop!=0) {
-					r.drawScoreFont(engine, 10, writeY, if(drop==-1) "SOFT DROP" else "HARD DROP")
+					r.drawScore(engine, 10, writeY, if(drop==-1) "SOFT DROP" else "HARD DROP", BASE)
 					writeY++
 				}
 			}

@@ -40,6 +40,7 @@ import mu.nu.nullpo.game.play.GameEngine.GameStyle
 import mu.nu.nullpo.game.play.LineGravity
 import mu.nu.nullpo.game.play.clearRule.ColorStraight
 import mu.nu.nullpo.game.subsystem.mode.AbstractMode
+import mu.nu.nullpo.gui.common.BaseFont.FONT.BASE
 import mu.nu.nullpo.util.CustomProperties
 import mu.nu.nullpo.util.GeneralUtil.toTimeStr
 
@@ -95,7 +96,7 @@ class Physician:AbstractMode() {
 			loadSetting(engine, owner.replayProp)
 
 		engine.frameSkin = GameEngine.FRAME_COLOR_PURPLE
-		engine.clearMode = ColorStraight(4,false,true)
+		engine.clearMode = ColorStraight(4, false, true)
 		engine.garbageColorClear = false
 		engine.colorClearSize = 4
 		engine.lineGravityType = LineGravity.CASCADE
@@ -182,24 +183,24 @@ class Physician:AbstractMode() {
 	}
 
 	override fun renderLast(engine:GameEngine) {
-		receiver.drawScoreFont(engine, 0, 0, name, EventReceiver.COLOR.COBALT)
+		receiver.drawScore(engine, 0, 0, name, BASE, EventReceiver.COLOR.COBALT)
 
 		if(engine.stat==GameEngine.Status.SETTING||engine.stat==GameEngine.Status.RESULT&&!owner.replayMode) {
 			if(!owner.replayMode&&engine.ai==null) {
-				receiver.drawScoreFont(engine, 3, 3, "SCORE  TIME", EventReceiver.COLOR.BLUE)
+				receiver.drawScore(engine, 3, 3, "SCORE  TIME", BASE, EventReceiver.COLOR.BLUE)
 				for(i in 0..<rankingMax) {
-					receiver.drawScoreFont(engine, 0, 4+i, "%2d".format(i+1), EventReceiver.COLOR.YELLOW)
-					receiver.drawScoreFont(engine, 3, 4+i, "${rankingScore[i]}", i==rankingRank)
-					receiver.drawScoreFont(engine, 10, 4+i, rankingTime[i].toTimeStr, i==rankingRank)
+					receiver.drawScore(engine, 0, 4+i, "%2d".format(i+1), BASE, EventReceiver.COLOR.YELLOW)
+					receiver.drawScore(engine, 3, 4+i, "${rankingScore[i]}", BASE, i==rankingRank)
+					receiver.drawScore(engine, 10, 4+i, rankingTime[i].toTimeStr, BASE, i==rankingRank)
 				}
 			}
 		} else {
-			receiver.drawScoreFont(engine, 0, 3, "Score", EventReceiver.COLOR.BLUE)
-			receiver.drawScoreFont(engine, 6, 3, "(+$lastScore)")
-			receiver.drawScoreFont(engine, 0, 4, "$scDisp")
+			receiver.drawScore(engine, 0, 3, "Score", BASE, EventReceiver.COLOR.BLUE)
+			receiver.drawScore(engine, 6, 3, "(+$lastScore)", BASE)
+			receiver.drawScore(engine, 0, 4, "$scDisp", BASE)
 
-			receiver.drawScoreFont(engine, 0, 6, "Target", EventReceiver.COLOR.BLUE)
-			receiver.drawScoreFont(engine, 0, 7, engine.field.howManyGems.toString())
+			receiver.drawScore(engine, 0, 6, "Target", BASE, EventReceiver.COLOR.BLUE)
+			receiver.drawScore(engine, 0, 7, engine.field.howManyGems.toString(), BASE)
 
 			var red = 0
 			var yellow = 0
@@ -215,17 +216,17 @@ class Physician:AbstractMode() {
 						}
 					}
 				}
-			receiver.drawScoreFont(engine, 0, 8, "(")
-			receiver.drawScoreFont(engine, 1, 8, "%2d".format(red), EventReceiver.COLOR.RED)
-			receiver.drawScoreFont(engine, 4, 8, "%2d".format(yellow), EventReceiver.COLOR.YELLOW)
-			receiver.drawScoreFont(engine, 7, 8, "%2d".format(blue), EventReceiver.COLOR.BLUE)
-			receiver.drawScoreFont(engine, 9, 8, ")")
+			receiver.drawScore(engine, 0, 8, "(", BASE)
+			receiver.drawScore(engine, 1, 8, "%2d".format(red), BASE, EventReceiver.COLOR.RED)
+			receiver.drawScore(engine, 4, 8, "%2d".format(yellow), BASE, EventReceiver.COLOR.YELLOW)
+			receiver.drawScore(engine, 7, 8, "%2d".format(blue), BASE, EventReceiver.COLOR.BLUE)
+			receiver.drawScore(engine, 9, 8, ")", BASE)
 
-			receiver.drawScoreFont(engine, 0, 10, "SPEED", EventReceiver.COLOR.BLUE)
-			receiver.drawScoreFont(engine, 0, 11, SPEED_NAME[speed], SPEED_COLOR[speed])
+			receiver.drawScore(engine, 0, 10, "SPEED", BASE, EventReceiver.COLOR.BLUE)
+			receiver.drawScore(engine, 0, 11, SPEED_NAME[speed], BASE, SPEED_COLOR[speed])
 
-			receiver.drawScoreFont(engine, 0, 13, "Time", EventReceiver.COLOR.BLUE)
-			receiver.drawScoreFont(engine, 0, 14, engine.statistics.time.toTimeStr)
+			receiver.drawScore(engine, 0, 13, "Time", BASE, EventReceiver.COLOR.BLUE)
+			receiver.drawScore(engine, 0, 14, engine.statistics.time.toTimeStr, BASE)
 		}
 	}
 
@@ -299,7 +300,7 @@ class Physician:AbstractMode() {
 
 	/* Render results screen */
 	override fun renderResult(engine:GameEngine) {
-		receiver.drawMenuFont(engine, 0, 1, "PLAY DATA", EventReceiver.COLOR.ORANGE)
+		receiver.drawMenu(engine, 0, 1, "PLAY DATA", BASE, EventReceiver.COLOR.ORANGE)
 
 		drawResult(
 			engine, receiver, 3, EventReceiver.COLOR.BLUE, "Score", "%10d".format(engine.statistics.score),
@@ -322,7 +323,7 @@ class Physician:AbstractMode() {
 		return false
 	}
 
-	override fun loadSetting(engine: GameEngine, prop: CustomProperties, ruleName: String, playerID: Int) {
+	override fun loadSetting(engine:GameEngine, prop:CustomProperties, ruleName:String, playerID:Int) {
 		hoverBlocks = prop.getProperty("physician.hoverBlocks", 40)
 		speed = prop.getProperty("physician.speed", 1)
 		version = prop.getProperty("physician.version", 0)

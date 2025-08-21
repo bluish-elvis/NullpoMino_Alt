@@ -36,6 +36,7 @@ import mu.nu.nullpo.game.event.EventReceiver
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
 import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.gui.common.BaseFont
+import mu.nu.nullpo.gui.common.BaseFont.FONT.*
 import mu.nu.nullpo.util.CustomProperties
 import mu.nu.nullpo.util.GeneralUtil.toInt
 
@@ -51,29 +52,28 @@ open class SpeedPresets(color:COLOR, defaultPreset:Int = 0,
 	override val colMax = 2+showG.toInt()*2+showD.toInt()*5
 	override fun draw(engine:GameEngine, playerID:Int, receiver:EventReceiver, y:Int, focus:Int) {
 
-		receiver.drawMenuFont(
+		receiver.drawMenu(
 			engine, 0, y,
 			when(focus) {
 				0 -> "LOAD"
 				1 -> "SAVE"
 				else -> "PRESET"
 			},
-			COLOR.GREEN,
-		)
+			BASE, COLOR.GREEN)
 
 		if(focus in 0..1)
-			receiver.drawMenuFont(engine, 6, y, BaseFont.CURSOR, true)
-		receiver.drawMenuNum(engine, 7, y, valueString)
+			receiver.drawMenu(engine, 6, y, BaseFont.CURSOR, BASE, true)
+		receiver.drawMenu(engine, 7, y, valueString, NUM)
 
 		if(showG) {
 			val g = spd.gravity
 			val d = spd.denominator
-			receiver.drawMenuFont(engine, 0, y+1, "SPEED", color = color)
+			receiver.drawMenu(engine, 0, y+1, "SPEED", BASE, color = color)
 			receiver.drawMenuSpeed(engine, 0f, y+2.5f, g, d, 6f)
-			receiver.drawMenuNum(engine, 6, y+1, "%5d".format(g), focus==2)
-			receiver.drawMenuNum(engine, 6, y+2, "%5d".format(d), focus==3)
+			receiver.drawMenu(engine, 6, y+1, "%5d".format(g), NUM, focus==2)
+			receiver.drawMenu(engine, 6, y+2, "%5d".format(d), NUM, focus==3)
 			if(focus in 2..3)
-				receiver.drawMenuFont(engine, 5, y+focus-1, BaseFont.CURSOR, true)
+				receiver.drawMenu(engine, 5, y+focus-1, BaseFont.CURSOR, BASE, true)
 		}
 		if(showD) {
 			val y = y+if(showG) 3 else 1
@@ -82,10 +82,10 @@ open class SpeedPresets(color:COLOR, defaultPreset:Int = 0,
 				val show = if(i==0) "ARE" to spd.are else "LINE" to spd.areLine
 				val pos = 2+showG.toInt()*2+i
 				if(focus==pos)
-					receiver.drawMenuFont(engine, 3+i*3, y, BaseFont.CURSOR, true)
+					receiver.drawMenu(engine, 3+i*3, y, BaseFont.CURSOR, BASE, true)
 
-				receiver.drawMenuNum(engine, 4+i*3, y, String.format(if(i==0) "%2d/" else "%2d", show.second), focus==pos)
-				receiver.drawMenuNano(engine, 3+i*2.5f, y+.5f, show.first, color, .5f)
+				receiver.drawMenu(engine, 4+i*3, y, String.format(if(i==0) "%2d/" else "%2d", show.second), NUM, focus==pos)
+				receiver.drawMenu(engine, 3+i*2.5f, y+.5f, show.first, NANO, color, .5f)
 			}
 			for(i in 0..2) {
 				val show = when(i) {
@@ -95,12 +95,12 @@ open class SpeedPresets(color:COLOR, defaultPreset:Int = 0,
 				}
 				val pos = 4+showG.toInt()*2+i
 				if(focus==pos)
-					receiver.drawMenuFont(engine, 7-i*3, y+1, BaseFont.CURSOR, true)
+					receiver.drawMenu(engine, 7-i*3, y+1, BaseFont.CURSOR, BASE, true)
 
-				receiver.drawMenuNum(engine, 8-i*3, y+1, String.format(if(i==1) "%2d+" else "%2d", show.second), focus==pos)
-				receiver.drawMenuNano(engine, 7-i*3, y+1.5f, show.first, color, .5f)
+				receiver.drawMenu(engine, 8-i*3, y+1, String.format(if(i==1) "%2d+" else "%2d", show.second), NUM, focus==pos)
+				receiver.drawMenu(engine, 7-i*3, y+1.5f, show.first, NANO, color, .5f)
 			}
-			receiver.drawMenuNano(engine, 0, y, "DELAYS", color, .5f)
+			receiver.drawMenu(engine, 0, y, "DELAYS", NANO, color, .5f)
 
 		}
 	}

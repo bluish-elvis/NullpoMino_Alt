@@ -33,10 +33,10 @@ package mu.nu.nullpo.gui.common
 
 import mu.nu.nullpo.game.event.EventReceiver
 
-abstract class BaseFontNumber:BaseFont {
+abstract class BaseFontNumTall:BaseFont {
 	companion object {
-		const val W:Int = 12
-		const val H:Int = 16
+		const val W:Int = 16
+		const val H:Int = 32
 	}
 
 	abstract override val rainbowCount:Int
@@ -44,7 +44,6 @@ abstract class BaseFontNumber:BaseFont {
 		draw:(i:Int, dx:Float, dy:Float, scale:Float, sx:Int, sy:Int, sw:Int, sh:Int, a:Float)->Unit) {
 		var dx = x
 		var dy = y
-		val fontBig = scale>=1.5f
 		str.forEachIndexed {i, c ->
 			// 文字出力
 			val stringChar = c.code.let {
@@ -71,8 +70,7 @@ abstract class BaseFontNumber:BaseFont {
 				val sx = if(c.code==0x20) 0 else (stringChar-48)%16
 				val sy = (if(color==EventReceiver.COLOR.RAINBOW) EventReceiver.getRainbowColor(rainbow, i) else color).ordinal
 				val a = if(c.code==0x20) alpha*.4f else alpha
-				if(fontBig) draw(1, dx, dy, scale/2, sx*W*2, sy*H*2, W*2, H*2, a)
-				else draw(0, dx, dy-1, scale, sx*W, sy*H, W, H, a)
+				draw(0, dx, dy, scale, sx*W, sy*H, W, H, a)
 
 				dx += W*scale
 			}

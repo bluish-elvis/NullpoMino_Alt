@@ -46,14 +46,10 @@ import mu.nu.nullpo.game.event.ScoreEvent
 import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.game.subsystem.mode.menu.MenuList
 import mu.nu.nullpo.game.subsystem.mode.menu.StringsMenuItem
+import mu.nu.nullpo.gui.common.BaseFont.FONT.*
 import mu.nu.nullpo.util.CustomProperties
 import mu.nu.nullpo.util.GeneralUtil.toTimeStr
-import zeroxfc.nullpo.custom.modes.MissionMode.Companion.MissionType.Clear
-import zeroxfc.nullpo.custom.modes.MissionMode.Companion.MissionType.ClearWith
-import zeroxfc.nullpo.custom.modes.MissionMode.Companion.MissionType.Combo
-import zeroxfc.nullpo.custom.modes.MissionMode.Companion.MissionType.Spin
-import zeroxfc.nullpo.custom.modes.MissionMode.Companion.MissionType.SpinWith
-import zeroxfc.nullpo.custom.modes.MissionMode.Companion.MissionType.Split
+import zeroxfc.nullpo.custom.modes.MissionMode.Companion.MissionType.*
 import kotlin.random.Random
 
 class MissionMode:MarathonModeBase() {
@@ -229,57 +225,58 @@ class MissionMode:MarathonModeBase() {
 
 	override fun renderLast(engine:GameEngine) {
 		if(owner.menuOnly) return
-		receiver.drawScoreFont(engine, 0, 0, name, COLOR.GREEN)
+		receiver.drawScore(engine, 0, 0, name, BASE, COLOR.GREEN)
 		if(tableGameClearMissions[goalType]<0)
-			receiver.drawScoreFont(engine, 0, 1, "(Endless run)", COLOR.GREEN)
-		else receiver.drawScoreFont(engine, 0, 1, "(${tableGameClearMissions[goalType]} missions run)", COLOR.GREEN)
+			receiver.drawScore(engine, 0, 1, "(Endless run)", BASE, COLOR.GREEN)
+		else receiver.drawScore(engine, 0, 1, "(${tableGameClearMissions[goalType]} missions run)", BASE, COLOR.GREEN)
 		if(engine.stat===GameEngine.Status.SETTING||engine.stat===GameEngine.Status.RESULT&&!owner.replayMode) {
 			if(!owner.replayMode&&!big&&engine.ai==null) {
 				val topY = if(receiver.nextDisplayType==2) 6 else 4
-				receiver.drawScoreFont(engine, 3, topY-1, "SCORE TIME", COLOR.BLUE)
+				receiver.drawScore(engine, 3, topY-1, "SCORE TIME", BASE, COLOR.BLUE)
 				if(showPlayerStats) {
 					for(i in 0..<rankingMax) {
-						receiver.drawScoreGrade(engine, 0, topY+i, "%2d".format(i+1), COLOR.YELLOW)
-						receiver.drawScoreNum(engine, 3, topY+i, "${rankingScorePlayer[goalType][i]}", i==rankingRankPlayer)
-						receiver.drawScoreNum(engine, 9, topY+i, rankingTimePlayer[goalType][i].toTimeStr, i==rankingRankPlayer)
+						receiver.drawScore(engine, 0, topY+i, "%2d".format(i+1), GRADE, COLOR.YELLOW)
+						receiver.drawScore(engine, 3, topY+i, "${rankingScorePlayer[goalType][i]}", NUM, i==rankingRankPlayer)
+						receiver.drawScore(engine, 9, topY+i, rankingTimePlayer[goalType][i].toTimeStr, NUM, i==rankingRankPlayer)
 					}
-					receiver.drawScoreFont(engine, 0, topY+rankingMax+1, "PLAYER SCORES", COLOR.BLUE)
-					receiver.drawScoreFont(
-						engine, 0, topY+rankingMax+2, engine.playerProp.nameDisplay, COLOR.WHITE,
+					receiver.drawScore(engine, 0, topY+rankingMax+1, "PLAYER SCORES", BASE, COLOR.BLUE)
+					receiver.drawScore(
+						engine, 0, topY+rankingMax+2, engine.playerProp.nameDisplay, BASE, COLOR.WHITE,
 						2f
 					)
-					receiver.drawScoreFont(engine, 0, topY+rankingMax+5, "F:SWITCH RANK SCREEN", COLOR.GREEN)
+					receiver.drawScore(engine, 0, topY+rankingMax+5, "F:SWITCH RANK SCREEN", BASE, COLOR.GREEN)
 				} else {
 					for(i in 0..<rankingMax) {
-						receiver.drawScoreGrade(engine, 0, topY+i, "%2d".format(i+1), COLOR.YELLOW)
-						receiver.drawScoreNum(engine, 3, topY+i, "${rankingScore[goalType][i]}", i==rankingRank)
-						receiver.drawScoreNum(engine, 9, topY+i, rankingTime[goalType][i].toTimeStr, i==rankingRank)
+						receiver.drawScore(engine, 0, topY+i, "%2d".format(i+1), GRADE, COLOR.YELLOW)
+						receiver.drawScore(engine, 3, topY+i, "${rankingScore[goalType][i]}", NUM, i==rankingRank)
+						receiver.drawScore(engine, 9, topY+i, rankingTime[goalType][i].toTimeStr, NUM, i==rankingRank)
 					}
-					receiver.drawScoreFont(engine, 0, topY+rankingMax+1, "LOCAL SCORES", COLOR.BLUE)
+					receiver.drawScore(engine, 0, topY+rankingMax+1, "LOCAL SCORES", BASE, COLOR.BLUE)
 					if(!engine.playerProp.isLoggedIn)
-						receiver.drawScoreFont(engine, 0, topY+rankingMax+2, "(NOT LOGGED IN)\n(E:LOG IN)")
+						receiver.drawScore(engine, 0, topY+rankingMax+2, "(NOT LOGGED IN)\n(E:LOG IN)", BASE)
 					if(engine.playerProp.isLoggedIn)
-						receiver.drawScoreFont(engine, 0, topY+rankingMax+5, "F:SWITCH RANK SCREEN", COLOR.GREEN)
+						receiver.drawScore(engine, 0, topY+rankingMax+5, "F:SWITCH RANK SCREEN", BASE, COLOR.GREEN)
 				}
 			}
 		} else if(engine.stat===GameEngine.Status.CUSTOM) {
 			engine.playerProp.loginScreen.renderScreen(receiver, engine)
 		} else {
 			val strScore = "${engine.statistics.score}/${(engine.statistics.level+1)*5}"
-			receiver.drawScoreNum(engine, 0, 3, strScore, 2f)
-			receiver.drawScoreFont(engine, 0, 5, "Done", COLOR.BLUE)
+			receiver.drawScore(engine, 0, 3, strScore, NUM, 2f)
+			receiver.drawScore(engine, 0, 5, "Done", BASE, COLOR.BLUE)
 
-			receiver.drawScoreFont(engine, 0, 7, "Level", COLOR.BLUE)
-			receiver.drawScoreNum(engine, 5, 6, "${engine.statistics.level+1}", 2f)
-			receiver.drawScoreFont(engine, 0, 9, "Time", COLOR.BLUE)
-			receiver.drawScoreNum(engine, 0, 10, engine.statistics.time.toTimeStr, 2f)
-			receiver.drawScoreFont(engine, 0, 12, "Objective", COLOR.GREEN)
-			receiver.drawScoreNum(engine, 0, 13, "$missionProgress/$missionGoal", missionIsComplete)
+			receiver.drawScore(engine, 0, 7, "Level", BASE, COLOR.BLUE)
+			receiver.drawScore(engine, 5, 6, "${engine.statistics.level+1}", NUM, 2f)
+			receiver.drawScore(engine, 0, 9, "Time", BASE, COLOR.BLUE)
+			receiver.drawScore(engine, 0, 10, engine.statistics.time.toTimeStr, NUM, 2f)
+			receiver.drawScore(engine, 0, 12, "Objective", BASE, COLOR.GREEN)
+			receiver.drawScore(engine, 0, 13, "$missionProgress/$missionGoal", NUM, missionIsComplete)
 			if(!missionIsComplete) drawMissionStrings(engine, currentMissionText, 0, 15, 1.0f)
 			if(engine.playerProp.isLoggedIn||engine.playerName.isNotEmpty()) {
-				receiver.drawScoreFont(engine, 0, 20, "PLAYER", COLOR.BLUE)
-				receiver.drawScoreFont(
+				receiver.drawScore(engine, 0, 20, "PLAYER", BASE, COLOR.BLUE)
+				receiver.drawScore(
 					engine, 0, 21, if(owner.replayMode) engine.playerName else engine.playerProp.nameDisplay,
+					BASE,
 					COLOR.WHITE,
 					2f
 				)
@@ -301,7 +298,7 @@ class MissionMode:MarathonModeBase() {
 		// Line clear bonus
 		var pts = 0
 		var incremented = false
-		val shapeName = ev.piece?.type?.name ?: ""
+		val shapeName = ev.piece?.type?.name?:""
 		if(!missionIsComplete) {
 			incremented = when(missionCategory) {
 				Clear -> ev.lines==lineAmount
@@ -476,12 +473,12 @@ class MissionMode:MarathonModeBase() {
 		drawResultNetRank(engine, receiver, 10, COLOR.BLUE, netRankingRank[0])
 		drawResultNetRankDaily(engine, receiver, 12, COLOR.BLUE, netRankingRank[1])
 		if(netIsPB) {
-			receiver.drawMenuFont(engine, 2, 21, "NEW PB", COLOR.ORANGE)
+			receiver.drawMenu(engine, 2, 21, "NEW PB", BASE, COLOR.ORANGE)
 		}
 		if(netIsNetPlay&&netReplaySendStatus==1) {
-			receiver.drawMenuFont(engine, 0, 22, "SENDING...", COLOR.PINK)
+			receiver.drawMenu(engine, 0, 22, "SENDING...", BASE, COLOR.PINK)
 		} else if(netIsNetPlay&&!netIsWatch&&netReplaySendStatus==2) {
-			receiver.drawMenuFont(engine, 1, 22, "A: RETRY", COLOR.RED)
+			receiver.drawMenu(engine, 1, 22, "A: RETRY", BASE, COLOR.RED)
 		}
 	}
 	// ------------------------------------------------------------------------------------------
@@ -629,7 +626,8 @@ class MissionMode:MarathonModeBase() {
 	):LinkedHashMap<String, COLOR?> {
 		val header = "Perform"
 		val footer = if(lastMission) "TO WIN!" else "TO GO"
-		val missionBody = "$amount"+"X "+LINECLEAR_MISSION_TABLE[lineClear-1]+if(amount>1) if(lineClear!=4) "S" else "ES" else ""
+		val missionBody =
+			"$amount"+"X "+LINECLEAR_MISSION_TABLE[lineClear-1]+if(amount>1) if(lineClear!=4) "S" else "ES" else ""
 		val result = LinkedHashMap<String, COLOR?>()
 		result[header] = MISSION_NEUTRAL
 		result["[NEWLINE]"] = null
@@ -639,11 +637,13 @@ class MissionMode:MarathonModeBase() {
 		return result
 	}
 
-	private fun generateSpecificLineMissionData(pieceName:String, bodyColor:COLOR, lineClear:Int, amount:Int, lastMission:Boolean)
+	private fun generateSpecificLineMissionData(pieceName:String, bodyColor:COLOR, lineClear:Int, amount:Int,
+		lastMission:Boolean)
 		:LinkedHashMap<String, COLOR?> {
 		val header = "Perform"
 		val footer = if(lastMission) "TO WIN!" else "TO GO"
-		val missionBody = "$amount"+"X "+LINECLEAR_MISSION_TABLE[lineClear-1]+if(amount>1) if(lineClear!=4) "S" else "ES" else ""
+		val missionBody =
+			"$amount"+"X "+LINECLEAR_MISSION_TABLE[lineClear-1]+if(amount>1) if(lineClear!=4) "S" else "ES" else ""
 		val result = LinkedHashMap<String, COLOR?>()
 		result[header] = MISSION_NEUTRAL
 		result["[NEWLINE]"] = null
@@ -698,7 +698,7 @@ class MissionMode:MarathonModeBase() {
 		var counterY = 0
 		missionData.forEach {(str, col) ->
 			if(col!=null) {
-				receiver.drawScoreFont(engine, destinationX+counterX, destinationY+counterY, str, col, scale)
+				receiver.drawScore(engine, destinationX+counterX, destinationY+counterY, str, BASE, col, scale)
 				counterX += str.length
 			} else {
 				counterX = 0

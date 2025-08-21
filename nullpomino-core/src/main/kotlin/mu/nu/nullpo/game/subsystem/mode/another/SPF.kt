@@ -45,6 +45,7 @@ import mu.nu.nullpo.game.play.LineGravity.CASCADE.canCascade
 import mu.nu.nullpo.game.play.clearRule.ColorGem
 import mu.nu.nullpo.game.subsystem.mode.AbstractMode
 import mu.nu.nullpo.gui.common.BaseFont
+import mu.nu.nullpo.gui.common.BaseFont.FONT.*
 import mu.nu.nullpo.gui.common.GameKeyDummy.Companion.MAX_PLAYERS
 import mu.nu.nullpo.util.CustomProperties
 import mu.nu.nullpo.util.GeneralUtil.toTimeStr
@@ -291,7 +292,7 @@ class SPF:AbstractMode() {
 			engine.createFieldIfNeeded()
 			loadMap(engine.field, it, id)
 			engine.field.setAllSkin(engine.blkSkin)
-		} ?: engine.field.reset()
+		}?:engine.field.reset()
 	}
 
 	private fun loadDropMapPreview(engine:GameEngine, pattern:List<List<Int>>?) {
@@ -314,7 +315,7 @@ class SPF:AbstractMode() {
 				}
 				setAllSkin(engine.blkSkin)
 			}
-		} ?: engine.field.reset()
+		}?:engine.field.reset()
 	}
 
 	/* Initialization for each player */
@@ -326,7 +327,7 @@ class SPF:AbstractMode() {
 		}
 
 		engine.frameSkin = PLAYER_COLOR_FRAME[pid]
-		engine.clearMode = ColorGem(2,true,false)
+		engine.clearMode = ColorGem(2, true, false)
 		engine.colorClearSize = 2
 		engine.ignoreHidden = false
 		engine.garbageColorClear = true
@@ -527,7 +528,7 @@ class SPF:AbstractMode() {
 			if(menuCursor<9) {
 				drawMenuSpeeds(engine, receiver, 0, COLOR.ORANGE, 0)
 				drawMenu(engine, receiver, COLOR.GREEN, "LOAD" to presetNumber[pid], "SAVE" to presetNumber[pid])
-				receiver.drawMenuFont(engine, 0, 19, "${BaseFont.UP_S}${BaseFont.DOWN_S} PAGE 1/3", COLOR.YELLOW)
+				receiver.drawMenu(engine, 0, 19, "${BaseFont.UP_S}${BaseFont.DOWN_S} PAGE 1/3", BASE, COLOR.YELLOW)
 			} else if(menuCursor<18) {
 				drawMenu(engine, receiver, 0, COLOR.PINK, 9, "BGM" to BGM.values[bgmId])
 
@@ -546,24 +547,24 @@ class SPF:AbstractMode() {
 				drawMenu(engine, receiver, COLOR.CYAN, "RAINBOW" to "")
 				drawMenu(engine, receiver, "GEM POWER" to RAINBOW_POWER_NAMES[diamondPower[pid]])
 
-				receiver.drawMenuFont(engine, 0, 19, "${BaseFont.UP_S}${BaseFont.DOWN_S} PAGE 2/3", COLOR.YELLOW)
+				receiver.drawMenu(engine, 0, 19, "${BaseFont.UP_S}${BaseFont.DOWN_S} PAGE 2/3", BASE, COLOR.YELLOW)
 			} else {
-				receiver.drawMenuFont(engine, 0, 0, "ATTACK", COLOR.CYAN)
+				receiver.drawMenu(engine, 0, 0, "ATTACK", BASE, COLOR.CYAN)
 				var multiplier = (100*getAttackMultiplier(dropSet[pid], dropMap[pid])).toInt()
 				if(multiplier>=100)
-					receiver.drawMenuFont(
-						engine, 2, 1, "$multiplier%", if(multiplier==100) COLOR.YELLOW else COLOR.GREEN
+					receiver.drawMenu(
+						engine, 2, 1, "$multiplier%", BASE, if(multiplier==100) COLOR.YELLOW else COLOR.GREEN
 					)
 				else
-					receiver.drawMenuFont(engine, 3, 1, "$multiplier%", COLOR.RED)
-				receiver.drawMenuFont(engine, 0, 2, "DEFEND", COLOR.CYAN)
+					receiver.drawMenu(engine, 3, 1, "$multiplier%", BASE, COLOR.RED)
+				receiver.drawMenu(engine, 0, 2, "DEFEND", BASE, COLOR.CYAN)
 				multiplier = (100*getDefendMultiplier(dropSet[pid], dropMap[pid])).toInt()
 				if(multiplier>=100)
-					receiver.drawMenuFont(
-						engine, 2, 3, "$multiplier%", if(multiplier==100) COLOR.YELLOW else COLOR.RED
+					receiver.drawMenu(
+						engine, 2, 3, "$multiplier%", BASE, if(multiplier==100) COLOR.YELLOW else COLOR.RED
 					)
 				else
-					receiver.drawMenuFont(engine, 3, 3, "$multiplier%", COLOR.GREEN)
+					receiver.drawMenu(engine, 3, 3, "$multiplier%", BASE, COLOR.GREEN)
 
 				drawMenu(
 					engine,
@@ -578,10 +579,10 @@ class SPF:AbstractMode() {
 					)
 				)
 
-				receiver.drawMenuFont(engine, 0, 19, "${BaseFont.UP_S}${BaseFont.DOWN_S} PAGE 3/3", COLOR.YELLOW)
+				receiver.drawMenu(engine, 0, 19, "${BaseFont.UP_S}${BaseFont.DOWN_S} PAGE 3/3", BASE, COLOR.YELLOW)
 			}
 		} else
-			receiver.drawMenuFont(engine, 3, 10, "WAIT", COLOR.YELLOW)
+			receiver.drawMenu(engine, 3, 10, "WAIT", BASE, COLOR.YELLOW)
 	}
 
 	/* Called for initialization during Ready (before initialization) */
@@ -659,7 +660,7 @@ class SPF:AbstractMode() {
 		val playerColor = EventReceiver.getPlayerColor(pid)
 
 		// Timer
-		if(pid==0) receiver.drawDirectFont(224, 0, engine.statistics.time.toTimeStr)
+		if(pid==0) receiver.drawFont(224, 0, engine.statistics.time.toTimeStr, BASE)
 
 		// Ojama Counter
 		val fontColor = when {
@@ -668,13 +669,13 @@ class SPF:AbstractMode() {
 			ojama[pid]>=12 -> COLOR.RED
 			else -> COLOR.WHITE
 		}
-		if(ojama[pid]!=0) receiver.drawDirectFont(fldPosX+4, fldPosY+32, "${ojama[pid]}", fontColor)
+		if(ojama[pid]!=0) receiver.drawFont(fldPosX+4, fldPosY+32, "${ojama[pid]}", BASE, fontColor)
 
 		// Score
 		if(engine.displaySize==1)
-			receiver.drawDirectFont(fldPosX+4, fldPosY+472, "%12d".format(score[pid]), playerColor)
+			receiver.drawFont(fldPosX+4, fldPosY+472, "%12d".format(score[pid]), BASE, playerColor)
 		else if(engine.gameStarted)
-			receiver.drawDirectFont(fldPosX-28, fldPosY+264, "%8d".format(score[pid]), playerColor)
+			receiver.drawFont(fldPosX-28, fldPosY+264, "%8d".format(score[pid]), BASE, playerColor)
 
 		// Countdown Blocks
 		if(engine.gameActive)
@@ -690,12 +691,12 @@ class SPF:AbstractMode() {
 								else -> COLOR.WHITE
 							}
 							if(engine.displaySize==1)
-								receiver.drawMenuFont(
+								receiver.drawMenu(
 									engine, x*2, y*2,
-									b.countdown.toString(), textColor, 2f
+									b.countdown.toString(), BASE, textColor, 2f
 								)
 							else
-								receiver.drawMenuFont(engine, x, y, b.countdown.toString(), textColor)
+								receiver.drawMenu(engine, x, y, b.countdown.toString(), BASE, textColor)
 						}
 					}
 
@@ -705,9 +706,9 @@ class SPF:AbstractMode() {
 		val baseX = if(engine.displaySize==1) 1 else -2
 
 		if(techBonusDisplay[pid]>0)
-			receiver.drawMenuFont(engine, baseX, textHeight, "TECH BONUS", COLOR.YELLOW)
+			receiver.drawMenu(engine, baseX, textHeight, "TECH BONUS", BASE, COLOR.YELLOW)
 		if(zenKeshiDisplay[pid]>0)
-			receiver.drawMenuFont(engine, baseX+1, textHeight+1, "PERFECT!", COLOR.YELLOW)
+			receiver.drawMenu(engine, baseX+1, textHeight+1, "PERFECT!", BASE, COLOR.YELLOW)
 	}
 
 	override fun onMove(engine:GameEngine):Boolean {
@@ -816,7 +817,7 @@ class SPF:AbstractMode() {
 		var result = false
 		for(y in engine.field.hiddenHeight*-1..<engine.field.height)
 			for(x in 0..<engine.field.width) {
-				val b = engine.field.getBlock(x, y) ?: continue
+				val b = engine.field.getBlock(x, y)?:continue
 				if(b.countdown>1)
 					b.countdown--
 				else if(b.countdown==1) {
@@ -842,8 +843,8 @@ class SPF:AbstractMode() {
 
 		for(x in 0..<width)
 			for(y in -1*hiddenHeight..<height) {
-				val b = engine.field.getBlock(x, y) ?: continue
-				val color = b.color ?: continue
+				val b = engine.field.getBlock(x, y)?:continue
+				val color = b.color?:continue
 				if(!color.color||b.type!=Block.TYPE.GEM) continue
 				var minX = x
 				var minY = y
@@ -1151,12 +1152,12 @@ class SPF:AbstractMode() {
 
 	/* Render results screen */
 	override fun renderResult(engine:GameEngine) {
-		receiver.drawMenuFont(engine, 0, 1, "RESULT", COLOR.ORANGE)
+		receiver.drawMenu(engine, 0, 1, "RESULT", BASE, COLOR.ORANGE)
 		val pid = engine.playerID
 		when(winnerID) {
-			-1 -> receiver.drawMenuFont(engine, 6, 2, "DRAW", COLOR.GREEN)
-			pid -> receiver.drawMenuFont(engine, 6, 2, "WIN!", COLOR.YELLOW)
-			else -> receiver.drawMenuFont(engine, 6, 2, "LOSE", COLOR.WHITE)
+			-1 -> receiver.drawMenu(engine, 6, 2, "DRAW", BASE, COLOR.GREEN)
+			pid -> receiver.drawMenu(engine, 6, 2, "WIN!", BASE, COLOR.YELLOW)
+			else -> receiver.drawMenu(engine, 6, 2, "LOSE", BASE, COLOR.WHITE)
 		}
 
 		val apm = (ojamaSent[pid]*3600).toFloat()/engine.statistics.time.toFloat()

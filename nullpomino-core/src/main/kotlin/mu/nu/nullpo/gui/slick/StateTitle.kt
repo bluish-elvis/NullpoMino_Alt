@@ -33,13 +33,13 @@ package mu.nu.nullpo.gui.slick
 import mu.nu.nullpo.game.component.BGM
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
 import mu.nu.nullpo.game.play.GameManager
+import mu.nu.nullpo.game.play.GameManager.Companion.buildTypeString
+import mu.nu.nullpo.game.play.GameManager.Companion.versionMajor
+import mu.nu.nullpo.game.play.GameManager.Companion.versionMinor
 import mu.nu.nullpo.gui.common.BaseStaffRoll
 import mu.nu.nullpo.gui.net.UpdateChecker
 import mu.nu.nullpo.gui.slick.BaseMenuConfigState.Column
-import mu.nu.nullpo.gui.slick.img.FontMedal
-import mu.nu.nullpo.gui.slick.img.FontNano
-import mu.nu.nullpo.gui.slick.img.FontTTF
-import mu.nu.nullpo.gui.slick.img.RenderStaffRoll
+import mu.nu.nullpo.gui.slick.img.*
 import org.apache.logging.log4j.LogManager
 import org.newdawn.slick.AppGameContainer
 import org.newdawn.slick.GameContainer
@@ -85,7 +85,7 @@ internal class StateTitle:BaseMenuChooseState() {
 			val strURL = NullpoMinoSlick.propGlobal.updateChecker.url
 			UpdateChecker.startCheckForUpdates(strURL)
 		}
-		if(ResourceHolder.bgmPlaying!= BGM.Menu(0)) ResourceHolder.bgmStart(BGM.Menu(0))
+		if(ResourceHolder.bgmPlaying!=BGM.Menu(0)) ResourceHolder.bgmStart(BGM.Menu(0))
 	}
 
 	override fun updateImpl(container:GameContainer, game:StateBasedGame, delta:Int) {
@@ -100,27 +100,28 @@ internal class StateTitle:BaseMenuChooseState() {
 		// Background
 		g.drawImage(ResourceHolder.imgTitleBG, 0f, 0f)
 		// Menu
+		FontNormal.printFont(4, 4, "NullpoMino", COLOR.RAINBOW)
+		FontMedal.printFont(10, 40, buildTypeString.uppercase(), 2)
+		FontNormal.printFont(4, 20, "version:", COLOR.RAINBOW)
+		FontMedal.printFont(164, 4, "ALT", 4)
+		FontNumTall.printFont(128, 20, "$versionMajor.$versionMinor", COLOR.RAINBOW)
+
 		FontNano.printFont(
-			0, 0, "NULLPOMINO VERSION ${GameManager.versionString}",
-			COLOR.RAINBOW, 0.5f
-		)
-		FontNano.printFont(
-			0, 8,
+			278, 8,
 			"${container.width}*${container.height} SCR:${container.screenWidth}*${container.screenHeight} GFX:${game.container.width}*${game.container.height}",
 			COLOR.WHITE, 0.5f
 		)
 
-		FontMedal.printFont(600, 432, "ALT", 2)
 		renderChoices(2, minChoiceY, list.map {it.show()})
 
 		FontTTF.print(16, 432, NullpoMinoSlick.getUIText(list[cursor].uiText))
 
-		FontNano.printFont(300, 8, "$rollY")
-		FontNano.printFont(300, 22, "${BaseStaffRoll.height}")
+		FontNano.printFont(500, 8, "$rollY")
+		FontNano.printFont(500, 22, "${BaseStaffRoll.height}")
 		RenderStaffRoll.draw(500f-BaseStaffRoll.width, 0f, rollY, 480f, .8f)
 		super.renderImpl(container, game, g)
 
-		if(UpdateChecker.isNewVersionAvailable(GameManager.versionMajor, GameManager.versionMinor)) {
+		if(UpdateChecker.isNewVersionAvailable(versionMajor, versionMinor)) {
 			val strTemp = String.format(
 				NullpoMinoSlick.getUIText("Title_NewVersion"),
 				UpdateChecker.latestVersionFullString, UpdateChecker.strReleaseDate
