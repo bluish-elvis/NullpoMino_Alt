@@ -30,10 +30,15 @@
  */
 package mu.nu.nullpo.game.subsystem.mode
 
+import kotlinx.serialization.Serializable
 import mu.nu.nullpo.game.component.BGM
 import mu.nu.nullpo.game.component.Block
-import mu.nu.nullpo.game.component.Block.*
-import mu.nu.nullpo.game.event.EventReceiver
+import mu.nu.nullpo.game.component.Block.ATTRIBUTE
+import mu.nu.nullpo.game.component.Block.TYPE
+import mu.nu.nullpo.game.component.Statistics
+import mu.nu.nullpo.game.event.EventReceiver.COLOR
+import mu.nu.nullpo.game.event.Leaderboard
+import mu.nu.nullpo.game.event.Rankable
 import mu.nu.nullpo.game.event.ScoreEvent
 import mu.nu.nullpo.game.net.NetUtil
 import mu.nu.nullpo.game.play.GameEngine
@@ -42,10 +47,11 @@ import mu.nu.nullpo.gui.common.BaseFont.FONT.*
 import mu.nu.nullpo.util.CustomProperties
 import mu.nu.nullpo.util.GeneralUtil.toTimeStr
 import org.apache.logging.log4j.LogManager
+import mu.nu.nullpo.game.component.Block.COLOR as bCOLOR
 
 /** DIG RACE Mode */
 class SprintDig:NetDummyMode() {
-	private val itemSpd = object:SpeedPresets(EventReceiver.COLOR.BLUE, 0) {
+	private val itemSpd = object:SpeedPresets(COLOR.BLUE, 0) {
 		override fun presetLoad(engine:GameEngine, prop:CustomProperties, ruleName:String, setId:Int) {
 			super.presetLoad(engine, prop, ruleName, setId)
 			bgmId = prop.getProperty("$ruleName.bgmno.$setId", BGM.values.indexOf(BGM.Rush(3)))
@@ -63,17 +69,17 @@ class SprintDig:NetDummyMode() {
 	/** Last preset number used */
 	private var presetNumber:Int by DelegateMenuItem(itemSpd)
 
-	private val itemBGM = BGMMenuItem("bgmno", EventReceiver.COLOR.BLUE, BGM.values.indexOf(BGM.Rush(3)))
+	private val itemBGM = BGMMenuItem("bgmno", COLOR.BLUE, BGM.values.indexOf(BGM.Rush(3)))
 	/** BGM number */
 	private var bgmId:Int by DelegateMenuItem(itemBGM)
 
-	private val itemBig = BooleanMenuItem("big", "BIG", EventReceiver.COLOR.BLUE, false)
+	private val itemBig = BooleanMenuItem("big", "BIG", COLOR.BLUE, false)
 	/** BigMode */
 	private var big:Boolean by DelegateMenuItem(itemBig)
 
 	/** Goal type (0=5 garbages, 1=10 garbages, 2=18 garbages) */
 	private val itemGoal = StringsMenuItem(
-		"goalType", "GOAL", EventReceiver.COLOR.BLUE, 0, GOAL_TABLE.map {"$it G.LINES"}
+		"goalType", "GOAL", COLOR.BLUE, 0, GOAL_TABLE.map {"$it G.LINES"}
 	)
 
 	private var goalType:Int by DelegateMenuItem(itemGoal)
@@ -86,20 +92,17 @@ class SprintDig:NetDummyMode() {
 	/** Current round's ranking position */
 	private var rankingRank = 0
 
-	/** Rankings' times */
-	private val rankingTime:List<MutableList<Int>> = List(GOALTYPE_MAX) {MutableList(rankingMax) {0}}
+	@Serializable
+	data class TimeRow(override val st:Statistics = Statistics()):Rankable {
+		override fun compareTo(other:Rankable):Int =
+			if(other is TimeRow)
+				compareValuesBy(this, other, {it.clear}, {-it.ti}, {-it.li}, {-it.st.totalPieceLocked})
+			else super.compareTo(other)
 
-	/** Rankings' line counts */
-	private val rankingLines:List<MutableList<Int>> = List(GOALTYPE_MAX) {MutableList(rankingMax) {0}}
+	}
 
-	/** Rankings' piece counts */
-	private val rankingPiece:List<MutableList<Int>> = List(GOALTYPE_MAX) {MutableList(rankingMax) {0}}
-
-	override val propRank
-		get() = rankMapOf(rankingTime.mapIndexed {i, a -> "$i.time" to a}+
-			rankingLines.mapIndexed {i, a -> "$i.lines" to a}+
-			rankingPiece.mapIndexed {i, a -> "$i.piece" to a})
-
+	override val ranking = List(GOALTYPE_MAX) {
+		Leaderboard(rankingMax, kotlinx.serialization.serializer<List<TimeRow>>()){TimeRow()}}
 	/* Mode name */
 	override val name = "Digging Sprint"
 	override val gameIntensity = 2
@@ -113,9 +116,6 @@ class SprintDig:NetDummyMode() {
 		super.playerInit(engine)
 
 		rankingRank = -1
-		rankingTime.forEach {it.fill(-1)}
-		rankingLines.forEach {it.fill(0)}
-		rankingPiece.forEach {it.fill(0)}
 
 		engine.frameSkin = GameEngine.FRAME_COLOR_GREEN
 
@@ -137,11 +137,11 @@ class SprintDig:NetDummyMode() {
 		// NET: Netplay Ranking
 			netOnRenderNetPlayRanking(engine, receiver)
 		else {
-			drawMenuSpeeds(engine, receiver, 0, EventReceiver.COLOR.BLUE, 0)
+			drawMenuSpeeds(engine, receiver, 0, COLOR.BLUE, 0)
 			drawMenuBGM(engine, receiver, bgmId)
 			drawMenuCompact(engine, receiver, "GOAL" to GOAL_TABLE[goalType])
 			if(!owner.replayMode) {
-				menuColor = EventReceiver.COLOR.GREEN
+				menuColor = COLOR.GREEN
 				drawMenuCompact(engine, receiver, "LOAD" to presetNumber, "SAVE" to presetNumber)
 			}
 		}
@@ -187,13 +187,13 @@ class SprintDig:NetDummyMode() {
 			while(newhole==hole)
 			hole = newhole
 
-			var prevColor:COLOR? = null
+			var prevColor:bCOLOR? = null
 			for(x:Int in 0..<w)
 				if(x!=hole) {
-					var color:COLOR = COLOR.WHITE
+					var color:bCOLOR = bCOLOR.WHITE
 					if(y==h-1) {
 						do
-							color = COLOR.all[1+engine.random.nextInt(7)]
+							color = bCOLOR.all[1+engine.random.nextInt(7)]
 						while(color==prevColor)
 						prevColor = color
 					}
@@ -244,55 +244,55 @@ class SprintDig:NetDummyMode() {
 	override fun renderLast(engine:GameEngine) {
 		if(owner.menuOnly) return
 
-		receiver.drawScore(engine, 0, 0, name, BASE, EventReceiver.COLOR.GREEN)
+		receiver.drawScore(engine, 0, 0, name, BASE, COLOR.GREEN)
 		receiver.drawScore(
 			engine, 0, 1, "("+GOAL_TABLE[goalType]
-				+" garbages run)", BASE, EventReceiver.COLOR.GREEN
+				+" garbages run)", BASE, COLOR.GREEN
 		)
 
 		if(engine.stat==GameEngine.Status.SETTING||engine.stat==GameEngine.Status.RESULT&&!owner.replayMode) {
 			if(!owner.replayMode&&engine.ai==null&&!netIsWatch) {
-				receiver.drawScore(engine, 3, 3, "TIME   LINE Piece", BASE, EventReceiver.COLOR.BLUE)
+				receiver.drawScore(engine, 3, 3, "TIME   LINE Piece", BASE, COLOR.BLUE)
 
-				for(i in 0..<rankingMax) {
+				ranking[goalType].forEachIndexed { i,it->
 					receiver.drawScore(
 						engine,
 						0,
 						4+i,
 						"%2d".format(i+1),
 						GRADE,
-						if(rankingRank==i) EventReceiver.COLOR.RAINBOW else EventReceiver.COLOR.YELLOW
+						if(rankingRank==i) COLOR.RAINBOW else COLOR.YELLOW
 					)
-					receiver.drawScore(engine, 3, 4+i, rankingTime[goalType][i].toTimeStr, NUM, rankingRank==i)
-					receiver.drawScore(engine, 10, 4+i, "${rankingLines[goalType][i]}", NUM, rankingRank==i)
-					receiver.drawScore(engine, 14, 4+i, "${rankingPiece[goalType][i]}", NUM, rankingRank==i)
+					receiver.drawScore(engine, 3, 4+i, it.ti.toTimeStr, NUM, rankingRank==i)
+					receiver.drawScore(engine, 10, 4+i, "${it.li}", NUM, rankingRank==i)
+					receiver.drawScore(engine, 14, 4+i, "${it.st.totalPieceLocked}", NUM, rankingRank==i)
 				}
 			}
 		} else {
 			val remainLines = getRemainGarbageLines(engine, goalType)
 			val fontColor = when(remainLines) {
-				in 1..4 -> EventReceiver.COLOR.RED
-				in 1..8 -> EventReceiver.COLOR.ORANGE
-				in 1..14 -> EventReceiver.COLOR.YELLOW
-				else -> EventReceiver.COLOR.WHITE
+				in 1..4 -> COLOR.RED
+				in 1..8 -> COLOR.ORANGE
+				in 1..14 -> COLOR.YELLOW
+				else -> COLOR.WHITE
 			}
 			"${maxOf(0, remainLines)}".let {
 				receiver.drawMenu(engine, -30, 1, it, NUM, fontColor, 4f, .5f)
 				receiver.drawScore(engine, 0, 3, it, NUM, fontColor, 2f)
 			}
-			receiver.drawScore(engine, 4, 3, "LINES\nTO GO", NANO, EventReceiver.COLOR.BLUE)
+			receiver.drawScore(engine, 4, 3, "LINES\nTO GO", NANO, COLOR.BLUE)
 
 			receiver.drawScore(engine, 0, 5, "${engine.statistics.totalPieceLocked}", NUM, 2f)
-			receiver.drawScore(engine, 0, 7, "Piece\n/sec", BASE, EventReceiver.COLOR.BLUE)
+			receiver.drawScore(engine, 0, 7, "Piece\n/sec", BASE, COLOR.BLUE)
 			receiver.drawScoreNum(engine, 5, 8, engine.statistics.pps, scale = 2f)
-			receiver.drawScore(engine, 6, 7, "Finesse", BASE, EventReceiver.COLOR.BLUE)
+			receiver.drawScore(engine, 6, 7, "Finesse", BASE, COLOR.BLUE)
 			receiver.drawScore(engine, 5, 5, "${engine.statistics.finesse}", NUM, 2f)
 			receiver.drawScoreNum(engine, 0, 10, engine.statistics.lpm, scale = 2f)
-			receiver.drawScore(engine, 0, 12, "Lines/MIN", BASE, EventReceiver.COLOR.BLUE)
+			receiver.drawScore(engine, 0, 12, "Lines/MIN", BASE, COLOR.BLUE)
 
 
-			receiver.drawScore(engine, 0, 15, "Time", BASE, EventReceiver.COLOR.BLUE)
-			receiver.drawScore(engine, 0, 16, engine.statistics.time.toTimeStr, NUM, 2f)
+			receiver.drawScore(engine, 0, 15, "Time", BASE, COLOR.BLUE)
+			receiver.drawScore(engine, 0, 16, engine.statistics.time.toTimeStr, NUM_T)
 		}
 
 		super.renderLast(engine)
@@ -316,20 +316,20 @@ class SprintDig:NetDummyMode() {
 	/* Render results screen */
 	override fun renderResult(engine:GameEngine) {
 		drawResultStats(
-			engine, receiver, 1, EventReceiver.COLOR.BLUE, Statistic.LINES, Statistic.PIECE, Statistic.TIME, Statistic.LPM,
+			engine, receiver, 1, COLOR.BLUE, Statistic.LINES, Statistic.PIECE, Statistic.TIME, Statistic.LPM,
 			Statistic.PPS
 		)
-		drawResultRank(engine, receiver, 11, EventReceiver.COLOR.BLUE, rankingRank)
-		drawResultNetRank(engine, receiver, 13, EventReceiver.COLOR.BLUE, netRankingRank[0])
-		drawResultNetRankDaily(engine, receiver, 15, EventReceiver.COLOR.BLUE, netRankingRank[1])
+		drawResultRank(engine, receiver, 11, COLOR.BLUE, rankingRank)
+		drawResultNetRank(engine, receiver, 13, COLOR.BLUE, netRankingRank[0])
+		drawResultNetRankDaily(engine, receiver, 15, COLOR.BLUE, netRankingRank[1])
 
-		if(netIsPB) receiver.drawMenu(engine, 2, 18, "NEW PB", BASE, EventReceiver.COLOR.ORANGE)
+		if(netIsPB) receiver.drawMenu(engine, 2, 18, "NEW PB", BASE, COLOR.ORANGE)
 
 		if(netIsNetPlay&&netReplaySendStatus==1)
-			receiver.drawMenu(engine, 0, 19, "SENDING...", BASE, EventReceiver.COLOR.PINK)
+			receiver.drawMenu(engine, 0, 19, "SENDING...", BASE, COLOR.PINK)
 		else if(netIsNetPlay&&!netIsWatch
 			&&netReplaySendStatus==2)
-			receiver.drawMenu(engine, 1, 19, "A: RETRY", BASE, EventReceiver.COLOR.RED)
+			receiver.drawMenu(engine, 1, 19, "A: RETRY", BASE, COLOR.RED)
 	}
 
 	/* Save replay file */
@@ -345,53 +345,13 @@ class SprintDig:NetDummyMode() {
 
 		// Update rankings
 		if(!owner.replayMode&&getRemainGarbageLines(engine, goalType)==0&&engine.ending!=0&&engine.ai==null&&!netIsWatch) {
-			updateRanking(engine.statistics.time, engine.statistics.lines, engine.statistics.totalPieceLocked)
-
+			rankingRank=ranking[goalType].add(TimeRow(engine.statistics))
 			if(rankingRank!=-1) return true
 		}
 
 		return false
 	}
 
-	/** Update rankings
-	 * @param time Time
-	 * @param piece Piececount
-	 */
-	private fun updateRanking(time:Int, lines:Int, piece:Int) {
-		rankingRank = checkRanking(time, lines, piece)
-
-		if(rankingRank!=-1) {
-			// Shift down ranking entries
-			for(i in rankingMax-1 downTo rankingRank+1) {
-				rankingTime[goalType][i] = rankingTime[goalType][i-1]
-				rankingLines[goalType][i] = rankingLines[goalType][i-1]
-				rankingPiece[goalType][i] = rankingPiece[goalType][i-1]
-			}
-
-			// Add new data
-			rankingTime[goalType][rankingRank] = time
-			rankingLines[goalType][rankingRank] = lines
-			rankingPiece[goalType][rankingRank] = piece
-		}
-	}
-
-	/** Calculate ranking position
-	 * @param time Time
-	 * @param piece Piececount
-	 * @return Position (-1 if unranked)
-	 */
-	private fun checkRanking(time:Int, lines:Int, piece:Int):Int {
-		for(i in 0..<rankingMax)
-			if(time<rankingTime[goalType][i]||rankingTime[goalType][i]<0)
-				return i
-			else if(time==rankingTime[goalType][i]&&lines<rankingLines[goalType][i])
-				return i
-			else if(time==rankingTime[goalType][i]&&lines==rankingLines[goalType][i]
-				&&piece<rankingPiece[goalType][i])
-				return i
-
-		return -1
-	}
 
 	/** NET: Send various in-game stats of [engine] */
 	override fun netSendStats(engine:GameEngine) {

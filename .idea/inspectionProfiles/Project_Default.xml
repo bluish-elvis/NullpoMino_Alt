@@ -16,7 +16,6 @@
     <inspection_tool class="ConvertPairConstructorToToFunction" enabled="true" level="WARNING" enabled_by_default="true" editorAttributes="WARNING_ATTRIBUTES" />
     <inspection_tool class="ConvertReferenceToLambda" enabled="true" level="WEAK WARNING" enabled_by_default="true" editorAttributes="INFO_ATTRIBUTES" />
     <inspection_tool class="DeclaringClassMigration" enabled="true" level="WARNING" enabled_by_default="true" />
-    <inspection_tool class="DefaultNotLastCaseInSwitch" enabled="true" level="WARNING" enabled_by_default="true" />
     <inspection_tool class="Destructure" enabled="true" level="WEAK WARNING" enabled_by_default="true" editorAttributes="INFO_ATTRIBUTES" />
     <inspection_tool class="DoubleLiteralMayBeFloatLiteral" enabled="true" level="ERROR" enabled_by_default="true" editorAttributes="ERRORS_ATTRIBUTES" />
     <inspection_tool class="DuplicatePropertyInspection" enabled="true" level="WARNING" enabled_by_default="true">
@@ -28,6 +27,7 @@
       <option name="onlyReportDirectoriesUnderSourceRoots" value="true" />
     </inspection_tool>
     <inspection_tool class="EmptyMethod" enabled="false" level="WARNING" enabled_by_default="false" />
+    <inspection_tool class="EmptyRange" enabled="true" level="WEAK WARNING" enabled_by_default="true" editorAttributes="INFO_ATTRIBUTES" />
     <inspection_tool class="FakeJvmFieldConstant" enabled="true" level="ERROR" enabled_by_default="true" editorAttributes="ERRORS_ATTRIBUTES" />
     <inspection_tool class="FromClosedRangeMigration" enabled="true" level="WEAK WARNING" enabled_by_default="true" />
     <inspection_tool class="GradleKotlinxCoroutinesDeprecation" enabled="true" level="ERROR" enabled_by_default="true" />
@@ -76,7 +76,6 @@
       <option name="ignoreSerializable" value="true" />
       <option name="ignoreCloneable" value="false" />
     </inspection_tool>
-    <inspection_tool class="RedundantInnerClassModifier" enabled="true" level="WARNING" enabled_by_default="true" />
     <inspection_tool class="RedundantLabelMigration" enabled="true" level="WEAK WARNING" enabled_by_default="true" />
     <inspection_tool class="RedundantNotNullExtensionReceiverOfInline" enabled="true" level="ERROR" enabled_by_default="true" editorAttributes="ERRORS_ATTRIBUTES" />
     <inspection_tool class="RedundantObjectTypeCheck" enabled="true" level="WEAK WARNING" enabled_by_default="true" editorAttributes="INFO_ATTRIBUTES" />

@@ -30,8 +30,11 @@
  */
 package mu.nu.nullpo.game.subsystem.mode
 
+import kotlinx.serialization.serializer
 import mu.nu.nullpo.game.component.BGM
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
+import mu.nu.nullpo.game.event.Leaderboard
+import mu.nu.nullpo.game.event.Rankable
 import mu.nu.nullpo.game.event.ScoreEvent
 import mu.nu.nullpo.game.net.NetUtil
 import mu.nu.nullpo.game.play.GameEngine
@@ -99,20 +102,8 @@ class MarathonShuttle:NetDummyMode() {
 	/** Current round's ranking position */
 	private var rankingRank = 0
 
-	/** Rankings' scores */
-	private val rankingScore = List(RANKING_TYPE) {MutableList(rankingMax) {0L}}
-
-	/** Rankings' line counts */
-	private val rankingLines = List(RANKING_TYPE) {MutableList(rankingMax) {0}}
-
-	/** Rankings' times */
-	private val rankingTime = List(RANKING_TYPE) {MutableList(rankingMax) {-1}}
-
-	override val propRank
-		get() = rankMapOf(
-			rankingScore.mapIndexed {a, x -> "$a.score" to x}+
-				rankingLines.mapIndexed {a, x -> "$a.lines" to x}+
-				rankingTime.mapIndexed {a, x -> "$a.time" to x})
+	override val ranking =
+		List(RANKING_TYPE) {Leaderboard(rankingMax, serializer<List<Rankable.ScoreRow>>()){Rankable.ScoreRow()} }
 
 	/* Mode name */
 	override val name = "MARATHON ShuttleRun"
@@ -135,10 +126,6 @@ class MarathonShuttle:NetDummyMode() {
 		bgmLv = 0
 
 		rankingRank = -1
-		rankingScore.forEach {it.fill(0)}
-		rankingLines.forEach {it.fill(0)}
-		rankingTime.forEach {it.fill(-1)}
-
 		netPlayerInit(engine)
 
 		if(!owner.replayMode) {
@@ -235,11 +222,11 @@ class MarathonShuttle:NetDummyMode() {
 				val topY = if(receiver.nextDisplayType==2) 6 else 4
 				receiver.drawScore(engine, 3, topY-1, "SCORE   LINE TIME", BASE, COLOR.BLUE)
 
-				for(i in 0..<rankingMax) {
+				ranking[goalType].forEachIndexed { i, it ->
 					receiver.drawScore(engine, 0, topY+i, "%2d".format(i+1), GRADE, COLOR.YELLOW)
-					receiver.drawScore(engine, 3, topY+i, "${rankingScore[goalType][i]}", NUM, i==rankingRank)
-					receiver.drawScore(engine, 11, topY+i, "${rankingLines[goalType][i]}", NUM, i==rankingRank)
-					receiver.drawScore(engine, 16, topY+i, rankingTime[goalType][i].toTimeStr, NUM, i==rankingRank)
+					receiver.drawScore(engine, 3, topY+i, "${it.sc}", NUM, i==rankingRank)
+					receiver.drawScore(engine, 11, topY+i, "${it.li}", NUM, i==rankingRank)
+					receiver.drawScore(engine, 16, topY+i, it.ti.toTimeStr, NUM, i==rankingRank)
 				}
 			}
 		} else {
@@ -291,13 +278,13 @@ class MarathonShuttle:NetDummyMode() {
 			val elapsed = engine.statistics.time.let {if(b) TIMELIMIT_10MIN-it else it}
 			receiver.drawScore(
 				engine, 0, 12, elapsed.toTimeStr,
-				NUM, when {
+				NUM_T, when {
 					!b -> COLOR.WHITE
 					elapsed<10*60 -> COLOR.RED
 					elapsed<30*60 -> COLOR.ORANGE
 					elapsed<60*60 -> COLOR.YELLOW
 					else -> COLOR.GREEN
-				}, 2f
+				},
 			)
 
 			// Ending time
@@ -307,8 +294,7 @@ class MarathonShuttle:NetDummyMode() {
 
 				receiver.drawScore(engine, 0, 13, "ROLL TIME", BASE, COLOR.BLUE)
 				receiver.drawScore(
-					engine, 0, 14, remainRollTime.toTimeStr, NUM, remainRollTime>0&&remainRollTime<10*60,
-					2f
+					engine, 0, 14, remainRollTime.toTimeStr, NUM_T, remainRollTime>0&&remainRollTime<10*60
 				)
 			}
 
@@ -411,7 +397,7 @@ class MarathonShuttle:NetDummyMode() {
 				lastScore = totalTimer*2
 				engine.statistics.scoreBonus += lastScore
 				engine.lastEvent = null
-
+				engine.statistics.rollClear = 2
 				engine.gameEnded()
 				engine.resetStatc()
 				engine.stat = GameEngine.Status.EXCELLENT
@@ -455,6 +441,7 @@ class MarathonShuttle:NetDummyMode() {
 				if(engine.statistics.level>=14&&(goalType==GAMETYPE_LV15_EASY||goalType==GAMETYPE_LV15_HARD)) {
 					// Ending (LV15-EASY/HARD）
 					engine.ending = 1
+					engine.statistics.rollClear = 2
 					engine.gameEnded()
 				} else if(engine.statistics.level>=29&&goalType==GAMETYPE_SPECIAL) {
 					// Ending (SPECIAL）
@@ -462,6 +449,7 @@ class MarathonShuttle:NetDummyMode() {
 					engine.timerActive = false
 					owner.musMan.bgm = BGM.Ending(0)
 					owner.musMan.fadeSW = false
+					engine.statistics.rollClear = 1
 					engine.playSE("endingstart")
 				} else {
 					// Level up
@@ -521,21 +509,6 @@ class MarathonShuttle:NetDummyMode() {
 			&&netReplaySendStatus==2
 		)
 			receiver.drawMenu(engine, 1, 19, "A: RETRY", BASE, COLOR.RED)
-	}
-
-	/** Calculate ranking position
-	 * @param sc Score
-	 * @param li Lines
-	 * @param time Time
-	 * @return Position (-1 if unranked)
-	 */
-	private fun checkRanking(sc:Long, li:Int, time:Int, type:Int):Int {
-		for(i in 0..<rankingMax)
-			if(sc>rankingScore[type][i]) return i
-			else if(sc==rankingScore[type][i]&&li>rankingLines[type][i]) return i
-			else if(sc==rankingScore[type][i]&&li==rankingLines[type][i]&&time<rankingTime[type][i]) return i
-
-		return -1
 	}
 
 	/** NET: Get goal type */
@@ -626,35 +599,10 @@ class MarathonShuttle:NetDummyMode() {
 
 		// Update rankings
 		if(!owner.replayMode&&!big&&engine.ai==null&&startLevel==0) {
-			updateRanking(engine.statistics.score, engine.statistics.lines, engine.statistics.time, goalType)
-
+			rankingRank = ranking[goalType].add(Rankable.ScoreRow(engine.statistics))
 			if(rankingRank!=-1) return true
 		}
 		return false
-	}
-
-	/** Update rankings
-	 * @param sc Score
-	 * @param li Lines
-	 * @param time Time
-	 * @param type Game type
-	 */
-	private fun updateRanking(sc:Long, li:Int, time:Int, type:Int) {
-		rankingRank = checkRanking(sc, li, time, type)
-
-		if(rankingRank!=-1) {
-			// Shift down ranking entries
-			for(i in rankingMax-1 downTo rankingRank+1) {
-				rankingScore[type][i] = rankingScore[type][i-1]
-				rankingLines[type][i] = rankingLines[type][i-1]
-				rankingTime[type][i] = rankingTime[type][i-1]
-			}
-
-			// Add new data
-			rankingScore[type][rankingRank] = sc
-			rankingLines[type][rankingRank] = li
-			rankingTime[type][rankingRank] = time
-		}
 	}
 
 	companion object {

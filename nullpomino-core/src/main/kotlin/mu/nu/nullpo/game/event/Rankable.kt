@@ -35,25 +35,46 @@ import kotlinx.serialization.Serializable
 import mu.nu.nullpo.game.component.Statistics
 
 interface Rankable:Comparable<Rankable> {
+	val st:Statistics
+	val sc get() = st.score
+	val lv get() = st.level
+	val li get() = st.lines
+	val clear get() = st.rollClear
+	val lives get() = st.lives
+	val ti get() = st.time.let {if(it<0) Int.MAX_VALUE else it}
+	val rp:Float get() = st.vs
+	override operator fun compareTo(other:Rankable):Int =
+		rp.compareTo(other.rp)
 
-	@Serializable data class ScoreRow(val st:Statistics = Statistics()):Comparable<ScoreRow> {
-		val sc get() = st.score
-		val lv get() = st.level
-		val li get() = st.lines
-		val ti get() = st.time.let {if(it<0) Int.MAX_VALUE else it}
-		override operator fun compareTo(other:ScoreRow):Int =
-			compareValuesBy(this, other, {it.sc}, {it.lv}, {it.li}, {-it.ti})
+	@Serializable
+	data class ScoreRow(override val st:Statistics = Statistics()):Rankable {
+		override fun compareTo(other:Rankable):Int =
+			if(other is ScoreRow)
+				compareValuesBy(this, other, {it.clear}, {it.sc}, {it.lives}, {it.lv}, {it.li}, {-it.ti}, {it.rp})
+			else super.compareTo(other)
+
+	}
+	@Serializable
+	data class TimeRow(override val st:Statistics = Statistics()):Rankable {
+		override fun compareTo(other:Rankable):Int =
+			if(other is TimeRow)
+				compareValuesBy(this, other, {it.clear}, {if(it.ti<=0) Int.MIN_VALUE else -it.ti}, {it.lives},
+					{it.sc}, {it.lv}, {it.li}, {it.rp})
+			else super.compareTo(other)
+
 	}
 
-	@Serializable data class GrandRow(val grade:Int, val st:Statistics, val clear:Int, val medals:Medals):Comparable<GrandRow> {
-		constructor():this(0, Statistics(), 0, Medals())
+	@Serializable
+	data class GrandRow(val grade:Int, override val st:Statistics, val medals:Medals):Rankable {
+		constructor():this(0, Statistics(), Medals())
 
-		val level get() = st.level
-		val time get() = st.time.let {if(it<0) Int.MAX_VALUE else it}
-		override operator fun compareTo(other:GrandRow):Int =
-			compareValuesBy(this, other, {it.grade}, {it.level}, {it.clear}, {-it.time})
+		override operator fun compareTo(other:Rankable):Int =
+			if(other is GrandRow)
+				compareValuesBy(this, other, {it.grade}, {it.lv}, {it.clear}, {-it.ti}, {it.sc}, {it.lives}, {it.rp})
+			else super.compareTo(other)
 
-		@Suppress("PropertyName") @Serializable
+		@Suppress("PropertyName")
+		@Serializable
 		data class Medals(var ST:MutableList<Int> = MutableList(3) {0},
 			var SK:Int = 0, var AC:Int = 0, var CO:Int = 0, var RE:Int = 0, var RO:Int = 0) {
 			fun reset() {
@@ -65,6 +86,9 @@ interface Rankable:Comparable<Rankable> {
 				RO = 0
 			}
 		}
+	}
+
+	companion object {
 	}
 
 }

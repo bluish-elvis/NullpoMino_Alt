@@ -30,10 +30,13 @@
  */
 package mu.nu.nullpo.game.subsystem.mode
 
+import kotlinx.serialization.serializer
 import mu.nu.nullpo.game.component.BGM
 import mu.nu.nullpo.game.component.Block
 import mu.nu.nullpo.game.component.Controller
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
+import mu.nu.nullpo.game.event.Leaderboard
+import mu.nu.nullpo.game.event.Rankable.GrandRow
 import mu.nu.nullpo.game.event.ScoreEvent
 import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.game.subsystem.mode.menu.BooleanMenuItem
@@ -87,23 +90,17 @@ class GrandM2G:AbstractGrand() {
 	/** Current round's ranking position */
 	private var rankingRank = 0
 
-	/** Rankings' level */
-	private val rankingLevel:List<MutableList<Int>> = List(rankingMax) {MutableList(GOALTYPE_MAX) {0}}
-
-	/** Rankings' times */
-	private val rankingTime:List<MutableList<Int>> = List(rankingMax) {MutableList(GOALTYPE_MAX) {-1}}
-
 	/** Section Time記録 */
 	private val bestSectionTime:List<MutableList<Int>> = List(sectionMax) {MutableList(GOALTYPE_MAX) {DEFAULT_SECTION_TIME}}
 
 	/* Mode name */
 	override val name = "Grand Mountain"
 	override val gameIntensity = 1
+	override val ranking =
+		List(GOALTYPE_MAX) {Leaderboard(rankingMax, serializer<List<GrandRow>>())}
 	override val propRank
 		get() = rankMapOf(
-			rankingLevel.mapIndexed {a, x -> "$a.lines" to x}+
-				rankingTime.mapIndexed {a, x -> "$a.time" to x}+
-				bestSectionTime.mapIndexed {a, x -> "$a.section.time" to x})
+			bestSectionTime.mapIndexed {a, x -> "$a.section.time" to x})
 
 	/* Initialization */
 	override fun playerInit(engine:GameEngine) {
@@ -117,8 +114,6 @@ class GrandM2G:AbstractGrand() {
 		garbageTotal = 0
 
 		rankingRank = -1
-		rankingLevel.forEach {it.fill(0)}
-		rankingTime.forEach {it.fill(-1)}
 		bestSectionTime.forEach {it.fill(-1)}
 
 		engine.speed.are = 23
@@ -291,14 +286,14 @@ class GrandM2G:AbstractGrand() {
 					// Rankings
 					receiver.drawScore(engine, 3, 2, "LEVEL TIME", BASE, COLOR.BLUE)
 
-					for(i in 0..<rankingMax) {
+					ranking[goalType].forEachIndexed {i, it ->
 						receiver.drawScore(
 							engine, 0, 3+i, "%2d".format(i+1),
 							GRADE,
 							if(rankingRank==i) COLOR.RAINBOW else COLOR.YELLOW
 						)
-						receiver.drawScore(engine, 3, 3+i, "${rankingLevel[i][goalType]}", NUM, i==rankingRank)
-						receiver.drawScore(engine, 9, 3+i, rankingTime[i][goalType].toTimeStr, NUM, i==rankingRank)
+						receiver.drawScore(engine, 3, 3+i, "${it.lv}", NUM, i==rankingRank)
+						receiver.drawScore(engine, 9, 3+i, it.ti.toTimeStr, NUM, i==rankingRank)
 					}
 
 					receiver.drawScore(engine, 0, 17, "F:VIEW SECTION TIME", BASE, COLOR.GREEN)
@@ -381,7 +376,7 @@ class GrandM2G:AbstractGrand() {
 
 				if(sectionAvgTime>0) {
 					receiver.drawScore(engine, x2, 14, "AVERAGE", BASE, COLOR.BLUE)
-					receiver.drawScore(engine, x2, 15, sectionAvgTime.toTimeStr, NUM, 2f)
+					receiver.drawScore(engine, x2, 15, sectionAvgTime.toTimeStr, NUM_T)
 				}
 			}
 		}
@@ -528,7 +523,7 @@ class GrandM2G:AbstractGrand() {
 				engine.statistics.level = 999
 				engine.timerActive = false
 				engine.ending = 2
-
+				engine.statistics.rollClear = 2
 				sectionsDone++
 				stNewRecordCheck(engine, sectionsDone-1, goalType)
 			} else if(engine.statistics.level>=nextSecLv) {
@@ -671,45 +666,12 @@ class GrandM2G:AbstractGrand() {
 
 		// Update rankings
 		if(!owner.replayMode&&startLevel==0&&!always20g&&!big&&engine.ai==null) {
-			updateRanking(engine.statistics.level, engine.statistics.time, goalType)
+			rankingRank = ranking[goalType].add(GrandRow(engine.statistics.level, engine.statistics, medals.copy()))
 			if(sectionAnyNewRecord) updateBestSectionTime(goalType)
 
 			if(rankingRank!=-1||sectionAnyNewRecord) return true
 		}
 		return false
-	}
-
-	/** Update rankings
-	 * @param lv level
-	 * @param time Time
-	 */
-	private fun updateRanking(lv:Int, time:Int, goalType:Int) {
-		rankingRank = checkRanking(lv, time, goalType)
-
-		if(rankingRank!=-1) {
-			// Shift down ranking entries
-			for(i in rankingMax-1 downTo rankingRank+1) {
-				rankingLevel[i][goalType] = rankingLevel[i-1][goalType]
-				rankingTime[i][goalType] = rankingTime[i-1][goalType]
-			}
-
-			// Add new data
-			rankingLevel[rankingRank][goalType] = lv
-			rankingTime[rankingRank][goalType] = time
-		}
-	}
-
-	/** Calculate ranking position
-	 * @param lv level
-	 * @param time Time
-	 * @return Position (-1 if unranked)
-	 */
-	private fun checkRanking(lv:Int, time:Int, goalType:Int):Int {
-		for(i in 0..<rankingMax)
-			if(lv>rankingLevel[i][goalType]) return i
-			else if(lv==rankingLevel[i][goalType]&&time<rankingTime[i][goalType]) return i
-
-		return -1
 	}
 
 	/** Update best section time records */

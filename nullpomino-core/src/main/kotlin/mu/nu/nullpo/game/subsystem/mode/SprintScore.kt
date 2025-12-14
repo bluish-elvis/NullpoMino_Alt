@@ -33,6 +33,8 @@ package mu.nu.nullpo.game.subsystem.mode
 import mu.nu.nullpo.game.component.BGM
 import mu.nu.nullpo.game.component.Controller
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
+import mu.nu.nullpo.game.event.Leaderboard
+import mu.nu.nullpo.game.event.Rankable
 import mu.nu.nullpo.game.net.NetUtil
 import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.game.subsystem.mode.menu.BooleanMenuItem
@@ -85,19 +87,8 @@ class SprintScore:NetDummyMode() {
 	/** Current round's ranking position */
 	private var rankingRank = 0
 
-	/** Rankings' times */
-	private val rankingTime = List(GOALTYPE_MAX) {MutableList(rankingMax) {-1}}
-
-	/** Rankings' line counts */
-	private val rankingLines = List(GOALTYPE_MAX) {MutableList(rankingMax) {0}}
-
-	/** Rankings' score/line */
-	private val rankingSPL = List(GOALTYPE_MAX) {MutableList(rankingMax) {0.0}}
-	override val propRank
-		get() = rankMapOf(
-			rankingTime.mapIndexed {a, x -> "$a.time" to x}+
-				rankingSPL.mapIndexed {a, x -> "$a.spl" to x}+
-				rankingLines.mapIndexed {a, x -> "$a.lines" to x})
+	override val ranking =
+		List(GOALTYPE_MAX) {Leaderboard(rankingMax, kotlinx.serialization.serializer<List<Rankable.TimeRow>>())}
 
 	/* Mode name */
 	override val name = "Score SprintRace"
@@ -110,9 +101,6 @@ class SprintScore:NetDummyMode() {
 		bgmId = 0
 
 		rankingRank = -1
-		rankingTime.forEach {it.fill(-1)}
-		rankingLines.forEach {it.fill(0)}
-		rankingSPL.forEach {it.fill(0.0)}
 
 		engine.frameSkin = GameEngine.FRAME_COLOR_BRONZE
 
@@ -339,11 +327,11 @@ Ready&Go screen disappears) */
 				val topY = if(receiver.nextDisplayType==2) 6 else 4
 				receiver.drawScore(engine, 2, topY-1, "TIME  LINE SCR/LINE", BASE, COLOR.BLUE)
 
-				for(i in 0..<rankingMax) {
+				ranking[goalType].forEachIndexed { i, it ->
 					receiver.drawScore(engine, 0, topY+i, "%2d".format(i+1), GRADE, COLOR.YELLOW)
-					receiver.drawScore(engine, 2, topY+i, rankingTime[goalType][i].toTimeStr, NUM, rankingRank==i)
-					receiver.drawScore(engine, 9, topY+i, "%3d".format(rankingLines[goalType][i]), NUM, rankingRank==i)
-					receiver.drawScoreNum(engine, 11, topY+i, rankingSPL[goalType][i], 3 to 6, rankingRank==i)
+					receiver.drawScore(engine, 2, topY+i, it.ti.toTimeStr, NUM, rankingRank==i)
+					receiver.drawScore(engine, 9, topY+i, "%3d".format(it.li), NUM, rankingRank==i)
+					receiver.drawScoreNum(engine, 11, topY+i, it.st.spl, 3 to 6, rankingRank==i)
 				}
 			}
 		} else {
@@ -371,7 +359,7 @@ Ready&Go screen disappears) */
 			receiver.drawScoreNum(engine, 0, 16, engine.statistics.spl, 10 to null, scale = 2f)
 
 			receiver.drawScore(engine, 0, 18, "Time", BASE, COLOR.BLUE)
-			receiver.drawScore(engine, 0, 19, engine.statistics.time.toTimeStr, NUM, 2f)
+			receiver.drawScore(engine, 0, 19, engine.statistics.time.toTimeStr, NUM_T)
 		}
 
 		super.renderLast(engine)
@@ -470,55 +458,12 @@ Ready&Go screen disappears) */
 
 		// Update rankings
 		if(!owner.replayMode&&engine.statistics.score>=GOAL_SCORE_TABLE[goalType]&&!big&&engine.ai==null) {
-			updateRanking(engine.statistics.time, engine.statistics.lines, engine.statistics.spl)
+			rankingRank=ranking[goalType].add(Rankable.TimeRow(engine.statistics))
 
 			if(rankingRank!=-1) return true
 		}
 
 		return false
-	}
-
-	/** Update rankings
-	 * @param time Time
-	 * @param lines Lines
-	 * @param spl Score/Line
-	 */
-	private fun updateRanking(time:Int, lines:Int, spl:Double) {
-		rankingRank = checkRanking(time, lines, spl)
-
-		if(rankingRank!=-1) {
-			// Shift down ranking entries
-			for(i in rankingMax-1 downTo rankingRank+1) {
-				rankingTime[goalType][i] = rankingTime[goalType][i-1]
-				rankingLines[goalType][i] = rankingLines[goalType][i-1]
-				rankingSPL[goalType][i] = rankingSPL[goalType][i-1]
-			}
-
-			// Add new data
-			rankingTime[goalType][rankingRank] = time
-			rankingLines[goalType][rankingRank] = lines
-			rankingSPL[goalType][rankingRank] = spl
-		}
-	}
-
-	/** Calculate ranking position
-	 * @param time Time
-	 * @param lines Lines
-	 * @param spl Score/Line
-	 * @return Position (-1 if unranked)
-	 */
-	private fun checkRanking(time:Int, lines:Int, spl:Double):Int {
-		for(i in 0..<rankingMax)
-			if(time<rankingTime[goalType][i]||rankingTime[goalType][i]<0)
-				return i
-			else if(time==rankingTime[goalType][i]&&(lines<rankingLines[goalType][i]||rankingLines[goalType][i]==0))
-				return i
-			else if(time==rankingTime[goalType][i]&&lines==rankingLines[goalType][i]
-				&&spl>rankingSPL[goalType][i]
-			)
-				return i
-
-		return -1
 	}
 
 	/** NET: Send various in-game stats of [engine] */

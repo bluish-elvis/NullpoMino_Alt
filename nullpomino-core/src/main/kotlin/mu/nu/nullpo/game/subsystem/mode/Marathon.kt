@@ -34,6 +34,8 @@ import mu.nu.nullpo.game.component.BGM
 import mu.nu.nullpo.game.component.Controller
 import mu.nu.nullpo.game.component.LevelData
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
+import mu.nu.nullpo.game.event.Leaderboard
+import mu.nu.nullpo.game.event.Rankable
 import mu.nu.nullpo.game.event.ScoreEvent
 import mu.nu.nullpo.game.net.NetUtil
 import mu.nu.nullpo.game.play.GameEngine
@@ -69,17 +71,9 @@ class Marathon:NetDummyMode() {
 	/** Current round's ranking position */
 	private var rankingRank = -1
 
-	/** Rankings' scores */
-	private val rankingScore = List(RANKING_TYPE) {MutableList(rankingMax) {0L}}
-
-	/** Rankings' line counts */
-	private val rankingLines = List(RANKING_TYPE) {MutableList(rankingMax) {0}}
-	/** Rankings' times */
-	private val rankingTime = List(RANKING_TYPE) {MutableList(rankingMax) {-1}}
-
-	override val propRank
-		get() = rankMapOf(
-			rankingScore.mapIndexed {a, x -> "$a.score" to x}+rankingLines.mapIndexed {a, x -> "$a.lines" to x}+rankingTime.mapIndexed {a, x -> "$a.time" to x})
+	override val ranking = List(RANKING_TYPE) {
+		Leaderboard(rankingMax, kotlinx.serialization.serializer<List<Rankable.ScoreRow>>()){Rankable.ScoreRow()}
+	}
 
 	// Mode name
 	override val name = "Marathon"
@@ -91,9 +85,6 @@ class Marathon:NetDummyMode() {
 		bgmLv = BGM.Silent
 
 		rankingRank = -1
-		rankingScore.forEach {it.fill(0L)}
-		rankingLines.forEach {it.fill(0)}
-		rankingTime.forEach {it.fill(-1)}
 
 		netPlayerInit(engine)
 
@@ -187,13 +178,14 @@ class Marathon:NetDummyMode() {
 				val topY = if(receiver.nextDisplayType==2) 6 else 4
 				receiver.drawScore(engine, 2, topY-1, "SCORE LINE TIME", BASE, COLOR.BLUE)
 
-				for(i in 0..<rankingMax) {
+				ranking[goalType].forEachIndexed { i, it ->
 					receiver.drawScore(engine, 0, topY+i, "%2d".format(i+1),
 						GRADE,
-						if(rankingRank==i) COLOR.RAINBOW else if(rankingLines[goalType][i]>tableGameClearLines[goalType]) COLOR.CYAN else COLOR.YELLOW)
-					receiver.drawScore(engine, 2, topY+i, "${rankingScore[goalType][i]}", NUM, i==rankingRank)
-					receiver.drawScore(engine, 9, topY+i, "${rankingLines[goalType][i]}", NUM, i==rankingRank)
-					receiver.drawScore(engine, 12, topY+i, rankingTime[goalType][i].toTimeStr, NUM, i==rankingRank)
+						if(rankingRank==i) COLOR.RAINBOW else if(it.li>tableGameClearLines[goalType]) COLOR.CYAN else
+							COLOR.YELLOW)
+					receiver.drawScore(engine, 2, topY+i, "${it.sc}", NUM, i==rankingRank)
+					receiver.drawScore(engine, 9, topY+i, "${it.li}", NUM, i==rankingRank)
+					receiver.drawScore(engine, 12, topY+i, it.ti.toTimeStr, NUM, i==rankingRank)
 				}
 			}
 		} else {
@@ -211,7 +203,7 @@ class Marathon:NetDummyMode() {
 				NUM, 2f)
 
 			receiver.drawScore(engine, 0, 9, "Time", BASE, COLOR.BLUE)
-			receiver.drawScore(engine, 0, 10, engine.statistics.time.toTimeStr, NUM, 2f)
+			receiver.drawScore(engine, 0, 10, engine.statistics.time.toTimeStr, NUM_T)
 		}
 
 		super.renderLast(engine)
@@ -227,7 +219,6 @@ class Marathon:NetDummyMode() {
 	/* Calculate score */
 	override fun calcScore(engine:GameEngine, ev:ScoreEvent):Int {
 		super.calcScore(engine, ev)
-		calcPower(engine, ev, true)
 		// BGM fade-out effects and BGM changes
 		if(engine.statistics.lines>=nextbgmLine(engine.statistics.lines)-1) owner.musMan.fadeSW = true
 		bgmLv(engine.statistics.lines).let {newBgm ->
@@ -326,48 +317,10 @@ class Marathon:NetDummyMode() {
 
 		// Update rankings
 		if(!owner.replayMode&&!big&&engine.ai==null) {
-			updateRanking(engine.statistics.score, engine.statistics.lines, engine.statistics.time, goalType)
-
+			rankingRank=ranking[goalType].add(Rankable.ScoreRow(engine.statistics))
 			if(rankingRank!=-1) return true
 		}
 		return false
-	}
-
-	/** Update rankings
-	 * @param sc Score
-	 * @param li Lines
-	 * @param time Time
-	 */
-	private fun updateRanking(sc:Long, li:Int, time:Int, type:Int) {
-		rankingRank = checkRanking(sc, li, time, type)
-
-		if(rankingRank!=-1) {
-			// Shift down ranking entries
-			for(i in rankingMax-1 downTo rankingRank+1) {
-				rankingScore[type][i] = rankingScore[type][i-1]
-				rankingLines[type][i] = rankingLines[type][i-1]
-				rankingTime[type][i] = rankingTime[type][i-1]
-			}
-
-			// Add new data
-			rankingScore[type][rankingRank] = sc
-			rankingLines[type][rankingRank] = li
-			rankingTime[type][rankingRank] = time
-		}
-	}
-
-	/** Calculate ranking position
-	 * @param sc Score
-	 * @param li Lines
-	 * @param time Time
-	 * @return Position (-1 if unranked)
-	 */
-	private fun checkRanking(sc:Long, li:Int, time:Int, type:Int):Int {
-		for(i in 0..<rankingMax) if(sc>rankingScore[type][i]) return i
-		else if(sc==rankingScore[type][i]&&li>rankingLines[type][i]) return i
-		else if(sc==rankingScore[type][i]&&li==rankingLines[type][i]&&time<rankingTime[type][i]) return i
-
-		return -1
 	}
 
 	/** NET: Send various in-game stats of [engine] */

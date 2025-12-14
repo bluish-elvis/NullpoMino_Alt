@@ -30,9 +30,13 @@
  */
 package mu.nu.nullpo.game.subsystem.mode
 
+import kotlinx.serialization.Serializable
 import mu.nu.nullpo.game.component.BGM
 import mu.nu.nullpo.game.component.Block
+import mu.nu.nullpo.game.component.Statistics
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
+import mu.nu.nullpo.game.event.Leaderboard
+import mu.nu.nullpo.game.event.Rankable
 import mu.nu.nullpo.game.event.ScoreEvent
 import mu.nu.nullpo.game.net.NetUtil
 import mu.nu.nullpo.game.play.GameEngine
@@ -97,11 +101,17 @@ class SprintCombo:NetDummyMode() {
 	/** Current round's ranking position */
 	private var rankingRank = 0
 
-	/** Rankings' times */
-	private val rankingTime = List(GOAL_TABLE.size) {List(GAMETYPE_MAX) {MutableList(rankingMax) {-1}}}
+	override val ranking = List(GAMETYPE_MAX*GOAL_TABLE.size) {
+		Leaderboard<ComboRow>(rankingMax, kotlinx.serialization.serializer<List<ComboRow>>())
+	}
+	@Serializable
+	data class ComboRow(override val st:Statistics = Statistics()):Rankable {
+		override fun compareTo(other:Rankable):Int =
+			if(other is ComboRow)
+				compareValuesBy(this, other, {it.clear}, {it.st.maxCombo}, {-it.ti}, {it.rp})
+			else super.compareTo(other)
 
-	/** Rankings' Combo */
-	private val rankingCombo = List(GOAL_TABLE.size) {List(GAMETYPE_MAX) {MutableList(rankingMax) {-1}}}
+	}
 
 	/**  */
 	private val itemShape = StringsMenuItem(
@@ -162,8 +172,6 @@ class SprintCombo:NetDummyMode() {
 
 		super.playerInit(engine)
 		rankingRank = -1
-		rankingTime.forEach {it.forEach {p -> p.fill(0)}}
-		rankingCombo.forEach {it.forEach {p -> p.fill(0)}}
 
 		engine.frameSkin = GameEngine.FRAME_COLOR_RED
 
@@ -264,15 +272,15 @@ class SprintCombo:NetDummyMode() {
 			if(!owner.replayMode&&!big&&engine.ai==null) {
 				receiver.drawScore(engine, 3, 3, "RECORD", BASE, COLOR.BLUE)
 
-				for(i in 0..<rankingMax) {
+				ranking[typeSerial(gameType,goalType)].forEachIndexed { i, it ->
 					receiver.drawScore(
 						engine, 0, 4+i, "%2d".format(i+1),
 						GRADE, if(rankingRank==i) COLOR.RAINBOW else COLOR.YELLOW
 					)
-					if(rankingCombo[goalType][gameType][i]==GOAL_TABLE[goalType]-1)
+					if(it.st.maxCombo==GOAL_TABLE[goalType]-1)
 						receiver.drawScore(engine, 2, 4+i, "PERFECT", BASE, true)
-					else receiver.drawScore(engine, 3, 4+i, "${rankingCombo[goalType][gameType][i]}", NUM, rankingRank==i)
-					receiver.drawScore(engine, 9, 4+i, rankingTime[goalType][gameType][i].toTimeStr, NUM, rankingRank==i)
+					else receiver.drawScore(engine, 3, 4+i, "${it.st.maxCombo}", NUM, rankingRank==i)
+					receiver.drawScore(engine, 9, 4+i, it.ti.toTimeStr, NUM, rankingRank==i)
 				}
 			}
 		} else {
@@ -296,7 +304,7 @@ class SprintCombo:NetDummyMode() {
 
 
 			receiver.drawScore(engine, 0, 15, "Time", BASE, COLOR.BLUE)
-			receiver.drawScore(engine, 0, 16, scgettime.toTimeStr, NUM, 2f)
+			receiver.drawScore(engine, 0, 16, scgettime.toTimeStr, NUM_T)
 			receiver.drawScore(engine, 0, 17, engine.statistics.time.toTimeStr, NANO)
 		}
 
@@ -350,6 +358,7 @@ class SprintCombo:NetDummyMode() {
 				when {
 					engine.statistics.lines>=GOAL_TABLE[goalType] -> {
 						engine.ending = 1
+						engine.statistics.rollClear = 1
 						engine.gameEnded()
 					}
 					engine.statistics.lines>=GOAL_TABLE[goalType]-5 -> owner.musMan.fadeSW = true
@@ -403,42 +412,10 @@ class SprintCombo:NetDummyMode() {
 
 		// Update rankings
 		if(!owner.replayMode&&!big&&engine.ai==null) {
-			updateRanking(engine.statistics.maxCombo, if(engine.ending==0) -1 else engine.statistics.time)
-
+			rankingRank = ranking[goalType*GAMETYPE_MAX+gameType].add(ComboRow(engine.statistics))
 			if(rankingRank!=-1) return true
 		}
 		return false
-	}
-
-	/** Update the ranking */
-	private fun updateRanking(maxcombo:Int, time:Int) {
-		rankingRank = checkRanking(maxcombo, time)
-
-		if(rankingRank!=-1) {
-			// Shift down ranking entries
-			for(i in rankingMax-1 downTo rankingRank+1) {
-				rankingCombo[goalType][gameType][i] = rankingCombo[goalType][gameType][i-1]
-				rankingTime[goalType][gameType][i] = rankingTime[goalType][gameType][i-1]
-			}
-
-			// Add new data
-			rankingCombo[goalType][gameType][rankingRank] = maxcombo
-			rankingTime[goalType][gameType][rankingRank] = time
-		}
-	}
-
-	/** This function will check the ranking and returns which place you are.
-	 * (-1: Out of rank) */
-	private fun checkRanking(combo:Int, time:Int):Int {
-		for(i in 0..<rankingMax)
-			if(combo>rankingCombo[goalType][gameType][i])
-				return i
-			else if(combo==rankingCombo[goalType][gameType][i]&&time>=0&&
-				(time<rankingTime[goalType][gameType][i]||rankingTime[goalType][gameType][i]==-1)
-			)
-				return i
-
-		return -1
 	}
 
 	/** NET: Send various in-game stats of [engine] */
@@ -528,14 +505,15 @@ class SprintCombo:NetDummyMode() {
 		/** Hindrance Lines Constant */
 		private val GOAL_TABLE = listOf(21, 41, 101, -1)
 
-		/** Number of starting shapes */
-		private const val SHAPETYPE_MAX = 9
-
+		private fun typeSerial(gameType:Int, goalType:Int) = goalType*GAMETYPE_MAX+gameType
 		/** Names of starting shapes */
 		private val SHAPE_NAME_TABLE = listOf(
 			"NONE", "LEFT I", "RIGHT I", "LEFT Z", "RIGHT S", "LEFT S", "RIGHT Z", "LEFT J",
 			"RIGHT L"
 		)
+
+		/** Number of starting shapes */
+		private val SHAPETYPE_MAX = SHAPE_NAME_TABLE.size
 
 		/** Starting shape table */
 		private val SHAPE_TABLE = listOf(

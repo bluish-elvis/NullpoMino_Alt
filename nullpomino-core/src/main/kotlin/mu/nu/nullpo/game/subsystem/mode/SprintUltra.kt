@@ -30,10 +30,15 @@
  */
 package mu.nu.nullpo.game.subsystem.mode
 
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.serializer
 import mu.nu.nullpo.game.component.BGM
 import mu.nu.nullpo.game.component.Controller
 import mu.nu.nullpo.game.component.SpeedParam
+import mu.nu.nullpo.game.component.Statistics
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
+import mu.nu.nullpo.game.event.Leaderboard
+import mu.nu.nullpo.game.event.Rankable
 import mu.nu.nullpo.game.event.ScoreEvent
 import mu.nu.nullpo.game.net.NetUtil
 import mu.nu.nullpo.game.play.GameEngine
@@ -83,21 +88,33 @@ class SprintUltra:NetDummyMode() {
 	/** Current round's ranking position */
 	private val rankingRank = MutableList(RANKTYPE_MAX) {-1}
 
-	/** Rankings' scores */
-	private val rankingScore = List(RANKTYPE_MAX) {List(GOALTYPE_MAX) {MutableList(rankingMax) {0L}}}
+	@Serializable
+	data class PowerRow(override val st:Statistics = Statistics()):Rankable {
+		override fun compareTo(other:Rankable):Int =
+			if(other is PowerRow)
+				compareValuesBy(this, other, {it.clear}, {it.st.attacks}, {it.sc}, {it.lv}, {it.li}, {-it.ti}, {it.rp})
+			else super.compareTo(other)
 
-	/** Rankings' sent line counts */
-	private val rankingPower = List(RANKTYPE_MAX) {List(GOALTYPE_MAX) {MutableList(rankingMax) {0}}}
+	}
+	@Serializable
+	data class LinesRow(override val st:Statistics = Statistics()):Rankable {
+		override fun compareTo(other:Rankable):Int =
+			if(other is LinesRow)
+				compareValuesBy(this, other, {it.clear}, {it.li}, {it.sc}, {it.st.attacks}, {it.lv}, {-it.ti}, {it.rp})
+			else super.compareTo(other)
 
-	/** Rankings' line counts */
-	private val rankingLines = List(RANKTYPE_MAX) {List(GOALTYPE_MAX) {MutableList(rankingMax) {0}}}
+	}
+
+	override val ranking:List<Leaderboard<Rankable>> =
+		List(RANKTYPE_MAX*GOALTYPE_MAX) {Leaderboard(rankingMax, serializer<List<Rankable>>()){
+			when(RANKTYPE_ALL[it%RANKTYPE_MAX]) {
+				RankingType.Power -> PowerRow()
+				RankingType.Lines -> LinesRow()
+				else -> Rankable.ScoreRow()
+			}
+		} }
 
 	private var rankingShow = 0
-	override val propRank
-		get() = rankMapOf(rankingScore.flatMapIndexed {a, x -> x.mapIndexed {b, y -> "$a.$b.score" to y}}+
-			rankingPower.flatMapIndexed {a, x -> x.mapIndexed {b, y -> "$a.$b.power" to y}}+
-			rankingLines.flatMapIndexed {a, x -> x.mapIndexed {b, y -> "$a.$b.lines" to y}})
-
 	/* Mode name */
 	override val name = "ULTRA Score Attack"
 	override val gameIntensity = 2
@@ -110,10 +127,6 @@ class SprintUltra:NetDummyMode() {
 		rankingShow = 0
 
 		rankingRank.fill(-1)
-
-		rankingScore.forEach {it.forEach {p -> p.fill(0)}}
-		rankingLines.forEach {it.forEach {p -> p.fill(0)}}
-		rankingPower.forEach {it.forEach {p -> p.fill(0)}}
 
 		owner.bgMan.bg = -14
 		engine.frameSkin = if(is20g(engine.speed)) GameEngine.FRAME_COLOR_RED else GameEngine.FRAME_COLOR_BLUE
@@ -184,48 +197,47 @@ class SprintUltra:NetDummyMode() {
 				receiver.drawScore(engine, 0, 3, "Score RANKING", BASE, col2)
 				receiver.drawScore(engine, 1, 4, "Score Power Lines", BASE, col1)
 
-				for(i in 0..<minOf(rankingMax, 12)) {
+				ranking[gt*RANKTYPE_MAX].forEachIndexed {i, it ->
 					receiver.drawScore(engine, 0, 5+i, "%2d".format(i+1), GRADE, col3)
 					receiver.drawScore(
-						engine, 1, 5+i, "%7d".format(rankingScore[0][gt][i]), NUM, i==rankingRank[0]
+						engine, 1, 5+i, "%7d".format(it.sc), NUM, i==rankingRank[0]
 					)
 					receiver.drawScore(
-						engine, 8, 5+i, "%5d".format(rankingPower[0][gt][i]), NUM, i==rankingRank[0]
+						engine, 8, 5+i, "%5d".format(it.st.attacks), NUM, i==rankingRank[0]
 					)
 					receiver.drawScore(
-						engine, 14, 5+i, "%5d".format(rankingLines[0][gt][i]), NUM, i==rankingRank[0]
+						engine, 14, 5+i, "%5d".format(it.li), NUM, i==rankingRank[0]
 					)
 				}
 
 				receiver.drawScore(engine, 0, 11, "Power RANKING", BASE, col2)
 				receiver.drawScore(engine, 1, 12, "Power Score Lines", BASE, col1)
-
-				for(i in 0..<rankingMax) {
+				ranking[gt*RANKTYPE_MAX+1].forEachIndexed {i, it ->
 					receiver.drawScore(engine, 0, 13+i, "%2d".format(i+1), GRADE, col3)
 					receiver.drawScore(
-						engine, 2, 13+i, "%5d".format(rankingPower[1][gt][i]), NUM, i==rankingRank[1]
+						engine, 2, 13+i, "%5d".format(it.sc), NUM, i==rankingRank[1]
 					)
 					receiver.drawScore(
-						engine, 7, 13+i, "%7d".format(rankingScore[1][gt][i]), NUM, i==rankingRank[1]
+						engine, 7, 13+i, "%7d".format(it.st.attacks), NUM, i==rankingRank[1]
 					)
 					receiver.drawScore(
-						engine, 14, 13+i, "%5d".format(rankingLines[1][gt][i]), NUM, i==rankingRank[1]
+						engine, 14, 13+i, "%5d".format(it.li), NUM, i==rankingRank[1]
 					)
 				}
 
 				receiver.drawScore(engine, 0, 19, "Lines RANKING", BASE, col2)
 				receiver.drawScore(engine, 1, 20, "Lines Score Power", BASE, col1)
 
-				for(i in 0..<rankingMax) {
+				ranking[gt*RANKTYPE_MAX+2].forEachIndexed {i, it ->
 					receiver.drawScore(engine, 0, 21+i, "%2d".format(i+1), GRADE, col3)
 					receiver.drawScore(
-						engine, 2, 21+i, "%5d".format(rankingLines[2][gt][i]), NUM, i==rankingRank[2]
+						engine, 2, 21+i, "%5d".format(it.sc), NUM, i==rankingRank[2]
 					)
 					receiver.drawScore(
-						engine, 7, 21+i, "%7d".format(rankingScore[2][gt][i]), NUM, i==rankingRank[2]
+						engine, 7, 21+i, "%7d".format(it.st.attacks), NUM, i==rankingRank[2]
 					)
 					receiver.drawScore(
-						engine, 14, 21+i, "%5d".format(rankingPower[2][gt][i]), NUM, i==rankingRank[2]
+						engine, 14, 21+i, "%5d".format(it.li), NUM, i==rankingRank[2]
 					)
 				}
 			}
@@ -252,7 +264,7 @@ class SprintUltra:NetDummyMode() {
 			receiver.drawScore(engine, 0, 14, "Time", BASE, COLOR.BLUE)
 			val time = maxOf(0, (tableLength[goalType])*3600-engine.statistics.time)
 			receiver.drawScoreSpeed(engine, 0, 15, engine.statistics.time/(tableLength[goalType]*3600f), 12f)
-			receiver.drawScore(engine, 0, 16, time.toTimeStr, NUM, getTimeFontColor(time), 2f)
+			receiver.drawScore(engine, 0, 16, time.toTimeStr, NUM_T, getTimeFontColor(time))
 		}
 
 		super.renderLast(engine)
@@ -306,7 +318,7 @@ class SprintUltra:NetDummyMode() {
 				// 5 seconds beforeBGM fadeout
 //				if(engine.statistics.time>=limitTime-5*60) owner.bgmStatus.fadeSW = true
 
-				// 1Per-minuteBackgroundSwitching
+				// 1minutePer BackgroundSwitching
 				if(engine.statistics.time>0&&engine.statistics.time%3600==0) {
 					engine.playSE("levelup")
 					owner.bgMan.nextBg = owner.bgMan.bg+1
@@ -397,72 +409,24 @@ class SprintUltra:NetDummyMode() {
 
 		// Update rankings
 		if(!owner.replayMode&&!big&&engine.ai==null) {
-			if(updateRanking(
-					goalType(engine.speed),
-					engine.statistics.score,
-					engine.statistics.attacks,
-					engine.statistics.lines
-				).any {it!=-1})
+			if(updateRanking(goalType(engine.speed), engine.statistics).any {it!=-1})
 				return true
 		}
 		return false
 	}
 	/** Update rankings
-	 * @param sc Score
-	 * @param po Power
-	 * @param li Lines
+	 * @param st Statistics
 	 */
-	private fun updateRanking(goal:Int, sc:Long, po:Int, li:Int):List<Int> {
+	private fun updateRanking(goal:Int, st:Statistics):List<Int> =
 		RANKTYPE_ALL.mapIndexed {i, it ->
-			val ret = checkRanking(it, goal, sc, po, li)
-			if(ret!=-1) {
-				// Shift down ranking entries
-				for(j in rankingMax-1 downTo ret+1) {
-					rankingScore[i][goal][j] = rankingScore[i][goal][j-1]
-					rankingPower[i][goal][j] = rankingPower[i][goal][j-1]
-					rankingLines[i][goal][j] = rankingLines[i][goal][j-1]
-				}
-
-				// Add new data
-				rankingScore[i][goal][ret] = sc
-				rankingPower[i][goal][ret] = po
-				rankingLines[i][goal][ret] = li
-			}
-			rankingRank[i] = ret
+			ranking[goal*RANKTYPE_MAX+i].add(when(it) {
+				RankingType.Power -> PowerRow(st)
+				RankingType.Lines -> LinesRow(st)
+				else -> Rankable.ScoreRow(st)
+			})
+		}.also {
+			it.forEachIndexed {i, p -> rankingRank[i] = p}
 		}
-		return rankingRank
-	}
-
-	/** Calculate ranking position
-	 * @param sc Score
-	 * @param li Lines
-	 * @param type Number of ranking types
-	 * @return Position (-1 if unranked)
-	 */
-	private fun checkRanking(type:RankingType, goal:Int, sc:Long, po:Int, li:Int):Int {
-		val ord = type.ordinal
-		for(i in 0..<rankingMax)
-			when(type) {
-				RankingType.Score ->
-					when {
-						sc>rankingScore[ord][goal][i] -> return i
-						sc==rankingScore[ord][goal][i]&&po>rankingPower[ord][goal][i] -> return i
-						sc==rankingScore[ord][goal][i]&&po==rankingPower[ord][goal][i]&&li>rankingLines[ord][goal][i] -> return i
-					}
-				RankingType.Power -> when {
-					po>rankingPower[ord][goal][i] -> return i
-					po==rankingPower[ord][goal][i]&&sc>rankingScore[ord][goal][i] -> return i
-					po==rankingPower[ord][goal][i]&&sc==rankingScore[ord][goal][i]&&li>rankingLines[ord][goal][i] -> return i
-				}
-				RankingType.Lines -> when {
-					li>rankingLines[ord][goal][i] -> return i
-					li==rankingLines[ord][goal][i]&&sc>rankingScore[ord][goal][i] -> return i
-					li==rankingLines[ord][goal][i]&&sc>rankingScore[ord][goal][i]&&po>rankingPower[ord][goal][i] -> return i
-				}
-			}
-
-		return -1
-	}
 
 	/** NET: Send various in-game stats of [engine] */
 	override fun netSendStats(engine:GameEngine) {

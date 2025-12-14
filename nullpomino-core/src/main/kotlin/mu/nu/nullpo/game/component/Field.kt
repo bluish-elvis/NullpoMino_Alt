@@ -33,6 +33,7 @@ package mu.nu.nullpo.game.component
 import mu.nu.nullpo.game.component.Block.ATTRIBUTE
 import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.game.play.LineGravity
+import mu.nu.nullpo.game.play.clearRule.ClearType.ClearResult
 import mu.nu.nullpo.game.play.clearRule.Line.checkLines
 import mu.nu.nullpo.game.play.clearRule.Line.clearLines
 import mu.nu.nullpo.util.CustomProperties
@@ -98,31 +99,37 @@ class Field {
 	/** 見えない部分のLine clear flag */
 	private var lineflagHidden = MutableList(hiddenHeight) {false}
 
+	val lineFlags
+		get() = (-hiddenHeight..<heightWithoutHurryupFloor).associate {
+			it to getLineFlag(it)
+		}
+
 	/** HURRY UP地面のcount */
 	var hurryUpFloorLines = 0; private set
 
-	/** Number of total blocks above minimum required in cint clears */
+	/** Number of total blocks exceeds required in last color clear */
 	var colorClearExtraCount = 0
 
-	/** Number of different colors in simultaneous cint clears */
+	/** Number of different colors in simultaneous color clears */
 	var colorsCleared = 0; private set
 
-	/** Number of gems cleared in last cint or line cint clear */
+	/** Number of gems cleared in last color or line color clear */
 	var gemsCleared = 0; private set
 
-	/** Number of garbage blocks cleared in last cint clear */
+	/** Number of garbage blocks cleared in last color clear */
 	var garbageCleared = 0; private set
 
-	/** List of colors of lines cleared in most recent line cint clear */
+	/** List of colors of lines cleared in most recent line color clear */
 	var lineColorsCleared = emptyList<Int>()
 
 	/** List of last rows cleared in most recent horizontal line clear. */
-	var lastLinesCleared = emptyList<List<Block?>>(); private set
-	var lastLinesY = emptySet<Set<Int>>(); private set
+	var lastClearResult = ClearResult(0,emptyMap())
+	val lastLinesCleared get()=lastClearResult.blocksCleared
+	val lastLinesY get() = lastClearResult.linesYfolded
 	val lastLinesHeight get() = lastLinesY.map {it.size}
 
-	val lastLinesTop get() = lastLinesY.flatten().minOrNull()?:height
-	val lastLinesBottom get() = lastLinesY.flatten().maxOrNull()?:-hiddenHeight
+	val lastLinesTop get() = lastClearResult.linesY.minOrNull()?:height
+	val lastLinesBottom get() = lastClearResult.linesY.maxOrNull()?:-hiddenHeight
 
 	var lastLinesSplited = false; private set
 
@@ -135,6 +142,8 @@ class Field {
 	var explodWidth = 0
 	var explodHeight = 0
 
+	/** Frozen / Line Lock */
+	var lockedLines = emptySet<Int>()
 	/** 消えるLines countを数える
 	 * @return Lines count
 	 */
@@ -254,10 +263,10 @@ class Field {
 	 */
 	// Put an empty block if the original block was in the last
 	// commit to the field.
-	val lastLinesAsTGMAttack:List<List<Block?>>
-		get() = lastLinesCleared.map {y ->
-			y.map {it?.takeUnless {it.getAttribute(ATTRIBUTE.LAST_COMMIT)}}
-		}
+	val lastLinesAsTGMAttack
+		get() = lastLinesCleared.map {(y,r) ->
+			y to r.map {(x, b) -> x to if(b?.getAttribute(ATTRIBUTE.LAST_COMMIT)!=false) null else b}.toMap()
+		}.toMap()
 
 	/** 裏段位を取得 (from NullpoMino Unofficial Expansion build 091309)
 	 * @return 裏段位
@@ -348,9 +357,7 @@ class Field {
 		colorClearExtraCount = 0
 		colorsCleared = 0
 		gemsCleared = 0
-		lineColorsCleared = emptyList()
-		lastLinesCleared = emptyList()
-		lastLinesY = emptySet()
+		lastClearResult = ClearResult(0,emptyMap())
 
 		lastLinesSplited = false
 		explodWidth = 0
@@ -376,8 +383,6 @@ class Field {
 			o.gemsCleared = 0
 			gemsCleared = o.gemsCleared
 			lineColorsCleared = o.lineColorsCleared.toList()
-			lastLinesCleared = o.lastLinesCleared.toList()
-			lastLinesY = o.lastLinesY.toSet()
 			lastLinesSplited = o.lastLinesSplited
 
 			explodHeight = o.explodHeight
@@ -435,6 +440,7 @@ class Field {
 	 */
 	fun delBlock(x:Int, y:Int):Block? = if(getCoordVaild(x, y)) try {
 		(getBlock(x, y))?.let {
+			it.reset(true)
 			if(y<0) blockHidden[y*-1-1][x] = null
 			else blockField[y][x] = null
 			it
@@ -464,7 +470,7 @@ class Field {
 	fun delBlocks(blocks:Map<Int, Map<Int, Block>>) =
 		blocks.map {(y, row) -> y to row.mapNotNull {(x, _) -> delBlock(x, y)?.let {x to it}}.associate {it}}.associate {it}
 	/** [x],[y]座標にあるBlock colorを取得
-	 * @param gemSame If true, a gem block will return the cint of the
+	 * @param gemSame If true, a gem block will return the color of the
 	 * corresponding normal block.
 	 * @return 指定した座標にあるBlock cint (失敗したらBLOCK_COLOR_INVALID）
 	 */
@@ -865,9 +871,8 @@ class Field {
 			val rootBlk = getBlock(j, i)
 			var squareCheck = false
 
-			/* id is the cint of the top-left square: if it is a
-			 * monosquare, every block in the 4x4 area will have this
-			 * cint. */
+			/* id is the cint of the top-left square:
+			 if it is a monosquare, every block in the 4x4 area will have this color. */
 			var id = Block.COLOR_NONE
 			if(!(rootBlk==null||rootBlk.isEmpty)) id = rootBlk.cint
 
@@ -887,7 +892,7 @@ class Field {
 							/* Reasons why the entire area would not be a monosquare:
 							 this block does not exist, it is part of another square,
 							 it has been broken by line clears, is a garbage block,
-								is not the same cint as id, or has connections outside the area. */
+								is not the same color as id, or has connections outside the area. */
 							squareCheck = false
 							break
 						}
@@ -920,7 +925,7 @@ class Field {
 				for(k in 0..3) {
 					for(l in 0..3) {
 						val blk = getBlock(j+l, i+k)
-						// See above, but without the cint checking.
+						// See above, but without the color checking.
 						if(blk==null||blk.isEmpty||blk.isGoldSquareBlock||blk.isSilverSquareBlock||
 							blk.getAttribute(ATTRIBUTE.BROKEN)||blk.getAttribute(ATTRIBUTE.GARBAGE)||
 							l==0&&blk.getAttribute(ATTRIBUTE.CONNECT_LEFT)||l==3&&blk.getAttribute(ATTRIBUTE.CONNECT_RIGHT)||
@@ -1162,7 +1167,7 @@ class Field {
 	 */
 	@JvmOverloads
 	fun stringToRow(str:String, skin:Int = 0, isGarbage:Boolean = false, isWall:Boolean = false):Array<Block?> =
-		(0..<minOf(width,str.length)).map {j ->
+		(0..<minOf(width, str.length)).map {j ->
 			/* NullNoname's original approach from the old stringToField:
 				 If a character outside the row string is referenced, default to an empty block by ignoring the exception. */
 			try {

@@ -36,6 +36,8 @@ import mu.nu.nullpo.game.component.LevelData
 import mu.nu.nullpo.game.component.Piece.Companion.createQueueFromIntStr
 import mu.nu.nullpo.game.component.SpeedParam
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
+import mu.nu.nullpo.game.event.Leaderboard
+import mu.nu.nullpo.game.event.Rankable
 import mu.nu.nullpo.game.event.ScoreEvent
 import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.game.subsystem.mode.menu.*
@@ -80,18 +82,9 @@ class RetroModern:AbstractMode() {
 	private var rankingRank = 0
 
 	/** Ranking records */
-	private val rankingScore:List<MutableList<Long>> = List(GAMETYPE_MAX) {MutableList(rankingMax) {0L}}
-	private val rankingLevel:List<MutableList<Int>> = List(GAMETYPE_MAX) {MutableList(rankingMax) {0}}
-	private val rankingLines:List<MutableList<Int>> = List(GAMETYPE_MAX) {MutableList(rankingMax) {0}}
-	private val rankingTime:List<MutableList<Int>> = List(GAMETYPE_MAX) {MutableList(rankingMax) {0}}
-
-	override val propRank
-		get() = rankMapOf(
-			rankingScore.mapIndexed {a, x -> "$a.score" to x}+
-				rankingLines.mapIndexed {a, x -> "$a.lines" to x}+
-				rankingLevel.mapIndexed {a, x -> "$a.level" to x}+
-				rankingTime.mapIndexed {a, x -> "$a.time" to x})
-
+	override val ranking = List(GAMETYPE_MAX) {
+		Leaderboard(rankingMax, kotlinx.serialization.serializer<List<Rankable.ScoreRow>>()){Rankable.ScoreRow()}
+	}
 	/** Returns the name of this mode */
 	override val name = "Retro Modern.S"
 
@@ -108,10 +101,6 @@ class RetroModern:AbstractMode() {
 		lineCount = 0
 
 		rankingRank = -1
-		rankingScore.forEach {it.fill(0)}
-		rankingLevel.forEach {it.fill(0)}
-		rankingLines.forEach {it.fill(0)}
-		rankingTime.forEach {it.fill(-1)}
 		engine.twistEnable = false
 		engine.b2bEnable = false
 		engine.splitB2B = false
@@ -226,12 +215,12 @@ class RetroModern:AbstractMode() {
 				val topY = if(receiver.nextDisplayType==2) 6 else 4
 				receiver.drawScore(engine, 2, topY-1, "SCORE LINE LV TIME", BASE, color = COLOR.BLUE)
 
-				for(i in 0..<rankingMax) {
+				ranking[gameType].forEachIndexed {i, it ->
 					receiver.drawScore(engine, 0, topY+i, "%2d".format(i+1), GRADE, COLOR.YELLOW)
-					receiver.drawScore(engine, 2, topY+i, "${rankingScore[gameType][i]}", NUM, i==rankingRank)
-					receiver.drawScore(engine, 8.8f, topY+i, "%3d".format(rankingLines[gameType][i]), NUM, i==rankingRank)
-					receiver.drawScore(engine, 13, topY+i, "%2d".format(rankingLevel[gameType][i]), NUM, i==rankingRank)
-					receiver.drawScore(engine, 15, topY+i, rankingTime[gameType][i].toTimeStr, NUM, i==rankingRank)
+					receiver.drawScore(engine, 2, topY+i, "${it.sc}", NUM, i==rankingRank)
+					receiver.drawScore(engine, 8.8f, topY+i, "%3d".format(it.li), NUM, i==rankingRank)
+					receiver.drawScore(engine, 13, topY+i, "%2d".format(it.lv), NUM, i==rankingRank)
+					receiver.drawScore(engine, 15, topY+i, it.ti.toTimeStr, NUM, i==rankingRank)
 				}
 			}
 		} else {
@@ -313,6 +302,7 @@ class RetroModern:AbstractMode() {
 					engine.gameEnded()
 					engine.resetStatc()
 					owner.bgMan.nextBg = -17
+					engine.statistics.rollClear = 2
 					engine.stat = GameEngine.Status.EXCELLENT
 					if(special) {
 						lastScore = 10000000
@@ -366,8 +356,10 @@ class RetroModern:AbstractMode() {
 		if(lvup) {
 			val newLv = ++engine.statistics.level
 			if(engine.ending==0)
-				if(engine.statistics.lines>=totalNorma) engine.ending = 1
-				else engine.playSE("levelup")
+				if(engine.statistics.lines>=totalNorma) {
+					engine.ending = 1
+					engine.statistics.rollClear = 1
+				} else engine.playSE("levelup")
 			if(newLv!=MAX_LEVEL+1) setSpeed(engine)
 			if(newLv<levelBG.size-1) owner.bgMan.nextBg = levelBG[newLv]
 			norm = 0
@@ -547,50 +539,11 @@ class RetroModern:AbstractMode() {
 
 		// Checks/Updates the ranking
 		if(!owner.replayMode&&!big&&engine.ai==null) {
-			updateRanking(
-				engine.statistics.score,
-				engine.statistics.level,
-				engine.statistics.lines,
-				engine.statistics.time,
-				gameType
-			)
+			rankingRank = ranking[gameType].add(Rankable.ScoreRow(engine.statistics))
 
 			if(rankingRank!=-1) return true
 		}
 		return false
-	}
-
-	/** Update the ranking */
-	private fun updateRanking(sc:Long, lv:Int, li:Int, time:Int, type:Int) {
-		rankingRank = checkRanking(sc, lv, li, time, type)
-
-		if(rankingRank!=-1) {
-			// Shift the old records
-			for(i in rankingMax-1 downTo rankingRank+1) {
-				rankingScore[type][i] = rankingScore[type][i-1]
-				rankingLevel[type][i] = rankingLevel[type][i-1]
-				rankingLines[type][i] = rankingLines[type][i-1]
-				rankingTime[type][i] = rankingTime[type][i-1]
-			}
-
-			// Insert a new record
-			rankingScore[type][rankingRank] = sc
-			rankingLevel[type][rankingRank] = lv
-			rankingLines[type][rankingRank] = li
-			rankingTime[type][rankingRank] = time
-		}
-	}
-
-	/** This function will check the ranking and returns which place you are.
-	 * (-1: Out of rank) */
-	private fun checkRanking(sc:Long, lv:Int, li:Int, time:Int, type:Int):Int {
-		for(i in 0..<rankingMax)
-			if(sc>rankingScore[type][i]) return i
-			else if(sc==rankingScore[type][i]&&lv>rankingLevel[type][i]) return i
-			else if(sc==rankingScore[type][i]&&lv==rankingLevel[type][i]&&li>rankingLines[type][i]) return i
-			else if(sc==rankingScore[type][i]&&li==rankingLines[type][i]&&time<rankingTime[type][i]) return i
-
-		return -1
 	}
 
 	companion object {

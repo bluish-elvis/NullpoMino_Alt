@@ -30,7 +30,6 @@
  */
 package mu.nu.nullpo.game.subsystem.mode
 
-import kotlinx.serialization.serializer
 import mu.nu.nullpo.game.component.BGM
 import mu.nu.nullpo.game.component.Block
 import mu.nu.nullpo.game.component.Controller
@@ -111,16 +110,8 @@ class GrandM1:AbstractGrand() {
 	/** Current round's ranking position */
 	private var rankingRank = 0
 
-	override val ranking = Leaderboard(rankingMax, serializer<List<Rankable.GrandRow>>())
-	/** Rankings' 段位 */
-	private val rankingGrade = MutableList(rankingMax) {0}
-
-	/** Rankings' level */
-	private val rankingLevel = MutableList(rankingMax) {0}
-
-	/** Rankings' times */
-	private val rankingTime = MutableList(rankingMax) {-1}
-
+	override val ranking = listOf(
+		Leaderboard(rankingMax, kotlinx.serialization.serializer<List<Rankable.GrandRow>>()){Rankable.GrandRow()})
 	/* Mode name */
 	override val name = "Grand Marathon"
 	override val gameIntensity = 1
@@ -128,9 +119,7 @@ class GrandM1:AbstractGrand() {
 	/* Initialization */
 	override val menu = MenuList("grademania1", itemGhost, itemAlert, itemST, itemLevel, item20g, itemBig)
 	override val propRank
-		get() = rankMapOf(
-			"grade" to rankingGrade, "level" to rankingLevel, "time" to rankingTime, "section.time" to bestSectionTime
-		)
+		get() = rankMapOf("section.time" to bestSectionTime, "section.score" to bestSectionScore)
 
 	override fun playerInit(engine:GameEngine) {
 		super.playerInit(engine)
@@ -150,11 +139,8 @@ class GrandM1:AbstractGrand() {
 		decTemp = 0
 
 		rankingRank = -1
-		rankingGrade.fill(0)
-		rankingLevel.fill(0)
-		rankingTime.fill(-1)
-		bestSectionScore.fill(0)
 		bestSectionTime.fill(DEFAULT_SECTION_TIME)
+		bestSectionScore.fill(0)
 
 		engine.twistEnable = false
 		engine.b2bEnable = true
@@ -298,26 +284,26 @@ class GrandM1:AbstractGrand() {
 					// Rankings
 					receiver.drawScore(engine, 0, 2, "GRADE TIME LEVEL", BASE, COLOR.BLUE)
 
-					ranking.forEachIndexed {i, it ->
+					ranking[0].forEachIndexed {i, it ->
 						receiver.drawScore(
 							engine, 0, 3+i, "%2d".format(i+1), GRADE,
 							if(rankingRank==i) COLOR.RAINBOW else COLOR.YELLOW
 						)
-						var gc = if(i==rankingRank)
-							if(engine.playerID%2==0) COLOR.YELLOW else COLOR.ORANGE
-						else COLOR.WHITE
 						val gr = it.grade
-
-						if(gr>=18) {
+						val gc = if(i==rankingRank)
+							if(engine.playerID%2==0) COLOR.YELLOW else COLOR.ORANGE
+						else if(gr>=18) {
 							var gmP = 0
 							for(l in 1..<tablePier21GradeTime.size)
-								if(rankingTime[i]<tablePier21GradeTime[l]) gmP = l
-							gc = tablePier21GradeColor[gmP]
-						}
+								if(it.ti<tablePier21GradeTime[l]) gmP = l
+							tablePier21GradeColor[gmP]
+						} else if(it.clear>0) COLOR.GREEN else COLOR.WHITE
+
+
 						if(gr>=0&&gr<tableGradeName.size)
 							receiver.drawScore(engine, 2, 3+i, tableGradeName[gr], GRADE, gc)
-						receiver.drawScore(engine, 5, 3+i, it.time.toTimeStr, NUM, i==rankingRank)
-						receiver.drawScore(engine, 12, 3+i, "%03d".format(it.level), NUM, i==rankingRank)
+						receiver.drawScore(engine, 5, 3+i, it.ti.toTimeStr, NUM, i==rankingRank)
+						receiver.drawScore(engine, 12, 3+i, "%03d".format(it.lv), NUM, i==rankingRank)
 					}
 
 					receiver.drawScore(engine, 0, 17, "F:VIEW SECTION TIME", BASE, COLOR.GREEN)
@@ -337,7 +323,7 @@ class GrandM1:AbstractGrand() {
 					}
 
 					receiver.drawScore(engine, 0, 14, "TOTAL", BASE, color = COLOR.BLUE)
-					receiver.drawScore(engine, 0, 15, totalTime.toTimeStr, NUM, 2f)
+					receiver.drawScore(engine, 0, 15, totalTime.toTimeStr, NUM_T)
 					receiver.drawScore(
 						engine, if(receiver.nextDisplayType==2) 0 else 12, if(receiver.nextDisplayType==2) 18 else 14,
 						"AVERAGE", BASE, color = COLOR.BLUE
@@ -420,7 +406,7 @@ class GrandM1:AbstractGrand() {
 					if(x) 8 else 12,
 					if(x) 12 else 15,
 					(engine.statistics.time/(sectionsDone+(engine.ending==0).toInt())).toTimeStr,
-					NUM, scale = 2f
+					NUM_T
 				)
 			}
 			// medal
@@ -496,10 +482,12 @@ class GrandM1:AbstractGrand() {
 					owner.musMan.bgm = BGM.Ending(0)
 
 					engine.ending = 2
+					engine.statistics.rollClear = 2
 				} else {
 					engine.playSE("applause4")
 					engine.gameEnded()
 					engine.ending = 1
+					engine.statistics.rollClear = 1
 				}
 			} else if(engine.statistics.level>=nextSecLv) {
 				// Next Section
@@ -699,52 +687,13 @@ class GrandM1:AbstractGrand() {
 		owner.statsProp.setProperty("decoration", decoration)
 		// Update rankings
 		if(!owner.replayMode&&startLevel==0&&!always20g&&!big&&engine.ai==null) {
-			updateRanking(grade, engine.statistics.level, lastGradeTime)
-			rankingRank =
-				ranking.add(Rankable.GrandRow(grade, engine.statistics.apply {time = lastGradeTime}, engine.ending, medals.copy()))
+			rankingRank = ranking[0].add(
+				Rankable.GrandRow(grade, engine.statistics.apply {time = lastGradeTime}, medals.copy()))
 			if(sectionAnyNewRecord) updateBestSectionTime()
 
 			if(rankingRank!=-1||sectionAnyNewRecord) return true
 		}
 		return false
-	}
-
-	/** Update rankings
-	 * @param gr 段位
-	 * @param lv level
-	 * @param time Time
-	 */
-	private fun updateRanking(gr:Int, lv:Int, time:Int) {
-		rankingRank = checkRanking(gr, lv, time)
-
-		if(rankingRank!=-1) {
-			// Shift down ranking entries
-			for(i in rankingMax-1 downTo rankingRank+1) {
-				rankingGrade[i] = rankingGrade[i-1]
-				rankingLevel[i] = rankingLevel[i-1]
-				rankingTime[i] = rankingTime[i-1]
-			}
-
-			// Add new data
-			rankingGrade[rankingRank] = gr
-			rankingLevel[rankingRank] = lv
-			rankingTime[rankingRank] = time
-		}
-	}
-
-	/** Calculate ranking position
-	 * @param gr 段位
-	 * @param lv level
-	 * @param time Time
-	 * @return Position (-1 if unranked)
-	 */
-	private fun checkRanking(gr:Int, lv:Int, time:Int):Int {
-		for(i in 0..<rankingMax)
-			if(gr>rankingGrade[i]) return i
-			else if(gr==rankingGrade[i]&&lv>rankingLevel[i]) return i
-			else if(gr==rankingGrade[i]&&lv==rankingLevel[i]&&time<rankingTime[i]) return i
-
-		return -1
 	}
 
 	/** Update best section time records */
@@ -823,8 +772,16 @@ class GrandM1:AbstractGrand() {
 		private val tablePier21GradeName = listOf("CARBON", "STEEL", "BRONZE", "SILVER", "GOLD", "PLATINUM", "DIAMOND")
 
 		private val tablePier21GradeColor = listOf(
-			COLOR.PURPLE, COLOR.BLUE, COLOR.RED, COLOR.WHITE, COLOR.YELLOW, COLOR.CYAN,
-			COLOR.GREEN
+			COLOR.RED, COLOR.BLUE, COLOR.GREEN, COLOR.WHITE, COLOR.YELLOW, COLOR.CYAN, COLOR.RAINBOW
+		)
+		private val tableGMTier:List<Triple<Int, String, COLOR>> = listOf(
+			Triple(GM_999_TIME_REQUIRE, "CARBON", COLOR.RED),
+			Triple(44800, "STEEL", COLOR.BLUE),
+			Triple(40000, "BRONZE", COLOR.GREEN),
+			Triple(38166, "SILVER", COLOR.WHITE),
+			Triple(36333, "GOLD", COLOR.YELLOW),
+			Triple(34500, "PLATINUM", COLOR.CYAN),
+			Triple(33000, "DIAMOND", COLOR.RAINBOW)
 		)
 
 		/** Default section time */

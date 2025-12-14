@@ -31,7 +31,6 @@
 package mu.nu.nullpo.util
 
 import kotlinx.serialization.ExperimentalSerializationApi
-import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import mu.nu.nullpo.game.component.RuleOptions
 import mu.nu.nullpo.game.subsystem.ai.AIPlayer
@@ -104,18 +103,18 @@ object GeneralUtil {
 	 * @return String for play time
 	 */
 	val Float.toTimeStr
-		get() = if(this<0) "--:--.--" else
+		get() = if(this<=0) "--:--.--" else
 			"%02d:%02d.%02d".format(this.toInt()/3600, this.toInt()/60%60, (this%60*5f/3f).toInt())
 	@Deprecated("Float extended", ReplaceWith("t.toTimeStr", "mu.nu.nullpo.util.GeneralUtil.getTime"))
 	fun getTime(t:Float):String = t.toTimeStr
 
 	val Int.toTimeStr
-		get() = if(this<0) "--:--.--" else
+		get() = if(this<=0) "--:--.--" else
 			"%02d:%02d.%02d".format(this/3600, this/60%60, (this%60*5f/3f).toInt())
 	@Deprecated("Int extended", ReplaceWith("t.toTimeStr", "mu.nu.nullpo.util.GeneralUtil.getTime"))
 	fun getTime(t:Int):String = t.toTimeStr
 	val Long.toTimeStr
-		get() = if(this<0) "--:--.--" else
+		get() = if(this<=0) "--:--.--" else
 			"%02d:%02d.%02d".format(this/3600, this/60%60, (this%60*5f/3f).toInt())
 
 	/** @return true -> ON , false -> OFF */

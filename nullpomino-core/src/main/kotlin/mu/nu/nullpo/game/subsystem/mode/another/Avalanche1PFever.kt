@@ -322,7 +322,7 @@ class Avalanche1PFever:Avalanche1PDummyMode() {
 			receiver.drawScore(engine, 0, 7, "$level", NUM)
 
 			receiver.drawScore(engine, 0, 9, "Time Limit", BASE, BLUE)
-			receiver.drawScore(engine, 0, 10, timeLimit.toTimeStr, NUM, 2f)
+			receiver.drawScore(engine, 0, 10, timeLimit.toTimeStr, NUM_T)
 			if(timeLimitAddDisplay>0) receiver.drawScore(engine, 0, 14, "(+${timeLimitAdd/60} SEC.)", BASE)
 
 			receiver.drawScore(engine, 0, 12, "Played", BASE, BLUE)

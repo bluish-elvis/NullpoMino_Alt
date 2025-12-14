@@ -33,6 +33,8 @@ package mu.nu.nullpo.game.subsystem.mode
 import mu.nu.nullpo.game.component.BGM
 import mu.nu.nullpo.game.component.Controller
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
+import mu.nu.nullpo.game.event.Leaderboard
+import mu.nu.nullpo.game.event.Rankable
 import mu.nu.nullpo.game.event.ScoreEvent
 import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.game.subsystem.mode.menu.BooleanMenuItem
@@ -87,23 +89,18 @@ class GrandSStealth:AbstractGrand() {
 
 	private var lineInFilter = 0
 
-	/** Grade records */
-	private val rankingGrade = MutableList(rankingMax) {0}
-	/** Level records */
-	private val rankingLevel = MutableList(rankingMax) {0}
-	/** Time records */
-	private val rankingTime = MutableList(rankingMax) {-1}
-	/** Roll-Cleared records */
-	private val rankingRollClear = MutableList(rankingMax) {0}
 	/** Best section time records */
 	private val bestSectionTime = MutableList(sectionMax) {DEFAULT_SECTION_TIME}
 
 	/** Returns the name of this mode */
 	override val name = "Grand Phantom"
 	override val gameIntensity = 3
+
+	override val ranking = listOf(
+		Leaderboard(rankingMax, kotlinx.serialization.serializer<List<Rankable.GrandRow>>())
+	)
 	override val propRank
 		get() = rankMapOf(
-			"grade" to rankingGrade, "level" to rankingLevel, "time" to rankingTime, "rollClear" to rankingRollClear,
 			"section.time" to bestSectionTime
 		)
 	/** This function will be called when the game enters
@@ -126,10 +123,6 @@ class GrandSStealth:AbstractGrand() {
 		showST = true
 
 		rankingRank = -1
-		rankingGrade.fill(0)
-		rankingLevel.fill(0)
-		rankingTime.fill(-1)
-		rankingRollClear.fill(0)
 		bestSectionTime.fill(DEFAULT_SECTION_TIME)
 
 		engine.twistEnable = true
@@ -313,21 +306,21 @@ class GrandSStealth:AbstractGrand() {
 					val topY = if(receiver.nextDisplayType==2) 5 else 3
 					receiver.drawScore(engine, 0, topY-1, "GRADE LV TIME", BASE, COLOR.PURPLE)
 
-					for(i in 0..<rankingMax) {
+					ranking[0].forEachIndexed {i, it ->
 
 						receiver.drawScore(
 							engine, 0, topY+i, "%2d".format(i+1), GRADE,
 							if(rankingRank==i) COLOR.RAINBOW else COLOR.YELLOW
 						)
-						if(rankingGrade[i]>=0&&rankingGrade[i]<tableGradeName.size)
+						if(it.grade in 0..<tableGradeName.size)
 							receiver.drawScore(
-								engine, 3, topY+i, tableGradeName[rankingGrade[i]],
+								engine, 3, topY+i, tableGradeName[it.grade],
 								BASE, when {
-									rankingRollClear[i]==1 -> COLOR.GREEN; rankingRollClear[i]==2 -> COLOR.ORANGE; else -> COLOR.WHITE
+									it.clear==1 -> COLOR.GREEN; it.clear==2 -> COLOR.ORANGE; else -> COLOR.WHITE
 								}
 							)
-						receiver.drawScore(engine, 5, topY+i, "%03d".format(rankingLevel[i]), NUM, i==rankingRank)
-						receiver.drawScore(engine, 8, topY+i, rankingTime[i].toTimeStr, NUM, i==rankingRank)
+						receiver.drawScore(engine, 5, topY+i, "%03d".format(it.lv), NUM, i==rankingRank)
+						receiver.drawScore(engine, 8, topY+i, it.ti.toTimeStr, NUM, i==rankingRank)
 					}
 
 					receiver.drawScore(engine, 0, 17, "F:VIEW SECTION TIME", BASE, COLOR.GREEN)
@@ -344,9 +337,9 @@ class GrandSStealth:AbstractGrand() {
 						tt+bestSectionTime[i]
 					}
 					receiver.drawScore(engine, 0, 17, "TOTAL", BASE, COLOR.PURPLE)
-					receiver.drawScore(engine, 0, 18, totalTime.toTimeStr, NUM, 2f)
+					receiver.drawScore(engine, 0, 18, totalTime.toTimeStr, NUM_T)
 					receiver.drawScore(engine, 9, 17, "AVERAGE", BASE, COLOR.PURPLE)
-					receiver.drawScore(engine, 9, 18, (totalTime/sectionMax).toTimeStr, NUM, 2f)
+					receiver.drawScore(engine, 9, 18, (totalTime/sectionMax).toTimeStr, NUM_T)
 
 					receiver.drawScore(engine, 0, 17, "F:VIEW RANKING", BASE, COLOR.GREEN)
 				}
@@ -365,7 +358,7 @@ class GrandSStealth:AbstractGrand() {
 			receiver.drawScore(engine, 1, 12, "%3d".format(nextSecLv), NUM)
 
 			receiver.drawScore(engine, 0, 14, "Time", BASE, COLOR.PURPLE)
-			receiver.drawScore(engine, 0, 15, engine.statistics.time.toTimeStr, NUM, 2f)
+			receiver.drawScore(engine, 0, 15, engine.statistics.time.toTimeStr, NUM_T)
 
 			if(engine.gameActive&&engine.ending==2) {
 				val time = maxOf(0, ROLLTIMELIMIT-rollTime)
@@ -400,7 +393,7 @@ class GrandSStealth:AbstractGrand() {
 					)
 				}
 				receiver.drawScore(engine, x2, 17, "AVERAGE", BASE, COLOR.PURPLE)
-				receiver.drawScore(engine, x2, 18, (engine.statistics.time/(sectionsDone+1)).toTimeStr, NUM, 2f)
+				receiver.drawScore(engine, x2, 18, (engine.statistics.time/(sectionsDone+1)).toTimeStr, NUM_T)
 			}
 		}
 	}
@@ -651,46 +644,12 @@ class GrandSStealth:AbstractGrand() {
 
 		if(!owner.replayMode&&startLevel==0&&!big&&engine.ai==null) {
 //			owner.statsProp.setProperty("decoration", decoration)
-			updateRanking(grade, engine.statistics.level, engine.statistics.time, rollClear)
+			rankingRank = ranking[0].add(Rankable.GrandRow(grade, engine.statistics, medals.copy()))
 			if(medalST==3) updateBestSectionTime()
 
 			if(rankingRank!=-1||medalST==3) return true
 		}
 		return false
-	}
-
-	/** Update the ranking */
-	private fun updateRanking(gr:Int, lv:Int, time:Int, clear:Int) {
-		rankingRank = checkRanking(gr, lv, time, clear)
-
-		if(rankingRank!=-1) {
-			for(i in rankingMax-1 downTo rankingRank+1) {
-				rankingGrade[i] = rankingGrade[i-1]
-				rankingLevel[i] = rankingLevel[i-1]
-				rankingTime[i] = rankingTime[i-1]
-				rankingRollClear[i] = rankingRollClear[i-1]
-			}
-
-			rankingGrade[rankingRank] = gr
-			rankingLevel[rankingRank] = lv
-			rankingTime[rankingRank] = time
-			rankingRollClear[rankingRank] = clear
-		}
-	}
-
-	/** This function will check the ranking and returns which place you are.
-	 * (-1: Out of rank) */
-	private fun checkRanking(gr:Int, lv:Int, time:Int, clear:Int):Int {
-		for(i in 0..<rankingMax)
-			if(clear>rankingRollClear[i])
-				return i
-			else if(clear==rankingRollClear[i]&&gr>rankingGrade[i])
-				return i
-			else if(clear==rankingRollClear[i]&&gr==rankingGrade[i]&&lv>rankingLevel[i])
-				return i
-			else if(clear==rankingRollClear[i]&&gr==rankingGrade[i]&&lv==rankingLevel[i]&&time<rankingTime[i]) return i
-
-		return -1
 	}
 
 	/** Updates best section time records */

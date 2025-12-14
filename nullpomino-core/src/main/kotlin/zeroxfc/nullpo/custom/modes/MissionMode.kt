@@ -268,7 +268,7 @@ class MissionMode:MarathonModeBase() {
 			receiver.drawScore(engine, 0, 7, "Level", BASE, COLOR.BLUE)
 			receiver.drawScore(engine, 5, 6, "${engine.statistics.level+1}", NUM, 2f)
 			receiver.drawScore(engine, 0, 9, "Time", BASE, COLOR.BLUE)
-			receiver.drawScore(engine, 0, 10, engine.statistics.time.toTimeStr, NUM, 2f)
+			receiver.drawScore(engine, 0, 10, engine.statistics.time.toTimeStr, NUM_T)
 			receiver.drawScore(engine, 0, 12, "Objective", BASE, COLOR.GREEN)
 			receiver.drawScore(engine, 0, 13, "$missionProgress/$missionGoal", NUM, missionIsComplete)
 			if(!missionIsComplete) drawMissionStrings(engine, currentMissionText, 0, 15, 1.0f)

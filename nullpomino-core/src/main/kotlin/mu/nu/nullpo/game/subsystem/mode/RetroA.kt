@@ -33,6 +33,8 @@ package mu.nu.nullpo.game.subsystem.mode
 import mu.nu.nullpo.game.component.BGM
 import mu.nu.nullpo.game.component.LevelData
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
+import mu.nu.nullpo.game.event.Leaderboard
+import mu.nu.nullpo.game.event.Rankable
 import mu.nu.nullpo.game.event.ScoreEvent
 import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.game.subsystem.mode.menu.*
@@ -87,20 +89,8 @@ class RetroA:AbstractMode() {
 	/** Your place on leaderboard (-1: out of rank) */
 	private var rankingRank = 0
 
-	/** Score records */
-	private val rankingScore = List(RANKING_TYPE) {MutableList(rankingMax) {0L}}
-
-	/** Line records */
-	private val rankingLines = List(RANKING_TYPE) {MutableList(rankingMax) {0}}
-
-	/** Level records */
-	private val rankingLevel = List(RANKING_TYPE) {MutableList(rankingMax) {0}}
-
-	override val propRank
-		get() = rankMapOf(
-			rankingScore.mapIndexed {a, x -> "$a.score" to x}+
-				rankingLines.mapIndexed {a, x -> "$a.lines" to x}+
-				rankingLevel.mapIndexed {a, x -> "$a.level" to x})
+	override val ranking=
+		List(RANKING_TYPE) {Leaderboard(rankingMax,kotlinx.serialization.serializer<List<Rankable.ScoreRow>>())}
 
 	/** Returns the name of this mode */
 	override val name = "Retro Marathon.A"
@@ -118,9 +108,6 @@ class RetroA:AbstractMode() {
 		efficiency = 0f
 
 		rankingRank = -1
-		rankingScore.forEach {it.fill(0)}
-		rankingLines.forEach {it.fill(0)}
-		rankingLevel.forEach {it.fill(0)}
 
 		if(!owner.replayMode) version = CURRENT_VERSION
 		engine.run {
@@ -200,15 +187,13 @@ class RetroA:AbstractMode() {
 			if(!owner.replayMode&&!big&&engine.ai==null) {
 				receiver.drawScore(engine, 3, 3, "SCORE    LINE LV.", BASE, COLOR.BLUE)
 
-				for(i in 0..<rankingMax) {
+				ranking[gameType.ordinal].forEachIndexed { i, it ->
 					receiver.drawScore(
 						engine, 0, 4+i, "%2d".format(i+1), GRADE, if(rankingRank==i) COLOR.RAINBOW else COLOR.YELLOW
 					)
-					receiver.drawScore(engine, 3, 4+i, "${rankingScore[gameType.ordinal][i]}", NUM, i==rankingRank)
-					receiver.drawScore(engine, 12, 4+i, "${rankingLines[gameType.ordinal][i]}", NUM, i==rankingRank)
-					receiver.drawScore(
-						engine, 17, 4+i, "%02d".format(rankingLevel[gameType.ordinal][i]), NUM, i==rankingRank
-					)
+					receiver.drawScore(engine, 3, 4+i, "${it.sc}", NUM, i==rankingRank)
+					receiver.drawScore(engine, 12, 4+i, "${it.li}", NUM, i==rankingRank)
+					receiver.drawScore(engine, 17, 4+i, "%02d".format(it.lv), NUM, i==rankingRank)
 				}
 			}
 		} else {
@@ -225,7 +210,7 @@ class RetroA:AbstractMode() {
 			receiver.drawScore(engine, 0, 10, "%02d".format(engine.statistics.level), BASE)
 
 			receiver.drawScore(engine, 0, 12, "Time", BASE, COLOR.BLUE)
-			receiver.drawScore(engine, 0, 13, engine.statistics.time.toTimeStr, NUM, 2f)
+			receiver.drawScore(engine, 0, 13, engine.statistics.time.toTimeStr, NUM_T)
 		}
 	}
 
@@ -329,61 +314,17 @@ class RetroA:AbstractMode() {
 		drawResultRank(engine, receiver, 14, COLOR.BLUE, rankingRank)
 	}
 
-	/** This function will be called when the replay data is going to be
-	 * saved */
+	/** This function will be called when the replay data is going to be saved */
 	override fun saveReplay(engine:GameEngine, prop:CustomProperties):Boolean {
 		saveSetting(engine, prop)
 
 		// Checks/Updates the ranking
 		if(!owner.replayMode&&!big&&engine.ai==null) {
-			updateRanking(engine.statistics.score, loons, engine.statistics.level, gameType)
-
+//			updateRanking(engine.statistics.score, loons, engine.statistics.level, gameType)
+			rankingRank=ranking[gameType.ordinal].add(Rankable.ScoreRow(engine.statistics))
 			if(rankingRank!=-1) return true
 		}
 		return false
-	}
-
-	/** Update the ranking
-	 * @param sc Score
-	 * @param li Lines
-	 * @param lv Level
-	 * @param type Game type
-	 */
-	private fun updateRanking(sc:Long, li:Int, lv:Int, type:GAMETYPE) {
-		rankingRank = checkRanking(sc, li, lv, type)
-		val t = type.ordinal
-		if(rankingRank!=-1) {
-			// Shift the ranking data
-			for(i in rankingMax-1 downTo rankingRank+1) {
-				rankingScore[t][i] = rankingScore[t][i-1]
-				rankingLines[t][i] = rankingLines[t][i-1]
-				rankingLevel[t][i] = rankingLevel[t][i-1]
-			}
-
-			// Insert a new data
-			rankingScore[t][rankingRank] = sc
-			rankingLines[t][rankingRank] = li
-			rankingLevel[t][rankingRank] = lv
-		}
-	}
-
-	/** This function will check the ranking and returns which place you are.
-	 * (-1: Out of rank)
-	 * @param sc Score
-	 * @param li Lines
-	 * @param lv Level
-	 * @return Place (First place is 0. -1 is Out of Rank)
-	 */
-	private fun checkRanking(sc:Long, li:Int, lv:Int, type:GAMETYPE):Int {
-		val t = type.ordinal
-		for(i in 0..<rankingMax)
-			if(sc>rankingScore[t][i])
-				return i
-			else if(sc==rankingScore[t][i]&&li>rankingLines[t][i])
-				return i
-			else if(sc==rankingScore[t][i]&&li==rankingLines[t][i]&&lv<rankingLevel[t][i]) return i
-
-		return -1
 	}
 
 	companion object {

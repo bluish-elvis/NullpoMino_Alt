@@ -313,7 +313,7 @@ class GrandRoads:NetDummyMode() {
 			receiver.drawScore(engine, 0, 8, levelTimer.toTimeStr, NUM, levelTimer in 1..<600&&levelTimer%4==0, 2f)
 
 			receiver.drawScore(engine, 0, 10, "TOTAL TIME", BASE, COLOR.BLUE)
-			receiver.drawScore(engine, 0, 11, engine.statistics.time.toTimeStr, NUM, 2f)
+			receiver.drawScore(engine, 0, 11, engine.statistics.time.toTimeStr, NUM_T)
 
 			// Remaining ending time
 			if(engine.gameActive&&engine.ending==2&&engine.staffrollEnable) {
@@ -341,7 +341,7 @@ class GrandRoads:NetDummyMode() {
 					i++
 				}
 				receiver.drawScore(engine, 0, 13, "AVERAGE", BASE, COLOR.BLUE)
-				receiver.drawScore(engine, 0, 14, (engine.statistics.time/(sectionsDone+1)).toTimeStr, NUM, 2f)
+				receiver.drawScore(engine, 0, 14, (engine.statistics.time/(sectionsDone+1)).toTimeStr, NUM_T)
 			}
 		}
 		super.renderLast(engine)
@@ -602,6 +602,27 @@ class GrandRoads:NetDummyMode() {
 	 * @param clear Game completed flag
 	 */
 	private fun updateRanking(lf:Int, ln:Int, time:Int, type:Int, clear:Int) {
+
+		/** This function will check the ranking and returns which place you are.
+		 * (-1: Out of rank)
+		 * @param lf Lifes
+		 * @param ln Lines
+		 * @param time Time
+		 * @param type Game type
+		 * @param clear Game completed flag
+		 * @return Place (First place is 0. -1 is Out of Rank)
+		 */
+		fun checkRanking(lf:Int, ln:Int, time:Int, type:Int, clear:Int):Int {
+			for(i in 0..<rankingMax)
+				if(clear>rankingRollClear[type][i]) return i
+				else if(clear==rankingRollClear[type][i]&&ln>rankingLines[type][i]) return i
+				else if(clear==rankingRollClear[type][i]&&ln==rankingLines[type][i]&&lf>rankingLives[type][i]) return i
+				else if(clear==rankingRollClear[type][i]&&ln==rankingLines[type][i]&&lf==rankingLives[type][i]&&time<rankingTime[type][i])
+					return i
+
+			return -1
+		}
+
 		rankingRank = checkRanking(lf, ln, time, type, clear)
 
 		if(rankingRank!=-1) {
@@ -618,27 +639,6 @@ class GrandRoads:NetDummyMode() {
 			rankingRollClear[type][rankingRank] = clear
 		}
 	}
-
-	/** This function will check the ranking and returns which place you are.
-	 * (-1: Out of rank)
-	 * @param lf Lifes
-	 * @param ln Lines
-	 * @param time Time
-	 * @param type Game type
-	 * @param clear Game completed flag
-	 * @return Place (First place is 0. -1 is Out of Rank)
-	 */
-	private fun checkRanking(lf:Int, ln:Int, time:Int, type:Int, clear:Int):Int {
-		for(i in 0..<rankingMax)
-			if(clear>rankingRollClear[type][i]) return i
-			else if(clear==rankingRollClear[type][i]&&ln>rankingLines[type][i]) return i
-			else if(clear==rankingRollClear[type][i]&&ln==rankingLines[type][i]&&lf>rankingLives[type][i]) return i
-			else if(clear==rankingRollClear[type][i]&&ln==rankingLines[type][i]&&lf==rankingLives[type][i]&&time<rankingTime[type][i])
-				return i
-
-		return -1
-	}
-
 	/** NET: Send various in-game stats of [engine] */
 	override fun netSendStats(engine:GameEngine) {
 		val bg = if(engine.owner.bgMan.fadeSW) engine.owner.bgMan.nextBg else engine.owner.bgMan.bg

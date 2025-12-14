@@ -34,6 +34,7 @@ import kotlinx.serialization.Serializable
 import mu.nu.nullpo.util.CustomProperties
 
 /** リプレイで使用する button input dataのクラス */
+@Suppress("EmptyRange")
 @Serializable
 data class ReplayData(
 	/** Button input data */

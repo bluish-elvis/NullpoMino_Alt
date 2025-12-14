@@ -74,7 +74,7 @@ interface GameMode {
 	 * get()= [AbstractMode.rankMapOf] (List<String to Score>)
 	 * @sample zeroxfc.nullpo.custom.modes.MissionMode.propPB  */
 	val propPB:rankMapType
-	val ranking:Leaderboard<*>
+	val ranking:List<Leaderboard<*>>
 
 	/** Initialization of game mode. Executed before the game screen appears.
 	 * @param manager GameManager that owns this mode

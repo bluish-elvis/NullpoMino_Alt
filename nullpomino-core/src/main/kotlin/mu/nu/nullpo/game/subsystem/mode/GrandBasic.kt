@@ -37,6 +37,7 @@ import mu.nu.nullpo.game.component.Controller
 import mu.nu.nullpo.game.component.Statistics
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
 import mu.nu.nullpo.game.event.Leaderboard
+import mu.nu.nullpo.game.event.Rankable
 import mu.nu.nullpo.game.event.ScoreEvent
 import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.game.subsystem.mode.menu.BooleanMenuItem
@@ -102,18 +103,20 @@ class GrandBasic:AbstractGrand() {
 
 	/** Score records */
 	@Serializable
-	data class ScoreData(val hanabi:Int, val st:Statistics, val clear:Int):Comparable<ScoreData> {
-		constructor():this(0, Statistics(), 0)
+	data class ScoreData(val hanabi:Int, override val st:Statistics):Rankable {
+		constructor():this(0, Statistics())
 
 		val score get() = st.score
 		val level get() = st.level
 		val time get() = st.time.let {if(it<0) Int.MAX_VALUE else it}
-		override operator fun compareTo(other:ScoreData):Int =
-			compareValuesBy(this, other, {it.hanabi}, {it.score}, {-it.time}, {it.level})
+		override operator fun compareTo(other:Rankable):Int =
+			if(other is ScoreData)
+				compareValuesBy(this, other, {it.hanabi}, {it.score}, {-it.time}, {it.level})
+			else super.compareTo(other)
 
 	}
 
-	override val ranking = Leaderboard(rankingMax, serializer<List<ScoreData>>())
+	override val ranking = listOf(Leaderboard(rankingMax, serializer<List<ScoreData>>()))
 
 	private val bestSectionScore = MutableList(rankingMax) {0L}
 	private val bestSectionHanabi = MutableList(rankingMax) {0}
@@ -142,7 +145,7 @@ class GrandBasic:AbstractGrand() {
 		sectionScore.fill(0)
 
 		rankingRank = -1
-		ranking.fill(ScoreData())
+		ranking.forEach {it.fill(ScoreData())}
 		bestSectionHanabi.fill(0)
 		bestSectionScore.fill(0)
 		bestSectionTime.fill(DEFAULT_SECTION_TIME)
@@ -253,7 +256,7 @@ class GrandBasic:AbstractGrand() {
 					// Score Leaderboard
 					receiver.drawScore(engine, 0, 2, "HANABI SCORE TIME", BASE, COLOR.BLUE)
 
-					ranking.forEachIndexed {i, (fw, st, _) ->
+					ranking[0].forEachIndexed {i, (fw, st) ->
 						receiver.drawScore(engine, 0, 3+i, "%2d".format(i+1), GRADE, COLOR.YELLOW)
 						receiver.drawScore(engine, 2, 3+i, "$fw", NUM, i==rankingRank)
 						receiver.drawScore(engine, 6, 3+i, "${st.score}", NUM, i==rankingRank)
@@ -293,7 +296,7 @@ class GrandBasic:AbstractGrand() {
 		} else {
 			val g20 = engine.speed.gravity<0&&rollTime%2==0
 			receiver.drawScore(engine, 0, 5, "Score", BASE, COLOR.BLUE)
-			receiver.drawScore(engine, 0, 6, "$scDisp", NUM, g20, 2f)
+			receiver.drawScore(engine, 0, 6, "$scDisp", NUM_T, g20)
 			receiver.drawScore(engine, 5, 4, "$hanabi", NUM, g20||intHanabi>-100, 2f)
 
 			receiver.drawScore(engine, 0, 9, "Level", BASE, COLOR.BLUE)
@@ -305,12 +308,12 @@ class GrandBasic:AbstractGrand() {
 			receiver.drawScore(engine, 1, 12, "300", NUM)
 
 			receiver.drawScore(engine, 0, 14, "Time", BASE, COLOR.BLUE)
-			receiver.drawScore(engine, 0, 15, engine.statistics.time.toTimeStr, NUM, 2f)
+			receiver.drawScore(engine, 0, 15, engine.statistics.time.toTimeStr, NUM_T)
 
 			if(engine.gameActive&&engine.ending==2) {
 				val time = maxOf(0, ROLLTIMELIMIT-rollTime)
 				receiver.drawScore(engine, 0, 17, "ROLL TIME", BASE, COLOR.BLUE)
-				receiver.drawScore(engine, 0, 18, time.toTimeStr, NUM, time>0&&time<10*60, 2f)
+				receiver.drawScore(engine, 0, 18, time.toTimeStr, NUM_T, time>0&&time<10*60)
 			}
 
 			// Section time
@@ -337,7 +340,7 @@ class GrandBasic:AbstractGrand() {
 				receiver.drawScore(engine, x2, 14, "AVERAGE", BASE, COLOR.BLUE)
 				receiver.drawScore(
 					engine, x2, 15, (engine.statistics.time/(sectionsDone+if(engine.ending==0) 1 else 0)).toTimeStr,
-					NUM, 2f
+					NUM_T
 				)
 			}
 		}
@@ -385,6 +388,7 @@ class GrandBasic:AbstractGrand() {
 					engine.statistics.level = 300
 					engine.timerActive = false
 					engine.ending = 2
+					engine.statistics.rollClear = 1
 					halfMinBonus = true
 					halfMinLine = 0
 				}
@@ -454,6 +458,7 @@ class GrandBasic:AbstractGrand() {
 			engine.meterColor = GameEngine.METER_COLOR_LIMIT
 
 			if(rollTime>=ROLLTIMELIMIT) {
+				engine.statistics.rollClear = 2
 				engine.gameEnded()
 				engine.resetStatc()
 				engine.stat = GameEngine.Status.EXCELLENT
@@ -549,7 +554,7 @@ class GrandBasic:AbstractGrand() {
 	override fun saveReplay(engine:GameEngine, prop:CustomProperties):Boolean {
 		if(!owner.replayMode&&startLevel==0&&!always20g&&!big&&engine.ai==null) {
 			owner.statsProp.setProperty("decoration", decoration)
-			rankingRank = ranking.add(ScoreData(hanabi, engine.statistics, engine.ending))
+			rankingRank = ranking[0].add(ScoreData(hanabi, engine.statistics))
 			if(sectionAnyNewRecord) updateBestSectionTime()
 
 			if(rankingRank!=-1||sectionAnyNewRecord) return true

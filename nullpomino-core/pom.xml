@@ -8,13 +8,14 @@
   <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
   <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
   <lwjgl.version>2.9.3</lwjgl.version>
-  <kotlin.version>2.2.20-RC</kotlin.version>
+  <kotlin.version>2.3.0</kotlin.version>
+  <serialization.version>1.9.0</serialization.version>
   <log4j.version>3.0.0-beta2</log4j.version>
-  <java.version>24</java.version>
+  <java.version>25</java.version>
   <maven.compiler.source>${java.version}</maven.compiler.source>
   <maven.compiler.target>${java.version}</maven.compiler.target>
-  <kotlin.compiler.languageVersion>2.2</kotlin.compiler.languageVersion>
-  <kotlin.compiler.apiVersion>2.2</kotlin.compiler.apiVersion>
+  <kotlin.compiler.languageVersion>2.3</kotlin.compiler.languageVersion>
+  <kotlin.compiler.apiVersion>2.3</kotlin.compiler.apiVersion>
   <kotlin.compiler.jvmTarget>${java.version}</kotlin.compiler.jvmTarget>
   <kotlin.compiler.incremental>true</kotlin.compiler.incremental>
  </properties>
@@ -284,13 +285,8 @@
   </dependency>
   <dependency>
    <groupId>org.jetbrains.kotlinx</groupId>
-   <artifactId>kotlinx-serialization-json</artifactId>
-   <version>1.6.3</version>
-  </dependency>
-  <dependency>
-   <groupId>org.jetbrains.kotlin</groupId>
-   <artifactId>kotlin-serialization</artifactId>
-   <version>${kotlin.version}</version>
+   <artifactId>kotlinx-serialization-json-jvm</artifactId>
+   <version>${serialization.version}</version>
   </dependency>
   <dependency>
    <groupId>org.jetbrains.kotlin</groupId>

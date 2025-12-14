@@ -34,6 +34,8 @@ import mu.nu.nullpo.game.component.BGM
 import mu.nu.nullpo.game.component.Block
 import mu.nu.nullpo.game.component.Controller
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
+import mu.nu.nullpo.game.event.Leaderboard
+import mu.nu.nullpo.game.event.Rankable
 import mu.nu.nullpo.game.event.ScoreEvent
 import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.game.subsystem.mode.menu.*
@@ -65,9 +67,6 @@ class GrandS2:AbstractGrand() {
 	/** Roll started flag */
 	private var rollStarted = false
 
-	/** Roll completely cleared flag */
-	private var rollClear = 0
-
 	/** せり上がりまでのBlock count */
 	private var garbageCount = 0
 
@@ -79,6 +78,13 @@ class GrandS2:AbstractGrand() {
 
 	/** Section Time記録表示中ならtrue */
 	private var isShowBestSectionTime = false
+
+	private val itemGoal = StringsMenuItem(
+		"goalType", "GOAL", COLOR.BLUE, 0,
+		tableGoalLevel.map {"$it LEVEL"}
+	)
+	/** Game type  */
+	private var goalType:Int by DelegateMenuItem(itemGoal)
 
 	private val itemLevel = LevelGrandMenuItem(COLOR.BLUE, sectionMax)
 	/** Level at start */
@@ -102,33 +108,28 @@ class GrandS2:AbstractGrand() {
 	/** Current round's ranking position */
 	private var rankingRank = 0
 
-	/** Rankings' 段位 */
-	private val rankingGrade = MutableList(rankingMax) {0}
-
-	/** Rankings' level */
-	private val rankingLevel = MutableList(rankingMax) {0}
-
-	/** Rankings' times */
-	private val rankingTime = MutableList(rankingMax) {-1}
-
-	/** Rankings' Roll completely cleared flag */
-	private val rankingRollClear = MutableList(rankingMax) {0}
-
 	/** Section Time記録 */
-	private val bestSectionTime = MutableList(sectionMax) {tableTimeRegret[minOf(it, tableTimeRegret.lastIndex)]}
+	private val bestSectionTime = List(RANKING_TYPE) {i ->
+		MutableList(tableSectionMax[i]) {
+			tableTimeRegret[minOf(it, tableTimeRegret.lastIndex)]
+		}
+	}
+	override val ranking = List(RANKING_TYPE) {
+		Leaderboard(rankingMax, kotlinx.serialization.serializer<List<Rankable.GrandRow>>())
+	}
+	override val propRank
+		get() = rankMapOf(
+			bestSectionTime.mapIndexed {a, x -> "$a.section.time" to x}
+		)
+	/*override val rankPersMap:Map<String, IntArray>
+		get() = rankMap("grade" to rankingGrade, "level" to rankingLevel, "time" to rankingTime, "rollClear" to rankingRollClear,
+			"section.time" to bestSectionTime, "exam.history" to gradeHistory, "exam.record" to examRecord)*/
 
 	/* Mode name */
 	override val name = "Grand Lightning"
 	override val gameIntensity = 3
 	/* Initialization */
-	override val menu = MenuList("speedmania2", itemLevel, itemQualify, itemAlert, itemST, itemBig)
-
-	override val propRank
-		get() = rankMapOf(
-			"grade" to rankingGrade, "level" to rankingLevel, "time" to rankingTime, "rollClear" to rankingRollClear,
-			"section.time" to bestSectionTime
-		)
-
+	override val menu = MenuList("speedmania2", itemGoal, itemAlert, itemST, itemGrade, itemLevel, itemBig, itemQualify)
 	override fun playerInit(engine:GameEngine) {
 		super.playerInit(engine)
 		grade = 0
@@ -137,18 +138,15 @@ class GrandS2:AbstractGrand() {
 		lastScore = 0
 		rollTime = 0
 		rollStarted = false
-		rollClear = 0
 		garbageCount = 0
 		regretDispFrame = 0
 		secretGrade = 0
 
 		rankingRank = -1
-		rankingGrade.fill(0)
-		rankingLevel.fill(0)
-		rankingTime.fill(-1)
-		rankingRollClear.fill(0)
-		bestSectionTime.forEachIndexed {i, _ ->
-			bestSectionTime[i] = tableTimeRegret[minOf(i, tableTimeRegret.lastIndex)]
+		bestSectionTime.forEachIndexed {x, it ->
+			it.forEachIndexed {i, _ ->
+				bestSectionTime[x][i] = tableTimeRegret[minOf(i, tableTimeRegret.lastIndex)]
+			}
 		}
 
 		engine.twistEnable = true
@@ -186,7 +184,8 @@ class GrandS2:AbstractGrand() {
 	override fun setSpeed(engine:GameEngine) {
 		engine.speed.gravity = -1
 
-		val section = minOf(engine.statistics.level/100, tableARE.size-1)
+		val section = if(engine.statistics.level==tableGoalLevel[goalType]) tableARE.size-1
+		else minOf(engine.statistics.level/100, tableARE.size-2)
 		engine.speed.are = tableARE[section]
 		engine.speed.areLine = tableARELine[section]
 		engine.speed.lineDelay = tableLineDelay[section]
@@ -199,7 +198,7 @@ class GrandS2:AbstractGrand() {
 	 * @param section Section number
 	 */
 	private fun stMedalCheck(engine:GameEngine, section:Int) =
-		stMedalCheck(engine, section, sectionTime[section], bestSectionTime[section])
+		stMedalCheck(engine, section, sectionTime[section], bestSectionTime[goalType][section])
 
 	/* Called at settings screen */
 	override fun onSetting(engine:GameEngine):Boolean {
@@ -247,15 +246,15 @@ class GrandS2:AbstractGrand() {
 					val topY = if(receiver.nextDisplayType==2) 5 else 3
 					receiver.drawScore(engine, 0, topY-1, "GRADE LV TIME", BASE, COLOR.RED)
 
-					for(i in 0..<rankingMax) {
+					ranking[goalType].forEachIndexed {i, it ->
 						receiver.drawScore(engine, 0, topY+i, "%02d".format(i+1), GRADE, COLOR.YELLOW)
 						receiver.drawScore(
-							engine, 2, topY+i, tableGradeName[rankingGrade[i]], GRADE,
-							if(rankingRollClear[i]==1) COLOR.GREEN
-							else if(rankingRollClear[i]==2) COLOR.ORANGE else COLOR.WHITE
+							engine, 2, topY+i, tableGradeName[goalType][it.grade], GRADE,
+							if(it.clear==1) COLOR.GREEN
+							else if(it.clear==2) COLOR.ORANGE else COLOR.WHITE
 						)
-						receiver.drawScore(engine, 5, topY+i, "%03d".format(rankingLevel[i]), NUM, i==rankingRank)
-						receiver.drawScore(engine, 8, topY+i, rankingTime[i].toTimeStr, NUM, i==rankingRank)
+						receiver.drawScore(engine, 5, topY+i, "%03d".format(it.lv), NUM, i==rankingRank)
+						receiver.drawScore(engine, 8, topY+i, it.ti.toTimeStr, NUM, i==rankingRank)
 					}
 
 					receiver.drawScore(engine, 0, 20, "F:VIEW SECTION TIME", BASE, COLOR.GREEN)
@@ -266,17 +265,17 @@ class GrandS2:AbstractGrand() {
 					val totalTime = (0..<sectionMax).fold(0) {tt, i ->
 						val slv = i*100
 						receiver.drawScore(
-							engine, 0, 3+i, "%4d-%4d %s".format(slv, slv+99, bestSectionTime[i].toTimeStr),
+							engine, 0, 3+i, "%4d-%4d %s".format(slv, slv+99, bestSectionTime[goalType][i].toTimeStr),
 							NUM,
 							sectionIsNewRecord[i]
 						)
-						tt+bestSectionTime[i]
+						tt+bestSectionTime[goalType][i]
 					}
 
 					receiver.drawScore(engine, 0, 17, "TOTAL", BASE, COLOR.RED)
-					receiver.drawScore(engine, 0, 18, totalTime.toTimeStr, NUM, 2f)
+					receiver.drawScore(engine, 0, 18, totalTime.toTimeStr, NUM_T)
 					receiver.drawScore(engine, 9, 17, "AVERAGE", BASE, COLOR.RED)
-					receiver.drawScore(engine, 9, 18, (totalTime/sectionMax).toTimeStr, NUM, 2f)
+					receiver.drawScore(engine, 9, 18, (totalTime/sectionMax).toTimeStr, NUM_T)
 
 					receiver.drawScore(engine, 0, 20, "F:VIEW RANKING", BASE, COLOR.GREEN)
 				}
@@ -284,7 +283,7 @@ class GrandS2:AbstractGrand() {
 			if(gradeDisp) {
 				// 段位
 				if(grade>=0&&grade<tableGradeName.size)
-					receiver.drawScore(engine, 0, 1, tableGradeName[grade], GRADE, gradeFlash>0&&gradeFlash%4==0, 2f)
+					receiver.drawScore(engine, 0, 1, tableGradeName[goalType][grade], GRADE, gradeFlash>0&&gradeFlash%4==0, 2f)
 
 				// Score
 				receiver.drawScore(engine, 0, 6, "Score", BASE, COLOR.RED)
@@ -301,7 +300,7 @@ class GrandS2:AbstractGrand() {
 			// Time
 			receiver.drawScore(engine, 0, 14, "Time", BASE, COLOR.RED)
 			if((engine.ending!=2) or (rollTime/10%2==0))
-				receiver.drawScore(engine, 0, 15, engine.statistics.time.toTimeStr, NUM, 2f)
+				receiver.drawScore(engine, 0, 15, engine.statistics.time.toTimeStr, NUM_T)
 
 			// Roll 残り time
 			if(engine.gameActive&&engine.ending==2) {
@@ -348,7 +347,7 @@ class GrandS2:AbstractGrand() {
 				receiver.drawScore(engine, x2, 17, "AVERAGE", BASE, COLOR.RED)
 				receiver.drawScore(
 					engine, x2, 18, (engine.statistics.time/(sectionsDone+(engine.ending==0).toInt())).toTimeStr,
-					NUM, 2f
+					NUM_T
 				)
 			}
 		}
@@ -360,10 +359,10 @@ class GrandS2:AbstractGrand() {
 
 		if(engine.ending==0&&engine.statc[0]==0&&!engine.holdDisable) {
 			// せり上がりカウント
-			if(tableGarbage[engine.statistics.level/100]!=0) garbageCount++
+			if(tableGarbage[goalType][engine.statistics.level/100]!=0) garbageCount++
 
 			// せり上がり
-			if(garbageCount>=tableGarbage[engine.statistics.level/100]&&tableGarbage[engine.statistics.level/100]!=0) {
+			if(garbageCount>=tableGarbage[goalType][engine.statistics.level/100]&&tableGarbage[goalType][engine.statistics.level/100]!=0) {
 				engine.playSE("garbage0")
 				engine.field.addBottomCopyGarbage(
 					engine.blkSkin, 1,
@@ -409,45 +408,22 @@ class GrandS2:AbstractGrand() {
 		if(li>=1&&engine.ending==0) {
 
 			// せり上がりカウント減少
-			if(tableGarbage[engine.statistics.level/100]!=0) garbageCount -= li
+			if(tableGarbage[goalType][engine.statistics.level/100]!=0) garbageCount -= li
 			if(garbageCount<0) garbageCount = 0
 
 			// Level up
 			val levelb = engine.statistics.level
 			val section = levelb/100
-			val isRegret = sectionTime[section]>tableTimeRegret[section]
+			val isRegret = goalType<=0&&sectionTime[section]>tableTimeRegret[minOf(section, tableTimeRegret.lastIndex)]
 			levelUp(engine, li.let {it+maxOf(0, it-2)})
 
-			if(engine.statistics.level>=1300) {
-				// Ending
-				engine.playSE("endingstart")
-				engine.statistics.level = 1300
-				engine.timerActive = false
-				engine.ending = 1
-				rollClear = 1
-
-				sectionsDone++
-				decTemp++
-				// ST medal
-				stMedalCheck(engine, section)
-
-				if(isRegret) {
-					// REGRET判定
-					regretDispFrame = 180
-					engine.playSE("regret")
-				} else {
-					// 段位上昇
-					grade++
-					if(grade>13) grade = 13
-					gradeFlash = 180
-				}
-			} else if(nextSecLv==500&&engine.statistics.level>=500&&qualify>0&&engine.statistics.time>qualify||nextSecLv==1000&&engine.statistics.level>=1000&&qualify>0&&engine.statistics.time>qualify*2) {
+			val nextTorikanLv = tableTorikanLevel[goalType].firstOrNull {it>levelb}?:tableGoalLevel[goalType]
+			if(nextSecLv==nextTorikanLv&&engine.statistics.level>=nextTorikanLv&&
+				qualify>0&&engine.statistics.time>(qualify*nextTorikanLv/500)) {
 				// level500/1000とりカン
 				engine.playSE("endingstart")
 
-				if(nextSecLv==500) engine.statistics.level = 500
-				if(nextSecLv==1000) engine.statistics.level = 1000
-
+				engine.statistics.level = nextTorikanLv
 				engine.gameEnded()
 				engine.staffrollEnable = false
 				engine.ending = 1
@@ -464,8 +440,29 @@ class GrandS2:AbstractGrand() {
 					engine.playSE("regret")
 				} else {
 					// 段位上昇
-					grade++
-					if(grade>13) grade = 13
+					if(grade<tableSectionMax[goalType]) grade++
+					gradeFlash = 180
+				}
+			} else if(engine.statistics.level>=tableGoalLevel[goalType]) {
+				// Ending
+				engine.playSE("endingstart")
+				engine.statistics.level = tableGoalLevel[goalType]
+				engine.timerActive = false
+				engine.ending = 1
+				engine.statistics.rollClear = 1
+
+				sectionsDone++
+				decTemp++
+				// ST medal
+				stMedalCheck(engine, section)
+
+				if(isRegret) {
+					// REGRET判定
+					regretDispFrame = 180
+					engine.playSE("regret")
+				} else {
+					// 段位上昇
+					if(grade<tableSectionMax[goalType]) grade++
 					gradeFlash = 180
 				}
 			} else if(engine.statistics.level>=nextSecLv) {
@@ -491,8 +488,7 @@ class GrandS2:AbstractGrand() {
 					engine.playSE("regret")
 				} else {
 					// 段位上昇
-					grade++
-					if(grade>13) grade = 13
+					if(grade<tableSectionMax[goalType]) grade++
 					gradeFlash = 180
 				}
 			}
@@ -529,19 +525,20 @@ class GrandS2:AbstractGrand() {
 			engine.meterValue = remainRollTime*1f/ROLLTIMELIMIT
 			engine.meterColor = GameEngine.METER_COLOR_LIMIT
 
+			if(goalType>0&&grade>=tableSectionMax[goalType]) {
+				engine.playSE("grade4")
+				grade++
+			}
 			// Roll 終了
 			if(rollTime>=ROLLTIMELIMIT) {
 				secretGrade = engine.field.secretGrade
-				rollClear = 2
+				engine.statistics.rollClear = 2
 				engine.gameEnded()
 				engine.resetStatc()
 				engine.stat = GameEngine.Status.EXCELLENT
 			}
 		} else if(engine.statistics.level==nextSecLv-1)
-			engine.meterColor = if(engine.meterColor==-0x1)
-				-0x10000
-			else
-				-0x1
+			engine.meterColor = if(engine.meterColor==-0x1) -0x10000 else -0x1
 	}
 
 	/* Called at game over */
@@ -573,11 +570,13 @@ class GrandS2:AbstractGrand() {
 
 		when(engine.statc[1]) {
 			0 -> {
-				var gcolor = COLOR.WHITE
-				if(rollClear==1||rollClear==3) gcolor = COLOR.GREEN
-				if(rollClear==2||rollClear==4) gcolor = COLOR.ORANGE
+				val gcolor = when(engine.statistics.rollClear) {
+					1, 3 -> COLOR.GREEN
+					2, 4 -> COLOR.ORANGE
+					else -> COLOR.WHITE
+				}
 				receiver.drawMenu(engine, 0, 2, "GRADE", BASE, COLOR.RED)
-				receiver.drawMenu(engine, 0, 1.66f, tableGradeName[grade], GRADE, gcolor, 2f)
+				receiver.drawMenu(engine, 0, 1.66f, tableGradeName[goalType][grade], GRADE, gcolor, 2f)
 
 				drawResultStats(
 					engine, receiver, 4, COLOR.RED, Statistic.SCORE, Statistic.LINES, Statistic.LEVEL_MANIA, Statistic.TIME
@@ -623,7 +622,7 @@ class GrandS2:AbstractGrand() {
 		owner.musMan.fadeSW = false
 		owner.musMan.bgm = when(engine.ending) {
 			0 -> BGM.Result(0)
-			2 if rollClear>0 -> BGM.Result(3)
+			2 if engine.statistics.rollClear>0 -> BGM.Result(3)
 			else -> BGM.Result(2)
 		}
 		// ページ切り替え
@@ -653,64 +652,18 @@ class GrandS2:AbstractGrand() {
 		// Update rankings
 		if(!owner.replayMode&&startLevel==0&&!big&&engine.ai==null) {
 			owner.statsProp.setProperty("decoration", decoration)
-			updateRanking(grade, engine.statistics.level, engine.statistics.time, rollClear)
-			if(medalST==3) updateBestSectionTime()
+			rankingRank = ranking[goalType].add(Rankable.GrandRow(grade, engine.statistics, medals.copy()))
+			if(medalST==3) updateBestSectionTime(goalType)
 
 			if(rankingRank!=-1||medalST==3) return true
 		}
 		return false
 	}
 
-	/** Update rankings
-	 * @param gr 段位
-	 * @param lv level
-	 * @param time Time
-	 * @param clear Roll クリア flag
-	 */
-	private fun updateRanking(gr:Int, lv:Int, time:Int, clear:Int) {
-		rankingRank = checkRanking(gr, lv, time, clear)
-
-		if(rankingRank!=-1) {
-			// Shift down ranking entries
-			for(i in rankingMax-1 downTo rankingRank+1) {
-				rankingGrade[i] = rankingGrade[i-1]
-				rankingLevel[i] = rankingLevel[i-1]
-				rankingTime[i] = rankingTime[i-1]
-				rankingRollClear[i] = rankingRollClear[i-1]
-			}
-
-			// Add new data
-			rankingGrade[rankingRank] = gr
-			rankingLevel[rankingRank] = lv
-			rankingTime[rankingRank] = time
-			rankingRollClear[rankingRank] = clear
-		}
-	}
-
-	/** Calculate ranking position
-	 * @param gr 段位
-	 * @param lv level
-	 * @param time Time
-	 * @param clear Roll クリア flag
-	 * @return Position (-1 if unranked)
-	 */
-	private fun checkRanking(gr:Int, lv:Int, time:Int, clear:Int):Int {
-		for(i in 0..<rankingMax)
-			if(clear>rankingRollClear[i])
-				return i
-			else if(clear==rankingRollClear[i]&&gr>rankingGrade[i])
-				return i
-			else if(clear==rankingRollClear[i]&&gr==rankingGrade[i]&&lv>rankingLevel[i])
-				return i
-			else if(clear==rankingRollClear[i]&&gr==rankingGrade[i]&&lv==rankingLevel[i]&&time<rankingTime[i]) return i
-
-		return -1
-	}
-
 	/** Update best section time records */
-	private fun updateBestSectionTime() {
+	private fun updateBestSectionTime(type:Int = goalType) {
 		for(i in 0..<sectionMax)
-			if(sectionIsNewRecord[i]) bestSectionTime[i] = sectionTime[i]
+			if(sectionIsNewRecord[i]) bestSectionTime[type][i] = sectionTime[i]
 	}
 
 	companion object {
@@ -723,6 +676,11 @@ class GrandS2:AbstractGrand() {
 		/** Default torikan time for classic rules */
 		private const val DEFAULT_TORIKAN_CLASSIC = 8880
 
+		/** Number of sections */
+		private val tableSectionMax = listOf(13, 20)
+		private val tableGoalLevel = tableSectionMax.map {it*100}
+		private val tableTorikanLevel = listOf(listOf(500, 1000), listOf(1000, 1300, 2000))
+		private val RANKING_TYPE = tableSectionMax.size
 		/** ARE table */
 		private val tableARE = listOf(16, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 2, 2)
 		/** ARE after line clear table */
@@ -735,20 +693,27 @@ class GrandS2:AbstractGrand() {
 		private val tableDAS = listOf(9, 8, 7, 6, 5, 4, 4, 4, 4, 4, 4, 4, 4, 5)
 
 		/** せり上がり間隔 */
-		private val tableGarbage = listOf(50, 33, 27, 25, 21, 18, 15, 12, 9, 7, 0, 0, 0, 0)
+		private val tableGarbage = listOf(listOf(50, 40, 33, 27, 23, 20, 15, 12, 9, 7, 0, 0, 0, 0),
+			listOf(50, 40, 33, 27, 23, 20, 15, 12, 9, 7, 0, 0, 0, 40, 20, 15, 12, 8, 5, 2, 0))
 
 		/** REGRET criteria Time */
 		private val tableTimeRegret =
 			listOf(6000, 5800, 5600, 5400, 5200, 5000, 4750, 4500, 4250, 4000, 3750, 3500, 3250, 3000)
 
-		/** BGM fadeout levels */
-		private val tableBGMFadeout = listOf(485, 685, 985)
 		/** BGM change levels */
-		private val tableBGMChange = listOf(500, 700, 1000)
+		private val tableBGMChange = listOf(500, 700, 1000, 1300)
+		/** BGM fadeout levels */
+		private val tableBGMFadeout = tableBGMChange.map {it-15}
 		private val tableBGM = listOf(BGM.GrandT(2), BGM.GrandT(3), BGM.GrandT(4), BGM.GrandT(5))
 		/** 段位のName */
 		private val tableGradeName =
-			listOf("1", "S1", "S2", "S3", "S4", "S5", "S6", "S7", "S8", "S9", "S10", "S11", "S12", "S13")
+			listOf(
+				listOf("", "S1", "S2", "S3", "S4", "S5", "S6", "S7", "S8", "S9", "S10", "S11", "S12", "S13"),
+				listOf(
+					"", "S1", "S2", "S3", "S4", "S5", "S6", "S7", "S8", "S9",
+					"m", "m1", "m2", "m3", "m4", "m5", "m6", "m7", "m8", "m9", "M", "Gm",
+				),
+			)
 
 		/** 裏段位のName */
 		private val tableSecretGradeName =

@@ -34,12 +34,7 @@ package mu.nu.nullpo.game.event
 import kotlinx.serialization.KSerializer
 import mu.nu.nullpo.util.GeneralUtil
 import org.apache.logging.log4j.LogManager
-import java.io.File
-import java.io.FileInputStream
-import java.io.FileNotFoundException
-import java.io.FileOutputStream
-import java.io.IOException
-import java.io.InputStream
+import java.io.*
 import java.nio.charset.StandardCharsets
 import java.util.zip.GZIPInputStream
 import java.util.zip.GZIPOutputStream
@@ -91,10 +86,11 @@ class Leaderboard<T:Comparable<T>> private constructor(val list:MutableList<T>, 
 	 * @return This Properties data you specified, or null if the file doesn't exist.
 	 */
 	fun load(file:String = filename):List<T>? {
+		filename = file
 		fun load(f:InputStream) {
 			list.clear()
 			list.addAll(GeneralUtil.Json.decodeFromString(serializer, f.bufferedReader().use {it.readText()}))
-			filename = file
+
 		}
 		try {
 			GZIPInputStream(FileInputStream(file)).use {load(it)}

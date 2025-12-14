@@ -75,7 +75,8 @@ abstract class AbstractMode:GameMode {
 	protected fun rankMapOf(vararg array:Pair<String, MutableList<*>>):rankMapType = rankMapOf(listOf(*array))
 
 	open val rankingMax = 13
-	override val ranking:Leaderboard<*> = Leaderboard(this.rankingMax, serializer<List<Int>>())
+	override val ranking:List<Leaderboard<*>> =
+		List(1) {Leaderboard(this.rankingMax, serializer<List<Int>>())}
 
 	protected var menuColor = COLOR.WHITE
 	/*abstract */override val menu = MenuList(id)
@@ -121,7 +122,6 @@ abstract class AbstractMode:GameMode {
 
 	override fun saveSetting(engine:GameEngine, prop:CustomProperties, ruleName:String, playerID:Int) {
 		menu.save(prop, engine, ruleName, if(players<=1) -1 else playerID)
-		owner.saveModeConfig()
 	}
 
 	@Deprecated("Set Parameter from GameEngine", ReplaceWith("saveSetting(prop, engine)"))
@@ -264,6 +264,7 @@ abstract class AbstractMode:GameMode {
 	 * @param ev Cleared Lines Data
 	 */
 	override fun calcScore(engine:GameEngine, ev:ScoreEvent):Int {
+		calcPower(engine, ev, true)
 		val spd = maxOf(0, engine.lockDelay-engine.lockDelayNow)+if(engine.manualLock) 1 else 0
 		val pts = calcScoreBase(engine, ev)
 		val get = calcScoreCombo(

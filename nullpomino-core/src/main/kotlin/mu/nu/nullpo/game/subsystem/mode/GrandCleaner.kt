@@ -97,22 +97,9 @@ class GrandCleaner:AbstractMode() {
 
 	val rankingMode get() = easyPiece+timeTrial*2+queueType*4
 
-	/** Rankings' scores */
-	private val rankingClears = List(RANKING_TYPE) {MutableList(rankingMax) {0}}
-
-	/** Rankings' level counts */
-	private val rankingLevel = List(RANKING_TYPE) {MutableList(rankingMax) {0}}
-	/** Rankings' times */
-	private val rankingTime = List(RANKING_TYPE) {MutableList(rankingMax) {-1}}
-
-	override val propRank
-		get() = rankMapOf(
-			rankingClears.mapIndexed {a, x -> "$a.clears" to x}+rankingClears.mapIndexed {a, x -> "$a.lines" to x}+rankingTime
-				.mapIndexed {a, x -> "$a.time" to x})
-
-	val rankLists = List(RANKING_TYPE) {Leaderboard(rankingMax, serializer<List<ScoreData>>())}
-	override val ranking get() = rankLists[rankingMode]
-
+	//	val rankLists = List(RANKING_TYPE) {Leaderboard(rankingMax, serializer<List<ScoreData>>())}
+//	override val ranking:List<Leaderboard<*>> get() = rankLists[rankingMode]
+	override val ranking = List(RANKING_TYPE) {Leaderboard(rankingMax, serializer<List<ScoreData>>())}
 	private var decoration = 0
 	private var decTemp = 0
 
@@ -133,7 +120,7 @@ class GrandCleaner:AbstractMode() {
 		scgetdisp = 0
 
 		rankingRank = -1
-		ranking.fill(ScoreData())
+		ranking.forEach {it.fill(ScoreData())}
 
 		engine.twistEnable = false
 		engine.b2bEnable = false
@@ -231,7 +218,7 @@ class GrandCleaner:AbstractMode() {
 				receiver.drawScore(engine, 2, topY-1, "CLEAR TIME LEVEL", BASE, COLOR.PINK)
 				val type = queueType
 
-				ranking.forEachIndexed {i, it ->
+				ranking[rankingMode].forEachIndexed {i, it ->
 					receiver.drawScore(
 						engine, 0, topY+i, "%2d".format(i+1), GRADE,
 						when {
@@ -253,7 +240,7 @@ class GrandCleaner:AbstractMode() {
 
 			//  level
 			receiver.drawScore(engine, 0, 11, "Level", BASE, COLOR.PINK)
-			receiver.drawScore(engine, 1, 12, "%3d".format(maxOf(0, engine.statistics.level)), NUM)
+			receiver.drawScore(engine, 1, 12, "%3d".format(maxOf(0, engine.statistics.level)), NUM_T)
 
 			// Time limit
 			receiver.drawScore(
@@ -400,7 +387,7 @@ class GrandCleaner:AbstractMode() {
 	override fun saveReplay(engine:GameEngine, prop:CustomProperties):Boolean {
 		if(!owner.replayMode&&!always20g&&engine.ai==null) {
 			owner.statsProp.setProperty("decoration", decoration)
-			rankingRank = ranking.add(ScoreData(engine.statistics))
+			rankingRank = ranking[rankingMode].add(ScoreData(engine.statistics))
 			if(rankingRank!=-1) return true
 		}
 		return false

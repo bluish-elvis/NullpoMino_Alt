@@ -63,9 +63,6 @@ class GrandZ:AbstractGrand() {
 	/** Remaining frames of flashing grade display */
 	private var gradeFlash = 0
 
-	/** Game completed flag (0=Died before Lv999 1=Died during credits roll
-	 * 2=Survived credits roll */
-	private var rollClear = 0
 
 	/** Secret Grade */
 	private var secretGrade = 0
@@ -342,9 +339,9 @@ class GrandZ:AbstractGrand() {
 						}
 
 					receiver.drawScore(engine, 0, 14, "TOTAL", BASE, COLOR.RED)
-					receiver.drawScore(engine, 0, 15, totalTime.toTimeStr, NUM, 2f)
+					receiver.drawScore(engine, 0, 15, totalTime.toTimeStr, NUM_T)
 					receiver.drawScore(engine, 9, 14, "AVERAGE", BASE, COLOR.RED)
-					receiver.drawScore(engine, 9, 15, (totalTime*1f/sectionMax).toTimeStr, NUM, 2f)
+					receiver.drawScore(engine, 9, 15, (totalTime*1f/sectionMax).toTimeStr, NUM_T)
 
 					receiver.drawScore(engine, 0, 19, "F:VIEW RANKING", BASE, COLOR.ORANGE)
 				}
@@ -357,7 +354,7 @@ class GrandZ:AbstractGrand() {
 			// Time
 			receiver.drawScore(engine, 0, 4, "Time", BASE, color)
 			if((engine.ending!=2) or (rollTime/10%2==0))
-				receiver.drawScore(engine, 0, 5, engine.statistics.time.toTimeStr, NUM, 2f)
+				receiver.drawScore(engine, 0, 5, engine.statistics.time.toTimeStr, NUM_T)
 			// Level
 			receiver.drawScore(engine, 0, 8, "Level", BASE, color)
 			receiver.drawScore(engine, 0, 9, "%3d".format(maxOf(engine.statistics.level, 0)), NUM)
@@ -413,7 +410,7 @@ class GrandZ:AbstractGrand() {
 					)
 				}
 				receiver.drawScore(engine, x2, 17, "AVERAGE", BASE, COLOR.RED)
-				receiver.drawScore(engine, x2, 18, (engine.statistics.time/(sectionsDone+1)).toTimeStr, NUM, 2f)
+				receiver.drawScore(engine, x2, 18, (engine.statistics.time/(sectionsDone+1)).toTimeStr, NUM_T)
 			}
 		}
 	}
@@ -481,7 +478,7 @@ class GrandZ:AbstractGrand() {
 				engine.timerActive = false
 				engine.ending = 2
 				owner.musMan.bgm = BGM.Ending(3)
-				rollClear = 1
+				engine.statistics.rollClear = 1
 
 				if(gametype==1&&(joker>0||engine.statistics.level>1000)) grade = 31
 				else if(engine.lives>=MAX_LIVES[gametype]) grade = 31
@@ -497,7 +494,7 @@ class GrandZ:AbstractGrand() {
 				engine.gameEnded()
 				engine.staffrollEnable = false
 				engine.ending = 1
-				rollClear = if(engine.lives==MAX_LIVES[gametype]) 2 else 1
+				engine.statistics.rollClear = if(engine.lives==MAX_LIVES[gametype]) 2 else 1
 
 				secretGrade = engine.field.secretGrade
 				// Section Timeを記録
@@ -590,7 +587,7 @@ class GrandZ:AbstractGrand() {
 
 		if(engine.statc[1]==0) {
 			if(grade>=1&&grade<tableGradeName.size) {
-				val gcolor = when(rollClear) {
+				val gcolor = when(engine.statistics.rollClear) {
 					1 -> COLOR.GREEN
 					2 -> COLOR.ORANGE
 					else -> COLOR.WHITE
@@ -661,7 +658,7 @@ class GrandZ:AbstractGrand() {
 
 		// Updates leaderboard and best section time records
 		if(!owner.replayMode&&startLevel==0&&!big&&engine.ai==null) {
-			updateRanking(gametype, grade, engine.statistics.level, engine.statistics.time, rollClear)
+			updateRanking(gametype, grade, engine.statistics.level, engine.statistics.time, engine.statistics.rollClear)
 			if(medalST==3) updateBestSectionTime(gametype)
 
 			if(rankingRank!=-1||medalST==3) return true
@@ -676,6 +673,29 @@ class GrandZ:AbstractGrand() {
 	 * @param clear Game completed flag
 	 */
 	private fun updateRanking(type:Int, gr:Int, lv:Int, time:Int, clear:Int) {
+
+		/** This function will check the ranking and returns which place you are.
+		 * @param gr Grade
+		 * @param lv Level
+		 * @param time Time
+		 * @param clear Game completed flag
+		 * @return Place (First place is 0. -1 is Out of Rank)
+		 */
+		fun checkRanking(type:Int, gr:Int, lv:Int, time:Int, clear:Int):Int {
+			for(i in 0..<rankingMax)
+				if(clear>rankingRollClear[type][i])
+					return i
+				else if(clear==rankingRollClear[type][i]&&gr>rankingGrade[type][i])
+					return i
+				else if(clear==rankingRollClear[type][i]&&gr==rankingGrade[type][i]&&lv>rankingLevel[type][i])
+					return i
+				else if(clear==rankingRollClear[type][i]&&gr==rankingGrade[type][i]&&lv==rankingLevel[type][i]
+					&&time<rankingTime[type][i]
+				)
+					return i
+
+			return -1
+		}
 		rankingRank = checkRanking(type, gr, lv, time, clear)
 
 		if(rankingRank!=-1) {
@@ -691,29 +711,6 @@ class GrandZ:AbstractGrand() {
 			rankingTime[type][rankingRank] = time
 			rankingRollClear[type][rankingRank] = clear
 		}
-	}
-
-	/** This function will check the ranking and returns which place you are.
-	 * @param gr Grade
-	 * @param lv Level
-	 * @param time Time
-	 * @param clear Game completed flag
-	 * @return Place (First place is 0. -1 is Out of Rank)
-	 */
-	private fun checkRanking(type:Int, gr:Int, lv:Int, time:Int, clear:Int):Int {
-		for(i in 0..<rankingMax)
-			if(clear>rankingRollClear[type][i])
-				return i
-			else if(clear==rankingRollClear[type][i]&&gr>rankingGrade[type][i])
-				return i
-			else if(clear==rankingRollClear[type][i]&&gr==rankingGrade[type][i]&&lv>rankingLevel[type][i])
-				return i
-			else if(clear==rankingRollClear[type][i]&&gr==rankingGrade[type][i]&&lv==rankingLevel[type][i]
-				&&time<rankingTime[type][i]
-			)
-				return i
-
-		return -1
 	}
 
 	/** Updates best section time records */

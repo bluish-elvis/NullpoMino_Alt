@@ -30,9 +30,13 @@
  */
 package mu.nu.nullpo.game.subsystem.mode
 
+import kotlinx.serialization.Serializable
 import mu.nu.nullpo.game.component.BGM
 import mu.nu.nullpo.game.component.Piece.Companion.createQueueFromIntStr
+import mu.nu.nullpo.game.component.Statistics
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
+import mu.nu.nullpo.game.event.Leaderboard
+import mu.nu.nullpo.game.event.Rankable
 import mu.nu.nullpo.game.event.ScoreEvent
 import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.game.subsystem.mode.menu.*
@@ -72,18 +76,6 @@ class RetroS:AbstractMode() {
 	/** Your place on leaderboard (-1: out of rank) */
 	private var rankingRank = 0
 
-	/** Score records */
-	private val rankingScore = List(RANKING_TYPE) {MutableList(rankingMax) {0L}}
-
-	/** Line records */
-	private val rankingLines = List(RANKING_TYPE) {MutableList(rankingMax) {0}}
-
-	/** Line records */
-	private val rankingLevel = List(RANKING_TYPE) {MutableList(rankingMax) {0}}
-
-	/** Time records */
-	private val rankingTime = List(RANKING_TYPE) {MutableList(rankingMax) {-1}}
-
 	/** Score 999,999 Reached time */
 	private var maxScoreTime = -1
 	/** 99 Lines Reached time */
@@ -95,12 +87,19 @@ class RetroS:AbstractMode() {
 	override val name = "Retro Mania .S"
 
 	override val gameIntensity:Int = -1
-	override val propRank
-		get() = rankMapOf(
-			rankingScore.mapIndexed {a, x -> "$a.score" to x}+
-				rankingLines.mapIndexed {a, x -> "$a.lines" to x}+
-				rankingLevel.mapIndexed {a, x -> "$a.level" to x}+
-				rankingTime.mapIndexed {a, x -> "$a.time" to x})
+	@Serializable
+	data class ScoreRow(override val st:Statistics = Statistics(),
+		val scMaxed:Int=-1, val liMaxed:Int=-1, val lvMaxed:Int=-1):Rankable, Comparable<Rankable> {
+		override operator fun compareTo(other:Rankable):Int =
+			if(other is ScoreRow)
+				compareValuesBy(this, other, {it.sc}, {it.li}, {it.lv}, {-it.scMaxed}, {-it.liMaxed}, {-it.lvMaxed}, {-it.ti})
+			else super.compareTo(other)
+
+	}
+
+	override val ranking = List(RANKING_TYPE) {
+		Leaderboard(rankingMax, kotlinx.serialization.serializer<List<ScoreRow>>()){ ScoreRow() }
+	}
 
 	/** This function will be called when
 	 * the game enters the main game screen. */
@@ -114,10 +113,6 @@ class RetroS:AbstractMode() {
 		maxLevelTime = -1
 
 		rankingRank = -1
-		rankingScore.forEach {it.fill(0)}
-		rankingLines.forEach {it.fill(0)}
-		rankingLevel.forEach {it.fill(0)}
-		rankingTime.forEach {it.fill(-1)}
 
 		engine.run {
 			twistEnable = false
@@ -211,36 +206,36 @@ class RetroS:AbstractMode() {
 				val topY = if(receiver.nextDisplayType==2) 6 else 4
 				receiver.drawScore(engine, 0, topY-1, "SCORE LINE LV TIME", BASE, COLOR.BLUE)
 
-				for(i in 0..<rankingMax) {
+				ranking[gameType].forEachIndexed {i, it ->
 					receiver.drawScore(engine, 0, topY+i, "${i+1}", GRADE, COLOR.YELLOW)
-					receiver.drawScore(
-						engine, 2, topY+i,
-						if(rankingScore[gameType][i]>=0) "%6d".format(rankingScore[gameType][i])
-						else rankingScore[gameType][i].toTimeStr, NUM, i==rankingRank
-					)
-					receiver.drawScore(
-						engine, 8, topY+i,
-						if(rankingLines[gameType][i]>=0) "%3d".format(rankingLines[gameType][i])
-						else rankingLines[gameType][i].toTimeStr, NUM, i==rankingRank
-					)
-					receiver.drawScore(
-						engine, 11, topY+i,
-						if(rankingLevel[gameType][i]>=0) "%2d".format(rankingLevel[gameType][i])
-						else rankingLevel[gameType][i].toTimeStr, NUM, i==rankingRank
-					)
-					receiver.drawScore(engine, 15, topY+i, rankingTime[gameType][i].toTimeStr, NUM, i==rankingRank)
+					receiver.drawScore(engine, 2, topY+i, "%6d".format(it.sc), NUM, i==rankingRank,
+						alpha = if(it.scMaxed>1) 0.5f else 1f)
+					if(it.scMaxed>1) receiver.drawScore(engine, 2, topY+i, it.scMaxed.toTimeStr, NUM, i==rankingRank)
+					receiver.drawScore(engine, 8, topY+i, "%3d".format(it.li), NUM, i==rankingRank,
+						alpha = if(it.liMaxed>1) 0.5f else 1f)
+					if(it.liMaxed>1) receiver.drawScore(engine, 8, topY+i, it.liMaxed.toTimeStr, NUM, i==rankingRank)
+					receiver.drawScore(engine, 11, topY+i, "%2d".format(it.lv), NUM, i==rankingRank,
+						alpha = if(it.lvMaxed>1) 0.5f else 1f)
+					if(it.lvMaxed>1) receiver.drawScore(engine, 11, topY+i, it.lvMaxed.toTimeStr, NUM, i==rankingRank)
+					receiver.drawScore(engine, 15, topY+i, it.ti.toTimeStr, NUM, i==rankingRank)
 				}
 			}
 		} else {
 			// Game statistics
 			receiver.drawScore(engine, 1, 3, "SCORE", BASE, COLOR.CYAN)
-			receiver.drawScore(engine, 0, 4, "%6d".format(scDisp), BASE, COLOR.CYAN)
+			receiver.drawScore(engine, 0, 4, "%6d".format(scDisp), BASE, COLOR.CYAN,
+				alpha = if(engine.statistics.score>=MAX_SCORE) 0.5f else 1f)
+			if(maxScoreTime>0) receiver.drawScore(engine, 1, 5, maxScoreTime.toTimeStr, NUM_T, COLOR.CYAN)
 
 			receiver.drawScore(engine, 1, 6, "LINES", BASE, COLOR.CYAN)
-			receiver.drawScore(engine, 0, 7, "%6d".format(engine.statistics.lines), BASE, COLOR.CYAN)
+			receiver.drawScore(engine, 0, 7, "%6d".format(engine.statistics.lines), BASE, COLOR.CYAN,
+				alpha = if(engine.statistics.lines>=MAX_LINES) 0.5f else 1f)
+			if(maxLinesTime>0) receiver.drawScore(engine, 1, 8, maxLinesTime.toTimeStr, NUM_T, COLOR.CYAN)
 
 			receiver.drawScore(engine, 1, 9, "LEVEL", BASE, COLOR.CYAN)
-			receiver.drawScore(engine, 0, 10, "%6d".format(engine.statistics.level), BASE, COLOR.CYAN)
+			receiver.drawScore(engine, 0, 10, "%6d".format(engine.statistics.level), BASE, COLOR.CYAN,
+				alpha = if(engine.statistics.level>=MAX_LEVEL) 0.5f else 1f)
+			if(maxLevelTime>0) receiver.drawScore(engine, 1, 11, maxLevelTime.toTimeStr, NUM_T, COLOR.CYAN)
 
 			receiver.drawScore(engine, 0, 13, "Time", BASE, COLOR.BLUE)
 			receiver.drawScore(engine, 0, 14, engine.statistics.time.toTimeStr, BASE, COLOR.BLUE)
@@ -292,7 +287,7 @@ class RetroS:AbstractMode() {
 				}
 				if(engine.statistics.lines>MAX_LINES) {
 					engine.statistics.lines = MAX_LINES
-					if(maxLevelTime<0) {
+					if(maxLinesTime<0) {
 						engine.playSE("grade4")
 						maxLinesTime = engine.statistics.time
 					}
@@ -357,50 +352,11 @@ class RetroS:AbstractMode() {
 
 		// Checks/Updates the ranking
 		if(!owner.replayMode&&!big&&engine.ai==null) {
-			updateRanking(
-				if(engine.statistics.score>=MAX_SCORE) -maxScoreTime.toLong() else engine.statistics.score,
-				if(engine.statistics.lines>=MAX_LINES) -maxLinesTime else engine.statistics.lines,
-				if(engine.statistics.level>=MAX_LEVEL) -maxLevelTime else engine.statistics.level,
-				engine.statistics.time, gameType
-			)
+			rankingRank = ranking[gameType].add(ScoreRow(engine.statistics, maxScoreTime, maxLinesTime, maxLevelTime))
 
 			if(rankingRank!=-1) return true
 		}
 		return false
-	}
-
-	/** Update the ranking */
-	private fun updateRanking(sc:Long, li:Int, lv:Int, time:Int, type:Int) {
-		rankingRank = checkRanking(sc, li, lv, time, type)
-
-		if(rankingRank!=-1) {
-			// Shift the old records
-			for(i in rankingMax-1 downTo rankingRank+1) {
-				rankingScore[type][i] = rankingScore[type][i-1]
-				rankingLines[type][i] = rankingLines[type][i-1]
-				rankingLevel[type][i] = rankingLevel[type][i-1]
-				rankingTime[type][i] = rankingTime[type][i-1]
-			}
-
-			// Insert a new record
-			rankingScore[type][rankingRank] = sc
-			rankingLines[type][rankingRank] = li
-			rankingLevel[type][rankingRank] = lv
-			rankingTime[type][rankingRank] = time
-		}
-	}
-
-	/** This function will check the ranking and returns which place you are.
-	 * (-1: Out of rank) */
-	private fun checkRanking(sc:Long, li:Int, lv:Int, time:Int, type:Int):Int {
-		for(i in 0..<rankingMax)
-			if(if(sc<0) sc<rankingScore[type][i] else sc>rankingScore[type][i]) return i
-			else if(sc==rankingScore[type][i]&&if(li<0) li<rankingLines[type][i] else li>rankingLines[type][i]) return i
-			else if(sc==rankingScore[type][i]&&li==rankingLines[type][i]&&
-				if(lv<0) lv<rankingLevel[type][i] else lv>rankingLevel[type][i]) return i
-			else if(sc==rankingScore[type][i]&&li==rankingLines[type][i]&&lv==rankingLevel[type][i]&&time<rankingTime[type][i]) return i
-
-		return -1
 	}
 
 	companion object {

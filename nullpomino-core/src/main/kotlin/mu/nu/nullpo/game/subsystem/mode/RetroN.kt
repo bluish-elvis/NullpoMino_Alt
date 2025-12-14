@@ -30,16 +30,16 @@
  */
 package mu.nu.nullpo.game.subsystem.mode
 
-import mu.nu.nullpo.game.component.BGM
-import mu.nu.nullpo.game.component.Block
-import mu.nu.nullpo.game.component.Controller
-import mu.nu.nullpo.game.component.Piece
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.serializer
+import mu.nu.nullpo.game.component.*
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
+import mu.nu.nullpo.game.event.Leaderboard
+import mu.nu.nullpo.game.event.Rankable
 import mu.nu.nullpo.game.event.ScoreEvent
 import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.game.subsystem.mode.menu.*
 import mu.nu.nullpo.gui.common.BaseFont
-import mu.nu.nullpo.gui.common.BaseFont.FONT
 import mu.nu.nullpo.gui.common.BaseFont.FONT.*
 import mu.nu.nullpo.util.CustomProperties
 import mu.nu.nullpo.util.GeneralUtil
@@ -86,14 +86,19 @@ class RetroN:AbstractMode() {
 	/** Your place on leaderboard (-1: out of rank) */
 	private var rankingRank = 0
 
-	/** Score records */
-	private val rankingScore = List(RANKING_TYPE) {MutableList(rankingMax) {0L}}
+	@Serializable
+	data class ScoreRow(override val st:Statistics = Statistics(),
+		val scMaxed:Int=-1):Rankable, Comparable<Rankable> {
+		override operator fun compareTo(other:Rankable):Int =
+			if(other is ScoreRow)
+				compareValuesBy(this, other, {it.sc}, {it.li}, {it.lv}, {-it.scMaxed}, {-it.ti})
+			else super.compareTo(other)
 
-	/** Line records */
-	private val rankingLines = List(RANKING_TYPE) {MutableList(rankingMax) {0}}
+	}
 
-	/** Level records */
-	private val rankingLevel = List(RANKING_TYPE) {MutableList(rankingMax) {0}}
+	override val ranking = List(RANKING_TYPE) {
+		Leaderboard(rankingMax, serializer<List<ScoreRow>>()){ScoreRow()}
+	}
 
 	/** Time records Reaches Score Max-out 999999 */
 	private var maxScoredTime:Int? = null
@@ -102,11 +107,6 @@ class RetroN:AbstractMode() {
 	override val name = "Retro Classic .N"
 
 	override val gameIntensity = -1
-	override val propRank
-		get() = rankMapOf(
-			rankingScore.mapIndexed {a, x -> "$a.score" to x}+
-				rankingLines.mapIndexed {a, x -> "$a.lines" to x}+
-				rankingLevel.mapIndexed {a, x -> "$a.level" to x})
 
 	/** This function will be called when the game enters the main game
 	 * screen. */
@@ -120,10 +120,6 @@ class RetroN:AbstractMode() {
 		droughts.removeAll {true}
 
 		rankingRank = -1
-		rankingScore.forEach {it.fill(0)}
-		rankingLines.forEach {it.fill(0)}
-		rankingLevel.forEach {it.fill(0)}
-
 		engine.run {
 			twistEnable = false
 			b2bEnable = false
@@ -236,28 +232,23 @@ class RetroN:AbstractMode() {
 			if(!owner.replayMode&&!big&&engine.ai==null) {
 				receiver.drawScore(engine, 3, 3, "SCORE    LINE LV.", BASE, COLOR.BLUE)
 
-				for(i in 0..<rankingMax) {
+				ranking[gameType].forEachIndexed { i, it ->
 					receiver.drawScore(
 						engine, 0, 4+i, "%2d".format(i+1), GRADE, if(rankingRank==i) COLOR.RAINBOW else COLOR.YELLOW
 					)
-					receiver.drawScore(engine, 3, 4+i, GeneralUtil.capsNum(rankingScore[gameType][i], 6), NUM, i==rankingRank)
+					receiver.drawScore(engine, 3, 4+i, GeneralUtil.capsNum(it.sc, 6), NUM, i==rankingRank)
 					receiver.drawScore(
-						engine, 12, 4+i, GeneralUtil.capsNum(rankingLines[gameType][i], 3), NUM, i==rankingRank
+						engine, 12, 4+i, GeneralUtil.capsNum(it.li, 3), NUM, i==rankingRank
 					)
-					receiver.drawScore(
-						engine,
-						17,
-						4+i,
-						LEVEL_NAME[rankingLevel[gameType][i]],
-						font = if(rankingLevel[gameType][i]<30) FONT.NUM else FONT.BASE,
-						flag = i==rankingRank
+					receiver.drawScore(engine, 17, 4+i, LEVEL_NAME[it.lv],
+						font = if(it.lv<30) NUM else BASE, flag = i==rankingRank
 					)
 				}
 			}
 		} else {
 			receiver.drawScore(engine, 0, 3, "SCORE${if(lastScore>0) "(+$lastScore)" else ""}", BASE, COLOR.BLUE)
 			receiver.drawScore(
-				engine, 0, 4, GeneralUtil.capsNum(scDisp, 6), font = if(engine.statistics.score<=999999) FONT.NUM else FONT.BASE,
+				engine, 0, 4, GeneralUtil.capsNum(scDisp, 6), font = if(engine.statistics.score<=999999) NUM else BASE,
 				scale = 2f
 			)
 
@@ -266,17 +257,17 @@ class RetroN:AbstractMode() {
 				engine, 0, 7, when(gameType) {
 					GAMETYPE_TYPE_B -> "-%2d".format(maxOf(25-engine.statistics.lines, 0))
 					else -> GeneralUtil.capsNum(engine.statistics.lines, 3)
-				}, if(gameType!=GAMETYPE_TYPE_B&&engine.statistics.lines<999) FONT.NUM else FONT.BASE, scale = 2f
+				}, if(gameType!=GAMETYPE_TYPE_B&&engine.statistics.lines<999) NUM else BASE, scale = 2f
 			)
 
 			receiver.drawScore(engine, 0, 9, "Level", BASE, COLOR.BLUE)
 			receiver.drawScore(
-				engine, 0, 10, LEVEL_NAME[engine.statistics.level], if(engine.statistics.level<30) FONT.NUM else FONT.BASE,
+				engine, 0, 10, LEVEL_NAME[engine.statistics.level], if(engine.statistics.level<30) NUM else BASE,
 				scale = 2f
 			)
 
 			receiver.drawScore(engine, 0, 12, "Time", BASE, COLOR.BLUE)
-			receiver.drawScore(engine, 0, 13, engine.statistics.time.toTimeStr, NUM, 2f)
+			receiver.drawScore(engine, 0, 13, engine.statistics.time.toTimeStr, NUM_T)
 
 			receiver.drawScore(engine, 0, 16, "I-Piece Drought", BASE, COLOR.BLUE)
 			receiver.drawScore(engine, 0, 17, "$drought / ${maxOf(drought, droughts.maxOrNull()?:0)}", NUM, 2f)
@@ -415,55 +406,10 @@ class RetroN:AbstractMode() {
 
 		// Checks/Updates the ranking
 		if(!owner.replayMode&&!big&&engine.ai==null) {
-			updateRanking(
-				engine.statistics.score, engine.statistics.lines, engine.statistics.level,
-				gameType+speedType*GAMETYPE_MAX
-			)
-
+			rankingRank = ranking[typeSerial(gameType, speedType)].add(ScoreRow(engine.statistics, maxScoredTime?:-1))
 			if(rankingRank!=-1) return true
 		}
 		return false
-	}
-
-	/** Update the ranking
-	 * @param sc Score
-	 * @param li Lines
-	 * @param lv Level
-	 * @param type Game type
-	 */
-	private fun updateRanking(sc:Long, li:Int, lv:Int, type:Int) {
-		rankingRank = checkRanking(sc, li, lv, type)
-
-		if(rankingRank!=-1) {
-			// Shift the ranking data
-			for(i in rankingMax-1 downTo rankingRank+1) {
-				rankingScore[type][i] = rankingScore[type][i-1]
-				rankingLines[type][i] = rankingLines[type][i-1]
-				rankingLevel[type][i] = rankingLevel[type][i-1]
-			}
-
-			// Insert a new data
-			rankingScore[type][rankingRank] = sc
-			rankingLines[type][rankingRank] = li
-			rankingLevel[type][rankingRank] = lv
-		}
-	}
-
-	/** This function will check the ranking and returns which place you are.
-	 * (-1: Out of rank)
-	 * @param sc Score
-	 * @param li Lines
-	 * @param lv Level
-	 * @return Place (First place is 0. -1 is Out of Rank)
-	 */
-	private fun checkRanking(sc:Long, li:Int, lv:Int, type:Int):Int {
-		for(i in 0..<rankingMax)
-			if(sc>rankingScore[type][i]) return i
-			else if(sc==rankingScore[type][i]&&li>rankingLines[type][i])
-				return i
-			else if(sc==rankingScore[type][i]&&li==rankingLines[type][i]&&lv<rankingLevel[type][i]) return i
-
-		return -1
 	}
 
 	/** Fill the playfield with garbage
@@ -531,6 +477,7 @@ class RetroN:AbstractMode() {
 		/** Number of ranking types */
 		private val RANKING_TYPE = GAMETYPE_MAX*SpeedLevel.entries.size
 
+		private fun typeSerial(gameType:Int, speedType:Int):Int = gameType+speedType*GAMETYPE_MAX
 		/** Maximum-Level name table */
 		private val LEVEL_NAME = listOf(
 			//    0    1    2    3    4    5    6    7    8    9      +xx

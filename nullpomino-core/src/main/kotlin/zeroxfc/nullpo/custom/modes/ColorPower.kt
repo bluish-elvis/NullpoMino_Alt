@@ -456,7 +456,7 @@ class ColorPower:MarathonModeBase() {
 			)
 
 			receiver.drawScore(engine, 0, 9, "Time", BASE, COLOR.BLUE)
-			receiver.drawScore(engine, 0, 10, engine.statistics.time.toTimeStr, NUM, 2f)
+			receiver.drawScore(engine, 0, 10, engine.statistics.time.toTimeStr, NUM_T)
 
 			// Power-up progess
 			var scale = 1f

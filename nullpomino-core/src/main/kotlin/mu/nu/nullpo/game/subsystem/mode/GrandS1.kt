@@ -33,6 +33,8 @@ package mu.nu.nullpo.game.subsystem.mode
 import mu.nu.nullpo.game.component.BGM
 import mu.nu.nullpo.game.component.Controller
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
+import mu.nu.nullpo.game.event.Leaderboard
+import mu.nu.nullpo.game.event.Rankable
 import mu.nu.nullpo.game.event.ScoreEvent
 import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.game.subsystem.mode.menu.*
@@ -79,12 +81,6 @@ class GrandS1:AbstractGrand() {
 
 	/** Current round's ranking position */
 	private var rankingRank = 0
-	/** Rankings' 段位 */
-	private val rankingGrade = MutableList(rankingMax) {0}
-	/** Rankings' level */
-	private val rankingLevel = MutableList(rankingMax) {0}
-	/** Rankings' times */
-	private val rankingTime = MutableList(rankingMax) {-1}
 	/** Section Time記録 */
 	private val bestSectionTime = MutableList(sectionMax) {DEFAULT_SECTION_TIME}
 
@@ -92,13 +88,11 @@ class GrandS1:AbstractGrand() {
 	override val gameIntensity = 3
 	override val menu = MenuList("speedmania1", itemLevel, itemQualify, itemAlert, itemST, itemBig)
 
+	override val ranking = listOf(
+		Leaderboard(rankingMax, kotlinx.serialization.serializer<List<Rankable.GrandRow>>())
+	)
 	override val propRank
-		get() = rankMapOf(
-			"grade" to rankingGrade,
-			"level" to rankingLevel,
-			"time" to rankingTime,
-			"section.time" to bestSectionTime
-		)
+		get() = rankMapOf("section.time" to bestSectionTime)
 
 	override fun playerInit(engine:GameEngine) {
 		super.playerInit(engine)
@@ -117,9 +111,6 @@ class GrandS1:AbstractGrand() {
 		recoveryFlag = false
 
 		rankingRank = -1
-		rankingGrade.fill(0)
-		rankingLevel.fill(0)
-		rankingTime.fill(-1)
 		bestSectionTime.fill(DEFAULT_SECTION_TIME)
 
 		engine.twistEnable = false
@@ -224,14 +215,14 @@ class GrandS1:AbstractGrand() {
 					val topY = if(receiver.nextDisplayType==2) 5 else 3
 					receiver.drawScore(engine, 2, topY-1, "LEVEL  TIME", BASE, COLOR.BLUE)
 
-					for(i in 0..<rankingMax) {
+					ranking[0].forEachIndexed {i, it ->
 						receiver.drawScore(
 							engine, 0, topY+i, "%2d".format(i+1), GRADE,
 							if(rankingRank==i) COLOR.RAINBOW else COLOR.YELLOW
 						)
-						receiver.drawScore(engine, 2, topY+i, tableGradeName[rankingGrade[i]], GRADE, i==rankingRank)
-						receiver.drawScore(engine, 5, topY+i, "${rankingLevel[i]}", NUM, i==rankingRank)
-						receiver.drawScore(engine, 8, topY+i, rankingTime[i].toTimeStr, NUM, i==rankingRank)
+						receiver.drawScore(engine, 2, topY+i, tableGradeName[it.grade], GRADE, i==rankingRank)
+						receiver.drawScore(engine, 5, topY+i, "${it.lv}", NUM, i==rankingRank)
+						receiver.drawScore(engine, 8, topY+i, it.ti.toTimeStr, NUM, i==rankingRank)
 					}
 
 					receiver.drawScore(engine, 0, 17, "F:VIEW SECTION TIME", BASE, COLOR.GREEN)
@@ -249,9 +240,9 @@ class GrandS1:AbstractGrand() {
 					}
 
 					receiver.drawScore(engine, 0, 14, "TOTAL", BASE, COLOR.BLUE)
-					receiver.drawScore(engine, 0, 15, totalTime.toTimeStr, NUM, 2f)
+					receiver.drawScore(engine, 0, 15, totalTime.toTimeStr, NUM_T)
 					receiver.drawScore(engine, 9, 14, "AVERAGE", BASE, COLOR.BLUE)
-					receiver.drawScore(engine, 9, 15, (totalTime/sectionMax).toTimeStr, NUM, 2f)
+					receiver.drawScore(engine, 9, 15, (totalTime/sectionMax).toTimeStr, NUM_T)
 
 					receiver.drawScore(engine, 0, 17, "F:VIEW RANKING", BASE, COLOR.GREEN)
 				}
@@ -322,8 +313,7 @@ class GrandS1:AbstractGrand() {
 				receiver.drawScore(engine, x2, 14, "AVERAGE", BASE, engine.statistics.time%3!=0)
 				receiver.drawScore(
 					engine, x2, 15, (engine.statistics.time/(sectionsDone+(engine.ending==0).toInt())).toTimeStr,
-					NUM, engine.statistics.time%3!=0,
-					2f
+					NUM_T, engine.statistics.time%3!=0
 				)
 			}
 
@@ -374,6 +364,7 @@ class GrandS1:AbstractGrand() {
 				engine.statistics.level = 999
 				engine.timerActive = false
 				engine.ending = 2
+				engine.statistics.rollClear=2
 
 				grade = 2
 				gradeFlash = 180
@@ -394,6 +385,7 @@ class GrandS1:AbstractGrand() {
 				engine.statistics.level = 500
 				engine.timerActive = false
 				engine.ending = 2
+				engine.statistics.rollClear=1
 
 				sectionsDone++
 				// ST medal
@@ -573,50 +565,12 @@ class GrandS1:AbstractGrand() {
 		// Update rankings
 		if(!owner.replayMode&&startLevel==0&&!big&&engine.ai==null) {
 			owner.statsProp.setProperty("decoration", decoration)
-			updateRanking(grade, engine.statistics.level, engine.statistics.time)
+			rankingRank = ranking[0].add(Rankable.GrandRow(grade, engine.statistics, medals.copy()))
 			if(medalST==3) updateBestSectionTime()
 
 			if(rankingRank!=-1||medalST==3) return true
 		}
 		return false
-	}
-
-	/** Update rankings
-	 * @param gr 段位
-	 * @param lv level
-	 * @param time Time
-	 */
-	private fun updateRanking(gr:Int, lv:Int, time:Int) {
-		rankingRank = checkRanking(gr, lv, time)
-
-		if(rankingRank!=-1) {
-			// Shift down ranking entries
-			for(i in rankingMax-1 downTo rankingRank+1) {
-				rankingGrade[i] = rankingGrade[i-1]
-				rankingLevel[i] = rankingLevel[i-1]
-				rankingTime[i] = rankingTime[i-1]
-			}
-
-			// Add new data
-			rankingGrade[rankingRank] = gr
-			rankingLevel[rankingRank] = lv
-			rankingTime[rankingRank] = time
-		}
-	}
-
-	/** Calculate ranking position
-	 * @param gr 段位
-	 * @param lv level
-	 * @param time Time
-	 * @return Position (-1 if unranked)
-	 */
-	private fun checkRanking(gr:Int, lv:Int, time:Int):Int {
-		for(i in 0..<rankingMax)
-			if(gr>rankingGrade[i]) return i
-			else if(gr==rankingGrade[i]&&lv>rankingLevel[i]) return i
-			else if(gr==rankingGrade[i]&&lv==rankingLevel[i]&&time<rankingTime[i]) return i
-
-		return -1
 	}
 
 	/** Update best section time records */

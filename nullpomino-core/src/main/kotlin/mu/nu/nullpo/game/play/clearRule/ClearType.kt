@@ -50,14 +50,15 @@ interface ClearType {
 	 * @param size Line: number of lines cleared, others: number of blocks cleared
 	 * @param blocksCleared  List of row of cleared blocks with Y-coordinate index
 	 * */
-	data class ClearResult(val size:Int = 0, val blocksCleared:Map<Int, Map<Int, Block>> = emptyMap()) {
+	@kotlinx.serialization.Serializable
+	data class ClearResult(val size:Int = 0, val blocksCleared:Map<Int, Map<Int, Block?>> = emptyMap()) {
 
 		val linesY = blocksCleared.map {it.key}.toSet()
-		val gemCleared = blocksCleared.count {(_, r) -> r.any {(_, b) -> b.isGemBlock}}
+		val gemCleared = blocksCleared.count {(_, r) -> r.any {(_, b) -> b?.isGemBlock?:false}}
 		val garbageCleared =
-			blocksCleared.asSequence().sumOf {(_, r) -> r.count {(_, b) -> b.getAttribute(ATTRIBUTE.GARBAGE)}}
+			blocksCleared.asSequence().sumOf {(_, r) -> r.count {(_, b) -> b?.getAttribute(ATTRIBUTE.GARBAGE)?:false}}
 		val colorContains =
-			blocksCleared.asSequence().flatMap {(_, r) -> r.values.map {it.color}}.distinct().sortedBy {it?.ordinal}.toSet()
+			blocksCleared.asSequence().flatMap {(_, r) -> r.values.mapNotNull {it?.color}}.distinct().sortedBy {it.ordinal}.toSet()
 		val linesYfolded = linesY.sorted().fold(mutableListOf<Set<Int>>()) {a, t ->
 			if(a.isEmpty()||a.last().maxOrNull()!=t-1) a += setOf(t)
 			else a[a.lastIndex] = a[a.lastIndex]+t

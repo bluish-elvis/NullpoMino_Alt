@@ -30,7 +30,6 @@
  */
 package mu.nu.nullpo.game.play
 
-import kotlinx.serialization.encodeToString
 import mu.nu.nullpo.game.component.*
 import mu.nu.nullpo.game.component.SpeedParam.Companion.SDS_FIXED
 import mu.nu.nullpo.game.event.EventReceiver
@@ -133,12 +132,6 @@ class GameEngine(
 		}
 	/** AI Hint piece (copy of current or hold) */
 	var aiHintPiece:Piece? = null
-	/** AI Hint X position */
-	var aiHintX = 0
-	/** AI Hint Y position */
-	var aiHintY = 0
-	/** AI Hint piece direction */
-	var aiHintRt = 0
 	/** True if AI Hint is ready */
 	var aiHintReady = false; private set
 
@@ -204,7 +197,7 @@ class GameEngine(
 	var holdUsedCount = 0
 
 	/** Number of lines currently clearing
-	 * (if [clearMode] isn't [ClearType.LINE], this shows Number of cleared blocks)  */
+	 * (if [clearMode] isn't [Line], this shows Number of cleared blocks)  */
 	var lineClearing = 0; internal set
 	var garbageClearing = 0; private set
 	/** Line gravity type (Native, Cascade, etc) */
@@ -274,8 +267,6 @@ class GameEngine(
 
 	/** Last successful movement */
 	var lastMove = LastMove.NONE; private set
-	/** Last Erased Line's bottom Y-coordinates*/
-	var lastLineY = 0; internal set
 
 	/** True if last placement is Finesse */
 	var finesse = false; private set
@@ -284,9 +275,12 @@ class GameEngine(
 	var nowPieceSteps = 0; private set
 
 	/** Most recent scoring event type */
-	var lastEvent:ScoreEvent? = null
+	var lastEvent:ScoreEvent? = null; internal set
 
-	var lastLinesY = emptySet<Set<Int>>(); internal set
+	var lastClear:ClearType.ClearResult? = null; internal set
+	val lastLinesY get() = lastClear?.linesYfolded?:emptySet()
+	/** Last Erased Line's bottom Y-coordinates*/
+	val lastLineY get() = lastClear?.linesY?.maxOrNull()?:fieldHeight
 
 	/** True if last erased line is Split */
 	var split = false; internal set
@@ -403,7 +397,11 @@ class GameEngine(
 	var readyDone = false
 
 	/** Number of Revives */
-	var lives = 0
+	var lives
+		get() = statistics.lives
+		set(value) {
+			statistics.lives = value
+		}
 
 	/** 150個以上Blockがあるとtrue, 70個まで減らすとfalseになる */
 	var recoveryFlag = false
@@ -664,7 +662,7 @@ class GameEngine(
 	var tempHanabi = 0
 	var intHanabi = 0; private set
 
-	var explodSize = EXPLOD_SIZE_DEFAULT
+//	var explodSize = EXPLOD_SIZE_DEFAULT
 
 	internal val playerProp = ProfileProperties(
 		when(owner.mode?.gameIntensity) {
@@ -764,7 +762,7 @@ class GameEngine(
 
 	/** @return ホールド可能ならtrue */
 	val isHoldOK
-		get() = (ruleOpt.holdEnable&&!holdDisable&&(holdUsedCount<ruleOpt.holdLimit||ruleOpt.holdLimit<0)
+		get() = (ruleOpt.holdEnable&&!holdDisable&&(ruleOpt.holdLimit !in 0..holdUsedCount)
 			&&!initialHoldContinuousUse)
 
 	val canARECancelMove get() = if(owDelayCancel>=0) (owDelayCancel and 1)>0 else ruleOpt.areCancelMove
@@ -796,7 +794,7 @@ class GameEngine(
 			if(owSkin<=-2) owSkin = tempRand.nextInt(owner.receiver.skinMax)
 		} else {
 			versionMajor = owner.replayProp.getProperty("version.core.major", 0f)
-			versionMinor = owner.replayProp.getProperty("version.core.minor", 0)
+			versionMinor = owner.replayProp.getProperty("version.core.minor", 0f)
 			versionMinorOld = owner.replayProp.getProperty("version.core.minor", 0f)
 
 			replayData.readProperty(owner.replayProp, playerID)
@@ -830,8 +828,7 @@ class GameEngine(
 		statc.fill(0)
 
 		lastEvent = null
-		lastLinesY = emptySet()
-		lastLineY = fieldHeight
+		lastClear = null
 
 		isInGame = false
 		gameActive = false
@@ -1006,7 +1003,9 @@ class GameEngine(
 			if(owner.replayMode) it.loadReplay(this, owner.replayProp)
 			else {
 				it.loadRanking(owner.recordProp)
-				it.ranking.load(owner.recorder(ruleOpt.strRuleName)+".lb")
+				it.ranking.forEachIndexed {i, r ->
+					r.load("${owner.recorder(ruleOpt.strRuleName)}${if(it.ranking.size>1) "_$i" else ""}.lb")
+				}
 				if(playerProp.isLoggedIn) it.loadRankingPlayer(playerProp)
 			}
 		}
@@ -1073,8 +1072,7 @@ class GameEngine(
 			if(!ctrl.isPress(down)||ruleOpt.softdropLimit<0) softdropContinuousUse = false
 			if(!ctrl.isPress(up)||ruleOpt.harddropLimit<0) harddropContinuousUse = false
 			if(!ctrl.isPress(Controller.BUTTON_D)||!ruleOpt.holdInitialLimit) initialHoldContinuousUse = false
-			if(initialSpinContinuousUse) {
-				val dir = getSpinOperation()
+			if(initialSpinContinuousUse) getSpinOperation().let {dir ->
 				if(!ruleOpt.spinInitialLimit||initialSpinLastDirection!=dir||dir==0) initialSpinContinuousUse = false
 			}
 		}
@@ -1379,7 +1377,7 @@ class GameEngine(
 			owner.saveModeConfig()
 			if(it.saveReplay(this, owner.replayProp)) {
 				it.saveRanking()
-				it.ranking.save()
+				it.ranking.forEach {r -> r.save()}
 				owner.recordProp.save()
 				if(playerProp.isLoggedIn) {
 					it.saveRankingPlayer(playerProp)
@@ -1717,6 +1715,7 @@ class GameEngine(
 		if(statc[0]==goStart) playSE("start1")
 
 		// NEXTスキップ
+		@Suppress("EmptyRange")
 		if(statc[0] in 1..<goEnd&&holdButtonNextSkip&&isHoldOK&&ctrl.isPush(Controller.BUTTON_D)) {
 			if(frameSkin!=FRAME_SKIN_SG) playSE("initialhold")
 			holdPieceObject = getNextObjectCopy(nextPieceCount)?.also {
@@ -1919,15 +1918,12 @@ class GameEngine(
 					if(nowPieceSpinFailCount>0) nowPieceSpinFailCount--
 					else playSE(if(frameSkin==FRAME_SKIN_GB) "initialrotateold" else "initialrotate")
 				} else if(statc[0]>0||ruleOpt.moveFirstFrame) {
-					if(itemRollRollEnable&&replayTimer%itemRollRollInterval==0) spin = 1 // Roll Roll
 
 					//  button input
 					spin = getSpinOperation(ctrl)
+					if(itemRollRollEnable&&replayTimer%itemRollRollInterval==0) spin = 1 // Roll Roll
 					if(spin==0) spun = false
-
-
-
-					if(spin!=0) {
+					else {
 						initialSpinLastDirection = spin
 						initialSpinContinuousUse = true
 					}
@@ -1948,7 +1944,7 @@ class GameEngine(
 						&&(ruleOpt.lockResetLimitOver!=RuleOptions.LOCKRESET_LIMIT_OVER_NO_KICK||!isSpinCountExceed)
 					) {
 						// Wallkickを試みる
-						val allowUpward = ruleOpt.spinWallkickMaxRise<0||nowWallkickRiseCount<ruleOpt.spinWallkickMaxRise
+						val allowUpward = ruleOpt.spinWallkickMaxRise !in 0..nowWallkickRiseCount
 
 						wallkick?.executeWallkick(nowPieceX, nowPieceY, spin, it.direction, rt, allowUpward, it, field, ctrl)
 							?.let {kick ->
@@ -2344,7 +2340,8 @@ class GameEngine(
 								// 中断効果のあるアイテム処理
 								nowPieceObject?.let {b ->
 									owner.receiver.blockBreak(this,
-										b.map.mapValues {(_, col) -> col.mapKeys {(x, _) -> x+nowPieceX}}.mapKeys {(row, _) -> row+nowPieceY})
+										b.map.mapValues {(_, col) -> col.mapKeys {(x, _) -> x+nowPieceX}}
+											.mapKeys {(row, _) -> row+nowPieceY})
 								}
 								nowPieceObject = null
 								interruptItemPreviousStat = Status.MOVE
@@ -2362,7 +2359,7 @@ class GameEngine(
 			}
 
 			// 横溜め
-			if(statc[0]>0||ruleOpt.dasInMoveFirstFrame) if(moveDirection!=0&&moveDirection==dasDirection&&(dasCount<das||das<=0))
+			if(statc[0]>0||ruleOpt.dasInMoveFirstFrame) if(moveDirection!=0&&moveDirection==dasDirection&&(das !in 1..dasCount))
 				dasCount++
 
 			statc[0]++
@@ -2412,8 +2409,9 @@ class GameEngine(
 		// 最初の frame
 		if(statc[0]==0) {
 			val check = clearMode.flag(this, field)
+			lastClear = check
 			val li = check.size
-			//lineClearing = li
+
 			if(check.gemCleared>0) playSE("gem")
 			val ev = ScoreEvent(nowPieceObject, li, b2bCount, combo, twistType, split)
 			lastEvent = ev
@@ -2425,7 +2423,8 @@ class GameEngine(
 			}
 			// Calculate score
 			owner.mode?.calcScore(this, ev)?.let {
-				if(it>0) owner.receiver.addScore(this, nowPieceX, lastLinesY.maxBy {it.size}.average().toInt(), it)
+				if(it>0) owner.receiver.addScore(this,
+					nowPieceX, check.linesYfolded.maxBy {i -> i.size}.average().toInt(), it)
 			}
 			if(li>0) owner.receiver.calcScore(this, ev)
 
@@ -2444,25 +2443,15 @@ class GameEngine(
 			clearMode.clear(field)
 		}
 
-		val fallCheck = lineGravityType.check(field)
-		statc[7] = fallCheck.first
-		statc[8] = fallCheck.second
+		val (fc1, fc2) = lineGravityType.check(field)
+		statc[7] = fc1
+		statc[8] = fc2
 // Linesを1段落とす
-		if(lineGravityType==LineGravity.Native&&ruleOpt.lineFallAnim&&statc[0]>=lineDelay-(fallCheck.first-1).coerceAtLeast
+		if(lineGravityType==LineGravity.Native&&ruleOpt.lineFallAnim&&statc[0]>=lineDelay-(fc1-1).coerceAtLeast
 				(0))
 			lineGravityType.fallSingle(field)//field.downFloatingBlocksSingleLine()
 
-// Line delay cancel check
-		delayCancelMoveLeft = ctrl.isPush(Controller.BUTTON_LEFT)
-		delayCancelMoveRight = ctrl.isPush(Controller.BUTTON_RIGHT)
-
-		val moveCancel = canLineCancelMove&&(ctrl.isPush(up)||ctrl.isPush(down)
-			||delayCancelMoveLeft||delayCancelMoveRight)
-		val spinCancel = canLineCancelSpin&&(ctrl.isPush(Controller.BUTTON_A)||ctrl.isPush(Controller.BUTTON_B)
-			||ctrl.isPush(Controller.BUTTON_C)||ctrl.isPush(Controller.BUTTON_E)||ctrl.isPush(Controller.BUTTON_F))
-		val holdCancel = canLineCancelHold&&ctrl.isPush(Controller.BUTTON_D)
-
-		delayCancel = moveCancel||spinCancel||holdCancel
+		delayCancel = cancelCheck(Status.LINECLEAR)
 
 		if(statc[0]<lineDelay&&delayCancel) statc[0] = lineDelay
 
@@ -2475,7 +2464,7 @@ class GameEngine(
 						b.offsetY = statc[6]/cascadeDelay.toFloat()
 					}
 					return
-				} else if(fallCheck.first>0) {
+				} else if(fc1>0) {
 					statc[9] = lineGravityType.fallSingle(field)
 					statc[6] = 0
 					if(!isRetroSkin) playSE("softdrop")
@@ -2538,6 +2527,20 @@ class GameEngine(
 		} else statc[0]++
 	}
 
+	private fun cancelCheck(status:Status):Boolean {
+		delayCancelMoveLeft = ctrl.isPush(Controller.BUTTON_LEFT)
+		delayCancelMoveRight = ctrl.isPush(Controller.BUTTON_RIGHT)
+
+		val moveCancel = (if(status==Status.LINECLEAR) canLineCancelMove else canARECancelMove)
+			&&(ctrl.isPush(up)||ctrl.isPush(down)||delayCancelMoveLeft||delayCancelMoveRight)
+		val spinCancel = (if(status==Status.LINECLEAR) canLineCancelSpin else canARECancelSpin)
+			&&(ctrl.isPush(Controller.BUTTON_A)||ctrl.isPush(Controller.BUTTON_B)
+			||ctrl.isPush(Controller.BUTTON_C)||ctrl.isPush(Controller.BUTTON_E)||ctrl.isPush(Controller.BUTTON_F))
+		val holdCancel = (if(status==Status.LINECLEAR) canLineCancelHold else canARECancelHold)
+			&&ctrl.isPush(Controller.BUTTON_D)
+		return moveCancel||spinCancel||holdCancel
+	}
+
 	/** ARE中の処理 */
 	private fun statARE() {
 		//  event 発生
@@ -2557,16 +2560,7 @@ class GameEngine(
 
 		checkDropContinuousUse()
 
-		// ARE cancel check
-		delayCancelMoveLeft = ctrl.isPush(Controller.BUTTON_LEFT)
-		delayCancelMoveRight = ctrl.isPush(Controller.BUTTON_RIGHT)
-
-		val moveCancel = canARECancelMove&&(ctrl.isPush(up)||ctrl.isPush(down)||delayCancelMoveLeft||delayCancelMoveRight)
-		val spinCancel = canARECancelSpin&&(ctrl.isPush(Controller.BUTTON_A)||ctrl.isPush(Controller.BUTTON_B)
-			||ctrl.isPush(Controller.BUTTON_C)||ctrl.isPush(Controller.BUTTON_E)||ctrl.isPush(Controller.BUTTON_F))
-		val holdCancel = canARECancelHold&&ctrl.isPush(Controller.BUTTON_D)
-
-		delayCancel = moveCancel||spinCancel||holdCancel
+		delayCancel = cancelCheck(Status.ARE)
 
 		if(statc[0]<statc[1]&&delayCancel) statc[0] = statc[1]
 
@@ -2621,12 +2615,11 @@ class GameEngine(
 			field.let {field ->
 				if(statc[1]%animInt==0) {
 					val y = field.height-statc[1]/animInt
-					field.getRow(y).mapIndexedNotNull {i, b ->
-						b?.let {if(it.getAttribute(Block.ATTRIBUTE.ERASE)) i to it else null}
+					field.getRow(y).mapIndexedNotNull {my, b ->
+						b?.let {if(it.getAttribute(Block.ATTRIBUTE.ERASE)) my to it else null}
 					}.associate {it}.let {
 						field.delBlocks(mapOf(y to it)).let {b ->
-							if(owner.mode?.blockBreak(this, b)!=true)
-								owner.receiver.blockBreak(this, b)
+							if(owner.mode?.blockBreak(this, b)!=true) owner.receiver.blockBreak(this, b)
 						}
 					}
 				}
@@ -2758,8 +2751,7 @@ class GameEngine(
 					statc[0] = 1
 				}
 				if(!field.isEmpty) {
-					val y = field.highestBlockY
-					for(i in 0..<field.width) {
+					for(y in field.highestBlockY..<field.height) {
 						field.getRow(y).mapIndexedNotNull {my, b ->
 							b?.let {if(it.getAttribute(Block.ATTRIBUTE.ERASE)) my to it else null}
 						}.associate {it}.let {

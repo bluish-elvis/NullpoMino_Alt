@@ -34,6 +34,8 @@ import mu.nu.nullpo.game.component.BGM
 import mu.nu.nullpo.game.component.Controller
 import mu.nu.nullpo.game.component.LevelData
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
+import mu.nu.nullpo.game.event.Leaderboard
+import mu.nu.nullpo.game.event.Rankable
 import mu.nu.nullpo.game.event.ScoreEvent
 import mu.nu.nullpo.game.net.NetUtil
 import mu.nu.nullpo.game.play.GameEngine
@@ -43,6 +45,7 @@ import mu.nu.nullpo.game.subsystem.mode.menu.LevelMenuItem
 import mu.nu.nullpo.game.subsystem.mode.menu.MenuList
 import mu.nu.nullpo.gui.common.BaseFont.FONT.*
 import mu.nu.nullpo.util.CustomProperties
+import mu.nu.nullpo.util.GeneralUtil.toInt
 import mu.nu.nullpo.util.GeneralUtil.toTimeStr
 
 /** EXTREME Mode */
@@ -71,20 +74,11 @@ class MarathonExtreme:NetDummyMode() {
 	/** Current round's ranking position */
 	private var rankingRank = 0
 
-	/** Rankings' scores */
-	private val rankingScore = List(RANKING_TYPE) {MutableList(rankingMax) {0L}}
-
-	/** Rankings' line counts */
-	private val rankingLines = List(RANKING_TYPE) {MutableList(rankingMax) {0}}
-
-	/** Rankings' times */
-	private val rankingTime = List(RANKING_TYPE) {MutableList(rankingMax) {-1}}
-
-	override val propRank
-		get() = rankMapOf(
-			rankingScore.mapIndexed {a, x -> "$a.score" to x}+
-				rankingLines.mapIndexed {a, x -> "$a.lines" to x}+
-				rankingTime.mapIndexed {a, x -> "$a.time" to x})
+	override val ranking =
+		List(RANKING_TYPE) {
+			Leaderboard(rankingMax, kotlinx.serialization.serializer<List<Rankable.ScoreRow>>())
+			{Rankable.ScoreRow()}
+		}
 
 	/* Mode name */
 	override val name = "Marathon:Extreme"
@@ -99,9 +93,6 @@ class MarathonExtreme:NetDummyMode() {
 		rollTime = 0
 
 		rankingRank = -1
-		rankingScore.forEach {it.fill(0)}
-		rankingLines.forEach {it.fill(0)}
-		rankingTime.forEach {it.fill(-1)}
 
 		netPlayerInit(engine)
 		// NET: Load name
@@ -200,22 +191,19 @@ class MarathonExtreme:NetDummyMode() {
 				val topY = if(receiver.nextDisplayType==2) 6 else 4
 				receiver.drawScore(engine, 2, topY-1, "SCORE LINE TIME", BASE, COLOR.RED)
 
-				for(i in 0..<rankingMax) {
-					var endlessIndex = 0
-					if(endless) endlessIndex = 1
-
+				ranking[endless.toInt()].forEachIndexed {i, it ->
 					receiver.drawScore(
 						engine, 0, topY+i, "%02d".format(i+1),
 						GRADE,
-						if(rankingRank==i) COLOR.RAINBOW else if(rankingLines[endlessIndex][i]>=200) COLOR.ORANGE else COLOR.RED
+						if(rankingRank==i) COLOR.RAINBOW else if(it.st.rollClear>=2) COLOR.ORANGE else COLOR.RED
 					)
-					receiver.drawScore(engine, 2, topY+i, "${rankingScore[endlessIndex][i]}", NUM, i==rankingRank)
-					receiver.drawScore(engine, 9, topY+i, "${rankingLines[endlessIndex][i]}", NUM, i==rankingRank)
-					receiver.drawScore(engine, 13, topY+i, rankingTime[endlessIndex][i].toTimeStr, NUM, i==rankingRank)
+					receiver.drawScore(engine, 2, topY+i, "${it.sc}", NUM, i==rankingRank)
+					receiver.drawScore(engine, 9, topY+i, "${it.li}", NUM, i==rankingRank)
+					receiver.drawScore(engine, 13, topY+i, it.ti.toTimeStr, NUM, i==rankingRank)
 				}
 			}
 		} else {
-			receiver.drawScore(engine, 0, 3, "LINE", BASE, COLOR.RED)
+			receiver.drawScore(engine, 0, 3, "LINEs", BASE, COLOR.RED)
 			receiver.drawScore(engine, 5, 2, engine.statistics.lines.toString(), NUM, 2f)
 
 			receiver.drawScore(engine, 0, 4, "Score", BASE, COLOR.RED)
@@ -236,7 +224,7 @@ class MarathonExtreme:NetDummyMode() {
 				)
 			}
 			receiver.drawScore(engine, 0, 8, "Time", BASE, COLOR.RED)
-			receiver.drawScore(engine, 0, 9, engine.statistics.time.toTimeStr, NUM, 2f)
+			receiver.drawScore(engine, 0, 9, engine.statistics.time.toTimeStr, NUM_T)
 		}
 
 		super.renderLast(engine)
@@ -253,13 +241,11 @@ class MarathonExtreme:NetDummyMode() {
 			var remainRollTime = ROLLTIMELIMIT-rollTime
 			if(remainRollTime<0) remainRollTime = 0
 			engine.meterValue = remainRollTime*1f/ROLLTIMELIMIT
-			engine.meterColor = GameEngine.METER_COLOR_GREEN
-			if(remainRollTime<=30*60) engine.meterColor = GameEngine.METER_COLOR_YELLOW
-			if(remainRollTime<=20*60) engine.meterColor = GameEngine.METER_COLOR_ORANGE
-			if(remainRollTime<=10*60) engine.meterColor = GameEngine.METER_COLOR_RED
+			engine.meterColor = GameEngine.METER_COLOR_LIMIT
 
 			// Finished
 			if(rollTime>=ROLLTIMELIMIT) {
+				engine.statistics.rollClear = 2
 				engine.gameEnded()
 				engine.resetStatc()
 				engine.stat = GameEngine.Status.EXCELLENT
@@ -275,7 +261,6 @@ class MarathonExtreme:NetDummyMode() {
 	/* Calculate score */
 	override fun calcScore(engine:GameEngine, ev:ScoreEvent):Int {
 		super.calcScore(engine, ev)
-		calcPower(engine, ev, true)
 		if(engine.ending==0) {
 			// BGM fade-out effects and BGM changes
 
@@ -299,6 +284,7 @@ class MarathonExtreme:NetDummyMode() {
 				owner.musMan.bgm = BGM.Ending(2)
 				engine.bone = true
 				engine.ending = 2
+				engine.statistics.rollClear = 1
 				engine.timerActive = false
 			} else if(engine.statistics.lines>=(engine.statistics.level+1)*10&&engine.statistics.level<19) {
 				// Level up
@@ -372,8 +358,7 @@ class MarathonExtreme:NetDummyMode() {
 		// Update rankings
 		if(!owner.replayMode&&!big&&engine.ai==null) {
 			//owner.statsProp.setProperty("decoration", decoration)
-			updateRanking(engine.statistics.score, engine.statistics.lines, engine.statistics.time, endless)
-
+			rankingRank = ranking[endless.toInt()].add(Rankable.ScoreRow(engine.statistics))
 			if(rankingRank!=-1) return true
 		}
 		return false
@@ -391,55 +376,6 @@ class MarathonExtreme:NetDummyMode() {
 		prop.setProperty("extreme.endless", endless)
 		prop.setProperty("extreme.big", big)
 		prop.setProperty("extreme.version", version)
-	}
-
-	/** Update rankings
-	 * @param sc Score
-	 * @param li Lines
-	 * @param time Time
-	 */
-	private fun updateRanking(sc:Long, li:Int, time:Int, endlessMode:Boolean) {
-		rankingRank = checkRanking(sc, li, time, endlessMode)
-
-		if(rankingRank!=-1) {
-			var endlessIndex = 0
-			if(endlessMode) endlessIndex = 1
-
-			// Shift down ranking entries
-			for(i in rankingMax-1 downTo rankingRank+1) {
-				rankingScore[endlessIndex][i] = rankingScore[endlessIndex][i-1]
-				rankingLines[endlessIndex][i] = rankingLines[endlessIndex][i-1]
-				rankingTime[endlessIndex][i] = rankingTime[endlessIndex][i-1]
-			}
-
-			// Add new data
-			rankingScore[endlessIndex][rankingRank] = sc
-			rankingLines[endlessIndex][rankingRank] = li
-			rankingTime[endlessIndex][rankingRank] = time
-		}
-	}
-
-	/** Calculate ranking position
-	 * @param sc Score
-	 * @param li Lines
-	 * @param time Time
-	 * @return Position (-1 if unranked)
-	 */
-	private fun checkRanking(sc:Long, li:Int, time:Int, endlessMode:Boolean):Int {
-		var endlessIndex = 0
-		if(endlessMode) endlessIndex = 1
-
-		for(i in 0..<rankingMax)
-			if(sc>rankingScore[endlessIndex][i])
-				return i
-			else if(sc==rankingScore[endlessIndex][i]&&li>rankingLines[endlessIndex][i])
-				return i
-			else if(sc==rankingScore[endlessIndex][i]&&li==rankingLines[endlessIndex][i]
-				&&time<rankingTime[endlessIndex][i]
-			)
-				return i
-
-		return -1
 	}
 
 	/** NET: Send various in-game stats of [engine] */

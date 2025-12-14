@@ -33,6 +33,8 @@ package mu.nu.nullpo.game.subsystem.mode
 import mu.nu.nullpo.game.component.BGM
 import mu.nu.nullpo.game.component.Controller
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
+import mu.nu.nullpo.game.event.Leaderboard
+import mu.nu.nullpo.game.event.Rankable.GrandRow
 import mu.nu.nullpo.game.event.ScoreEvent
 import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.game.subsystem.mode.menu.*
@@ -102,8 +104,6 @@ class GrandM3:AbstractGrand() {
 
 	/** Roll 経過 time */
 	private var rollTime = 0
-	/** Roll completely cleared flag */
-	private var rollClear = 0
 
 	/** Roll started flag */
 	private var rollStarted = false
@@ -170,18 +170,6 @@ class GrandM3:AbstractGrand() {
 	/** Current round's ranking position */
 	private var rankingRank = 0
 
-	/** Rankings' 段位 */
-	private val rankingGrade = List(RANKING_TYPE) {MutableList(rankingMax) {0}}
-
-	/** Rankings' levels */
-	private val rankingLevel = List(RANKING_TYPE) {MutableList(rankingMax) {0}}
-
-	/** Rankings' times */
-	private val rankingTime = List(RANKING_TYPE) {MutableList(rankingMax) {-1}}
-
-	/** Rankings' Roll completely cleared flag */
-	private val rankingRollClear = List(RANKING_TYPE) {MutableList(rankingMax) {0}}
-
 	/** Section Time記録 */
 	private val bestSectionTime = List(RANKING_TYPE) {i ->
 		MutableList(tableSectionMax[i]) {
@@ -195,13 +183,12 @@ class GrandM3:AbstractGrand() {
 	/** 段位履歴 (昇格・降格試験用) */
 	private val gradeHistory = List(RANKING_TYPE) {MutableList(GRADE_HISTORY_SIZE) {0}}
 
+	override val ranking =
+		List(RANKING_TYPE) {Leaderboard(rankingMax, kotlinx.serialization.serializer<List<GrandRow>>())}
+
 	override val propRank
 		get() = rankMapOf(
-			rankingGrade.mapIndexed {a, x -> "$a.grade" to x}+
-				rankingLevel.mapIndexed {a, x -> "$a.level" to x}+
-				rankingTime.mapIndexed {a, x -> "$a.time" to x}+
-				rankingRollClear.mapIndexed {a, x -> "$a.rollClear" to x}+
-				bestSectionTime.mapIndexed {a, x -> "$a.section.time" to x}+
+			bestSectionTime.mapIndexed {a, x -> "$a.section.time" to x}+
 				gradeHistory.mapIndexed {a, x -> "exam.history.$a" to x}
 		)+rankMapOf("exam.record" to recordGrade, "exam.flaws" to demotionPoints)
 	/*override val rankPersMap:Map<String, IntArray>
@@ -256,7 +243,6 @@ class GrandM3:AbstractGrand() {
 		coolDispFrame = 0
 		regretDispFrame = 0
 		rollTime = 0
-		rollClear = 0
 		rollStarted = false
 		secretGrade = 0
 		gradeFlash = 0
@@ -278,10 +264,6 @@ class GrandM3:AbstractGrand() {
 		demotionExamGrade = 0
 
 		rankingRank = -1
-		rankingGrade.forEach {it.fill(0)}
-		rankingLevel.forEach {it.fill(0)}
-		rankingTime.forEach {it.fill(-1)}
-		rankingRollClear.forEach {it.fill(0)}
 		bestSectionTime.forEachIndexed {x, it ->
 			it.forEachIndexed {i, _ ->
 				bestSectionTime[x][i] = tableTimeRegret[minOf(i, tableTimeRegret.lastIndex)]
@@ -493,21 +475,21 @@ class GrandM3:AbstractGrand() {
 
 					receiver.drawScore(engine, 0, 2, "GRADE TIME LEVEL", BASE, COLOR.BLUE)
 
-					for(i in 0..<rankingMax) {
+					ranking[goalType].forEachIndexed {i, it ->
 						receiver.drawScore(
 							engine, 0, 3+i, "%2d".format(i+1), GRADE,
 							if(rankingRank==i) COLOR.RAINBOW else COLOR.YELLOW
 						)
 						receiver.drawScore(
-							engine, 2, 3+i, getGradeName(rankingGrade[goalType][i]), GRADE, when {
-								rankingRollClear[goalType][i]==1||rankingRollClear[goalType][i]==3 -> COLOR.GREEN
-								rankingRollClear[goalType][i]==2||rankingRollClear[goalType][i]==4 -> COLOR.ORANGE
+							engine, 2, 3+i, getGradeName(it.grade), GRADE, when {
+								it.clear==1||it.clear==3 -> COLOR.GREEN
+								it.clear==2||it.clear==4 -> COLOR.ORANGE
 								else -> COLOR.WHITE
 							}
 						)
-						receiver.drawScore(engine, 5, 3+i, rankingTime[goalType][i].toTimeStr, NUM, i==rankingRank)
+						receiver.drawScore(engine, 5, 3+i, it.ti.toTimeStr, NUM, i==rankingRank)
 						receiver.drawScore(
-							engine, 12, 3+i, "%0${if(goalType==0) 3 else 4}d".format(rankingLevel[goalType][i]),
+							engine, 12, 3+i, "%0${if(goalType==0) 3 else 4}d".format(it.lv),
 							NUM,
 							i==rankingRank
 						)
@@ -547,14 +529,14 @@ class GrandM3:AbstractGrand() {
 					}
 
 					receiver.drawScore(engine, 13, 2, "TOTAL", BASE, COLOR.BLUE)
-					receiver.drawScore(engine, 13, 3, totalTime.toTimeStr, NUM, 2f)
+					receiver.drawScore(engine, 13, 3, totalTime.toTimeStr, NUM_T)
 					receiver.drawScore(
 						engine, if(receiver.nextDisplayType==2) 0 else 12, if(receiver.nextDisplayType==2) 18 else 14,
 						"AVERAGE", BASE, COLOR.BLUE
 					)
 					receiver.drawScore(
 						engine, if(receiver.nextDisplayType==2) 0 else 12, if(receiver.nextDisplayType==2) 19 else 15,
-						(totalTime/tableSectionMax[goalType]).toTimeStr, NUM, 2f
+						(totalTime/tableSectionMax[goalType]).toTimeStr, NUM_T
 					)
 
 					receiver.drawScore(engine, 0, 17, "F:VIEW RANKING", BASE, COLOR.GREEN)
@@ -611,7 +593,7 @@ class GrandM3:AbstractGrand() {
 			// Time
 			receiver.drawScore(engine, 0, 14, "Time", BASE, headCol)
 			if(engine.ending!=2||rollTime/10%2==0)
-				receiver.drawScore(engine, 0, 15, engine.statistics.time.toTimeStr, NUM, 2f)
+				receiver.drawScore(engine, 0, 15, engine.statistics.time.toTimeStr, NUM_T)
 
 			// Roll 残り time
 			if(engine.gameActive&&engine.ending==2) {
@@ -667,7 +649,7 @@ class GrandM3:AbstractGrand() {
 				receiver.drawScore(
 					engine, if(x) 8 else 12, if(x) 12 else 15,
 					(engine.statistics.time/(sectionsDone+(engine.ending==0).toInt())).toTimeStr,
-					NUM, 2f
+					NUM_T
 				)
 			}
 		}
@@ -843,7 +825,7 @@ class GrandM3:AbstractGrand() {
 				engine.statistics.level = tableGoalLevel[goalType]
 				engine.timerActive = false
 				engine.ending = 1
-				rollClear = 1
+				engine.statistics.rollClear = 1
 
 				lastGradeTime = engine.statistics.time
 
@@ -857,6 +839,7 @@ class GrandM3:AbstractGrand() {
 						else -> grade>=50
 					}) {
 					mRollFlag = true
+					engine.statistics.rollClear = 3
 					engine.playSE("applause4")
 				} else engine.playSE("applause3")
 			} else {
@@ -998,7 +981,7 @@ class GrandM3:AbstractGrand() {
 
 			// Roll 終了
 			if(rollTime>=ROLLTIMELIMIT) {
-				rollClear = 2
+				engine.statistics.rollClear = if(mRollFlag) 4 else 2
 
 				secretGrade = engine.field.secretGrade
 				if(goalType==0) {
@@ -1156,8 +1139,8 @@ class GrandM3:AbstractGrand() {
 					receiver.drawMenu(
 						engine, 6, 1.66f, getGradeName(grade), GRADE, when {
 							grade>=32&&engine.statc[2]%2==0 -> COLOR.YELLOW
-							rollClear==1||rollClear==3 -> COLOR.GREEN
-							rollClear==2||rollClear==4 -> COLOR.ORANGE
+							engine.statistics.rollClear==1||engine.statistics.rollClear==3 -> COLOR.GREEN
+							engine.statistics.rollClear==2||engine.statistics.rollClear==4 -> COLOR.ORANGE
 							else -> COLOR.WHITE
 						}, 2f
 					)
@@ -1250,8 +1233,8 @@ class GrandM3:AbstractGrand() {
 
 		owner.musMan.fadeSW = false
 		owner.musMan.bgm = when {
-			engine.ending==1||engine.ending==2&&rollClear==0 -> BGM.Result(2)
-			rollClear>0||promotionFlag&&grade>=promotionalExam -> BGM.Result(3)
+			engine.ending==1||engine.ending==2&&engine.statistics.rollClear==0 -> BGM.Result(2)
+			engine.statistics.rollClear>0||promotionFlag&&grade>=promotionalExam -> BGM.Result(3)
 			demotionFlag&&grade<=demotionExamGrade -> BGM.Result(1)
 			else -> BGM.Result(0)
 		}
@@ -1291,7 +1274,7 @@ class GrandM3:AbstractGrand() {
 		if(!owner.replayMode&&startLevel==0&&!always20g&&!big&&engine.ai==null) {
 			owner.statsProp.setProperty("decoration", decoration)
 			// if(!enableexam || !isAnyExam())
-			updateRanking(goalType, grade, engine.statistics.level, lastGradeTime, rollClear)
+			rankingRank = ranking[goalType].add(GrandRow(grade, engine.statistics, medals.copy()))
 			// else
 			// rankingRank = -1;
 
@@ -1305,49 +1288,6 @@ class GrandM3:AbstractGrand() {
 			if(rankingRank!=-1||enableExam||medalST==3) return true
 		}
 		return false
-	}
-
-	/** Update rankings
-	 * @param t Goal Type
-	 * @param gr 段位
-	 * @param lv level
-	 * @param time Time
-	 */
-	private fun updateRanking(t:Int, gr:Int, lv:Int, time:Int, clear:Int) {
-		rankingRank = checkRanking(t, gr, lv, time, clear)
-
-		if(rankingRank!=-1) {
-			// Shift down ranking entries
-			for(i in rankingMax-1 downTo rankingRank+1) {
-				rankingGrade[t][i] = rankingGrade[t][i-1]
-				rankingLevel[t][i] = rankingLevel[t][i-1]
-				rankingTime[t][i] = rankingTime[t][i-1]
-				rankingRollClear[t][i] = rankingRollClear[t][i-1]
-			}
-
-			// Add new data
-			rankingGrade[t][rankingRank] = gr
-			rankingLevel[t][rankingRank] = lv
-			rankingTime[t][rankingRank] = time
-			rankingRollClear[t][rankingRank] = clear
-		}
-	}
-
-	/** Calculate ranking position
-	 * @param t Goal Type
-	 * @param gr 段位
-	 * @param lv level
-	 * @param time Time
-	 * @return Position (-1 if unranked)
-	 */
-	private fun checkRanking(t:Int, gr:Int, lv:Int, time:Int, clear:Int):Int {
-		for(i in 0..<rankingMax)
-			if(gr>rankingGrade[t][i]) return i
-			else if(gr==rankingGrade[t][i]&&clear>rankingRollClear[t][i]) return i
-			else if(gr==rankingGrade[t][i]&&clear==rankingRollClear[t][i]&&lv>rankingLevel[t][i]) return i
-			else if(gr==rankingGrade[t][i]&&clear==rankingRollClear[t][i]&&lv==rankingLevel[t][i]&&time<rankingTime[t][i]) return i
-
-		return -1
 	}
 
 	/** 段位履歴を更新

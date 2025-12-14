@@ -177,6 +177,9 @@ class Statistics {
 	/** TAS detection: slowdown rate */
 	var gameRate = 0f
 
+	/** Remained Retries */
+	var lives = 0
+
 	/** Roll cleared flag (0=Not Reached 1=Reached 2=Fully Survived) */
 	var rollClear = 0
 	/*	set(it) {

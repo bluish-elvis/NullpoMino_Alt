@@ -226,6 +226,7 @@ abstract class AbstractGrand:AbstractMode() {
 	/** Calculate score */
 	override fun calcScore(engine:GameEngine, ev:ScoreEvent):Int {
 		if(engine.ending!=0) return 0
+		calcPower(engine, ev, true)
 		// RO medal 用カウント
 		spinCount += minOf(4, engine.nowPieceSpinCount)
 		return calcScoreGrand(engine, ev)

@@ -821,10 +821,10 @@ class GrandPuzzle:AbstractMode() {
 
 				if(receiver.nextDisplayType==2) {
 					receiver.drawScore(engine, 11, 19, "TOTAL", BASE, COLOR.PINK)
-					receiver.drawScore(engine, 11, 20, engine.statistics.time.toTimeStr, NUM, 2f)
+					receiver.drawScore(engine, 11, 20, engine.statistics.time.toTimeStr, NUM_T)
 				} else {
 					receiver.drawScore(engine, 12, 16, "TOTAL TIME", BASE, COLOR.PINK)
-					receiver.drawScore(engine, 12, 17, engine.statistics.time.toTimeStr, NUM, 2f)
+					receiver.drawScore(engine, 12, 17, engine.statistics.time.toTimeStr, NUM_T)
 				}
 			}
 		}
@@ -1338,12 +1338,32 @@ class GrandPuzzle:AbstractMode() {
 	/** Update rankings
 	 * @param type Game type
 	 * @param stg stage
-	 * @param clper クリア率
+	 * @param rate クリア率
 	 * @param time Time
 	 * @param clear 完全クリア flag
 	 */
-	private fun updateRanking(type:Int, stg:Int, clper:Int, time:Int, clear:Int):Int {
-		rankingRank = checkRanking(type, stg, clper, time, clear)
+	private fun updateRanking(type:Int, stg:Int, rate:Int, time:Int, clear:Int):Int {
+		/** Calculate ranking position
+		 * @param type Game type
+		 * @param stg stage
+		 * @param rate クリア率
+		 * @param time Time
+		 * @param clear 完全クリア flag
+		 * @return Position (-1 if unranked)
+		 */
+		fun checkRanking(type:Int, stg:Int, rate:Int, time:Int, clear:Int):Int {
+			for(i in 0..<rankingMax)
+				if(clear>rankingAllClear[type][i]) return i
+				else if(clear==rankingAllClear[type][i]&&stg>rankingStage[type][i]) return i
+				else if(clear==rankingAllClear[type][i]&&stg==rankingStage[type][i]&&rate>rankingRate[type][i]) return i
+				else if(clear==rankingAllClear[type][i]&&stg==rankingStage[type][i]&&rate==rankingRate[type][i]&&
+					time<rankingTime[type][i]
+				) return i
+
+			return -1
+		}
+
+		rankingRank = checkRanking(type, stg, rate, time, clear)
 
 		if(rankingRank!=-1) {
 			// Shift down ranking entries
@@ -1356,31 +1376,11 @@ class GrandPuzzle:AbstractMode() {
 
 			// Add new data
 			rankingStage[type][rankingRank] = stg
-			rankingRate[type][rankingRank] = clper
+			rankingRate[type][rankingRank] = rate
 			rankingTime[type][rankingRank] = time
 			rankingAllClear[type][rankingRank] = clear
 		}
 		return rankingRank
-	}
-
-	/** Calculate ranking position
-	 * @param type Game type
-	 * @param stg stage
-	 * @param clper クリア率
-	 * @param time Time
-	 * @param clear 完全クリア flag
-	 * @return Position (-1 if unranked)
-	 */
-	private fun checkRanking(type:Int, stg:Int, clper:Int, time:Int, clear:Int):Int {
-		for(i in 0..<rankingMax)
-			if(clear>rankingAllClear[type][i]) return i
-			else if(clear==rankingAllClear[type][i]&&stg>rankingStage[type][i]) return i
-			else if(clear==rankingAllClear[type][i]&&stg==rankingStage[type][i]&&clper>rankingRate[type][i]) return i
-			else if(clear==rankingAllClear[type][i]&&stg==rankingStage[type][i]&&clper==rankingRate[type][i]&&
-				time<rankingTime[type][i]
-			) return i
-
-		return -1
 	}
 
 	companion object {

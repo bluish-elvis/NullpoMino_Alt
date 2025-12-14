@@ -33,6 +33,8 @@ package mu.nu.nullpo.game.subsystem.mode
 import mu.nu.nullpo.game.component.BGM
 import mu.nu.nullpo.game.event.EventReceiver
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
+import mu.nu.nullpo.game.event.Leaderboard
+import mu.nu.nullpo.game.event.Rankable
 import mu.nu.nullpo.game.event.ScoreEvent
 import mu.nu.nullpo.game.net.NetUtil
 import mu.nu.nullpo.game.play.GameEngine
@@ -93,26 +95,14 @@ class SprintLine:NetDummyMode() {
 	/** Current round's ranking position */
 	private var rankingRank = 0
 
-	/** Rankings' times */
-	private val rankingTime = List(GOALTYPE_MAX) {MutableList(rankingMax) {1}}
-
-	/** Rankings' piece counts */
-	private val rankingPiece = List(GOALTYPE_MAX) {MutableList(rankingMax) {0}}
-
-	/** Rankings' PPS values */
-	private val rankingPPS
-		get() = List(GOALTYPE_MAX) {x ->
-			List(rankingMax) {y -> rankingPiece[x][y]*60f/rankingTime[x][y]}
-		}
-
+	override val ranking =
+		List(GOALTYPE_MAX) {Leaderboard(rankingMax, kotlinx.serialization.serializer<List<Rankable.TimeRow>>()){
+			Rankable.TimeRow()
+		} }
 	/* Mode name */
 	override val name = "Lines SprintRace"
 	override val gameIntensity = 2
 	/* Initialization for each player */
-	override val propRank
-		get() = rankMapOf(rankingTime.mapIndexed {i, a -> "$i.time" to a}+
-			rankingPiece.mapIndexed {i, a -> "$i.piece" to a})
-
 	override fun playerInit(engine:GameEngine) {
 		log.debug("playerInit")
 
@@ -123,9 +113,6 @@ class SprintLine:NetDummyMode() {
 		super.playerInit(engine)
 
 		rankingRank = -1
-		rankingTime.forEach {it.fill(-1)}
-		rankingPiece.forEach {it.fill(0)}
-//		rankingPPS = Array(GOALTYPE_MAX) {FloatArray(RANKING_MAX)}
 
 		owner.bgMan.bg = -14
 		engine.frameSkin = GameEngine.FRAME_COLOR_RED
@@ -160,13 +147,11 @@ Ready&Go screen disappears) */
 				val topY = if(receiver.nextDisplayType==2) 6 else 4
 				receiver.drawScore(engine, 1, topY-1, "TIME   PIECE/sec", BASE, COLOR.BLUE)
 
-				for(i in 0..<rankingMax) {
+				ranking[goalType].forEachIndexed { i, it ->
 					receiver.drawScore(engine, 0, topY+i, "%2d".format(i+1), GRADE, COLOR.YELLOW)
-					receiver.drawScore(engine, 2, topY+i, rankingTime[goalType][i].toTimeStr, NUM, rankingRank==i)
-					if(rankingTime[goalType][i]>=0) {
-						receiver.drawScore(engine, 9, topY+i, "${rankingPiece[goalType][i]}", NUM, rankingRank==i)
-						receiver.drawScoreNum(engine, 12, topY+i, rankingPPS[goalType][i], null to null, rankingRank==i)
-					}
+					receiver.drawScore(engine, 2, topY+i, it.ti.toTimeStr, NUM, rankingRank==i)
+						receiver.drawScore(engine, 9, topY+i, "${it.st.totalPieceLocked}", NUM, rankingRank==i)
+						receiver.drawScoreNum(engine, 12, topY+i, it.st.pps, null to null, rankingRank==i)
 				}
 			}
 		} else {
@@ -183,17 +168,19 @@ Ready&Go screen disappears) */
 			}
 			receiver.drawScore(engine, 4, 3, "LINES\nTO GO", NANO, COLOR.BLUE)
 
-			receiver.drawScore(engine, 0, 5, "${engine.statistics.totalPieceLocked}", NUM, 2f)
-			receiver.drawScore(engine, 0, 7, "Piece\n/sec", BASE, COLOR.BLUE)
-			receiver.drawScoreNum(engine, 5, 8, engine.statistics.pps, scale = 2f)
-			receiver.drawScore(engine, 6, 7, "Finesse", BASE, COLOR.BLUE)
-			receiver.drawScore(engine, 5, 5, "${engine.statistics.finesse}", NUM, 2f)
-			receiver.drawScoreNum(engine, 0, 10, engine.statistics.lpm, scale = 2f)
-			receiver.drawScore(engine, 0, 12, "Lines/MIN", BASE, COLOR.BLUE)
+			receiver.drawScore(engine, 0, 6, "${engine.statistics.totalPieceLocked}", NUM, 2f)
+			receiver.drawScore(engine, 0, 8, "Piece\n/sec", BASE, COLOR.BLUE)
+			receiver.drawScoreNum(engine, 5, 9, engine.statistics.pps, scale = 2f)
+
+			receiver.drawScore(engine, 5, 6, "${engine.statistics.finesse}", NUM, 2f)
+			receiver.drawScore(engine, 6, 8, "Finesse", BASE, COLOR.BLUE)
+
+			receiver.drawScoreNum(engine, 0, 12, engine.statistics.lpm, scale = 2f)
+			receiver.drawScore(engine, 0, 14, "Lines/MIN", BASE, COLOR.BLUE)
 
 
 			receiver.drawScore(engine, 0, 15, "Time", BASE, COLOR.BLUE)
-			receiver.drawScore(engine, 0, 16, engine.statistics.time.toTimeStr, NUM, 2f)
+			receiver.drawScore(engine, 0, 16, engine.statistics.time.toTimeStr, NUM_T)
 		}
 
 		super.renderLast(engine)
@@ -217,6 +204,7 @@ Ready&Go screen disappears) */
 		// Game completed
 		if(remainLines<=0) {
 			engine.ending = 1
+			engine.statistics.rollClear = 1
 			engine.gameEnded()
 		} else if(engine.statistics.lines>=GOAL_TABLE[goalType]-5) owner.musMan.fadeSW = true
 		return li
@@ -252,8 +240,7 @@ Ready&Go screen disappears) */
 
 		// Update rankings
 		if(!owner.replayMode&&engine.statistics.lines>=GOAL_TABLE[goalType]&&!big&&engine.ai==null&&!netIsWatch) {
-			updateRanking(engine.statistics.time, engine.statistics.totalPieceLocked, engine.statistics.pps)
-
+			rankingRank = ranking[goalType].add(Rankable.TimeRow(engine.statistics))
 			if(rankingRank!=-1) return true
 		}
 
@@ -265,42 +252,6 @@ Ready&Go screen disappears) */
 		for(i in 0 until GOALTYPE_MAX)
 			for(j in 0 until RANKING_MAX) rankingPPS[i][j] = rankingPiece[i][j]*60f/rankingTime[i][j]
 	}*/
-
-	/** Update rankings
-	 * @param time Time
-	 * @param piece Piece count
-	 */
-	private fun updateRanking(time:Int, piece:Int, pps:Float) {
-		rankingRank = checkRanking(time, piece, pps)
-
-		if(rankingRank!=-1) {
-			// Shift down ranking entries
-			for(i in rankingMax-1 downTo rankingRank+1) {
-				rankingTime[goalType][i] = rankingTime[goalType][i-1]
-				rankingPiece[goalType][i] = rankingPiece[goalType][i-1]
-//				rankingPPS[goalType][i] = rankingPPS[goalType][i-1]
-			}
-
-			// Add new data
-			rankingTime[goalType][rankingRank] = time
-			rankingPiece[goalType][rankingRank] = piece
-//			rankingPPS[goalType][rankingRank] = pps
-		}
-	}
-
-	/** Calculate ranking position
-	 * @param time Time
-	 * @param piece Piece count
-	 * @return Position (-1 if unranked)
-	 */
-	private fun checkRanking(time:Int, piece:Int, pps:Float):Int {
-		for(i in 0..<rankingMax)
-			if(time<rankingTime[goalType][i]||rankingTime[goalType][i]<=0) return i
-			else if(time==rankingTime[goalType][i]&&(piece<rankingPiece[goalType][i]||rankingPiece[goalType][i]==0)) return i
-			else if(time==rankingTime[goalType][i]&&piece==rankingPiece[goalType][i]&&pps>rankingPPS[goalType][i]) return i
-
-		return -1
-	}
 
 	/** NET: Send various in-game stats of [engine] */
 	override fun netSendStats(engine:GameEngine) {

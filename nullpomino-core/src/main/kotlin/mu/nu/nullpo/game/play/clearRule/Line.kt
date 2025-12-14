@@ -48,8 +48,9 @@ import kotlin.math.absoluteValue
 /** TETROMINO:clears filled lines */
 data object Line:ClearType {
 	override fun check(field:Field) = field.checkLines(false)
-	override fun flag(engine:GameEngine, field:Field) = field.checkLines().also {check ->
+	override fun flag(engine:GameEngine, field:Field) = field.checkLines(true).also {check ->
 		engine.run {
+//			if(check.size>0) log.debug("flag.Line: {} {} {} {}", check.linesY, check.linesYfolded, check.linesSplited, check)
 			val inGame = ending==0||staffrollEnableStatistics
 			val li = check.size.let {if(big&&bigHalf) it shr 1 else it}
 			lineClearing = li
@@ -63,8 +64,8 @@ data object Line:ClearType {
 						else -> "erase0"
 					}
 				)
-				lastLinesY = check.linesYfolded
-				lastLineY = check.linesY.maxOrNull()?:0
+//				lastLinesY = check.linesYfolded
+//				lastLineY = check.linesY.maxOrNull()?:0
 				if(frameSkin!=FRAME_SKIN_SG) playSE("line${li.coerceIn(1, 4)}")
 				if(li>=4) playSE("applause${(2+b2bCount).coerceIn(0, 4)}")
 				if(twist) {
@@ -140,30 +141,31 @@ data object Line:ClearType {
 			a
 		}.toSet()*/
 
-		val lines = (-hiddenHeight..<heightWithoutHurryupFloor).filter {
-			getRow(it).all {b -> b?.isEmpty==false&&!b.getAttribute(Block.ATTRIBUTE.WALL)}
+		val lines = (-hiddenHeight..<heightWithoutHurryupFloor).filter {y ->
+			getRow(y).filter {it?.getAttribute(Block.ATTRIBUTE.WALL)!=true}.all {
+				it?.isEmpty==false&&!it.getAttribute(Block.ATTRIBUTE.ERASE)
+			}
 		}.toSet()
 		if(flag) {
-			for(i in -hiddenHeight..<heightWithoutHurryupFloor) {
-				val fulled = lines.indexOf(i)>=0
-				setLineFlag(i, fulled)
-				for(it in getRow(i)) it?.setAttribute(fulled, Block.ATTRIBUTE.ERASE)
+			for(y in -hiddenHeight..<heightWithoutHurryupFloor) {
+				val fulled = lines.contains(y)
+				setLineFlag(y, fulled)
+				getRow(y).forEach {it?.setAttribute(fulled, Block.ATTRIBUTE.ERASE)}
 			}
 		}
 //		if(lines.isNotEmpty()) log.debug("clearLines {}: {}", flag, lines)
 		return ClearResult(lines.size, lines.associateWith {y ->
 			getRow(y).filterNotNullIndexed().associate {(x, b) -> x to b}
-		})
+		}).also {check -> if(flag) this.lastClearResult = check}
 	}
 	/** Linesを消す
 	 * @return 消えたLines count
 	 */
 	fun Field.clearLines():ClearResult {
-		val lines = checkLines(false)
-
-//		if(lines.size>0) log.debug("clearLines null: {} {} {} {}", lines.linesY, lines.linesYfolded, lines.linesSplited,lines)
+		val lines = lastClearResult
+//		log.debug("clearLines: {} {}", lines.size, lines)
 		// field内
-		lines.linesY.forEach {y ->
+		lines.linesY.subtract(lockedLines).forEach {y ->
 			getRow(y).filterNotNullIndexed().forEach {(x, b) ->
 				if(b.hard>0) {
 					b.hard--

@@ -30,12 +30,12 @@
  */
 package mu.nu.nullpo.game.subsystem.mode
 
-import mu.nu.nullpo.game.component.BGM
-import mu.nu.nullpo.game.component.Block
-import mu.nu.nullpo.game.component.Controller
-import mu.nu.nullpo.game.component.RuleOptions
+import kotlinx.serialization.serializer
+import mu.nu.nullpo.game.component.*
 import mu.nu.nullpo.game.event.EventReceiver
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
+import mu.nu.nullpo.game.event.Leaderboard
+import mu.nu.nullpo.game.event.Rankable
 import mu.nu.nullpo.game.event.ScoreEvent
 import mu.nu.nullpo.game.net.NetPlayerClient
 import mu.nu.nullpo.game.net.NetUtil
@@ -110,17 +110,12 @@ class MarathonPlus:NetDummyMode() {
 	/** Current round's ranking position */
 	private var rankingRank = 0
 
-	/** Rankings' scores */
-	private val rankingScore = List(RANKING_TYPE) {MutableList(rankingMax) {0L}}
-	private val rankingLives = List(RANKING_TYPE) {MutableList(rankingMax) {0}}
-	private val rankingLines = List(RANKING_TYPE) {MutableList(rankingMax) {0}}
-	private val rankingTime = List(RANKING_TYPE) {MutableList(rankingMax) {-1}}
-
-	override val propRank
-		get() = rankMapOf(rankingScore.mapIndexed {a, x -> "$a.score" to x}+
-			rankingLives.mapIndexed {a, x -> "$a.lives" to x}+
-			rankingLines.mapIndexed {a, x -> "$a.lines" to x}+
-			rankingTime.mapIndexed {a, x -> "$a.time" to x})
+	override val ranking =
+		List(RANKING_TYPE) {
+			Leaderboard(rankingMax, serializer<List<Rankable>>()) {
+				if(it%2==1&&it>TURBO_MAX*2) Rankable.TimeRow() else Rankable.ScoreRow()
+			}
+		}
 
 	private var ruleOptOrg = RuleOptions()
 	/* Mode name */
@@ -143,10 +138,6 @@ class MarathonPlus:NetDummyMode() {
 		bonusLines = 0
 
 		rankingRank = -1
-		rankingScore.forEach {it.fill(0)}
-		rankingLines.forEach {it.fill(0)}
-		rankingLives.forEach {it.fill(0)}
-		rankingTime.forEach {it.fill(-1)}
 
 		netPlayerInit(engine)
 		if(!owner.replayMode) version = CURRENT_VERSION else
@@ -300,11 +291,11 @@ class MarathonPlus:NetDummyMode() {
 				val topY = if(receiver.nextDisplayType==2) 6 else 4
 				receiver.drawScore(engine, 2, topY-1, "SCORE   LINE TIME", BASE, COLOR.BLUE)
 				val gameType = typeSerial(goalType, turbo, startLevel)
-				for(i in 0..<rankingMax) {
+				ranking[gameType].forEachIndexed {i, it ->
 					receiver.drawScore(engine, 0, topY+i, "%2d".format(i+1), GRADE, COLOR.YELLOW)
-					receiver.drawScore(engine, 2, topY+i, "${rankingScore[gameType][i]}", NUM, i==rankingRank)
-					receiver.drawScore(engine, 10, topY+i, "${rankingLines[gameType][i]}", NUM, i==rankingRank)
-					receiver.drawScore(engine, 15, topY+i, rankingTime[gameType][i].toTimeStr, NUM, i==rankingRank)
+					receiver.drawScore(engine, 2, topY+i, "${it.sc}", NUM, i==rankingRank)
+					receiver.drawScore(engine, 10, topY+i, "${it.li}", NUM, i==rankingRank)
+					receiver.drawScore(engine, 15, topY+i, it.ti.toTimeStr, NUM, i==rankingRank)
 				}
 			}
 		} else {
@@ -325,7 +316,7 @@ class MarathonPlus:NetDummyMode() {
 			receiver.drawScore(engine, 0, 7, "Level", BASE, COLOR.BLUE)
 			receiver.drawScore(engine, 5, 7, "$level/"+tableGameClearLevel[goalType], NUM, 2f)
 			receiver.drawScore(engine, 0, 8, "Time", BASE, COLOR.BLUE)
-			receiver.drawScore(engine, 0, 9, engine.statistics.time.toTimeStr, NUM, 2f)
+			receiver.drawScore(engine, 0, 9, engine.statistics.time.toTimeStr, NUM_T)
 			if(engine.ending==2) {
 				val remainRollTime = maxOf(0, bonusTimeMax-bonusTime)
 
@@ -485,6 +476,7 @@ class MarathonPlus:NetDummyMode() {
 						engine.playSE("endingstart")
 						engine.playSE("levelup_section")
 						engine.ending = 2
+						engine.statistics.rollClear = 1
 					}
 
 					owner.musMan.bgm = tableBGM[goalType][tableBGM[goalType].size-1]
@@ -651,57 +643,15 @@ class MarathonPlus:NetDummyMode() {
 
 		// Update rankings
 		if(!owner.replayMode&&!big&&engine.ai==null) {
-			updateRanking(
-				engine.statistics.score, engine.statistics.lines, engine.lives, engine.statistics.time,
-				typeSerial(goalType, turbo, startLevel)
+			val type = typeSerial(goalType, turbo, startLevel)
+			ranking[type].add(
+				if(goalType>0&&startLevel/*type%2==1 && type>TURBO_MAX*2*/) Rankable.TimeRow(engine.statistics)
+				else Rankable.ScoreRow(engine.statistics)
 			)
 
 			if(rankingRank!=-1) return true
 		}
 		return false
-	}
-
-	/** Update rankings
-	 * @param sc Score
-	 * @param li Lines
-	 * @param time Time
-	 */
-	private fun updateRanking(sc:Long, li:Int, lf:Int, time:Int, type:Int) {
-		rankingRank = checkRanking(sc, li, lf, time, type)
-
-		if(rankingRank!=-1) {
-			// Shift down ranking entries
-			for(i in rankingMax-1 downTo rankingRank+1) {
-				rankingScore[type][i] = rankingScore[type][i-1]
-				rankingLines[type][i] = rankingLines[type][i-1]
-				rankingLives[type][i] = rankingLives[type][i-1]
-				rankingTime[type][i] = rankingTime[type][i-1]
-			}
-
-			// Add new data
-			rankingScore[type][rankingRank] = sc
-			rankingLines[type][rankingRank] = li
-			rankingLives[type][rankingRank] = lf
-			rankingTime[type][rankingRank] = time
-		}
-	}
-
-	/** Calculate ranking position
-	 * @param sc Score
-	 * @param li Lines
-	 * @param time Time
-	 * @return Position (-1 if unranked)
-	 */
-	private fun checkRanking(sc:Long, li:Int, lf:Int, time:Int, type:Int):Int {
-		for(i in 0..<rankingMax)
-			if(goalType>0&&startLevel) {
-				if(time<rankingTime[type][i]) return i
-				else if(time==rankingTime[type][i]&&sc>rankingScore[type][i]) return i
-			} else if(sc>rankingScore[type][i]) return i
-			else if(sc==rankingScore[type][i]&&li>rankingLines[type][i]) return i
-			else if(sc==rankingScore[type][i]&&li==rankingLines[type][i]&&lf>rankingLives[type][i]) return i
-
-		return -1
 	}
 
 	/* NET: Message received */

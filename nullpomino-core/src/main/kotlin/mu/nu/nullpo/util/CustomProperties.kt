@@ -31,23 +31,14 @@
 package mu.nu.nullpo.util
 
 import kotlinx.serialization.encodeToString
-import mu.nu.nullpo.util.GeneralUtil.Json
 import mu.nu.nullpo.game.event.Rankable
+import mu.nu.nullpo.util.GeneralUtil.Json
 import org.apache.logging.log4j.LogManager
-import java.io.ByteArrayInputStream
-import java.io.ByteArrayOutputStream
-import java.io.File
-import java.io.FileInputStream
-import java.io.FileNotFoundException
-import java.io.FileOutputStream
-import java.io.IOException
-import java.io.UnsupportedEncodingException
+import java.io.*
 import java.net.URLDecoder
 import java.net.URLEncoder
 import java.nio.charset.StandardCharsets
-import java.util.Enumeration
-import java.util.Properties
-import java.util.Vector
+import java.util.*
 import java.util.zip.GZIPInputStream
 import java.util.zip.GZIPOutputStream
 import java.util.zip.ZipException
@@ -137,7 +128,7 @@ class CustomProperties(name:String = ""):Properties() {
 	 * @return 指定された[key]に設定されていた値。それがない場合は null
 	 */
 	inline fun <reified T> setProperty(key:String, value:T):T? = setProperty(key,
-		if(value is Rankable) Json.encodeToString(value) else  "$value") as? T
+		if(value is Rankable) Json.encodeToString<Rankable>(value) else "$value") as? T
 	/** プロパティを設定
 	 * @return 指定された[key]に対応する値 (見つからなかったら[def]）
 	 */
