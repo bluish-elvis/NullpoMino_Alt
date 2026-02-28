@@ -157,7 +157,7 @@ open class PoochyBot:DummyAI(), Runnable {
 				delay = 0
 			}
 			if(DEBUG_ALL) log.debug(
-				"Currently in ARE. Next piece type = ${nextPiece.type.name}, IRS = $input"
+				"Currently in ARE. Next piece type = ${nextPiece.shape.name}, IRS = $input"
 			)
 			//engine.ctrl.setButtonBit(input);
 			inputARE = input
@@ -175,7 +175,7 @@ open class PoochyBot:DummyAI(), Runnable {
 			val rt = pieceNow.direction
 			val fld = engine.field
 			val pieceTouchGround = pieceNow.checkCollision(nowX, nowY+1, fld)
-			val nowType = pieceNow.type
+			val nowType = pieceNow.shape
 			val width = fld.width
 
 			var moveDir = 0 //-1 = left,  1 = right
@@ -554,7 +554,7 @@ open class PoochyBot:DummyAI(), Runnable {
 
 	private fun calcIRS(piece:Piece?, engine:GameEngine):Int {
 		val p = checkOffset(piece, engine)
-		val nextType = p.type
+		val nextType = p.shape
 		val fld = engine.field
 		val spawnX = engine.getSpawnPosX(p, fld)
 		val speed = engine.speed
@@ -623,7 +623,7 @@ open class PoochyBot:DummyAI(), Runnable {
 		else engine.getNextObjectCopy(engine.nextPieceCount))
 		pieceNow = checkOffset(pieceNow, engine)
 		pieceHold = checkOffset(pieceHold, engine)
-		if(pieceHold.type==pieceNow.type) pieceHold = null
+		if(pieceHold.shape==pieceNow.shape) pieceHold = null
 		/* if (!pieceNow.offsetApplied)
 		 * pieceNow.applyOffsetArray(engine.ruleOpt.pieceOffsetX[pieceNow.id],
 		 * engine.ruleOpt.pieceOffsetY[pieceNow.id]);
@@ -634,8 +634,8 @@ open class PoochyBot:DummyAI(), Runnable {
 
 		val canFloorKick =
 			engine.nowWallkickRiseCount<engine.ruleOpt.spinWallkickMaxRise||engine.ruleOpt.spinWallkickMaxRise<0
-		val canFloorKickI = pieceNow.type==Piece.Shape.I&&nowRt and 1==0&&canFloorKick
-		var canFloorKickT = pieceNow.type==Piece.Shape.T&&nowRt!=Piece.DIRECTION_UP&&canFloorKick
+		val canFloorKickI = pieceNow.shape==Piece.Shape.I&&nowRt and 1==0&&canFloorKick
+		var canFloorKickT = pieceNow.shape==Piece.Shape.T&&nowRt!=Piece.DIRECTION_UP&&canFloorKick
 		if(canFloorKickT&&!pieceNow.checkCollision(nowX, nowY, Piece.DIRECTION_UP, fld)) canFloorKickT = false
 		else if(canFloorKickT&&!pieceNow.checkCollision(nowX-1, nowY, Piece.DIRECTION_UP, fld)) canFloorKickT = false
 		else if(canFloorKickT&&!pieceNow.checkCollision(nowX+1, nowY, Piece.DIRECTION_UP, fld)) canFloorKickT = false
@@ -879,12 +879,12 @@ open class PoochyBot:DummyAI(), Runnable {
 					)
 
 					//Bonus for holding an I-piece, penalty for holding an S or Z.
-					val holdPts = when(pieceHold.type) {
+					val holdPts = when(pieceHold.shape) {
 						Piece.Shape.I -> -30
 						Piece.Shape.S, Piece.Shape.Z -> 30
 						Piece.Shape.O -> 10
 						else -> 0
-					}+when(pieceNow.type) {
+					}+when(pieceNow.shape) {
 						Piece.Shape.I -> 30
 						Piece.Shape.S, Piece.Shape.Z -> -30
 						Piece.Shape.O -> -10
@@ -1156,11 +1156,11 @@ open class PoochyBot:DummyAI(), Runnable {
 		val heightBefore = fld.highestBlockY
 		// Twister flag
 		var twist = false
-		if(piece.type==Piece.Shape.T&&rtOld!=-1&&fld.isTwistSpot(x, y, piece.big)) twist = true
+		if(piece.shape==Piece.Shape.T&&rtOld!=-1&&fld.isTwistSpot(x, y, piece.big)) twist = true
 
 		//Does move fill in valley with an I-piece?
 		var valley = 0
-		if(piece.type==Piece.Shape.I) if(xMin==xMax&&0<=xMin&&xMin<width) {
+		if(piece.shape==Piece.Shape.I) if(xMin==xMax&&0<=xMin&&xMin<width) {
 			//if (DEBUG_ALL) log.debug("actualX = " + xMin);
 			val xDepth = depthsBefore[xMin]
 			var sideDepth = -1
@@ -1173,7 +1173,7 @@ open class PoochyBot:DummyAI(), Runnable {
 		// Place the piece
 		if(!piece.placeToField(x, y, rt, fld)) {
 			if(DEBUG_ALL) log.debug(
-				"End of thinkMain($x, $y, $rt, $rtOld, fld, piece ${piece.type.name}, $depth). pts = 0 (Cannot place piece)"
+				"End of thinkMain($x, $y, $rt, $rtOld, fld, piece ${piece.shape.name}, $depth). pts = 0 (Cannot place piece)"
 			)
 			return Integer.MIN_VALUE
 		}
@@ -1210,7 +1210,7 @@ open class PoochyBot:DummyAI(), Runnable {
 		 * rColPenalty = 100; */
 		//Apply score penalty if I-piece would overflow canyon,
 		//unless it would also uncover a hole.
-		if(!big&&piece.type==Piece.Shape.I&&holeBefore<=holeAfter&&xMax==width-1) {
+		if(!big&&piece.shape==Piece.Shape.I&&holeBefore<=holeAfter&&xMax==width-1) {
 			val rValleyDepth = depthsAfter[width-1-move]-depthsAfter[width-1]
 			if(rValleyDepth>0) pts -= (rValleyDepth+1)*rColPenalty
 		}
@@ -1223,11 +1223,11 @@ open class PoochyBot:DummyAI(), Runnable {
 		pts += valleyBonus
 		if(lines==1&&!danger&&depth==0&&heightAfter>=16&&holeBefore<3&&!twist&&xMax==width-1) {
 			if(DEBUG_ALL) log.debug(
-				"End of thinkMain($x, $y, $rt, "+rtOld+", fld, piece ${piece.type.name}, 0). pts = 0 (Special Condition 3)"
+				"End of thinkMain($x, $y, $rt, "+rtOld+", fld, piece ${piece.shape.name}, 0). pts = 0 (Special Condition 3)"
 			)
 			return Integer.MIN_VALUE
 		}
-		//Points for line clears
+		//Points for lines clears
 		if(peril) {
 			if(lines==1) pts += 500000
 			if(lines==2) pts += 1000000
@@ -1396,7 +1396,7 @@ open class PoochyBot:DummyAI(), Runnable {
 			}
 		}
 		if(DEBUG_ALL) log.debug(
-			"End of thinkMain($x, $y, $rt, "+rtOld+", fld, piece ${piece.type.name}, $depth). pts = "+pts
+			"End of thinkMain($x, $y, $rt, "+rtOld+", fld, piece ${piece.shape.name}, $depth). pts = "+pts
 		)
 		return pts
 	}
@@ -1428,15 +1428,15 @@ open class PoochyBot:DummyAI(), Runnable {
 			if(dir<0) return piece.getMostMovableLeft(testX, testY, rt, fld!!)
 			else if(dir>0) return piece.getMostMovableRight(testX, testY, rt, fld!!)
 		}
-		if(piece.type==Piece.Shape.I&&dir>0) return piece.getMostMovableRight(testX, testY, rt, fld!!)
+		if(piece.shape==Piece.Shape.I&&dir>0) return piece.getMostMovableRight(testX, testY, rt, fld!!)
 		var floorKickOK = false
-		if((piece.type==Piece.Shape.I||piece.type==Piece.Shape.T)&&
+		if((piece.shape==Piece.Shape.I||piece.shape==Piece.Shape.T)&&
 			(engine.nowWallkickRiseCount<engine.ruleOpt.spinWallkickMaxRise||
 				engine.ruleOpt.spinWallkickMaxRise<0||engine.stat===GameEngine.Status.ARE)
 		)
 			floorKickOK = true
 		testY = piece.getBottom(testX, testY, testRt, fld!!)
-		if(piece.type==Piece.Shape.T&&piece.direction!=Piece.DIRECTION_UP) {
+		if(piece.shape==Piece.Shape.T&&piece.direction!=Piece.DIRECTION_UP) {
 			val testY2 = piece.getBottom(testX, testY, Piece.DIRECTION_DOWN, fld)
 			if(testY2>testY) {
 				val kickRight = piece.checkCollision(testX+shift, testY2, testRt, fld)
@@ -1456,7 +1456,7 @@ open class PoochyBot:DummyAI(), Runnable {
 			else if(testRt!=rt) {
 				testRt = rt
 				if(floorKickOK&&piece.checkCollision(testX, testY, testRt, fld)) {
-					if(piece.type==Piece.Shape.I) {
+					if(piece.shape==Piece.Shape.I) {
 						testY -= if(piece.big) 4
 						else 2
 					} else testY--
@@ -1464,9 +1464,9 @@ open class PoochyBot:DummyAI(), Runnable {
 				}
 			} else {
 				if(DEBUG_ALL) log.debug(
-					"mostMovableX($x, $y, $dir, piece ${piece.type.name}, $rt) = $testX"
+					"mostMovableX($x, $y, $dir, piece ${piece.shape.name}, $rt) = $testX"
 				)
-				if(piece.type==Piece.Shape.I&&testX<0&&rt and 1>0) {
+				if(piece.shape==Piece.Shape.I&&testX<0&&rt and 1>0) {
 					val height1 = fld.getHighestBlockY(1)
 					if(height1<fld.getHighestBlockY(2)&&height1<fld.getHighestBlockY(3)+2) return 0
 					else if(height1>fld.getHighestBlockY(0)) return -1

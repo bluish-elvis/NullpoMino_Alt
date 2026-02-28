@@ -46,8 +46,8 @@ import java.util.*
 import kotlin.math.abs
 
 /** NET-VS-BATTLE Mode */
-class NetVSBattle:NetDummyVSMode() {
-	/** Column number of hole in most recent garbage line */
+internal class NetVSBattle:NetDummyVSMode() {
+	/** Column number of hole in most recent garbage lines */
 	private var lastHole = -1
 
 	/** True if Hurry Up has been started */
@@ -244,7 +244,7 @@ class NetVSBattle:NetDummyVSMode() {
 					lastevent[pid] = EVENT_TWIST_TRIPLE
 				}// Twister 3 lines
 				// Twister 2 lines
-				// Twister 1 line
+				// Twister 1 lines
 			} else // Single
 				if(ev==1) {
 					attackLineIndex = LINE_ATTACK_INDEX_SINGLE

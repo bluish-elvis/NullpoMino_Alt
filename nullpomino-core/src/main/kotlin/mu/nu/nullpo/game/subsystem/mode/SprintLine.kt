@@ -39,6 +39,7 @@ import mu.nu.nullpo.game.event.ScoreEvent
 import mu.nu.nullpo.game.net.NetUtil
 import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.game.subsystem.mode.menu.*
+import mu.nu.nullpo.gui.common.AbstractRenderer
 import mu.nu.nullpo.gui.common.BaseFont.FONT.*
 import mu.nu.nullpo.util.CustomProperties
 import mu.nu.nullpo.util.GeneralUtil.toTimeStr
@@ -68,7 +69,7 @@ class SprintLine:NetDummyMode() {
 	/** BGM number */
 	private var bgmId:Int by DelegateMenuItem(itemBGM)
 
-	private val itemBig = BooleanMenuItem("big", "BIG", COLOR.BLUE, false)
+	private val itemBig = BooleanMenuItem("big", "BIG", COLOR.ORANGE, false)
 	/** BigMode */
 	private var big:Boolean by DelegateMenuItem(itemBig)
 
@@ -96,9 +97,11 @@ class SprintLine:NetDummyMode() {
 	private var rankingRank = 0
 
 	override val ranking =
-		List(GOALTYPE_MAX) {Leaderboard(rankingMax, kotlinx.serialization.serializer<List<Rankable.TimeRow>>()){
-			Rankable.TimeRow()
-		} }
+		List(GOALTYPE_MAX) {
+			Leaderboard(rankingMax, kotlinx.serialization.serializer<List<Rankable.TimeRow>>()) {
+				Rankable.TimeRow()
+			}
+		}
 	/* Mode name */
 	override val name = "Lines SprintRace"
 	override val gameIntensity = 2
@@ -115,7 +118,7 @@ class SprintLine:NetDummyMode() {
 		rankingRank = -1
 
 		owner.bgMan.bg = -14
-		engine.frameSkin = GameEngine.FRAME_COLOR_RED
+		engine.frame = GameEngine.Frame.RED
 
 		netPlayerInit(engine)
 
@@ -147,11 +150,11 @@ Ready&Go screen disappears) */
 				val topY = if(receiver.nextDisplayType==2) 6 else 4
 				receiver.drawScore(engine, 1, topY-1, "TIME   PIECE/sec", BASE, COLOR.BLUE)
 
-				ranking[goalType].forEachIndexed { i, it ->
+				ranking[goalType].forEachIndexed {i, it ->
 					receiver.drawScore(engine, 0, topY+i, "%2d".format(i+1), GRADE, COLOR.YELLOW)
-					receiver.drawScore(engine, 2, topY+i, it.ti.toTimeStr, NUM, rankingRank==i)
-						receiver.drawScore(engine, 9, topY+i, "${it.st.totalPieceLocked}", NUM, rankingRank==i)
-						receiver.drawScoreNum(engine, 12, topY+i, it.st.pps, null to null, rankingRank==i)
+					receiver.drawScore(engine, 2, topY+i, (if(it.clear>0) it.ti else -1).toTimeStr, NUM, rankingRank==i)
+					receiver.drawScore(engine, 9, topY+i, "${it.st.totalPieceLocked}", NUM, rankingRank==i)
+					receiver.drawScoreNum(engine, 12, topY+i, it.st.pps, null to null, rankingRank==i)
 				}
 			}
 		} else {
@@ -167,6 +170,14 @@ Ready&Go screen disappears) */
 				receiver.drawScore(engine, 0, 3, it, NUM, fontColor, 2f)
 			}
 			receiver.drawScore(engine, 4, 3, "LINES\nTO GO", NANO, COLOR.BLUE)
+
+			(receiver as? AbstractRenderer)?.let {
+				val y = it.fieldY(engine, engine.fieldHeight-remainLines)
+				it.drawLineSpecific(it.fieldX(engine, 0), y, it.fieldX(engine, engine.fieldWidth), y,
+					0xFFFFFF, 1f, 2f)
+			}
+
+
 
 			receiver.drawScore(engine, 0, 6, "${engine.statistics.totalPieceLocked}", NUM, 2f)
 			receiver.drawScore(engine, 0, 8, "Piece\n/sec", BASE, COLOR.BLUE)
@@ -344,10 +355,10 @@ Ready&Go screen disappears) */
 		/** Logger */
 		internal val log = LogManager.getLogger()
 
-		/** Target line count type */
+		/** Target lines count type */
 		private const val GOALTYPE_MAX = 3
 
-		/** Target line count constants */
+		/** Target lines count constants */
 		private val GOAL_TABLE = listOf(20, 40, 100)
 	}
 }

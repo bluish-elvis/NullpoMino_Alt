@@ -35,7 +35,7 @@ import mu.nu.nullpo.game.component.Piece.Shape
 import kotlin.random.Random
 
 abstract class Randomizer {
-	protected var seed:Long = 0L; private set//Random.Default.nextLong()
+	protected var seed:Long = 0L; private set//Random.nextLong()
 	protected var r:Random = Random(seed); private set
 	/**enabled pieces*/
 	var pieces = Shape.all.map {it.ordinal}

@@ -46,16 +46,12 @@ class BGAFKaleidSq<T>(bg:mu.nu.nullpo.gui.common.ResourceImage<T>):mu.nu.nullpo.
 	private var x = Random.nextFloat()*640
 	private var y = Random.nextFloat()*480
 	override fun update() {
-		val vel = 6.6f*(1+speed/2)
-		x += sin(r)*vel
-		y += cos(r)*vel
-		while(x<0) x += 320
-		while(x>=320) x -= 320
-		while(y<0) y += 240
-		while(y>=240) y -= 240
-		if(speed>1) {
-			r += .0025f+(speed-1)*RG/12
-			while(r>=360) r -= 360
+		super.update()
+		val vel = 6.6f*(1+spdN/2)
+		x = (x+sin(r)*vel).mod(320f)
+		y = (y+cos(r)*vel).mod(240f)
+		if(spdN>1) {
+			r = (r+.0025f+(spdN-1)*RG/12).mod(360f)
 		}
 	}
 
@@ -87,7 +83,7 @@ class BGAFKaleidSq<T>(bg:mu.nu.nullpo.gui.common.ResourceImage<T>):mu.nu.nullpo.
 		img.draw(320+x, 240+y, 320f, 240f, 640-x, 480-y)
 	}
 }
-/*Case 5 '（ダイヤ）
+/*Case 5 '(ダイヤ)
 With Dia
 	If TrM = 0 Then .X = .X - 8: .Y = .Y + 8
 	If TrM = 1 Then .X = .X + 12: .Y = .Y - 12

@@ -71,7 +71,7 @@ class SprintScore:NetDummyMode() {
 	/** Flag for enabling combos */
 	private var enableCombo = false
 
-	private val itemBig = BooleanMenuItem("big", "BIG", COLOR.BLUE, false)
+	private val itemBig = BooleanMenuItem("big", "BIG", COLOR.ORANGE, false)
 	/** BigMode */
 	private var big:Boolean by DelegateMenuItem(itemBig)
 
@@ -102,7 +102,7 @@ class SprintScore:NetDummyMode() {
 
 		rankingRank = -1
 
-		engine.frameSkin = GameEngine.FRAME_COLOR_BRONZE
+		engine.frame = GameEngine.Frame.BRONZE
 
 		netPlayerInit(engine)
 

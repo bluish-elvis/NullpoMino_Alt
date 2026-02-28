@@ -63,7 +63,6 @@ class GrandZ:AbstractGrand() {
 	/** Remaining frames of flashing grade display */
 	private var gradeFlash = 0
 
-
 	/** Secret Grade */
 	private var secretGrade = 0
 
@@ -77,7 +76,7 @@ class GrandZ:AbstractGrand() {
 	/** Selected start level */
 	private var startLevel = 0
 
-	private val itemBig = BooleanMenuItem("big", "BIG", COLOR.BLUE, false)
+	private val itemBig = BooleanMenuItem("big", "BIG", COLOR.ORANGE, false)
 	/** BigMode */
 	private var big:Boolean by DelegateMenuItem(itemBig)
 
@@ -110,7 +109,7 @@ class GrandZ:AbstractGrand() {
 				rankingTime.mapIndexed {a, x -> "$a.time" to x}+
 				rankingRollClear.mapIndexed {a, x -> "$a.rollClear" to x}+
 				bestSectionTime.mapIndexed {a, x -> "$a.section.time" to x}+
-				bestSectionLine.mapIndexed {a, x -> "$a.section.line" to x}
+				bestSectionLine.mapIndexed {a, x -> "$a.section.lines" to x}
 		)
 	/** Returns the name of this mode */
 	override val name = "Grand Finale"
@@ -148,7 +147,7 @@ class GrandZ:AbstractGrand() {
 		engine.b2bEnable = true
 		engine.splitB2B = true
 		engine.comboType = GameEngine.COMBO_TYPE_DOUBLE
-		engine.frameSkin = GameEngine.FRAME_COLOR_GRAY
+		engine.frame = GameEngine.Frame.GRAY
 		engine.bigHalf = true
 		engine.bigMove = true
 		engine.staffrollEnable = true
@@ -429,7 +428,7 @@ class GrandZ:AbstractGrand() {
 
 	override fun onARE(engine:GameEngine):Boolean = if(gametype==0) super.onARE(engine) else false
 
-	/** Calculates line-clear score
+	/** Calculates lines-clear score
 	 * (This function will be called even if no lines are cleared) */
 	override fun calcScore(engine:GameEngine, ev:ScoreEvent):Int {
 		val li = ev.lines
@@ -777,9 +776,9 @@ class GrandZ:AbstractGrand() {
 		/** Allowed Topouts */
 		private val MAX_LIVES = listOf(4, 0, 2)
 
-		/** goal of gamemode:1 */
+		/** goal of gameMode:1 */
 		private val JOKER_SECTION_LEVEL = listOf(150, 250)
-		/** goal of gamemode:2 */
+		/** goal of gameMode:2 */
 		private const val FURTHEST_LINES = 300
 	}
 }

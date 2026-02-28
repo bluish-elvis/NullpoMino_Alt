@@ -644,7 +644,7 @@ class AvalancheVS:AvalancheVSDummyMode() {
 		val fldPosX = receiver.fieldX(engine)
 		val fldPosY = receiver.fieldY(engine)
 		val pid = engine.playerID
-		val playerColor = EventReceiver.getPlayerColor(pid)
+		val playerColor = COLOR.fromPlayerID(pid)
 
 		// Timer
 		if(pid==0) receiver.drawFont(224, 8, engine.statistics.time.toTimeStr, BASE)

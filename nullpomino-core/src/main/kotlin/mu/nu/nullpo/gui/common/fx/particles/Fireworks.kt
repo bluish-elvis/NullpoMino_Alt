@@ -90,6 +90,7 @@ class Fireworks @JvmOverloads constructor(
 		} else listOf(particle)
 	}.flatten()
 
+	val set get() = particles+this
 	private var ticks = 0
 	private val cColor = Triple(
 		lerp(red, 255, .75f)/255f, lerp(green, 255, .75f)/255f, lerp(blue, 255, .75f)/255f

@@ -32,7 +32,7 @@ package mu.nu.nullpo.game.subsystem.mode.another
 
 import mu.nu.nullpo.game.component.Block
 import mu.nu.nullpo.game.component.Statistics
-import mu.nu.nullpo.game.event.EventReceiver
+import mu.nu.nullpo.game.event.EventReceiver.COLOR
 import mu.nu.nullpo.game.event.ScoreEvent
 import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.game.play.GameEngine.GameStyle
@@ -133,7 +133,7 @@ abstract class Avalanche1PDummyMode:AbstractMode() {
 		level = 5
 		toNextLevel = blocksPerLevel
 
-		engine.frameSkin = GameEngine.FRAME_COLOR_PURPLE
+		engine.frame = GameEngine.Frame.PURPLE
 		engine.clearMode = Color(4, true, true, true)
 		engine.garbageColorClear = true
 		engine.colorClearSize = 4
@@ -322,27 +322,27 @@ abstract class Avalanche1PDummyMode:AbstractMode() {
 
 	/* Render results screen */
 	override fun renderResult(engine:GameEngine) {
-		receiver.drawMenu(engine, 0, 1, "PLAY DATA", BASE, EventReceiver.COLOR.ORANGE)
+		receiver.drawMenu(engine, 0, 1, "PLAY DATA", BASE, COLOR.ORANGE)
 
-		receiver.drawMenu(engine, 0, 3, "Score", BASE, EventReceiver.COLOR.BLUE)
+		receiver.drawMenu(engine, 0, 3, "Score", BASE, COLOR.BLUE)
 		val strScoreBefore = "%10d".format(scoreBeforeBonus(engine.statistics))
-		receiver.drawMenu(engine, 0, 4, strScoreBefore, BASE, EventReceiver.COLOR.GREEN)
+		receiver.drawMenu(engine, 0, 4, strScoreBefore, BASE, COLOR.GREEN)
 
-		receiver.drawMenu(engine, 0, 5, "ZENKESHI", BASE, EventReceiver.COLOR.BLUE)
+		receiver.drawMenu(engine, 0, 5, "ZENKESHI", BASE, COLOR.BLUE)
 		receiver.drawMenu(engine, 0, 6, "%10d".format(zenKeshiCount), BASE)
 		val strZenKeshiBonus = "+$zenKeshiBonus"
-		receiver.drawMenu(engine, 10-strZenKeshiBonus.length, 7, strZenKeshiBonus, BASE, EventReceiver.COLOR.GREEN)
+		receiver.drawMenu(engine, 10-strZenKeshiBonus.length, 7, strZenKeshiBonus, BASE, COLOR.GREEN)
 
-		receiver.drawMenu(engine, 0, 8, "MAX CHAIN", BASE, EventReceiver.COLOR.BLUE)
+		receiver.drawMenu(engine, 0, 8, "MAX CHAIN", BASE, COLOR.BLUE)
 		receiver.drawMenu(engine, 0, 9, "%10d".format(engine.statistics.maxChain), BASE)
 		val strMaxChainBonus = "+$maxChainBonus"
-		receiver.drawMenu(engine, 10-strMaxChainBonus.length, 10, strMaxChainBonus, BASE, EventReceiver.COLOR.GREEN)
+		receiver.drawMenu(engine, 10-strMaxChainBonus.length, 10, strMaxChainBonus, BASE, COLOR.GREEN)
 
-		receiver.drawMenu(engine, 0, 11, "TOTAL", BASE, EventReceiver.COLOR.BLUE)
+		receiver.drawMenu(engine, 0, 11, "TOTAL", BASE, COLOR.BLUE)
 		val strScore = "%10d".format(engine.statistics.score)
-		receiver.drawMenu(engine, 0, 12, strScore, BASE, EventReceiver.COLOR.RED)
+		receiver.drawMenu(engine, 0, 12, strScore, BASE, COLOR.RED)
 
-		receiver.drawMenu(engine, 0, 13, "Time", BASE, EventReceiver.COLOR.BLUE)
+		receiver.drawMenu(engine, 0, 13, "Time", BASE, COLOR.BLUE)
 		val strTime = "%10s".format(engine.statistics.time.toTimeStr)
 		receiver.drawMenu(engine, 0, 14, strTime, BASE)
 	}

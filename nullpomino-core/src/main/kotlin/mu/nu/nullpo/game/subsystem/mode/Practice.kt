@@ -30,7 +30,11 @@
  */
 package mu.nu.nullpo.game.subsystem.mode
 
-import mu.nu.nullpo.game.component.*
+import mu.nu.nullpo.game.component.BGM
+import mu.nu.nullpo.game.component.Block
+import mu.nu.nullpo.game.component.Controller
+import mu.nu.nullpo.game.component.Field
+import mu.nu.nullpo.game.component.Piece.Shape
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
 import mu.nu.nullpo.game.event.ScoreEvent
 import mu.nu.nullpo.game.play.GameEngine
@@ -89,7 +93,7 @@ class Practice:AbstractGrand() {
 	/** ComboType */
 	private var comboType = 0
 
-	private val itemBig = BooleanMenuItem("big", "BIG", COLOR.BLUE, false)
+	private val itemBig = BooleanMenuItem("big", "BIG", COLOR.ORANGE, false)
 	/** BigMode */
 	private var big:Boolean by DelegateMenuItem(itemBig)
 
@@ -177,10 +181,10 @@ class Practice:AbstractGrand() {
 		rollTime = 0
 		rollStarted = false
 		secretGrade = 0
-		pieceEnable = MutableList(Piece.PIECE_COUNT) {false}
+		pieceEnable = MutableList(Shape.num) {false}
 		fldBackup = null
 		timelimitTimer = 0
-		engine.frameSkin = GameEngine.FRAME_COLOR_BRONZE
+		engine.frame = GameEngine.Frame.BRONZE
 
 		if(!engine.owner.replayMode) {
 			version = CURRENT_VERSION
@@ -223,8 +227,8 @@ class Practice:AbstractGrand() {
 		goallv = prop.getProperty("practice.goallv.$preset", -1)
 		timelimit = prop.getProperty("practice.timelimit.$preset", 0)
 		rolltimelimit = prop.getProperty("practice.rolltimelimit.$preset", 0)
-		for(i in 0..<Piece.PIECE_COUNT)
-			pieceEnable[i] = prop.getProperty("practice.pieceEnable.$i.$preset", i<Piece.PIECE_STANDARD_COUNT)
+		for(i in 0..<Shape.num)
+			pieceEnable[i] = prop.getProperty("practice.pieceEnable.$i.$preset", i<Shape.numTetras)
 		useMap = prop.getProperty("practice.useMap.$preset", false)
 		timelimitResetEveryLevel = prop.getProperty("practice.timelimitResetEveryLevel.$preset", false)
 		bone = prop.getProperty("practice.bone.$preset", false)
@@ -265,7 +269,7 @@ class Practice:AbstractGrand() {
 		prop.setProperty("practice.goallv.$preset", goallv)
 		prop.setProperty("practice.timelimit.$preset", timelimit)
 		prop.setProperty("practice.rolltimelimit.$preset", rolltimelimit)
-		for(i in 0..<Piece.PIECE_COUNT)
+		for(i in 0..<Shape.num)
 			prop.setProperty("practice.pieceEnable.$i.$preset", pieceEnable[i])
 		prop.setProperty("practice.useMap.$preset", useMap)
 		prop.setProperty("practice.timelimitResetEveryLevel.$preset", timelimitResetEveryLevel)
@@ -860,8 +864,10 @@ class Practice:AbstractGrand() {
 			}
 
 			// 10Seconds before the countdown
-			if(timelimit>0&&timelimitTimer<=10*60&&timelimitTimer%60==0&&engine.timerActive)
+			if(timelimit>0&&timelimitTimer<=10*60&&timelimitTimer%60==0&&engine.timerActive) {
 				engine.playSE("countdown")
+				if(timelimitTimer<=300) engine.playSE("countdown${timelimitTimer/60}")
+			}
 
 			// 5Of seconds beforeBGM fadeout
 			if(timelimit>0&&timelimitTimer<=5*60&&!timelimitResetEveryLevel&&engine.timerActive)
@@ -923,7 +929,6 @@ class Practice:AbstractGrand() {
 			engine.heboHiddenYNow -= ev.lines
 			if(engine.heboHiddenYNow<0) engine.heboHiddenYNow = 0
 		}
-		calcPower(engine, ev, true)
 		return if(leveltype==LEVELTYPE_MANIA||leveltype==LEVELTYPE_MANIAPLUS)
 			calcScoreMania(engine, ev) else calcScoreNormal(engine, ev)
 	}

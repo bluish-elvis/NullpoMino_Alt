@@ -62,7 +62,7 @@ class LSPIAIGarbageLine:LSPIAI() {
 		var _oppNowState = oppNowState
 
 		// T-Spin flag
-		val tspin = (piece!!.type==Piece.Shape.T&&rtOld!=-1&&fld.isTwistSpot(x, y, piece.big))
+		val tspin = (piece!!.shape==Piece.Shape.T&&rtOld!=-1&&fld.isTwistSpot(x, y, piece.big))
 
 		// Place the piece
 		if(!piece.placeToField(x, y, rt, fld)) return 0.0

@@ -46,7 +46,6 @@ import mu.nu.nullpo.gui.common.BaseFont.Companion.NAME_REV
 import mu.nu.nullpo.gui.common.BaseFont.FONT.*
 import mu.nu.nullpo.util.CustomProperties
 import org.apache.logging.log4j.LogManager
-import zeroxfc.nullpo.custom.libs.MathHelper.pythonModulo
 import zeroxfc.nullpo.custom.libs.ProfileProperties.LoginScreen.Companion.State.*
 import java.io.*
 import java.nio.charset.StandardCharsets
@@ -723,7 +722,7 @@ class ProfileProperties @JvmOverloads constructor(colorHeading:COLOR = COLOR.CYA
 		 * @return Character at index
 		 */
 		fun getCharAt(index:Int):String {
-			val i = index.pythonModulo(ENTRY_CHARS.length)
+			val i = index.mod(ENTRY_CHARS.length)
 			return ENTRY_CHARS.substring(i, i+1)
 		}
 		/**

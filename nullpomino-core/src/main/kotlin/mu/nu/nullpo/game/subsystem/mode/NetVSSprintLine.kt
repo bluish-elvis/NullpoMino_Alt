@@ -39,7 +39,7 @@ import mu.nu.nullpo.gui.common.BaseFont.FONT.BASE
 import mu.nu.nullpo.util.GeneralUtil.toTimeStr
 
 /** NET-VS-LINE RACE mode */
-class NetVSSprintLine:NetDummyVSMode() {
+internal class NetVSSprintLine:NetDummyVSMode() {
 	/** Number of lines required to win */
 	private var goalLines:Int = 0 // TODO: Add option to change this
 

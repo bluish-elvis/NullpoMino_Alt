@@ -78,27 +78,27 @@ class ModeManager {
 
 	/** Mode nameを取得
 	 * @param id ModeID
-	 * @return Mode name (idが不正なら「*INVALID MODE*」）
+	 * @return Mode name (idが不正なら「*INVALID MODE*」)
 	 */
 	fun getName(id:Int):String = try {
-		get(id)?.name ?:"*INVALID MODE*"
+		get(id)?.name?:"*INVALID MODE*"
 	} catch(e:Exception) {
 		"*INVALID MODE*"
 	}
 
 	/** Mode Identifier Nameを取得
 	 * @param id Mode No.
-	 * @return Mode name (idが不正なら「*INVALID MODE*」）
+	 * @return Mode name (idが不正なら「*INVALID MODE*」)
 	 */
 	fun getID(id:Int):String = try {
-		get(id)?.id ?:"*INVALID MODE*"
+		get(id)?.id?:"*INVALID MODE*"
 	} catch(e:Exception) {
 		"*INVALID MODE*"
 	}
 
 	/** Mode name/Mode IDからID numberを取得
 	 * @param name Mode name
-	 * @return ModeNumber (見つからない場合は-1）
+	 * @return ModeNumber (見つからない場合は-1)
 	 */
 	fun getNum(name:String?):Int {
 		if(name==null) return -1
@@ -109,7 +109,7 @@ class ModeManager {
 
 	/** Mode オブジェクトを取得
 	 * @param id Mode No.
-	 * @return Modeオブジェクト (idが不正ならnull）
+	 * @return Modeオブジェクト (idが不正ならnull)
 	 */
 	operator fun get(id:Int):GameMode? = list.getOrNull(id)
 	@Deprecated("operator get", ReplaceWith("get(id)"))
@@ -117,7 +117,7 @@ class ModeManager {
 
 	/** Mode オブジェクトを取得
 	 * @param name Mode name
-	 * @return Modeオブジェクト (見つからないならnull）
+	 * @return Modeオブジェクト (見つからないならnull)
 	 */
 	operator fun get(name:String?):GameMode? = try {
 		name?.let {list.getOrNull(getNum(it))}
@@ -136,7 +136,7 @@ class ModeManager {
 
 		while(true) {
 			// クラス名を読み込み
-			val name = prop.getProperty("$count", null) ?: return
+			val name = prop.getProperty("$count", null)?:return
 
 			val modeClass:Class<*>
 			val modeObject:GameMode

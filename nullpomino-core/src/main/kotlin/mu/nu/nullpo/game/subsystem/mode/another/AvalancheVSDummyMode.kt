@@ -38,6 +38,7 @@ import mu.nu.nullpo.game.event.EventReceiver.COLOR
 import mu.nu.nullpo.game.event.ScoreEvent
 import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.game.play.GameEngine.GameStyle
+import mu.nu.nullpo.game.play.GameEngine.Status
 import mu.nu.nullpo.game.play.GameManager
 import mu.nu.nullpo.game.play.LineGravity
 import mu.nu.nullpo.game.play.LineGravity.CASCADE.canCascade
@@ -609,9 +610,9 @@ abstract class AvalancheVSDummyMode:AbstractMode() {
 	protected fun gameOverCheck(engine:GameEngine) {
 		if(engine.field.isEmpty) return
 		if(big[engine.playerID]) {
-			if(!engine.field.getBlockEmpty(1, 0)) engine.stat = GameEngine.Status.GAMEOVER
+			if(!engine.field.getBlockEmpty(1, 0)) engine.stat = Status.GAMEOVER
 		} else if(!engine.field.getBlockEmpty(2, 0)||dangerColumnDouble[engine.playerID]&&!engine.field.getBlockEmpty(3, 0))
-			engine.stat = GameEngine.Status.GAMEOVER
+			engine.stat = Status.GAMEOVER
 	}
 
 	protected fun loadFeverMap(engine:GameEngine, chain:Int) {
@@ -645,23 +646,23 @@ abstract class AvalancheVSDummyMode:AbstractMode() {
 
 		// Settlement
 		if(pid==1&&owner.engine[0].gameActive) {
-			val p1Lose = owner.engine[0].stat==GameEngine.Status.GAMEOVER
-			val p2Lose = owner.engine[1].stat==GameEngine.Status.GAMEOVER
+			val p1Lose = owner.engine[0].stat==Status.GAMEOVER
+			val p2Lose = owner.engine[1].stat==Status.GAMEOVER
 			if(p1Lose&&p2Lose) {
 				// Draw
 				winnerID = -1
-				owner.engine[0].stat = GameEngine.Status.GAMEOVER
-				owner.engine[1].stat = GameEngine.Status.GAMEOVER
+				owner.engine[0].stat = Status.GAMEOVER
+				owner.engine[1].stat = Status.GAMEOVER
 			} else if(p2Lose) {
 				// 1P win
 				winnerID = 0
-				owner.engine[0].stat = GameEngine.Status.EXCELLENT
-				owner.engine[1].stat = GameEngine.Status.GAMEOVER
+				owner.engine[0].stat = Status.EXCELLENT
+				owner.engine[1].stat = Status.GAMEOVER
 			} else if(p1Lose) {
 				// 2P win
 				winnerID = 1
-				owner.engine[0].stat = GameEngine.Status.GAMEOVER
-				owner.engine[1].stat = GameEngine.Status.EXCELLENT
+				owner.engine[0].stat = Status.GAMEOVER
+				owner.engine[1].stat = Status.EXCELLENT
 			}
 			if(p1Lose||p2Lose) {
 				owner.engine[0].gameEnded()
@@ -675,7 +676,7 @@ abstract class AvalancheVSDummyMode:AbstractMode() {
 		}
 	}
 
-	override fun pieceLocked(engine:GameEngine, clear:Int, finesse:Boolean) {
+	override fun pieceLocked(engine:GameEngine, lines:Int, finesse:Boolean) {
 		cleared[engine.playerID] = false
 		ojamaDrop[engine.playerID] = false
 	}
@@ -714,7 +715,7 @@ abstract class AvalancheVSDummyMode:AbstractMode() {
 
 	protected open fun getChainColor(engine:GameEngine):COLOR = engine.playerID.let {pid ->
 		when {
-			chainDisplayType[pid]==CHAIN_DISPLAY_PLAYER -> EventReceiver.getPlayerColor(pid)
+			chainDisplayType[pid]==CHAIN_DISPLAY_PLAYER -> COLOR.fromPlayerID(pid)
 			chainDisplayType[pid]==CHAIN_DISPLAY_SIZE -> if(engine.chain>=rensaShibari[pid]) COLOR.GREEN else COLOR.RED
 			else -> COLOR.YELLOW
 		}
@@ -845,7 +846,7 @@ abstract class AvalancheVSDummyMode:AbstractMode() {
 		const val CHAIN_DISPLAY_PLAYER = 2
 		const val CHAIN_DISPLAY_SIZE = 3
 
-		/** Each player's frame cint */
+		/** Each player's frame color-int */
 		val PLAYER_COLOR_FRAME = listOf(GameEngine.FRAME_COLOR_RED, GameEngine.FRAME_COLOR_BLUE)
 	}
 }

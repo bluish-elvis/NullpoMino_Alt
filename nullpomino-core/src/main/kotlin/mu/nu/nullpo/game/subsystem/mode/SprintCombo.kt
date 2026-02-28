@@ -50,16 +50,16 @@ class SprintCombo:NetDummyMode() {
 	/** EventReceiver object (This receives many game events, can also be used
 	 * for drawing the fonts.) */
 
-	/** Elapsed time from last line clear */
+	/** Elapsed time from last lines clear */
 	private var scgettime = 0
 
-	private val itemBig = BooleanMenuItem("big", "BIG", COLOR.BLUE, false)
+	private val itemBig = BooleanMenuItem("big", "BIG", COLOR.ORANGE, false)
 	/** BigMode */
 	private var big:Boolean by DelegateMenuItem(itemBig)
 
 	/** Hindrance Lines type (0=5,1=10,2=18) */
 	private val itemGoal = StringsMenuItem(
-		"goalType", "GOAL", COLOR.BLUE, 0, GOAL_TABLE.map {"$it LINES"}
+		"goalType", "GOAL", COLOR.BLUE, 0, GOAL_TABLE.map {if(it>0) "$it LINES" else "Endless"}
 	)
 
 	/** Time limit type */
@@ -173,7 +173,7 @@ class SprintCombo:NetDummyMode() {
 		super.playerInit(engine)
 		rankingRank = -1
 
-		engine.frameSkin = GameEngine.FRAME_COLOR_RED
+		engine.frame = GameEngine.Frame.RED
 
 		netPlayerInit(engine)
 
@@ -184,20 +184,24 @@ class SprintCombo:NetDummyMode() {
 		}
 	}
 
+	override fun onSettingChanged(engine:GameEngine) {
+		engine.fieldWidth = maxOf(4, comboWidth)
+		engine.field.reset()
+		engine.createFieldIfNeeded()
+
+		if(!netIsWatch) {
+			fillStack(engine, goalType)
+
+			// NET: Send field
+			if(netNumSpectators>0) netSendField(engine)
+		}
+		super.onSettingChanged(engine)
+	}
 	/** Ready */
 	override fun onReady(engine:GameEngine):Boolean {
 		if(engine.statc[0]==0) {
-			engine.fieldWidth = maxOf(4, comboWidth)
-			engine.createFieldIfNeeded()
 			engine.meterColor = GameEngine.METER_COLOR_GREEN
 			engine.meterValue = if(GOAL_TABLE[goalType]==-1) 0f else 1f
-
-			if(!netIsWatch) {
-				fillStack(engine, goalType)
-
-				// NET: Send field
-				if(netNumSpectators>0) netSendField(engine)
-			}
 		}
 		return false
 	}
@@ -272,15 +276,18 @@ class SprintCombo:NetDummyMode() {
 			if(!owner.replayMode&&!big&&engine.ai==null) {
 				receiver.drawScore(engine, 3, 3, "RECORD", BASE, COLOR.BLUE)
 
-				ranking[typeSerial(gameType,goalType)].forEachIndexed { i, it ->
+				ranking[typeSerial(gameType, goalType)].forEachIndexed {i, it ->
 					receiver.drawScore(
 						engine, 0, 4+i, "%2d".format(i+1),
 						GRADE, if(rankingRank==i) COLOR.RAINBOW else COLOR.YELLOW
 					)
 					if(it.st.maxCombo==GOAL_TABLE[goalType]-1)
-						receiver.drawScore(engine, 2, 4+i, "PERFECT", BASE, true)
-					else receiver.drawScore(engine, 3, 4+i, "${it.st.maxCombo}", NUM, rankingRank==i)
-					receiver.drawScore(engine, 9, 4+i, it.ti.toTimeStr, NUM, rankingRank==i)
+						receiver.drawScore(engine, 1, 4+i, "PERFECT", BASE, true)
+					else {
+						receiver.drawScore(engine, 2, 4+i, "${it.st.maxCombo}", NUM, rankingRank==i)
+						receiver.drawScore(engine, 4, 4+i, "Hits")
+					}
+					receiver.drawScore(engine, 8, 4+i, it.ti.toTimeStr, NUM, rankingRank==i)
 				}
 			}
 		} else {
@@ -305,13 +312,13 @@ class SprintCombo:NetDummyMode() {
 
 			receiver.drawScore(engine, 0, 15, "Time", BASE, COLOR.BLUE)
 			receiver.drawScore(engine, 0, 16, scgettime.toTimeStr, NUM_T)
-			receiver.drawScore(engine, 0, 17, engine.statistics.time.toTimeStr, NANO)
+			if(engine.timerActive) receiver.drawScore(engine, 0, 18, engine.statistics.time.toTimeStr, NANO)
 		}
 
 		super.renderLast(engine)
 	}
 
-	/** Calculates line-clear score
+	/** Calculates lines-clear score
 	 * (This function will be called even if no lines are cleared) */
 	override fun calcScore(engine:GameEngine, ev:ScoreEvent):Int {
 		//  Attack

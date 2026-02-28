@@ -38,7 +38,7 @@ import kotlin.random.Random
 
 class BGADNightClock<T>(img:mu.nu.nullpo.gui.common.ResourceImage<T>):
 	mu.nu.nullpo.gui.common.bg.AbstractBG<T>(img) {
-	/*'（キラキラ振り子）
+	/*'(キラキラ振り子)
 FSX = Rnd * 640
 FC = 140: FX = 0: FY = 0
 KrI = 0
@@ -56,7 +56,7 @@ Next I*/
 		fun update() {
 			if(tick<0) return
 			tick++
-			if(tick>=6) tick -= 6
+			tick %= 6
 			vy -= .1f
 			x += vx
 			y += vy
@@ -93,8 +93,8 @@ Next I*/
 	private val children = List(36) {Frag(it)}
 	private var bx = Random.nextFloat()*640
 	override var tick = 140
-	private var fx = 0f; private set
-	private var fy = 0f; private set
+	private var fx = 0f
+	private var fy = 0f
 
 	override fun reset() {
 		bx = Random.nextFloat()*640
@@ -102,10 +102,9 @@ Next I*/
 	}
 
 	override fun update() {
-		bx -= 4+speed
+		bx = (bx-4-spdN).mod(640f)
 		tick++
-		if(bx<0) bx += 640
-		if(tick>=180) tick -= 180
+		tick %= 180
 		val swing = sin(tick*2*RG)
 		fx = sin(swing*35*RG)
 		fy = cos(swing*35*RG)
@@ -165,7 +164,7 @@ BltClip 256 + FX * 540, -244 + FY * 540, BGSf, Src, DDBLTFAST_SRCCOLORKEY Or DDB
 	}
 }
 
-/*Case 3 '（キラキラ振り子）
+/*Case 3 '(キラキラ振り子)
 FSX = FSX - 5: If FSX < 0 Then FSX = FSX + 640
 With Src
 .Left = FSX: .Top = 0: .Right = 640: .Bottom = 240

@@ -55,10 +55,10 @@ interface BaseFont {
 		const val NAME_REV = "\u0090"
 		const val NAME_END = "\u0091"
 	}
-	/** Font cint constants */
+	/** Font constants */
 	enum class FONT(val w:Int, val h:Int = 16) {
-		BASE(BaseFontNormal.W), NANO(BaseFontNano.W,BaseFontNano.H), NUM(BaseFontNumber.W),
-		NUM_T(BaseFontNumTall.W,BaseFontNumTall.H),
+		BASE(BaseFontNormal.W), NANO(BaseFontNano.W, BaseFontNano.H),
+		NUM(BaseFontNumber.W), NUM_T(BaseFontNumTall.W, BaseFontNumTall.H),
 		GRADE(BaseFontGrade.WS), GRADE_BIG(BaseFontGrade.WB), MEDAL(BaseFontMedal.W), TTF(BaseFontTTF.FONT_SIZE);
 	}
 
@@ -70,7 +70,7 @@ interface BaseFont {
 	 * @param x X-coordinate
 	 * @param y Y-coordinate
 	 * @param str String
-	 * @param color Letter cint
+	 * @param color Letter color
 	 * @param scale Enlargement factor
 	 */
 	fun printFont(x:Float, y:Float, str:String, color:COLOR = COLOR.WHITE, scale:Float = 1f, alpha:Float = 1f,
@@ -79,7 +79,7 @@ interface BaseFont {
 	fun printFont(x:Int, y:Int, str:String, color:COLOR = COLOR.WHITE, scale:Float = 1f, alpha:Float = 1f,
 		rainbow:Int = rainbowCount) =
 		printFont(x.toFloat(), y.toFloat(), str, color, scale, alpha, rainbow)
-	/** flagThefalseIf it&#39;s the casefontColorTrue cint, trueIf it&#39;s the
+	/** flagThefalseIf it&#39;s the casefontColorTrue color, trueIf it&#39;s the
 	 * casefontColorTrue colorDraws the string in
 	 * @param x X-coordinate
 	 * @param y Y-coordinate
@@ -97,12 +97,12 @@ interface BaseFont {
 	 * @param fontX X-coordinate
 	 * @param fontY Y-coordinate
 	 * @param fontStr String
-	 * @param fontColor Letter cint
+	 * @param fontColor Letter color
 	 */
 	fun printFontGrid(fontX:Int, fontY:Int, fontStr:String, fontColor:COLOR = COLOR.WHITE, scale:Float = 1f,
 		alpha:Float = 1f, rainbow:Int = rainbowCount) =
 		printFont(fontX*16, fontY*16, fontStr, fontColor, scale, alpha, rainbow)
-	/** flagThefalseIf it&#39;s the casefontColorTrue cint, trueIf it&#39;s the
+	/** flagThefalseIf it&#39;s the casefontColorTrue color, trueIf it&#39;s the
 	 * casefontColorTrue colorDraws the string in (16x16Grid units)
 	 * @param fontX X-coordinate
 	 * @param fontY Y-coordinate

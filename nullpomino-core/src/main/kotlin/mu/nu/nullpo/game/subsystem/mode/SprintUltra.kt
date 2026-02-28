@@ -68,7 +68,7 @@ class SprintUltra:NetDummyMode() {
 	/** Last preset number used */
 	private var presetNumber:Int by DelegateMenuItem(itemSpd)
 
-	private val itemBig = BooleanMenuItem("big", "BIG", COLOR.BLUE, false)
+	private val itemBig = BooleanMenuItem("big", "BIG", COLOR.ORANGE, false)
 	/** BigMode */
 	private var big:Boolean by DelegateMenuItem(itemBig)
 
@@ -106,13 +106,15 @@ class SprintUltra:NetDummyMode() {
 	}
 
 	override val ranking:List<Leaderboard<Rankable>> =
-		List(RANKTYPE_MAX*GOALTYPE_MAX) {Leaderboard(rankingMax, serializer<List<Rankable>>()){
-			when(RANKTYPE_ALL[it%RANKTYPE_MAX]) {
-				RankingType.Power -> PowerRow()
-				RankingType.Lines -> LinesRow()
-				else -> Rankable.ScoreRow()
+		List(RANKTYPE_MAX*GOALTYPE_MAX) {
+			Leaderboard(rankingMax, serializer<List<Rankable>>()) {
+				when(RANKTYPE_ALL[it%RANKTYPE_MAX]) {
+					RankingType.Power -> PowerRow()
+					RankingType.Lines -> LinesRow()
+					else -> Rankable.ScoreRow()
+				}
 			}
-		} }
+		}
 
 	private var rankingShow = 0
 	/* Mode name */
@@ -153,13 +155,16 @@ class SprintUltra:NetDummyMode() {
 				if(rankingShow>=RANKTYPE_MAX) rankingShow = 0
 			}
 		}
-		return super.onSetting(engine)
+		return super.onSetting(engine).also {
+			engine.speed.replace(itemSpd.spd)
+			engine.frameSkin = if(is20g(engine.speed)) GameEngine.FRAME_COLOR_RED else GameEngine.FRAME_COLOR_BLUE
+		}
 	}
 
 	override fun onSettingChanged(engine:GameEngine) {
 		super.onSettingChanged(engine)
+		engine.speed.replace(itemSpd.spd)
 		engine.frameSkin = if(is20g(engine.speed)) GameEngine.FRAME_COLOR_RED else GameEngine.FRAME_COLOR_BLUE
-
 	}
 
 	/* This function will be called before the game actually begins (after
@@ -313,7 +318,10 @@ class SprintUltra:NetDummyMode() {
 				}
 
 				// 10Seconds before the countdown
-				if(engine.statistics.time>=limitTime-10*60&&engine.statistics.time%60==0) engine.playSE("countdown")
+				if(remainTime<=600&&remainTime%60==0) {
+					engine.playSE("countdown")
+					if(remainTime<=300) engine.playSE("countdown${remainTime/60}")
+				}
 
 				// 5 seconds beforeBGM fadeout
 //				if(engine.statistics.time>=limitTime-5*60) owner.bgmStatus.fadeSW = true

@@ -59,7 +59,7 @@ class RetroA:AbstractMode() {
 	 * engine.statistics.lines); don't ask me why I called it this... */
 	private var loons = 0
 
-	/** Number of line clear actions */
+	/** Number of lines clear actions */
 	private var actions = 0
 
 	/** Efficiency (engine.statistics.lines / actions) */
@@ -79,7 +79,7 @@ class RetroA:AbstractMode() {
 	/** Selected starting level */
 	private var startLevel:Int by DelegateMenuItem(itemLevel)
 
-	private val itemBig = BooleanMenuItem("big", "BIG", COLOR.BLUE, false)
+	private val itemBig = BooleanMenuItem("big", "BIG", COLOR.ORANGE, false)
 	/** BigMode */
 	private var big:Boolean by DelegateMenuItem(itemBig)
 	override val menu = MenuList("retromastery", itemMode, itemLevel, itemBig)
@@ -132,7 +132,7 @@ class RetroA:AbstractMode() {
 			owSDSpd = 1
 
 			owner.bgMan.bg = if(gameType==GAMETYPE.PRESSURE) 0 else minOf(startLevel, 19)
-			frameSkin = GameEngine.FRAME_SKIN_GB
+			frame = GameEngine.Frame.GB
 		}
 	}
 

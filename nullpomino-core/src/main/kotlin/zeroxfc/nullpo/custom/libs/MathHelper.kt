@@ -74,11 +74,10 @@ object MathHelper {
 	 * @return Remainder after division
 	 */
 	@JvmName("pythonModuloInt")
-	fun Int.pythonModulo(divisor:Int):Int = (this%divisor).let {
-		if(it<0) it+divisor else it
-	}
-	@Deprecated("Int extended", ReplaceWith("value.pythonModulo(divisor)"))
-	fun pythonModulo(value:Int, divisor:Int):Int = value.pythonModulo(divisor)
+	@Deprecated("Kotlin 1.5 changed mod()", ReplaceWith("this.mod(divisor)"))
+	fun Int.pythonModulo(divisor:Int):Int = (this.mod(divisor))
+	@Deprecated("Kotlin 1.5 changed mod()", ReplaceWith("value.pythonModulo(divisor)"))
+	fun pythonModulo(value:Int, divisor:Int):Int = value.mod(divisor)
 	/**
 	 * Modulo operator that functions similarly to Python's % operator.
 	 *
@@ -86,11 +85,11 @@ object MathHelper {
 	 * @return Remainder after division
 	 */
 	@JvmName("pythonModuloLong")
-	fun Long.pythonModulo(divisor:Long) = (this%divisor).let {
-		if(it<0) it+divisor else it
-	}
-	@Deprecated("Long extended", ReplaceWith("value.pythonModulo(divisor)"))
-	fun pythonModulo(value:Long, divisor:Long) = value.pythonModulo(divisor)
+	@Deprecated("Kotlin 1.5 changed mod()", ReplaceWith("this.mod(divisor)"))
+	fun Long.pythonModulo(divisor:Long) = (this.mod(divisor))
+	@Deprecated("Kotlin 1.5 changed mod()", ReplaceWith("value.mod(divisor)"))
+	fun pythonModulo(value:Long, divisor:Long) = value.mod(divisor)
+
 	/**
 	 * Gets the greatest common divisor between [a] and [b].
 	 * Recursive function.
@@ -127,4 +126,7 @@ object MathHelper {
 	 */
 	@JvmName("almostEqualFloat")
 	fun Float.almostEqual(b:Float, eps:Float):Boolean = abs(this-b)<eps
+
+	val Float.almostZero:Boolean get()= almostEqual(0f, Float.MIN_VALUE)
+	val Float.zeroCoerce:Float get()= if(almostZero) 0f else this
 }

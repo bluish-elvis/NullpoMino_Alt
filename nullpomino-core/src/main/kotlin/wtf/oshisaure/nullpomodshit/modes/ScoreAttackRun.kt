@@ -305,6 +305,7 @@ class ScoreAttackRun:AbstractMode() {
 				engine.stat = GameEngine.Status.EXCELLENT
 			} else if(currenttime<=600&&currenttime%60==0) {
 				engine.playSE("countdown")
+				if(currenttime<=300) engine.playSE("countdown${currenttime/60}")
 			}
 		}
 	}

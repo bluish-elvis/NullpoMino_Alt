@@ -241,10 +241,10 @@ class RuleEditorFX:Application(null) {
 	/** 最高ARE */
 	private val txtFldAREMax:TextField = TextField()
 
-	/** 最低ARE after line clear */
+	/** 最低ARE after lines clear */
 	private val txtFldARELineMin:TextField = TextField()
 
-	/** 最高ARE after line clear */
+	/** 最高ARE after lines clear */
 	private val txtFldARELineMax:TextField = TextField()
 
 	/** 固定した瞬間に光る frame count */
@@ -448,7 +448,7 @@ class RuleEditorFX:Application(null) {
 		stage.sizeToScene()
 	}
 	/** 特定のファイルを読み込むConstructor
-	 * @param filename Filename (空文字列かnullにするとパラメータなしConstructorと同じ動作）
+	 * @param filename Filename (空文字列かnullにするとパラメータなしConstructorと同じ動作)
 	 */
 	constructor(filename:String?):super() {
 		init()
@@ -815,7 +815,7 @@ class RuleEditorFX:Application(null) {
 		chkboxLockDelayLockResetWallkick.text = getUIText("LockDelay_LockResetWallkick")
 		panelLockDelay.add(chkboxLockDelayLockResetWallkick)
 
-		// 横移動 counterとrotation counterを共有 (横移動 counterだけ使う）
+		// 横移動 counterとrotation counterを共有 (横移動 counterだけ使う)
 		chkboxLockDelayLockResetLimitShareCount.text = getUIText("LockDelay_LockDelayLockResetLimitShareCount")
 		panelLockDelay.add(chkboxLockDelayLockResetLimitShareCount)
 
@@ -873,7 +873,7 @@ class RuleEditorFX:Application(null) {
 		txtFldAREMax.prefColumnCount = 5
 		pAREMinMax.add(txtFldAREMax)
 
-		// 最低ARE after line clearと最高ARE after line clear
+		// 最低ARE after lines clearと最高ARE after lines clear
 		panelARE.add(Label(getUIText("ARE_LineMinMax")))
 
 		val pARELineMinMax = Pane()
@@ -1260,7 +1260,7 @@ class RuleEditorFX:Application(null) {
 
 	/** 画像を読み込み
 	 * @param url 画像ファイルのURL
-	 * @return 画像ファイル (失敗するとnull）
+	 * @return 画像ファイル (失敗するとnull)
 	 */
 	private fun loadImage(url:URL?):BufferedImage? {
 		var bufI:BufferedImage? = null
@@ -1618,7 +1618,7 @@ class RuleEditorFX:Application(null) {
 
 	/** 翻訳後のUIの文字列を取得
 	 * @param str 文字列
-	 * @return 翻訳後のUIの文字列 (無いならそのままstrを返す）
+	 * @return 翻訳後のUIの文字列 (無いならそのままstrを返す)
 	 */
 	fun getUIText(str:String):String = propLang.getProperty(str, propLangDefault.getProperty(str, str))
 

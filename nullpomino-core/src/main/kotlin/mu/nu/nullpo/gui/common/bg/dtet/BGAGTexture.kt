@@ -32,24 +32,31 @@
 package mu.nu.nullpo.gui.common.bg.dtet
 
 import mu.nu.nullpo.gui.common.AbstractRenderer
+import mu.nu.nullpo.gui.common.bg.tech.Space
+import zeroxfc.nullpo.custom.libs.Vector
 import kotlin.random.Random
 
 class BGAGTexture<T>(bg:mu.nu.nullpo.gui.common.ResourceImage<T>):mu.nu.nullpo.gui.common.bg.AbstractBG<T>(bg) {
+	val star = Space()
+	override var speed:Float
+		get() = super.speed
+		set(value) {
+			super.speed = value
+			star.vel.set(Vector(1f, 1+value*3.2f, true))
+		}
 	private var x = Random.nextFloat()*640
 	private var y = Random.nextFloat()*480
 	override fun update() {
-		val v = zeroxfc.nullpo.custom.libs.Vector(16f, speed, true)
-		x += v.x
-		y += v.y
-		if(x<0) x += 640
-		if(x>=640) x -= 640
-		if(y<0) y += 480
-		if(y>=480) y -= 480
+		val v = Vector(16f, 3f+speed/4, true)
+		x = (x+v.x).mod(640f)
+		y = (y+v.y).mod(480f)
+		star.update()
 	}
 
 	override fun reset() {
 		x = Random.nextFloat()*640
 		y = Random.nextFloat()*480
+		star.reset()
 	}
 
 	override fun draw(render:AbstractRenderer, bg:Boolean) {
@@ -57,12 +64,12 @@ class BGAGTexture<T>(bg:mu.nu.nullpo.gui.common.ResourceImage<T>):mu.nu.nullpo.g
 		img.draw(640-x, 0f, 0f, y, x, 480f)
 		img.draw(0f, 480-y, x, 0f, 640f, y)
 		img.draw(640-x, 480-y, 0f, 0f, x, y)
-
+		star.draw(render, false)
 	}
 }
 
 /*
-Case 6 '（カーペット）
+Case 6 '(カーペット)
 With CptG
 If TrM = 0 Then .X = .X - 16: .Y = .Y + 1
 If TrM = 1 Then .Y = .Y - 15

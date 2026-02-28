@@ -32,7 +32,6 @@
 package mu.nu.nullpo.gui.common.fx
 
 import mu.nu.nullpo.game.component.Piece
-import mu.nu.nullpo.game.event.EventReceiver
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
 import mu.nu.nullpo.game.event.ScoreEvent
 import mu.nu.nullpo.gui.common.AbstractRenderer
@@ -80,7 +79,7 @@ class PopupAward(x:Float, y:Float, val event:ScoreEvent, val moveTime:Int, val e
 					r.drawFont(x-48, y, "TRIPLE", BASE, color = COLOR.GREEN, alpha = alpha)
 				else r.drawFont(x-80, y, "1.2.TRIPLE", BASE, color = COLOR.CYAN, alpha = alpha)
 			}
-			ev.lines>=4 -> r.drawFont(x-72, y, "QUADRUPLE", BASE, color = EventReceiver.getRainbowColor(ticks), alpha = alpha)
+			ev.lines>=4 -> r.drawFont(x-72, y, "QUADRUPLE", BASE, color = COLOR.getRainbowColor(ticks), alpha = alpha)
 		}
 		if(ev.twistType!=null) when {
 			ev.twistType.mini -> {
@@ -100,7 +99,7 @@ class PopupAward(x:Float, y:Float, val event:ScoreEvent, val moveTime:Int, val e
 					y-8,
 					"-TWISTER",
 					BASE,
-					color = if(ev.lines==3) EventReceiver.getRainbowColor(ticks) else if(ev.b2b>0) COLOR.PINK else COLOR.PURPLE,
+					color = if(ev.lines==3) COLOR.getRainbowColor(ticks) else if(ev.b2b>0) COLOR.PINK else COLOR.PURPLE,
 					alpha = alpha
 				)
 			}

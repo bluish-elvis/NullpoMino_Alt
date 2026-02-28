@@ -38,6 +38,7 @@ import mu.nu.nullpo.gui.common.BaseFont
 import mu.nu.nullpo.gui.common.BaseFont.FONT.BASE
 import mu.nu.nullpo.gui.common.BaseFont.FONT.NUM
 import mu.nu.nullpo.util.CustomProperties
+import org.apache.logging.log4j.LogManager
 
 abstract class AbstractMenuItem<T>(
 	val name:String, val label:String, val color:COLOR, val defaultValue:T,
@@ -55,13 +56,25 @@ abstract class AbstractMenuItem<T>(
 	 * @param fast 0 by default, +1 if C(Alt.R.Spin) held, +2 if D(Swap) held.
 	 */
 	abstract fun change(dir:Int, fast:Int = 0, cur:Int = 0)
-
-	fun propName(propName:String, ruleName:String, playerID:Int) =
+	private fun propName(propName:String, ruleName:String = "", playerID:Int = -1) =
 		"$propName.$name${if(perRule&&ruleName.isNotEmpty()) ".$ruleName" else if(playerID>=0) ".p$playerID" else ""}"
 
-	abstract fun load(prop:CustomProperties, propName:String)
-	abstract fun save(prop:CustomProperties, propName:String)
 
+	abstract fun load(prop:CustomProperties, propName:String):T
+	fun load(prop:CustomProperties, propName:String, ruleName:String = "", playerID:Int = -1) =
+		propName(propName, ruleName, playerID).let {
+			load(prop, it).also {a ->
+//				log.debug("{} loads: {}", it, a)
+				value = a
+			}
+		}
+
+	abstract fun save(prop:CustomProperties, propName:String)
+	fun save(prop:CustomProperties, propName:String, ruleName:String = "", playerID:Int = -1) =
+		propName(propName, ruleName, playerID).let {
+//			log.debug("{} saves: {}",it,value)
+			save(prop, propName(propName, ruleName, playerID))
+		}
 	/**
 	 * Draw Menu
 	 * @param engine GameEngine
@@ -95,4 +108,7 @@ abstract class AbstractMenuItem<T>(
 	fun draw(engine:GameEngine, playerID:Int, receiver:EventReceiver, y:Int, focus:Boolean) =
 		draw(engine, playerID, receiver, y, if(focus) 0 else -1)
 
+	companion object {
+		val log = LogManager.getLogger()
+	}
 }

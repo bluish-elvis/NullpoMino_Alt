@@ -48,7 +48,7 @@ class TetrisEXWallkick:Wallkick {
 	private var maxDASCharge = 0
 	private var dasDirection = 1
 	override fun executeWallkick(x:Int, y:Int, rtDir:Int, rtOld:Int, rtNew:Int, allowUpward:Boolean,
-		piece:Piece, field:Field, ctrl:Controller?): WallkickResult? {
+		piece:Piece, field:Field, ctrl:Controller?):WallkickResult? {
 		/*
          * Note about the selection of wallkicks:
          *
@@ -84,21 +84,20 @@ class TetrisEXWallkick:Wallkick {
 			}
 		}
     	 */
-		val table:Array<IntArray> = if(rtDir<0||rtDir==2) when {
-			dasDirection==-1&&currentDASCharge>=maxDASCharge -> KickTableLeftCCW
-			dasDirection==1&&currentDASCharge>=maxDASCharge -> KickTableRightCCW
+		val table = if(rtDir<0||rtDir==2) when(dasDirection) {
+			-1 if currentDASCharge>=maxDASCharge -> KickTableLeftCCW
+			1 if currentDASCharge>=maxDASCharge -> KickTableRightCCW
 			else -> KickTableCCW
-		} else when {
-			dasDirection==-1&&currentDASCharge>=maxDASCharge -> KickTableLeftCW
-			dasDirection==1&&currentDASCharge>=maxDASCharge -> KickTableRightCW
+		} else when(dasDirection) {
+			-1 if currentDASCharge>=maxDASCharge -> KickTableLeftCW
+			1 if currentDASCharge>=maxDASCharge -> KickTableRightCW
 			else -> KickTableCW
 		}
 		currentDASCharge = 0
 		dasDirection = 0
 		maxDASCharge = 1
 		for(ints in table) {
-			var x2 = ints[0]
-			var y2 = ints[1]
+			var (x2, y2) = ints
 			if(piece.big) {
 				x2 *= 2
 				y2 *= 2
@@ -110,31 +109,31 @@ class TetrisEXWallkick:Wallkick {
 
 	companion object {
 		// Mirror X to get CW table.
-		private val KickTableCCW = arrayOf(
-			intArrayOf(0, 0), intArrayOf(-1, 0), intArrayOf(-1, 1), intArrayOf(0, 1),
-			intArrayOf(1, 1), intArrayOf(1, 0), intArrayOf(0, -1)
+		private val KickTableCCW = listOf(
+			0 to 0, -1 to 0, -1 to 1, 0 to 1,
+			1 to 1, 1 to 0, 0 to -1
 		)
-		private val KickTableCW = arrayOf(
-			intArrayOf(0, 0), intArrayOf(1, 0), intArrayOf(1, 1), intArrayOf(0, 1), intArrayOf(-1, 1),
-			intArrayOf(-1, 0), intArrayOf(0, -1)
+		private val KickTableCW = listOf(
+			0 to 0, 1 to 0, 1 to 1, 0 to 1, -1 to 1,
+			-1 to 0, 0 to -1
 		)
 		// Mirror X to get CW Right table.
-		private val KickTableLeftCCW = arrayOf(
-			intArrayOf(-1, 0), intArrayOf(-1, 1), intArrayOf(-2, 0), intArrayOf(0, 0),
-			intArrayOf(0, 1), intArrayOf(0, -1), intArrayOf(1, 1), intArrayOf(1, 0)
+		private val KickTableLeftCCW = listOf(
+			-1 to 0, -1 to 1, -2 to 0, 0 to 0,
+			0 to 1, 0 to -1, 1 to 1, 1 to 0
 		)
-		private val KickTableRightCCW = arrayOf(
-			intArrayOf(1, 0), intArrayOf(1, 1), intArrayOf(0, 1), intArrayOf(1, 2),
-			intArrayOf(0, 0), intArrayOf(0, -1), intArrayOf(0, 1), intArrayOf(-1, 1)
+		private val KickTableRightCCW = listOf(
+			1 to 0, 1 to 1, 0 to 1, 1 to 2,
+			0 to 0, 0 to -1, 0 to 1, -1 to 1
 		)
 		// Mirror X to get CCW Right table.
-		private val KickTableLeftCW = arrayOf(
-			intArrayOf(-1, 0), intArrayOf(-1, 1), intArrayOf(0, 1), intArrayOf(-1, 2),
-			intArrayOf(0, 0), intArrayOf(0, -1), intArrayOf(0, 1), intArrayOf(1, 1)
+		private val KickTableLeftCW = listOf(
+			-1 to 0, -1 to 1, 0 to 1, -1 to 2,
+			0 to 0, 0 to -1, 0 to 1, 1 to 1
 		)
-		private val KickTableRightCW = arrayOf(
-			intArrayOf(1, 0), intArrayOf(1, 1), intArrayOf(2, 0), intArrayOf(0, 0),
-			intArrayOf(0, 1), intArrayOf(0, -1), intArrayOf(-1, 1), intArrayOf(-1, 0)
+		private val KickTableRightCW = listOf(
+			1 to 0, 1 to 1, 2 to 0, 0 to 0,
+			0 to 1, 0 to -1, -1 to 1, -1 to 0
 		)
 	}
 }

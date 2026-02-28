@@ -46,18 +46,16 @@ import java.net.InetSocketAddress
 import java.nio.ByteBuffer
 import java.nio.channels.*
 import java.nio.channels.spi.SelectorProvider
-import java.util.Calendar
-import java.util.LinkedList
-import java.util.TimeZone
+import java.util.*
 import java.util.zip.Adler32
 import java.util.zip.GZIPInputStream
 import java.util.zip.GZIPOutputStream
 import kotlin.math.pow
 import kotlin.random.Random
 
-/** NullpoMino NetServer<br></br>
-The code is based on
-[James Greenfield's The Rox Java NIO Tutorial](http://rox-xmlrpc.sourceforge.net/niotut/) */
+/** NullpoMino NetServer
+ *
+ *  The code is based on [James Greenfield's The Rox Java NIO Tutorial](http://rox-xmlrpc.sourceforge.net/niotut/) */
 class NetServer {
 	/** List of SocketChannel */
 	private val channelList = LinkedList<SocketChannel>()
@@ -571,9 +569,10 @@ class NetServer {
 
 			// And queue the data we want written
 			synchronized(pendingData) {
-				val queue = (pendingData as Map<SocketChannel, List<ByteBuffer>>).getOrDefault(client, emptyList())+ByteBuffer.wrap(
-					bytes
-				)
+				val queue =
+					(pendingData as Map<SocketChannel, List<ByteBuffer>>).getOrDefault(client, emptyList())+ByteBuffer.wrap(
+						bytes
+					)
 				log.info(queue)
 			}
 		}
@@ -595,7 +594,7 @@ class NetServer {
 	 * @param bytes Message to send (byte[])
 	 */
 	fun send(pInfo:NetPlayerInfo, bytes:ByteArray) {
-		val ch = getSocketChannelByPlayer(pInfo) ?: return
+		val ch = getSocketChannelByPlayer(pInfo)?:return
 		send(ch, bytes)
 	}
 
@@ -604,7 +603,7 @@ class NetServer {
 	 * @param msg Message to send (String)
 	 */
 	fun send(pInfo:NetPlayerInfo, msg:String) {
-		val ch = getSocketChannelByPlayer(pInfo) ?: return
+		val ch = getSocketChannelByPlayer(pInfo)?:return
 		send(ch, NetUtil.stringToBytes(msg))
 	}
 
@@ -2752,7 +2751,7 @@ class NetServer {
 				FileReader("config/etc/netserver_rulelist.lst").buffered().use {b ->
 					b.forEachLine {str ->
 						if(str.isEmpty()||str.startsWith("#")) {
-							// Empty or a comment line. Do nothing.
+							// Empty or a comment lines. Do nothing.
 						} else if(str.startsWith(":")) {
 							// Game style
 							val strStyle = str.substring(1)
@@ -2810,7 +2809,7 @@ class NetServer {
 				FileReader("config/list/netlobby_multimode.lst").buffered().use {b ->
 					b.forEachLine {str ->
 						if(str.isEmpty()||str.startsWith("#")) {
-							// Empty line or comment line. Ignore it.
+							// Empty lines or comment lines. Ignore it.
 						} else if(str.startsWith(":")) {
 							// Game style tag
 							val strStyle = str.substring(1)
@@ -2958,10 +2957,10 @@ class NetServer {
 
 			try {
 				var style = 0
-				FileReader("config/list/netlobby_singlemode.lst").buffered().use {buf->
+				FileReader("config/list/netlobby_singlemode.lst").buffered().use {buf ->
 					buf.forEachLine {str ->
 						if(str.isEmpty()||str.startsWith("#")) {
-							// Empty line or comment line. Ignore it.
+							// Empty lines or comment lines. Ignore it.
 						} else if(str.startsWith(":")) {
 							// Game style tag
 							val strStyle = str.substring(1)
@@ -3281,14 +3280,15 @@ class NetServer {
 		}
 
 		/** Main (Entry point)
-		 * @param args optional command-line arguments (0: server port 1:
+		 * @param args optional command-lines arguments (0: server port 1:
 		 * netserver.cfg path)
 		 */
-		@JvmStatic fun main(args:Array<String>) {
+		@JvmStatic
+		fun main(args:Array<String>) {
 			// Init log system (should be first!)
 			org.apache.logging.log4j.core.config.Configurator.initialize(log.name, "config/etc/log.xml")
 
-			// get netserver.cfg file path from 2nd command-line argument, if specified
+			// get netserver.cfg file path from 2nd command-lines argument, if specified
 			var servcfg = "config/etc/netserver.cfg" // default location
 			if(args.size>=2) servcfg = args[1]
 
@@ -3306,7 +3306,7 @@ class NetServer {
 			var port = propServer.getProperty("netserver.port", DEFAULT_PORT)
 
 			if(args.isNotEmpty())
-			// If command-line option is used, change port number to the new one
+			// If command-lines option is used, change port number to the new one
 				try {
 					port = args[0].toInt()
 				} catch(_:NumberFormatException) {

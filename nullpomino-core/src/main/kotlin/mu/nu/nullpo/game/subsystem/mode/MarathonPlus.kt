@@ -55,7 +55,7 @@ class MarathonPlus:NetDummyMode() {
 	/** Current BGM */
 	private var bgmLv = 0
 
-	/** Bonus level line count */
+	/** Bonus level lines count */
 	private var bonusLines = 0
 
 	/** Bonus level piece count */
@@ -99,7 +99,7 @@ class MarathonPlus:NetDummyMode() {
 	/** Level at start time */
 	private var startLevel:Boolean by DelegateMenuItem(itemTT)
 
-	private val itemBig = BooleanMenuItem("big", "BIG", COLOR.BLUE, false, true)
+	private val itemBig = BooleanMenuItem("big", "BIG", COLOR.ORANGE, false, true)
 	/** BigMode */
 	private var big:Boolean by DelegateMenuItem(itemBig)
 
@@ -149,7 +149,7 @@ class MarathonPlus:NetDummyMode() {
 		engine.staffrollNoDeath = false
 		engine.staffrollEnableStatistics = true
 		owner.bgMan.bg = if(startLevel) 36 else -1
-		engine.frameSkin = GameEngine.FRAME_COLOR_WHITE
+		engine.frame = GameEngine.Frame.WHITE
 	}
 
 	/** Set the gravity rate
@@ -375,14 +375,15 @@ class MarathonPlus:NetDummyMode() {
 			} else if(!startLevel&&goalType==3&&engine.timerActive) {
 				if(bonusTime>0) {
 					bonusTime--
-					if(bonusTime<=600&&bonusTime%60==0) engine.playSE("countdown")
+					if(bonusTime<=600&&bonusTime%60==0) {
+						engine.playSE("countdown")
+						if(bonusTime<=300) engine.playSE("countdown${bonusTime/60}")
+					}
 					engine.meterValue = bonusTime/2f/18000
 					if(engine.statistics.level<50) {
 						if(norm>0) engine.meterValue += ((1-engine.meterValue)*norm*
 							bonusTime/lastlinetime/tableNorma[goalType][engine.statistics.level/10])
-					} else {
-						engine.meterValue += ((1-engine.meterValue)*(engine.statistics.level-50)*bonusTime)/lastlinetime/150
-					}
+					} else engine.meterValue += ((1-engine.meterValue)*(engine.statistics.level-50)*bonusTime)/lastlinetime/150
 					engine.meterColor = GameEngine.METER_COLOR_LIMIT
 				} else if(!netIsWatch) {
 					engine.lives = 0

@@ -465,7 +465,7 @@ class Nohoho:DummyAI(), Runnable {
 		if(!piece.placeToField(x, y, rt, fld)) {
 			if(DEBUG_ALL)
 				log.debug(
-					"End of thinkMain($x, $y, $rt, $rtOld, fld, piece ${piece.type.name}, $defcon). pts = MIN_VALUE (Cannot place piece)"
+					"End of thinkMain($x, $y, $rt, $rtOld, fld, piece ${piece.shape.name}, $defcon). pts = MIN_VALUE (Cannot place piece)"
 				)
 			return Integer.MIN_VALUE
 		}
@@ -477,7 +477,7 @@ class Nohoho:DummyAI(), Runnable {
 			if(maxX<2) {
 				if(DEBUG_ALL)
 					log.debug(
-						"End of thinkMain($x, $y, $rt, $rtOld, fld, piece ${piece.type.name}, $defcon). pts = MIN_VALUE (Invalid location/defcon combination)"
+						"End of thinkMain($x, $y, $rt, $rtOld, fld, piece ${piece.shape.name}, $defcon). pts = MIN_VALUE (Invalid location/defcon combination)"
 					)
 				return Integer.MIN_VALUE
 			}

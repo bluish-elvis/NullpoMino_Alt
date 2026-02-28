@@ -31,7 +31,7 @@
 
 package mu.nu.nullpo.gui.common
 
-import mu.nu.nullpo.game.event.EventReceiver
+import mu.nu.nullpo.game.event.EventReceiver.COLOR
 
 abstract class BaseFontGrade:BaseFont {
 	companion object {
@@ -39,14 +39,14 @@ abstract class BaseFontGrade:BaseFont {
 		const val WS = 32
 	}
 
-	override fun processTxt(x:Float, y:Float, str:String, color:EventReceiver.COLOR, scale:Float, alpha:Float, rainbow:Int,
+	override fun processTxt(x:Float, y:Float, str:String, color:COLOR, scale:Float, alpha:Float, rainbow:Int,
 		draw:(i:Int, dx:Float, dy:Float, scale:Float, sx:Int, sy:Int, sw:Int, sh:Int, a:Float)->Unit) =
 		if(scale>=5f/3f) {
 			//processBigFont
 			var dx = x
 			var i = 0
 			while(i<str.length) {
-				val col = (if(color==EventReceiver.COLOR.RAINBOW) EventReceiver.getRainbowColor(rainbow, i) else color).ordinal
+				val col = (if(color==COLOR.RAINBOW) COLOR.getRainbowColor(rainbow, i) else color).ordinal
 				var cd = str[i].code
 				var nX = -1
 				var nY = -1
@@ -93,21 +93,22 @@ abstract class BaseFontGrade:BaseFont {
 			var dx = x
 			var i = 0
 			while(i<str.length) {
-				val col = (if(color==EventReceiver.COLOR.RAINBOW) EventReceiver.getRainbowColor(rainbow, i) else color).ordinal
+				val col = (if(color==COLOR.RAINBOW) COLOR.getRainbowColor(rainbow, i) else color).ordinal
 				var cd = str[i].code
 				when(cd) {
-					in 0x31..0x39 -> if(cd==0x31&&i<str.length-1) {
-						val next = str[i+1].code
+					in 0x31..0x39 -> if(cd==0x31&&i<str.length-1) str.getOrNull(i+1)?.code?.let {next ->
 						if(next in 0x30..0x33) {
 							cd = 9+next-0x30
 							i++
+						} else {
+							cd = 0
 						}
 					} else cd -= 0x31
 					0x53, 0x73 -> cd = 13//S
 					0x6D -> cd = 14//m
 					0x4B, 0x6B -> cd = 15//K
 					0x56, 0x76 -> cd = 16//V
-					0x4F, 0x6F -> cd = 17//O
+					0x30, 0x4F, 0x6F -> cd = 17//O
 					0x4D -> cd = 18//M
 					0x47, 67 -> cd = 19//G
 					else -> cd = -1
@@ -123,7 +124,7 @@ abstract class BaseFontGrade:BaseFont {
 			}
 		}
 
-	override fun printFont(x:Float, y:Float, str:String, color:EventReceiver.COLOR, scale:Float, alpha:Float, rainbow:Int) =
+	override fun printFont(x:Float, y:Float, str:String, color:COLOR, scale:Float, alpha:Float, rainbow:Int) =
 		processTxt(
 			x, y, str, color, scale, alpha, rainbow,
 		) {i:Int, dx:Float, dy:Float, s:Float, sx:Int, sy:Int, sw:Int, sh:Int, a:Float ->

@@ -112,7 +112,7 @@ internal class StateInGame:BasicGameState() {
 	 * @param strRulePath Rule file path (null if you want to use user-selected one)
 	 */
 	@JvmOverloads
-	fun startNewGame(mode:String = pGl.lastMode[""] ?: "", strRulePath:String? = null) {
+	fun startNewGame(mode:String = pGl.lastMode[""]?:"", strRulePath:String? = null) {
 		modeName = mode
 		val modeObj = NullpoMinoSlick.modeManager[mode]
 		if(modeObj==null) log.error("startNewGame: Couldn't find mode:$mode")
@@ -131,7 +131,7 @@ internal class StateInGame:BasicGameState() {
 
 				// ルール
 				val ruleName =
-					strRulePath ?: pGl.rule.getOrNull(i)?.getOrNull(it.mode?.gameStyle?.ordinal ?: 0)?.path
+					strRulePath?:pGl.rule.getOrNull(i)?.getOrNull(it.mode?.gameStyle?.ordinal?:0)?.path
 				val ruleOpt = Util.loadRule(ruleName)
 
 				e.ruleOpt = ruleOpt
@@ -184,7 +184,7 @@ internal class StateInGame:BasicGameState() {
 				// Wallkick
 				if(ruleOpt.strWallkick.isNotEmpty()) e.wallkick = Util.loadWallkick(ruleOpt.strWallkick)
 
-				// AI (リプレイ追記用）
+				// AI (リプレイ追記用)
 				pGl.ai.getOrElse(i) {AIConf()}.let {ai ->
 					if(ai.name.isNotEmpty()) {
 						e.ai = Util.loadAIPlayer(ai.name)
@@ -286,7 +286,7 @@ internal class StateInGame:BasicGameState() {
 		GameKey.gameKey.forEachIndexed {i, it ->
 			it.update(
 				c.input,
-				(!pause||enableFrameStep)&&i<(gameManager?.engine?.size ?: 0)&&gameManager?.engine?.get(i)?.isInGame==true
+				(!pause||enableFrameStep)&&i<(gameManager?.engine?.size?:0)&&gameManager?.engine?.get(i)?.isInGame==true
 			)
 		}
 		// Title bar update

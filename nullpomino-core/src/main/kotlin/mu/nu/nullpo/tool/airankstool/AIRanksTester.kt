@@ -44,8 +44,8 @@ class AIRanksTester(private val numTries:Int) {
 	private var totalPieces = 0
 
 	private fun init() {
-		val pieceEnable = List(Piece.PIECE_COUNT) {it<Piece.PIECE_STANDARD_COUNT}
-		val seed = Random.Default.nextLong()
+		val pieceEnable = List(Piece.Shape.num) {it<Piece.Shape.numTetras}
+		val seed = Random.nextLong()
 
 		randomizer = History4RollsRandomizer().apply {setState(pieceEnable, seed)}
 

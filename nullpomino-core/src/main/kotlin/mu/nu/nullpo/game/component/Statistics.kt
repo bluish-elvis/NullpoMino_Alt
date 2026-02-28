@@ -31,7 +31,10 @@
 package mu.nu.nullpo.game.component
 
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.json.JsonElement
+import kotlinx.serialization.json.decodeFromJsonElement
 import mu.nu.nullpo.util.CustomProperties
+import mu.nu.nullpo.util.GeneralUtil.Json
 
 /** Scoreなどの情報 */
 @Serializable
@@ -46,30 +49,30 @@ class Statistics {
 	var scoreHD = 0
 	/** その他の方法で手に入れたScore */
 	var scoreBonus = 0
-
-	/** Total line count */
+	/** Total lines count */
 	var lines = 0
 
 	/** Total sent garbage */
 	val attacks get() = attacksLine+attacksTwist+attacksBonus
-	/** Multi Lines clear garbage */
+
+	/** Multi Lines(but not Twister) clear garbage */
 	var attacksLine = 0
 	/** Twister clear garbage */
 	var attacksTwist = 0
 	/** Combo/Chain/B2B garbage */
 	var attacksBonus = 0
-
 	/** Cleared Garbage Lines */
 	var garbageLines = 0
+
 	/** Total Cleared block count */
 	var blocks = 0
-
 	var level = 0
+
 	/** Levelの表示に加算する数値 (表示 levelが内部の値と異なる場合に使用) */
 	var levelDispAdd = 0
-
 	/** 経過 time */
 	var time = 0
+
 	/** 有効なisPushKeyの合計 count */
 	var totalKeyPush = 0
 	var finesse = 0
@@ -78,9 +81,12 @@ class Statistics {
 	val finessePtsRate get() = finessePts/5f/totalPieceLocked
 	var finesseFault = 0
 	var maxFinesseCombo = 0
-
 	/** 置いたピースのcount */
 	var totalPieceLocked = 0
+	/** SoftDropの総降下距離 */
+	var totalPieceSoftDrop = 0
+	/** HardDropの総降下距離 */
+	var totalPieceHardDrop = 0
 	/** ピースを操作していた合計 time*/
 	var totalPieceActiveTime = 0
 	/** ピースを移動させた合計 count */
@@ -90,43 +96,71 @@ class Statistics {
 	/** Hold use count */
 	var totalHoldUsed = 0
 
-	/** 1-line clear count */
+	/** 1-lines clear count */
 	var totalSingle = 0
-	/** 2-line clear count */
+	/** 2-lines clear count */
 	var totalDouble = 0
-	/** Split 2-line clear count */
+	/** Split 2-lines clear count */
 	var totalSplitDouble = 0
-	/** 3-line clear count */
+	/** 3-lines clear count */
 	var totalTriple = 0
-	/** One-Two-3-line clear count */
+	/** One-Two-3-lines clear count */
 	var totalSplitTriple = 0
-	/** 4-line clear count */
+	/** 4-lines clear count */
 	var totalQuadruple = 0
 
-	/** Twister but no-line (with wallkick) count */
+	/** Twister but no-lines (with wallkick) count */
 	var totalTwistZeroMini = 0
-	/** Twister but no-line (without wallkick) count */
+	/** Twister but no-lines (without wallkick) count */
 	var totalTwistZero = 0
-	/** Twister 1-line (with wallkick) count */
+	/** Twister 1-lines (with wallkick) count */
 	var totalTwistSingleMini = 0
-	/** Twister 1-line (without wallkick) count */
+	/** Twister 1-lines (without wallkick) count */
 	var totalTwistSingle = 0
-	/** Twister 2-line (with wallkick) count */
+	/** Twister 2-lines (with wallkick) count */
 	var totalTwistDoubleMini = 0
-	/** Twister 2-line (without wallkick) count */
+	/** Twister 2-lines (without wallkick) count */
 	var totalTwistDouble = 0
-	/** Twister Split 2-line count */
+	/** Twister Split 2-lines count */
 	var totalTwistSplitDouble = 0
-	/** Twister 3 line count */
+	/** Twister 3 lines count */
 	var totalTwistTriple = 0
-	/** Twister One-Two-3-line count */
+	/** Twister One-Two-3-lines count */
 	var totalTwistSplitTriple = 0
+	/** T-Twister but no-lines (with wallkick) count */
+	var totalTTwistZeroMini = 0
+	/** T-Twister but no-lines (without wallkick) count */
+	var totalTTwistZero = 0
+	/** T-Twister 1-lines (with wallkick) count */
+	var totalTTwistSingleMini = 0
+	/** T-Twister 1-lines (without wallkick) count */
+	var totalTTwistSingle = 0
+	/** T-Twister 2-lines (with wallkick) count */
+	var totalTTwistDoubleMini = 0
+	/** T-Twister 2-lines (without wallkick) count */
+	var totalTTwistDouble = 0
+	/** T-Twister Split 2-lines count */
+	var totalTTwistSplitDouble = 0
+	/** T-Twister 3 lines count */
+	var totalTTwistTriple = 0
 
-	/** Total Twister (without no-line) count */
-	val totalTwistsLine get() = totalTwistSingleMini + totalTwistSingle +
-			totalTwistDoubleMini + totalTwistDouble + totalTwistSplitDouble + totalTwistTriple + totalTwistSplitTriple
+	/** Total T-Twister (w/o no-lines) count */
+	val totalTTwistsLine
+		get() = totalTTwistSingleMini+totalTTwistSingle+
+			(totalTTwistDoubleMini+totalTTwistDouble+totalTTwistSplitDouble)+totalTTwistTriple
+	val totalTTwistLinesSum
+		get() = totalTTwistsLine+totalTTwistDoubleMini+totalTTwistDouble+totalTTwistSplitDouble+totalTTwistTriple*2
 
-	/** Back to Back 4-line clear count */
+	/** Total Twister (regardless Piece shape but w/o no-lines) count */
+	val totalTwistsLine
+		get() = totalTTwistsLine+totalTwistSingleMini+totalTwistSingle+
+			(totalTwistDoubleMini+totalTwistDouble+totalTwistSplitDouble)*2+(totalTwistTriple+totalTwistSplitTriple)*3
+
+	val totalTwistLinesSum
+		get() = totalTwistsLine+totalTwistDoubleMini+totalTwistDouble+totalTwistSplitDouble+
+			(totalTwistTriple+totalTwistSplitTriple)*2
+
+	/** Back to Back 4-lines clear count */
 	var totalB2BQuad = 0
 	/** Back to Back Split clear count */
 	var totalB2BSplit = 0
@@ -162,7 +196,7 @@ class Statistics {
 	/** 1秒間あたりのピースcount (Pieces Per Second) */
 	val pps:Float get() = totalPieceLocked*60f/maxOf(1, time)
 
-	/** 1Pieceあたりのキー押下数 (Keys Per Piece) */
+	/** 1Pieceあたりの有効キー押下数 (Valid Key Presses Per Piece) */
 	val kpp:Float get() = totalKeyPush.toFloat()/maxOf(1, totalPieceLocked)
 
 	/** 1Linesあたりの攻撃 (Attack Per Line) */
@@ -202,7 +236,11 @@ class Statistics {
 	/** Roll Survived Count */
 	var rollSurvived = 0*/
 
-	var pieces = List(Piece.PIECE_COUNT) {0}
+	/** used pieces count by shape */
+	var pieces = List(Piece.Shape.num) {0}
+
+	/** obtained decoration count */
+	var decoration = 0
 
 	var rule = ""
 
@@ -222,8 +260,8 @@ class Statistics {
 	/** Constructor that imports data from a String List
 	 * @param s String List (String[37])
 	 */
-	constructor(s:List<String>) {
-		importStringArray(s)
+	constructor(s:JsonElement) {
+		replace(Json.decodeFromJsonElement(s))
 	}
 
 	/** Constructor that imports data from a String
@@ -255,6 +293,8 @@ class Statistics {
 		totalPieceActiveTime = 0
 		totalPieceMove = 0
 		totalPieceSpin = 0
+		totalPieceSoftDrop = 0
+		totalPieceHardDrop = 0
 		totalSingle = 0
 		totalDouble = 0
 		totalSplitDouble = 0
@@ -283,7 +323,8 @@ class Statistics {
 		maxFinesseCombo = 0
 		finessePts = 0
 		finesseFault = 0
-		pieces = List(Piece.PIECE_COUNT) {0}
+		decoration = 0
+		pieces = List(Piece.Shape.num) {0}
 		randSeed = 0L
 	}
 
@@ -306,6 +347,8 @@ class Statistics {
 			totalPieceActiveTime = b.totalPieceActiveTime
 			totalPieceMove = b.totalPieceMove
 			totalPieceSpin = b.totalPieceSpin
+			totalPieceSoftDrop = b.totalPieceSoftDrop
+			totalPieceHardDrop = b.totalPieceHardDrop
 			totalHoldUsed = b.totalHoldUsed
 			totalSingle = b.totalSingle
 			totalDouble = b.totalDouble
@@ -337,6 +380,7 @@ class Statistics {
 			maxFinesseCombo = b.maxFinesseCombo
 			finessePts = b.finessePts
 			finesseFault = b.finesseFault
+			decoration = b.decoration
 
 			pieces = b.pieces
 			randSeed = b.randSeed
@@ -344,14 +388,11 @@ class Statistics {
 	}
 
 	/** 他のStatisticsの値を合成
+	 * 全モードの累計に使用するため、モードによって基準が異なるScoreは除外
 	 * @param s Copy source
 	 */
 	fun combine(s:Statistics?) {
 		s?.let {b ->
-			scoreLine += b.scoreLine
-			scoreSD += b.scoreSD
-			scoreHD += b.scoreHD
-			scoreBonus += b.scoreBonus
 			lines += b.lines
 			attacksLine += b.attacksLine
 			attacksTwist += b.attacksTwist
@@ -364,6 +405,8 @@ class Statistics {
 			totalPieceActiveTime += b.totalPieceActiveTime
 			totalPieceMove += b.totalPieceMove
 			totalPieceSpin += b.totalPieceSpin
+			totalPieceSoftDrop += b.totalPieceSoftDrop
+			totalPieceHardDrop += b.totalPieceHardDrop
 			totalHoldUsed += b.totalHoldUsed
 			totalSingle += b.totalSingle
 			totalDouble += b.totalDouble
@@ -390,6 +433,7 @@ class Statistics {
 			maxChain = maxOf(maxCombo, b.maxChain)
 			rollClear = b.rollClear
 			garbageLines += b.garbageLines
+			decoration += b.decoration
 
 			finesse += b.finesse
 			maxFinesseCombo = maxOf(maxFinesseCombo, b.maxFinesseCombo)
@@ -402,9 +446,9 @@ class Statistics {
 
 	/** プロパティセットに保存
 	 * @param p プロパティセット
-	 * @param id 任意のID (Player IDなど）
+	 * @param id 任意のID (Player IDなど)
 	 */
-	fun writeProperty(p:CustomProperties, id:Int) =
+	fun writeProperty(p:CustomProperties, id:Int = 0) =
 		mapOf<String, Comparable<*>>(
 			"$id.statistics.scoreLine" to scoreLine,
 			"$id.statistics.scoreSD" to scoreSD,
@@ -422,6 +466,8 @@ class Statistics {
 			"$id.statistics.totalPieceActiveTime" to totalPieceActiveTime,
 			"$id.statistics.totalPieceMove" to totalPieceMove,
 			"$id.statistics.totalPieceRotate" to totalPieceSpin,
+			"$id.statistics.totalPieceSoftDrop" to totalPieceSoftDrop,
+			"$id.statistics.totalPieceHardDrop" to totalPieceHardDrop,
 			"$id.statistics.totalSingle" to totalSingle,
 			"$id.statistics.totalDouble" to totalDouble,
 			"$id.statistics.totalSplitDouble" to totalSplitDouble,
@@ -450,6 +496,7 @@ class Statistics {
 			"$id.statistics.maxFinesseCombo" to maxFinesseCombo,
 			"$id.statistics.finessePts" to finessePts,
 			"$id.statistics.finesseFault" to finesseFault,
+			"$id.statistics.decoration" to decoration,
 			"$id.statistics.rollClear" to rollClear,
 			"$id.statistics.randSeed" to randSeed,
 		).plus((0..<pieces.size-1).associate {
@@ -460,9 +507,9 @@ class Statistics {
 
 	/** プロパティセットから読み込み
 	 * @param p プロパティセット
-	 * @param id 任意のID (Player IDなど）
+	 * @param id 任意のID (Player IDなど)
 	 */
-	fun readProperty(p:CustomProperties, id:Int) {
+	fun readProperty(p:CustomProperties, id:Int = 0) {
 		scoreLine = p.getProperty("$id.statistics.scoreLine", 0)
 		scoreSD = p.getProperty("$id.statistics.scoreSD", 0)
 		scoreHD = p.getProperty("$id.statistics.scoreHD", 0)
@@ -479,6 +526,8 @@ class Statistics {
 		totalPieceActiveTime = p.getProperty("$id.statistics.totalPieceActiveTime", 0)
 		totalPieceMove = p.getProperty("$id.statistics.totalPieceMove", 0)
 		totalPieceSpin = p.getProperty("$id.statistics.totalPieceRotate", 0)
+		totalPieceSoftDrop = p.getProperty("$id.statistics.totalPieceSoftDrop", 0)
+		totalPieceHardDrop = p.getProperty("$id.statistics.totalPieceHardDrop", 0)
 		totalSingle = p.getProperty("$id.statistics.totalSingle", 0)
 		totalDouble = p.getProperty("$id.statistics.totalDouble", 0)
 		totalSplitDouble = p.getProperty("$id.statistics.totalSplitDouble", 0)
@@ -507,93 +556,22 @@ class Statistics {
 		maxFinesseCombo = p.getProperty("$id.statistics.maxFinesseCombo", 0)
 		finessePts = p.getProperty("$id.statistics.finessePts", 0)
 		finesseFault = p.getProperty("$id.statistics.finesseFault", 0)
+		decoration = p.getProperty("$id.statistics.decoration", 0)
 		rollClear = p.getProperty("$id.statistics.rollClear", 0)
 		randSeed = p.getProperty("$id.statistics.randSeed", 0L)
 		pieces = List(pieces.size) {p.getProperty("$id.statistics.pieces.$it", 0)}
-	}
-
-	/** Import from String List
-	 * @param s String List (String[42])
-	 */
-	fun importStringArray(s:List<String>) {
-		val pi = MutableList(pieces.size) {0}
-		listOf<(String)->Unit>(
-			{scoreLine = it.toInt()},
-			{scoreSD = it.toInt()},
-			{scoreHD = it.toInt()},
-			{scoreBonus = it.toInt()},
-			{attacksLine = it.toInt()},
-			{attacksTwist = it.toInt()},
-			{attacksBonus = it.toInt()},
-			{lines = it.toInt()},
-			{blocks = it.toInt()},
-			{time = it.toInt()},
-			{level = it.toInt()},
-			{levelDispAdd = it.toInt()},
-			{totalPieceLocked = it.toInt()},
-			{totalPieceActiveTime = it.toInt()},
-			{totalPieceMove = it.toInt()},
-			{totalPieceSpin = it.toInt()},
-			{totalSingle = it.toInt()},
-			{totalDouble = it.toInt()},
-			{totalSplitDouble = it.toInt()},
-			{totalTriple = it.toInt()},
-			{totalSplitTriple = it.toInt()},
-			{totalQuadruple = it.toInt()},
-			{totalTwistZeroMini = it.toInt()},
-			{totalTwistZero = it.toInt()},
-			{totalTwistSingleMini = it.toInt()},
-			{totalTwistSingle = it.toInt()},
-			{totalTwistDoubleMini = it.toInt()},
-			{totalTwistDouble = it.toInt()},
-			{totalTwistSplitDouble = it.toInt()},
-			{totalTwistTriple = it.toInt()},
-			{totalTwistSplitTriple = it.toInt()},
-			{totalB2BQuad = it.toInt()},
-			{totalB2BSplit = it.toInt()},
-			{totalB2BTwist = it.toInt()},
-			{bravos = it.toInt()},
-			{totalHoldUsed = it.toInt()},
-			{maxCombo = it.toInt()},
-			{maxB2B = it.toInt()},
-			{gameRate = it.toFloat()},
-			{maxChain = it.toInt()},
-			{finesse = it.toInt()},
-			{maxFinesseCombo = it.toInt()},
-			{finessePts = it.toInt()},
-			{finesseFault = it.toInt()},
-			{rollClear = it.toInt()},
-			{randSeed = it.toLong()}).plus(
-			(0..<pieces.size-1).map {i:Int ->
-				{pi[i] = it.toInt()}
-			}).zip(s).forEach {(m, st) -> m(st)}
-		pieces = pi.toList()
 	}
 
 	/** Import from String
 	 * @param s String (Split by ;)
 	 */
 	fun importString(s:String) {
-		importStringArray(s.split(Regex(";")).dropLastWhile {it.isEmpty()})
+		replace(Json.decodeFromString<Statistics>(s))
 	}
-
-	/** Export to String List
-	 * @return String List (String[38])
-	 */
-	fun exportStringArray():List<String> = listOf(
-		"$scoreLine", "$scoreSD", "$scoreHD", "$scoreBonus", "$attacksLine", "$attacksTwist", "$attacksBonus", "$lines",
-		"$blocks", "$time", "$level", "$levelDispAdd", "$totalPieceLocked", "$totalPieceActiveTime", "$totalPieceMove",
-		"$totalPieceSpin", "$totalSingle", "$totalDouble", "$totalSplitDouble", "$totalTriple", "$totalSplitTriple",
-		"$totalQuadruple", "$totalTwistZeroMini", "$totalTwistZero", "$totalTwistSingleMini", "$totalTwistSingle",
-		"$totalTwistDoubleMini", "$totalTwistDouble", "$totalTwistSplitDouble", "$totalTwistTriple", "$totalTwistSplitTriple",
-		"$totalB2BQuad", "$totalB2BSplit", "$totalB2BTwist", "$bravos", "$totalHoldUsed", "$maxCombo", "$maxB2B", "$gameRate",
-		"$maxChain", "$finesse", "$maxFinesseCombo", "$finessePts", "$finesseFault", "$rollClear", "$randSeed"
-	)+(pieces.map {"$it"})
-
 	/** Export to String
 	 * @return String (Split by ;)
 	 */
-	fun exportString():String = exportStringArray().joinToString(";")
+	fun exportString():String = Json.encodeToString(this)
 
 	override fun toString():String = exportString()
 

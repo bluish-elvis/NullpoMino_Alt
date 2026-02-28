@@ -33,8 +33,7 @@ package mu.nu.nullpo.game.net
 import mu.nu.nullpo.game.play.GameManager
 import org.apache.logging.log4j.LogManager
 import java.io.IOException
-import java.util.LinkedList
-import java.util.Locale
+import java.util.*
 
 /** クライアント(Player用) */
 class NetPlayerClient:NetBaseClient {

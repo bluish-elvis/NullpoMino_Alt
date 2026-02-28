@@ -91,6 +91,7 @@ interface GameMode {
 	/** Settings screen.
 	 * @return true if you don't want to start the game yet. false if settings are done.*/
 	fun onSetting(engine:GameEngine):Boolean
+	fun onSettingChanged(engine:GameEngine)
 	/** Profile screen.
 	 * @return true if you don't want to start the game yet. false if settings are done.*/
 	fun onProfile(engine:GameEngine):Boolean
@@ -104,7 +105,7 @@ interface GameMode {
 	/** "Lock flash" screen. Certain rules may skip this screen.
 	 * @return true if you override everything of this screen (skips default behavior)*/
 	fun onLockFlash(engine:GameEngine):Boolean
-	/** During line clear.
+	/** During lines clear.
 	 * @return true if you override everything of this screen (skips default behavior)*/
 	fun onLineClear(engine:GameEngine):Boolean
 	/** During ARE.
@@ -144,7 +145,7 @@ interface GameMode {
 	fun renderMove(engine:GameEngine)
 	/** Render "Lock flash" screen.*/
 	fun renderLockFlash(engine:GameEngine)
-	/** Render line clear screen.*/
+	/** Render lines clear screen.*/
 	fun renderLineClear(engine:GameEngine)
 	/** Render ARE screen.*/
 	fun renderARE(engine:GameEngine)
@@ -163,11 +164,12 @@ interface GameMode {
 	/** Render player input. */
 	fun renderInput(engine:GameEngine)
 
-	/** Executed when a block gets destroyed in line-clear screen.
+	/** Executed when a block gets destroyed in lines-clear screen.
 	 * @param blk Block
 	 * @return if true, skip default behavior
 	 */
 	fun blockBreak(engine:GameEngine, blk:Map<Int, Map<Int, Block>>):Boolean
+	fun blockBreak(engine:GameEngine, blk:Collection<Triple<Int, Int, Block>>):Boolean
 
 	fun lineClear(gameEngine:GameEngine, i:Collection<Int>)
 
@@ -195,12 +197,13 @@ interface GameMode {
 	 */
 	fun pieceLocked(engine:GameEngine, lines:Int, finesse:Boolean)
 
-	/** When line clear ends
+	/** When lines clear ends
 	 * @return true if you override everything of this screen (skips default behavior)
 	 */
 	fun lineClearEnd(engine:GameEngine):Boolean
 
-	fun loadSetting(engine:GameEngine, prop:CustomProperties, ruleName:String = engine.ruleOpt.strRuleName, playerID:Int = engine.playerID)
+	fun loadSetting(engine:GameEngine, prop:CustomProperties, ruleName:String = engine.ruleOpt.strRuleName,
+		playerID:Int = engine.playerID)
 
 	fun loadSetting(prof:ProfileProperties, engine:GameEngine) =
 		if(prof.isLoggedIn) loadSetting(engine, prof.propProfile, engine.ruleOpt.strRuleName, engine.playerID)
@@ -215,12 +218,14 @@ interface GameMode {
 	 */
 	fun loadRankingPlayer(prof:ProfileProperties)
 
-	fun saveSetting(engine:GameEngine, prop:CustomProperties, ruleName:String = engine.ruleOpt.strRuleName, playerID:Int = engine.playerID)
+	fun saveSetting(engine:GameEngine, prop:CustomProperties, ruleName:String = engine.ruleOpt.strRuleName,
+		playerID:Int = engine.playerID)
 
 	fun saveRanking()
 	fun saveRankingPlayer(prof:ProfileProperties)
 
-	/** Called when saving replay to [prop] */
+	/** Called when saving replay to [prop]
+	 * @return is the play to be saved as replay or not. */
 	fun saveReplay(engine:GameEngine, prop:CustomProperties):Boolean
 	/** Called when a replay file is loaded from [prop] */
 	fun loadReplay(engine:GameEngine, prop:CustomProperties)

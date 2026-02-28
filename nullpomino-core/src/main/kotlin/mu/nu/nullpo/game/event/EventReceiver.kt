@@ -65,14 +65,6 @@ open class EventReceiver {
 	protected val random = Random.Default
 
 	open val rainbowCount = 0
-	/** Font cint constants */
-	enum class COLOR {
-		WHITE, BLUE, RED, PINK, GREEN, YELLOW, CYAN, ORANGE, PURPLE, COBALT, RAINBOW;
-
-		companion object {
-			val all = entries
-		}
-	}
 
 	/** Get type of piece preview
 	 * @return 0=Above 1=Side Small 2=Side Big
@@ -120,7 +112,7 @@ open class EventReceiver {
 		})?:0f
 
 	/** @return X position of score display area*/
-	fun scoreX(e:GameEngine, pos:Int = 0) = e.sX+pos*BS
+	fun scoreX(e:GameEngine, pos:Number = 0) = e.sX+pos.toFloat()*BS
 	/** @return X position of score display area*/
 	val GameEngine.sX
 		get() = (if(owner.menuOnly) 0 else
@@ -133,7 +125,7 @@ open class EventReceiver {
 
 	/** @return Y position of score display area */
 //	@Deprecated("toExtend", ReplaceWith("e.sY"))
-	fun scoreY(e:GameEngine, pos:Int = 0) = e.sY+pos*BS
+	fun scoreY(e:GameEngine, pos:Number = 0) = e.sY+pos.toFloat()*BS
 	/** @return Y position of score display area */
 	val GameEngine.sY
 		get() = if(owner.menuOnly) 0 else owner.mode?.let {m ->
@@ -147,20 +139,20 @@ open class EventReceiver {
 			}
 		}?:0
 
-	/** It will be called when a line is cleared.*/
+	/** It will be called when a lines is cleared.*/
 	open fun lineClear(engine:GameEngine, y:Collection<Int>) {}
 
 	/** It will be called when score gained.
 	 * @param pts Number of points last gained*/
-	open fun addScore(x:Int, y:Int, pts:Int, color:COLOR) {}
+	open fun addScore(x:Int, y:Int, pts:Int, color:COLOR, str:String = "", big:Boolean = false) {}
 
 	/** After Score Gained, to show points.
 	 * @param engine GameEngine
 	 * @param pts Number of points last gained
 	 */
-	fun addScore(engine:GameEngine, x:Number, y:Number, pts:Int, color:COLOR = getPlayerColor(engine.playerID)) =
-		addScore((engine.fX+x.toFloat()*engine.blockSize).toInt(), (engine.fY+y.toFloat()*engine.blockSize).toInt(), pts,
-			color)
+	fun addScore(engine:GameEngine, x:Number, y:Number, pts:Int, color:COLOR = getPlayerColor(engine.playerID),
+		str:String = "", big:Boolean = false) =
+		addScore(fieldX(engine, x).toInt(), fieldY(engine, y).toInt(), pts, color, str, big)
 
 	open fun addCombo(x:Int, y:Int, pts:Int, type:PopupCombo.CHAIN, ex:Int) {}
 
@@ -169,7 +161,7 @@ open class EventReceiver {
 	 * @param pts Number of points last gained
 	 */
 	fun addCombo(engine:GameEngine, x:Int, y:Int, pts:Int, type:PopupCombo.CHAIN) = addCombo(
-		engine.fX.toInt()+x*engine.blockSize, engine.fY.toInt()+y*engine.blockSize, pts, type, -(x+2)*engine.blockSize+18
+		fieldX(engine, x).toInt(), fieldY(engine, y).toInt(), pts, type, -(x+2)*engine.blockSize+18
 	)
 
 	/** It will be called when a fireworks shoot.
@@ -203,7 +195,7 @@ open class EventReceiver {
 	 * @param x X-coordinate
 	 * @param y Y-coordinate
 	 * @param str String to draw
-	 * @param color Font cint
+	 * @param color Font color
 	 * @param scale Font size (.5f, 1f, 2f)
 	 */
 	open fun drawFont(x:Float, y:Float, str:String, font:FONT = BASE, color:COLOR = COLOR.WHITE, scale:Float = 1f,
@@ -225,7 +217,7 @@ open class EventReceiver {
 		drawFont(x, y, str, BASE, color, scale, alpha)
 
 	/** Draw String to any location.
-	 * If flag is false, it will use white font cint. If flag is true, it will
+	 * If flag is false, it will use white font color. If flag is true, it will
 	 * use red instead.
 	 * @param playerID Player ID
 	 * @param x X-coordinate
@@ -274,7 +266,7 @@ open class EventReceiver {
 	 * @param x X-coordinate
 	 * @param y Y-coordinate
 	 * @param str String to draw
-	 * @param color Font cint
+	 * @param color Font color
 	 * @param scale Font size (.5f, 1f, 2f)
 	 */
 	@Deprecated("Use drawFont instead", ReplaceWith("drawFont(x, y, str, NUM, color, scale, alpha)"))
@@ -285,7 +277,7 @@ open class EventReceiver {
 	 * @param x X-coordinate
 	 * @param y Y-coordinate
 	 * @param str String to draw
-	 * @param color Font cint
+	 * @param color Font color
 	 * @param scale Font size (.5f, 1f, 2f)
 	 */
 	@Deprecated("Use drawFont instead", ReplaceWith("drawFont(x, y, str, GRADE, color, scale, alpha)"))
@@ -293,7 +285,7 @@ open class EventReceiver {
 		drawFont(x, y, str, GRADE, color, scale, alpha)
 
 	/** Draw Grade to any location.
-	 * If flag is false, it will use white font cint.
+	 * If flag is false, it will use white font color.
 	 * If flag is true, it will use red or blue instead.
 	 * @param playerID Player ID
 	 * @param x X-coordinate
@@ -309,7 +301,7 @@ open class EventReceiver {
 	 * @param x X-coordinate
 	 * @param y Y-coordinate
 	 * @param str String to draw
-	 * @param color Font cint
+	 * @param color Font color
 	 */
 	@Deprecated("Use drawFont instead", ReplaceWith("drawFont(x, y, str, TTF, color)"))
 	fun drawDirectTTF(x:Number, y:Number, str:String, color:COLOR = COLOR.WHITE) =
@@ -343,7 +335,7 @@ open class EventReceiver {
 	 * @param y Y-coordinate if x < -2 Center Align
 	 * @param str String to draw
 	 * @param font Fomt specifies
-	 * @param color Font cint
+	 * @param color Font color
 	 * @param scale Font size (.5f, 1f, 2f)
 	 */
 	fun drawMenu(engine:GameEngine, x:Number, y:Number, str:String, font:FONT = BASE, color:COLOR = COLOR.WHITE,
@@ -372,7 +364,7 @@ open class EventReceiver {
 		drawMenu(engine, x, y, str, BASE, scale = scale, alpha = alpha)
 
 	/** Draw String inside the field.
-	 * If [flag] is false, it will use white font cint.
+	 * If [flag] is false, it will use white font color.
 	 * If [flag] is true, it will use red or blue instead.*/
 	@Deprecated("Use drawMenu instead", ReplaceWith("drawMenu(engine, x, y, str, BASE, flag, scale)"))
 	fun drawMenuFont(engine:GameEngine, x:Number, y:Number, str:String, flag:Boolean, scale:Float = 1f) {
@@ -391,7 +383,7 @@ open class EventReceiver {
 		drawMenu(engine, x, y, str, NUM, scale, alpha)
 
 	/** Draw Number inside the field.
-	 * If [flag] is false, it will use white font cint.
+	 * If [flag] is false, it will use white font color.
 	 * If [flag] is true, it will use red or blue instead.*/
 	@Deprecated("Use drawMenu instead", ReplaceWith("drawMenu(engine, x, y, str, NUM, flag, scale)"))
 	fun drawMenuNum(engine:GameEngine, x:Number, y:Number, str:String, flag:Boolean, scale:Float = 1f, alpha:Float = 1f) =
@@ -414,7 +406,7 @@ open class EventReceiver {
 		drawMenu(engine, x, y, str, NANO, color, scale, alpha)
 
 	/** Draw Small Font inside the field.
-	 * If [flag] is false, it will use white font cint.
+	 * If [flag] is false, it will use white font color.
 	 * If [flag] is true, it will use red or blue instead.*/
 	@Deprecated("Use drawMenu instead", ReplaceWith("drawMenu(engine, x, y, str, NANO, flag, scale)"))
 	fun drawMenuNano(engine:GameEngine, x:Number, y:Number, str:String, flag:Boolean, scale:Float = 1f, alpha:Float = 1f) =
@@ -432,27 +424,23 @@ open class EventReceiver {
 		drawMenu(engine, x, y, str, TTF, color)
 
 	/** Draw String inside the field.
-	 * If [flag] is false, it will use white font cint.
+	 * If [flag] is false, it will use white font color.
 	 * If [flag] is true, it will use red or blue instead.*/
 	@Deprecated("Use drawMenu instead", ReplaceWith("drawMenu(engine, x, y, str, TTF, flag)"))
 	fun drawMenuTTF(engine:GameEngine, x:Number, y:Number, str:String, flag:Boolean) =
 		drawMenu(engine, x, y, str, TTF, if(flag) getPlayerColor(engine.playerID) else COLOR.WHITE)
 
 	/** Draw String to score display area.*/
-	fun drawScore(engine:GameEngine, x:Float, y:Float, str:String, font:FONT = BASE, color:COLOR = COLOR.WHITE,
+	fun drawScore(engine:GameEngine, x:Number, y:Number, str:String, font:FONT = BASE, color:COLOR = COLOR.WHITE,
 		scale:Float = 1f, alpha:Float = 1f) {
-		if(!engine.owner.menuOnly) drawFont(engine.sX+x*BS, engine.sY+y*BS, str, font, color, scale, alpha)
+		if(!engine.owner.menuOnly) drawFont(scoreX(engine, x), scoreY(engine, y), str, font, color, scale, alpha)
 	}
 
-	fun drawScore(engine:GameEngine, x:Number, y:Number, str:String, font:FONT = BASE, color:COLOR = COLOR.WHITE,
-		scale:Float = 1f, alpha:Float = 1f) =
-		drawScore(engine, x.toFloat(), y.toFloat(), str, font, color, scale, alpha)
-
 	fun drawScore(engine:GameEngine, x:Number, y:Number, str:String, font:FONT = BASE, scale:Float = 1f, alpha:Float = 1f) =
-		drawScore(engine, x.toFloat(), y.toFloat(), str, font, COLOR.WHITE, scale, alpha)
+		drawScore(engine, x, y, str, font, COLOR.WHITE, scale, alpha)
 
 	/** Draw String to score display area.
-	 * If [flag] is false, it will use white font cint.
+	 * If [flag] is false, it will use white font color.
 	 * If [flag] is true, it will use rainbow instead.*/
 	fun drawScore(engine:GameEngine, x:Number, y:Number, str:String, font:FONT = BASE, flag:Boolean, scale:Float = 1f,
 		alpha:Float = 1f) =
@@ -486,14 +474,10 @@ open class EventReceiver {
 	fun drawScoreNum(engine:GameEngine, x:Number, y:Number, str:String, flag:Boolean, scale:Float = 1f, alpha:Float = 1f) =
 		drawScore(engine, x, y, str, NUM, flag, scale, alpha)
 
-	fun drawScoreNum(engine:GameEngine, x:Float, y:Float, num:Number, precise:Pair<Int?, Int?> = null to null,
-		color:COLOR = COLOR.WHITE, scale:Float = 1f, alpha:Float = 1f) {
-		if(!engine.owner.menuOnly) drawNum(engine.sX+x*BS, engine.sY+y*BS, num, precise, color, scale, alpha)
-	}
-
 	fun drawScoreNum(engine:GameEngine, x:Number, y:Number, num:Number, precise:Pair<Int?, Int?> = null to null,
-		color:COLOR = COLOR.WHITE, scale:Float = 1f, alpha:Float = 1f) =
-		drawScoreNum(engine, x.toFloat(), y.toFloat(), num, precise, color, scale, alpha)
+		color:COLOR = COLOR.WHITE, scale:Float = 1f, alpha:Float = 1f) {
+		if(!engine.owner.menuOnly) drawNum(scoreX(engine, x), scoreY(engine, y), num, precise, color, scale, alpha)
+	}
 
 	fun drawScoreNum(engine:GameEngine, x:Number, y:Number, num:Number, precise:Pair<Int?, Int?> = null to null,
 		flag:Boolean, scale:Float = 1f, alpha:Float = 1f) =
@@ -580,15 +564,13 @@ open class EventReceiver {
 	 * @param sp Speed (float:0.0~1.0 int:0~40)
 	 * @param len Meter Width Grid
 	 */
-	fun drawScoreSpeed(engine:GameEngine, x:Float, y:Float, sp:Float, len:Float = 3f) {
-		val dx1 = engine.sX+x*BS+minOf(len.absoluteValue, BS/2f)*len.sign
-		val dy1 = engine.sY+y*BS+BS/2f
+	fun drawScoreSpeed(engine:GameEngine, x:Number, y:Number, sp:Float, len:Number = 3f) {
+		val len = len.toFloat()
+		val dx1 = scoreX(engine, x)+minOf(len.absoluteValue, BS/2f)*len.sign
+		val dy1 = scoreY(engine, y)+BS/2f
 		//if(engine.owner.menuOnly) return
 		drawSpeedMeter(dx1, dy1, sp, len)
 	}
-
-	fun drawScoreSpeed(engine:GameEngine, x:Number, y:Number, sp:Float, len:Number = 3f) =
-		drawScoreSpeed(engine, x.toFloat(), y.toFloat(), sp, len.toFloat())
 
 	/** Draw speed meter on Score Area.
 	 * @param x X-coordinate grid
@@ -615,11 +597,11 @@ open class EventReceiver {
 
 	/** Draw Decorations at score pos*/
 	fun drawScoreBadges(engine:GameEngine, x:Number, y:Number, width:Int, nums:Int, scale:Float = 1f) =
-		drawBadges(engine.sX+x.toFloat()*BS, engine.sY+y.toFloat()*BS, width, nums, scale)
+		drawBadges(scoreX(engine, x), scoreY(engine, y), width, nums, scale)
 
 	/** Draw Decorations at in-field pos*/
 	fun drawMenuBadges(engine:GameEngine, x:Number, y:Number, nums:Int, scale:Float = 1f) =
-		drawBadges(x.toFloat()*BS+engine.fX, y.toFloat()*BS+engine.fY, BS*10, nums, scale)
+		drawBadges(fieldX(engine, x), fieldY(engine, y), 10, nums, scale)
 
 	/** Draw Medal
 	 * @param x X-coordinate
@@ -635,18 +617,18 @@ open class EventReceiver {
 	 * @param tier color
 	 */
 	fun drawScoreMedal(engine:GameEngine, x:Number, y:Number, str:String, tier:Int, scale:Float = 1f) =
-		drawMedal(engine.sX+x.toFloat()*BS, engine.sY+y.toFloat()*BS, str, tier, scale)
+		drawMedal(scoreX(engine, x), scoreY(engine, y), str, tier, scale)
 
 	/** Draw Medal at menu pos
 	 * @param tier color
 	 */
 	fun drawMenuMedal(engine:GameEngine, x:Number, y:Number, str:String, tier:Int, scale:Float = 1f) =
-		drawMedal(x.toFloat()*BS+engine.fX, y.toFloat()*BS+engine.fY, str, tier, scale)
+		drawMedal(fieldX(engine, x), fieldY(engine, y), str, tier, scale)
 
 	/** Draw a block
 	 * @param x X-coordinate
 	 * @param y Y-coordinate
-	 * @param color Block cint
+	 * @param color Block color
 	 * @param skin Block skin
 	 * @param bone When true, it will use [] (bone) blocks
 	 * @param darkness Brightness
@@ -663,7 +645,7 @@ open class EventReceiver {
 		attr:Int = 0) =
 		drawBlock(x.toFloat(), y.toFloat(), color, skin, bone, darkness, alpha, scale, attr)
 
-	/** Blockクラスのインスタンスを使用してBlockを描画 (拡大率と暗さ指定可能）
+	/** Blockクラスのインスタンスを使用してBlockを描画 (拡大率と暗さ指定可能)
 	 * @param x X-coordinate
 	 * @param y Y-coordinate
 	 * @param block Blockクラスのインスタンス
@@ -678,19 +660,11 @@ open class EventReceiver {
 		)
 
 	@JvmOverloads
-	fun drawBlockForceVisible(x:Number, y:Number, blk:Block, scale:Float = 1f) = drawBlock(
-		x,
-		y,
-		blk.drawId,
-		blk.skin,
-		blk.getAttribute(Block.ATTRIBUTE.BONE),
-		blk.darkness/2,
-		.25f*blk.alpha+.25f,
-		scale,
-		blk.aint
-	)
+	fun drawBlockForceVisible(x:Number, y:Number, blk:Block, scale:Float = 1f) =
+		drawBlock(x, y, blk.drawId, blk.skin, blk.getAttribute(Block.ATTRIBUTE.BONE),
+			blk.darkness/2, .25f*blk.alpha+.25f, scale, blk.aint)
 
-	/** Blockピースを描画 (暗さもしくは明るさの指定可能）
+	/** Blockピースを描画 (暗さもしくは明るさの指定可能)
 	 * @param x X-coordinate
 	 * @param y Y-coordinate
 	 * @param piece 描画するピース
@@ -698,14 +672,11 @@ open class EventReceiver {
 	 * @param darkness 暗さもしくは明るさ
 	 */
 	@JvmOverloads
-	fun drawPiece(x:Float, y:Float, piece:Piece, scale:Float = 1f, darkness:Float = 0f, alpha:Float = 1f,
-		outline:Float = 0f) =
-		piece.block.forEachIndexed {i, blk ->
-			val ls = scale*getBlockSize(piece.big.toInt())
-			drawBlock(
-				x+(piece.dataX[piece.direction][i].toFloat()*ls), y+(piece.dataY[piece.direction][i].toFloat()*ls),
-				blk, darkness, alpha, scale
-			)
+	fun drawPiece(x:Float, y:Float, piece:Piece, scale:Float = 1f, darkness:Float = 0f, alpha:Float = 1f) =
+		piece.data[piece.direction].forEach {(bx, by, blk) ->
+			val sc = scale*(1+piece.big.toInt())
+			val bs = BS*sc
+			drawBlock(x+(bx*bs), y+(by*bs), blk, darkness, alpha, sc)
 			/*if(outline>0) {
 				if(!blk.getAttribute(Block.ATTRIBUTE.CONNECT_UP))
 					drawLineSpecific(x, y, x+ls, y, w = outline)
@@ -719,7 +690,7 @@ open class EventReceiver {
 		}
 
 	fun drawPiece(x:Number, y:Number, piece:Piece, scale:Float = 1f, darkness:Float = 0f, alpha:Float = 1f, ow:Float = 0f) =
-		drawPiece(x.toFloat(), y.toFloat(), piece, scale, darkness, alpha, ow)
+		drawPiece(x.toFloat(), y.toFloat(), piece, scale, darkness, alpha)
 
 	/** Get key name by button ID
 	 * @param playerID Player ID
@@ -755,6 +726,9 @@ open class EventReceiver {
 	open fun playSE(name:String, freq:Float = 1f, vol:Float = 1f) {}
 	open fun loopSE(name:String, freq:Float = 1f, vol:Float = 1f) {}
 	open fun stopSE(name:String) {}
+
+	open fun playJingle(name:String, vol:Float = 1f) {}
+	open fun stopJingle(name:String) {}
 
 	/** Set Graphics context
 	 * @param g Graphics context
@@ -845,7 +819,7 @@ open class EventReceiver {
 	/** It will be called during the "Lock flash".*/
 	open fun onLockFlash(engine:GameEngine) {}
 
-	/** It will be called during the line clear.*/
+	/** It will be called during the lines clear.*/
 	open fun onLineClear(engine:GameEngine) {}
 
 	/** It will be called during the "ARE".*/
@@ -930,17 +904,28 @@ open class EventReceiver {
 			getPlayerColor(pid), .5f)
 	}
 
-	/** It will be called during the line clear. (For rendering)*/
+	/** It will be called during the lines clear. (For rendering)*/
 	open fun renderLineClear(engine:GameEngine) {}
 
 	/** It will be called during the "Lock flash". (For rendering)*/
 	open fun renderLockFlash(engine:GameEngine) {}
 
-	/** It will be called before blocks are destroyed.
+	/** It will be called before map blocks are destroyed.
 	 * @param engine GameEngine
-	 * @param blk Indexed Iterable (listOf(y:listOf(x:Block))
+	 * @param blk Indexed Iterable (Map(y, Map(x, Block))
 	 */
 	open fun blockBreak(engine:GameEngine, blk:Map<Int, Map<Int, Block>>) {}
+
+	/** It will be called before a block is destroyed.
+	 * @param engine GameEngine
+	 * @param blk Indexed Iterable (listOf(x,y, Block))
+	 * @param x X-coordinate grid
+	 * @param y Y-coordinate grid
+	 */
+	fun blockBreak(engine:GameEngine, x:Int, y:Int, blk:Collection<Triple<Int, Int, Block>>) =
+		blockBreak(engine, blk.groupBy({(_, bY) -> bY+y}, {(bX, _, b) -> bX+x to b})
+			.mapValues {(_, it) -> it.toMap()})
+
 	/** It will be called before a block is destroyed.
 	 * @param engine GameEngine
 	 * @param blk Indexed Iterable (listOf(y:listOf(x:Block))
@@ -980,7 +965,11 @@ open class EventReceiver {
 	 * @param pY pieceY
 	 * @param p piece
 	 */
-	open fun pieceFlicked(engine:GameEngine, pX:Int = engine.nowPieceX, pY:Int = engine.nowPieceY, p:Piece, slide:Boolean) {}
+	open fun pieceFlicked(engine:GameEngine, pX:Int = engine.nowPieceX, pY:Int = engine.nowPieceY, p:Piece,
+		slide:Boolean = engine.lastMove==GameEngine.LastMove.SLIDE_GROUND
+	) {
+	}
+
 	fun pieceFlicked(engine:GameEngine) = engine.nowPieceObject?.let {
 		pieceFlicked(engine, engine.nowPieceX, engine.nowPieceY, it, engine.lastMove==GameEngine.LastMove.SLIDE_GROUND)
 	}
@@ -996,7 +985,7 @@ open class EventReceiver {
 	fun pieceLocked(engine:GameEngine, lines:Int) = engine.nowPieceObject?.let {
 		pieceLocked(engine, engine.nowPieceX, engine.nowPieceY, it, engine.lineClearing, engine.finesse)
 	}
-	/** It will be called at the end of line-clear phase.*/
+	/** It will be called at the end of lines-clear phase.*/
 	open fun lineClearEnd(engine:GameEngine) {}
 
 	/** It will be called when the player exit the field editor.*/
@@ -1031,6 +1020,53 @@ open class EventReceiver {
 	/** 演出オブジェクト */
 	internal val efxFG:MutableList<Effect> = mutableListOf()
 
+	/** Font color constants */
+	enum class COLOR {
+		WHITE, BLUE, RED, PINK, GREEN, YELLOW, CYAN, ORANGE, PURPLE, COBALT, RAINBOW;
+
+		companion object {
+			val all = entries
+			fun getRainbowColor(i:Int, o:Int = 0):COLOR = when((i-o).mod(10)) {
+				1, -9 -> RED
+				2, -8 -> ORANGE
+				3, -7 -> YELLOW
+				4, -6 -> GREEN
+				5, -5 -> CYAN
+				6, -4 -> BLUE
+				7, -3 -> COBALT
+				8, -2 -> PURPLE
+				9, -1 -> PINK
+				else -> WHITE
+			}
+
+			fun fromPlayerID(playerID:Int):COLOR = when(playerID) {
+				0 -> BLUE
+				1 -> RED
+				2 -> GREEN
+				3 -> PURPLE
+				4 -> ORANGE
+				5 -> WHITE
+				else -> all.let {it.getOrElse((playerID-5).mod(it.size)) {WHITE}}
+			}
+
+			fun fromBlock(it:Pair<Block.COLOR?, Block.TYPE>):COLOR = fromBlock(it.first, it.second)
+			fun fromBlock(color:Block.COLOR?, type:Block.TYPE? = Block.TYPE.BLOCK):COLOR = when(color) {
+				Block.COLOR.BLACK -> WHITE
+				Block.COLOR.WHITE -> WHITE
+				Block.COLOR.RED -> RED
+				Block.COLOR.ORANGE -> ORANGE
+				Block.COLOR.YELLOW -> YELLOW
+				Block.COLOR.GREEN -> GREEN
+				Block.COLOR.CYAN -> CYAN
+				Block.COLOR.BLUE -> if(type==Block.TYPE.GEM) BLUE else COBALT
+				Block.COLOR.PURPLE -> if(type==Block.TYPE.GEM) PINK else PURPLE
+				Block.COLOR.RAINBOW -> RAINBOW
+				else -> WHITE
+			}
+
+		}
+	}
+
 	companion object {
 		/** cell and block size(block,font) */
 		const val BS = 16
@@ -1049,54 +1085,22 @@ open class EventReceiver {
 		/** Log */
 		internal val log = LogManager.getLogger()
 
-		fun getRainbowColor(i:Int, o:Int = 0):COLOR = when((i-o%10)%10) {
-			1, -9 -> COLOR.RED
-			2, -8 -> COLOR.ORANGE
-			3, -7 -> COLOR.YELLOW
-			4, -6 -> COLOR.GREEN
-			5, -5 -> COLOR.CYAN
-			6, -4 -> COLOR.BLUE
-			7, -3 -> COLOR.COBALT
-			8, -2 -> COLOR.PURPLE
-			9, -1 -> COLOR.PINK
-			else -> COLOR.WHITE
-		}
+		@JvmStatic
+		//@Deprecated("moved to EventReceiver.COLOR.Companion",
+		//	ReplaceWith("COLOR.getRainbowColor(i, o)", "mu.nu.nullpo.game.event.EventReceiver.COLOR"))
+		protected fun getRainbowColor(i:Int, o:Int = 0):COLOR = COLOR.getRainbowColor(i, o)
+		//@Deprecated("moved to EventReceiver.COLOR.Companion",
+		//	ReplaceWith("COLOR.fromPlayerID(playerID)", "mu.nu.nullpo.game.event.EventReceiver.COLOR"))
+		protected fun getPlayerColor(playerID:Int):COLOR = COLOR.fromPlayerID(playerID)
 
-		fun getPlayerColor(playerID:Int):COLOR = when(playerID) {
-			0 -> COLOR.BLUE
-			1 -> COLOR.RED
-			2 -> COLOR.GREEN
-			3 -> COLOR.PURPLE
-			4 -> COLOR.ORANGE
-			5 -> COLOR.WHITE
-			else -> COLOR.all.let {it.getOrElse((playerID-5)%it.size) {COLOR.WHITE}}
-		}
+		fun getShapeColor(engine:GameEngine, piece:Piece.Shape):COLOR =
+			getBlockColor(engine.ruleOpt.shapeBlock(piece))
 
-		fun getBlockColor(engine:GameEngine, piece:Piece.Shape):COLOR =
-			getBlockColor(Block.intToColor(engine.ruleOpt.pieceColor[piece.ordinal]))
-
-		fun getBlockColor(b:Block):COLOR = when {
-			b.getAttribute(Block.ATTRIBUTE.BONE) -> COLOR.WHITE
-			b.getAttribute(Block.ATTRIBUTE.SQUARE_SILVER) -> COLOR.WHITE
-			b.getAttribute(Block.ATTRIBUTE.SQUARE_GOLD) -> COLOR.YELLOW
-//			b.color==Block.COLOR.RAINBOW ->
-			else -> getBlockColor(b.color, b.type)
-		}
+		@Deprecated("moved to Block.toERColor()", ReplaceWith("b.toERColor()", "mu.nu.nullpo.game.component.Block"))
+		fun getBlockColor(b:Block):COLOR = b.toERColor()
 
 		fun getBlockColor(it:Pair<Block.COLOR?, Block.TYPE>):COLOR = getBlockColor(it.first, it.second)
-		fun getBlockColor(color:Block.COLOR?, type:Block.TYPE? = Block.TYPE.BLOCK):COLOR = when(color) {
-			Block.COLOR.BLACK -> COLOR.WHITE
-			Block.COLOR.WHITE -> COLOR.WHITE
-			Block.COLOR.RED -> COLOR.RED
-			Block.COLOR.ORANGE -> COLOR.ORANGE
-			Block.COLOR.YELLOW -> COLOR.YELLOW
-			Block.COLOR.GREEN -> COLOR.GREEN
-			Block.COLOR.CYAN -> COLOR.CYAN
-			Block.COLOR.BLUE -> if(type==Block.TYPE.GEM) COLOR.BLUE else COLOR.COBALT
-			Block.COLOR.PURPLE -> if(type==Block.TYPE.GEM) COLOR.PINK else COLOR.PURPLE
-			Block.COLOR.RAINBOW -> COLOR.RAINBOW
-			else -> COLOR.WHITE
-		}
+		fun getBlockColor(color:Block.COLOR?, type:Block.TYPE? = Block.TYPE.BLOCK):COLOR = COLOR.fromBlock(color, type)
 
 		/** Field X position */
 		val NEW_FIELD_OFFSET_X = listOf(

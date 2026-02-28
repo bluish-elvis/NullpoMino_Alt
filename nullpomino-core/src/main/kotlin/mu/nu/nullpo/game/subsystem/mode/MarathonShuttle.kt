@@ -38,11 +38,11 @@ import mu.nu.nullpo.game.event.Rankable
 import mu.nu.nullpo.game.event.ScoreEvent
 import mu.nu.nullpo.game.net.NetUtil
 import mu.nu.nullpo.game.play.GameEngine
+import mu.nu.nullpo.game.play.GameEngine.Status
 import mu.nu.nullpo.game.subsystem.mode.menu.*
 import mu.nu.nullpo.gui.common.BaseFont.FONT.*
 import mu.nu.nullpo.util.CustomProperties
 import mu.nu.nullpo.util.GeneralUtil.toTimeStr
-import kotlin.math.ceil
 
 /** TECHNICIAN Mode */
 class MarathonShuttle:NetDummyMode() {
@@ -68,11 +68,7 @@ class MarathonShuttle:NetDummyMode() {
 
 	/** Most recent increase in time limit */
 	private var lasttimebonus = 0
-
-	/** Time to display the most recent increase in score */
-	private var scgettime = 0
-	private var sc = 0
-	private var sum = 0
+	val timer get() = maxOf(0, if(goalType!=GAMETYPE_SPECIAL) TIMELIMIT_LEVEL-levelTimer else totalTimer)
 
 	/** REGRET display time frame count */
 	private var regretdispframe = 0
@@ -91,7 +87,7 @@ class MarathonShuttle:NetDummyMode() {
 	/** Level at start */
 	private var startLevel:Int by DelegateMenuItem(itemLevel)
 
-	private val itemBig = BooleanMenuItem("big", "BIG", COLOR.BLUE, false)
+	private val itemBig = BooleanMenuItem("big", "BIG", COLOR.ORANGE, false)
 	/** BigMode */
 	private var big:Boolean by DelegateMenuItem(itemBig)
 
@@ -103,7 +99,7 @@ class MarathonShuttle:NetDummyMode() {
 	private var rankingRank = 0
 
 	override val ranking =
-		List(RANKING_TYPE) {Leaderboard(rankingMax, serializer<List<Rankable.ScoreRow>>()){Rankable.ScoreRow()} }
+		List(RANKING_TYPE) {Leaderboard(rankingMax, serializer<List<Rankable.ScoreRow>>()) {Rankable.ScoreRow()}}
 
 	/* Mode name */
 	override val name = "MARATHON ShuttleRun"
@@ -120,8 +116,6 @@ class MarathonShuttle:NetDummyMode() {
 		lastgoal = 0
 		lastScore = 0
 		lasttimebonus = 0
-		sc = 0
-		scgettime = 0
 		regretdispframe = 0
 		bgmLv = 0
 
@@ -140,7 +134,7 @@ class MarathonShuttle:NetDummyMode() {
 
 		owner.bgMan.bg = startLevel
 		if(owner.bgMan.bg>19) owner.bgMan.bg = 19
-		engine.frameSkin = GameEngine.FRAME_COLOR_WHITE
+		engine.frame = GameEngine.Frame.WHITE
 	}
 
 	override fun onSettingChanged(engine:GameEngine) {
@@ -208,6 +202,7 @@ class MarathonShuttle:NetDummyMode() {
 			bgmLv++
 	}
 
+	fun levelBonus(engine:GameEngine) = maxOf(0, timer*(engine.statistics.level+1))
 	/* Render score */
 	override fun renderLast(engine:GameEngine) {
 		if(owner.menuOnly) return
@@ -217,68 +212,60 @@ class MarathonShuttle:NetDummyMode() {
 				+")", BASE, COLOR.WHITE
 		)
 
-		if(engine.stat==GameEngine.Status.SETTING||engine.stat==GameEngine.Status.RESULT&&!owner.replayMode) {
+		if(engine.stat==Status.SETTING||engine.stat==Status.RESULT&&!owner.replayMode) {
 			if(!owner.replayMode&&!big&&startLevel==0&&engine.ai==null) {
 				val topY = if(receiver.nextDisplayType==2) 6 else 4
-				receiver.drawScore(engine, 3, topY-1, "SCORE   LINE TIME", BASE, COLOR.BLUE)
+				receiver.drawScore(engine, 3, topY-1, "SCORE  LINE TIME", BASE, COLOR.BLUE)
 
-				ranking[goalType].forEachIndexed { i, it ->
+				ranking[goalType].forEachIndexed {i, it ->
 					receiver.drawScore(engine, 0, topY+i, "%2d".format(i+1), GRADE, COLOR.YELLOW)
-					receiver.drawScore(engine, 3, topY+i, "${it.sc}", NUM, i==rankingRank)
-					receiver.drawScore(engine, 11, topY+i, "${it.li}", NUM, i==rankingRank)
-					receiver.drawScore(engine, 16, topY+i, it.ti.toTimeStr, NUM, i==rankingRank)
+					receiver.drawScore(engine, 2, topY+i, "%8d".format(it.sc), NUM, i==rankingRank)
+					receiver.drawScore(engine, 10, topY+i, "%4d".format(it.li), NUM, i==rankingRank)
+					receiver.drawScore(engine, 14, topY+i, it.ti.toTimeStr, NUM, i==rankingRank)
 				}
 			}
 		} else {
 			// SCORE
-			receiver.drawScore(engine, 0, 2, "Score", BASE, COLOR.BLUE)
-			receiver.drawScore(engine, 5, 2, "+$lastScore", NUM)
-			val scget = scgettime<engine.statistics.score
-			if(scget) scgettime += ceil((engine.statistics.score-scgettime)/24.0).toInt()
-			sc += ceil(((scgettime-sc)/10f).toDouble()).toInt()
-			receiver.drawScore(engine, 0, 3, "$sc", NUM, scget, 2f)
+			receiver.drawScore(engine, 0, 3, "Score", BASE, COLOR.BLUE)
+			receiver.drawScore(engine, 5, 3, "+$lastScore", NUM)
+			val scget = scDisp<engine.statistics.score
+			receiver.drawScore(engine, 0, 4, "$scDisp", NUM, scget, 2f)
 
 			// GOAL
-			receiver.drawScore(engine, 0, 5, "GOAL", BASE, COLOR.BLUE)
-			receiver.drawScore(engine, 5, 5, "$goal", NUM, 2f)
+			receiver.drawScore(engine, 0, 7, "GOAL", BASE, COLOR.BLUE)
+			receiver.drawScore(engine, 4, 7, "%3d".format(goal), NUM, 2f)
+			receiver.drawScore(engine, 9, 8, "/%3d".format(goalmax), NUM)
 			//if(lastgoal!=0&&scget&&engine.ending==0)
-			receiver.drawScore(engine, 1, 6, "-%2d".format(lastgoal), NUM)
-			val remainLevelTime = maxOf(0, if(goalType!=GAMETYPE_SPECIAL) TIMELIMIT_LEVEL-levelTimer else totalTimer)
+			receiver.drawScore(engine, 1, 8, "-%2d".format(lastgoal), NUM)
 			val timerColor = when {
-				remainLevelTime<10*60 -> COLOR.RED
-				remainLevelTime<30*60 -> COLOR.ORANGE
-				remainLevelTime<60*60 -> COLOR.YELLOW
+				timer<10*60 -> COLOR.RED
+				timer<30*60 -> COLOR.ORANGE
+				timer<60*60 -> COLOR.YELLOW
 				else -> COLOR.WHITE
 			}
 			if(goalType==GAMETYPE_SPECIAL) {
 				// LEVEL TIME
-				receiver.drawScore(engine, 0, 7, "LIMIT", BASE, COLOR.YELLOW)
-				receiver.drawScore(engine, 0, 8, remainLevelTime.toTimeStr, NUM, timerColor, 2f)
-				// +30sec
-				if(lasttimebonus>0&&scget&&engine.ending==0)
-					receiver.drawScore(
-						engine, 6, 7, "+%3.2fSEC.".format(lasttimebonus/60f),
-						BASE, COLOR.YELLOW
-					)
+				receiver.drawScore(engine, 0, 9, "LIMIT", BASE, COLOR.YELLOW)
+				receiver.drawScore(engine, 0, 10, timer.toTimeStr, NUM, timerColor, 2f)
 			} else {
 				// LEVEL BONUS
-				receiver.drawScore(engine, 0, 7, "BONUS", BASE, COLOR.BLUE)
-				val levelBonus = maxOf(0, (TIMELIMIT_LEVEL-levelTimer)*(engine.statistics.level+1))
-				receiver.drawScore(engine, 0, 8, "$levelBonus", NUM, timerColor, 2f)
-				receiver.drawScore(engine, 6, 7, remainLevelTime.toTimeStr, NUM, timerColor)
+				receiver.drawScore(engine, 0, 9, "BONUS", BASE, COLOR.BLUE)
+
+				receiver.drawScore(engine, 6, 9, timer.toTimeStr, NUM, timerColor)
+				receiver.drawScore(engine, 0, 10, "${levelBonus(engine)}", NUM, timerColor, 2f)
 			}
 			// LEVEL
-			receiver.drawScore(engine, 0, 10, "Level", BASE, COLOR.BLUE)
-			receiver.drawScore(engine, 5, 10, (engine.statistics.level+1).toString(), NUM, 2f)
+			receiver.drawScore(engine, 0, 12, "Level", BASE, COLOR.BLUE)
+			receiver.drawScore(engine, 5, 12, (engine.statistics.level+1).toString(), NUM, 2f)
 
 			// TOTAL TIME
-			receiver.drawScore(engine, 0, 11, "Time", BASE, COLOR.BLUE)
+			receiver.drawScore(engine, 0, 13, "Time", BASE, COLOR.BLUE)
 
 			val b = goalType==GAMETYPE_10MIN_EASY||goalType==GAMETYPE_10MIN_HARD
 			val elapsed = engine.statistics.time.let {if(b) TIMELIMIT_10MIN-it else it}
 			receiver.drawScore(
-				engine, 0, 12, elapsed.toTimeStr,
-				NUM_T, when {
+				engine, 0, 14, elapsed.toTimeStr, NUM_T,
+				when {
 					!b -> COLOR.WHITE
 					elapsed<10*60 -> COLOR.RED
 					elapsed<30*60 -> COLOR.ORANGE
@@ -289,12 +276,11 @@ class MarathonShuttle:NetDummyMode() {
 
 			// Ending time
 			if(engine.gameActive&&(engine.ending==2||rollTime>0)) {
-				var remainRollTime = TIMELIMIT_ROLL-rollTime
-				if(remainRollTime<0) remainRollTime = 0
+				val remainRollTime = (TIMELIMIT_ROLL-rollTime).coerceAtLeast(0)
 
-				receiver.drawScore(engine, 0, 13, "ROLL TIME", BASE, COLOR.BLUE)
+				receiver.drawScore(engine, 0, 15, "ROLL TIME", BASE, COLOR.BLUE)
 				receiver.drawScore(
-					engine, 0, 14, remainRollTime.toTimeStr, NUM_T, remainRollTime>0&&remainRollTime<10*60
+					engine, 0, 16, remainRollTime.toTimeStr, NUM_T, remainRollTime>0&&remainRollTime<10*60
 				)
 			}
 
@@ -321,25 +307,21 @@ class MarathonShuttle:NetDummyMode() {
 		// Level Time
 		if(engine.gameActive&&engine.timerActive&&goalType!=GAMETYPE_SPECIAL) {
 			levelTimer++
-			val remainTime = TIMELIMIT_LEVEL-levelTimer
 			// Time meter
-			engine.meterValue = remainTime/2f/TIMELIMIT_LEVEL
-			engine.meterValue += ((1-engine.meterValue)*(goalmax-goal)*remainTime/goalmax
+			engine.meterValue = timer/2f/TIMELIMIT_LEVEL
+			engine.meterValue += ((1-engine.meterValue)*(goalmax-goal)*timer/goalmax
 				/(TIMELIMIT_LEVEL-lastlineTime))
-			engine.meterColor = GameEngine.METER_COLOR_GREEN
-			if(remainTime<=60*60) engine.meterColor = GameEngine.METER_COLOR_YELLOW
-			if(remainTime<=30*60) engine.meterColor = GameEngine.METER_COLOR_ORANGE
-			if(remainTime<=10*60) engine.meterColor = GameEngine.METER_COLOR_RED
+			engine.meterColor = GameEngine.METER_COLOR_LIMIT
 
 			if(!netIsWatch)
 				if(levelTimer>=TIMELIMIT_LEVEL) {
 					// Out of time
 					levelTimeOut = true
-
+					engine.playSE("timeover")
 					if(goalType==GAMETYPE_LV15_HARD||goalType==GAMETYPE_10MIN_HARD) {
 						engine.gameEnded()
 						engine.resetStatc()
-						engine.stat = GameEngine.Status.GAMEOVER
+						engine.stat = Status.GAMEOVER
 					} else if(goalType==GAMETYPE_10MIN_EASY||goalType==GAMETYPE_LV15_EASY) {
 						regretdispframe = 180
 						engine.playSE("regret")
@@ -348,12 +330,12 @@ class MarathonShuttle:NetDummyMode() {
 							levelTimer = 0
 						}
 					}
-				} else if(remainTime<=10*60&&remainTime%60==0)
-				// Countdown
+				} else if(timer<=600&&timer%60==0) {
 					engine.playSE("countdown")
-				else if(remainTime==30*60)
+					if(timer<=300) engine.playSE("countdown${timer/60}")
+				} else if(timer==30*60)
 					engine.playSE("hurryup")
-				else if(remainTime==60*60) engine.playSE("levelstop")
+				else if(timer==60*60) engine.playSE("levelstop")
 		}
 
 		// Total Time
@@ -372,15 +354,14 @@ class MarathonShuttle:NetDummyMode() {
 					engine.gameEnded()
 					engine.resetStatc()
 
-					if(goalType==GAMETYPE_10MIN_EASY||goalType==GAMETYPE_10MIN_HARD)
-						engine.stat = GameEngine.Status.ENDINGSTART
-					else
-						engine.stat = GameEngine.Status.GAMEOVER
+					engine.stat = if(goalType==GAMETYPE_10MIN_EASY||goalType==GAMETYPE_10MIN_HARD)
+						Status.ENDINGSTART else Status.GAMEOVER
 
 					totalTimer = 0
-				} else if(totalTimer<=10*60&&totalTimer%60==0)
-				// Countdown
+				} else if(totalTimer<=10*60&&totalTimer%60==0) {
 					engine.playSE("countdown")
+					if(totalTimer<=300) engine.playSE("countdown${totalTimer/60}")
+				}
 		}
 
 		// Ending
@@ -400,7 +381,7 @@ class MarathonShuttle:NetDummyMode() {
 				engine.statistics.rollClear = 2
 				engine.gameEnded()
 				engine.resetStatc()
-				engine.stat = GameEngine.Status.EXCELLENT
+				engine.stat = Status.EXCELLENT
 			}
 		}
 	}
@@ -411,21 +392,17 @@ class MarathonShuttle:NetDummyMode() {
 		val pts = super.calcScore(engine, ev)
 		if(pts>0) lastScore = pts
 
-		lastgoal = calcPoint(engine, ev)
-		goal -= lastgoal
-		lastlineTime = levelTimer
-		if(goal<=0) goal = 0
-
-
+		calcPoint(engine, ev).also {
+			if(it>0) {
+				lastgoal = it
+				goal -= it
+				lastlineTime = levelTimer
+				engine.receiver.addScore(engine, engine.nowPieceX+2,
+					(engine.lastLinesY.maxByOrNull {i -> i.size}?.average()?.toInt()?:engine.nowPieceY)-2,
+					it, COLOR.RAINBOW, big = true)
+			}
+		}
 		if(engine.ending==0) {
-			// Time bonus
-			if(goal<=0&&!levelTimeOut&&goalType!=GAMETYPE_SPECIAL) {
-				lasttimebonus = maxOf(0, (TIMELIMIT_LEVEL-levelTimer)*(engine.statistics.level+1))
-				engine.statistics.scoreBonus += lasttimebonus
-			} else if(goal<=0&&goalType==GAMETYPE_SPECIAL) {
-				lasttimebonus = TIMELIMIT_SPECIAL_BONUS
-				totalTimer += lasttimebonus
-			} else if(pts>0) lasttimebonus = 0
 
 			// BGM fade-out effects and BGM changes
 			if(tableBGMChange[bgmLv]!=-1&&engine.statistics.level==tableBGMChange[bgmLv]-1)
@@ -437,14 +414,24 @@ class MarathonShuttle:NetDummyMode() {
 					owner.musMan.fadeSW = false
 				}
 
-			if(goal<=0)
+			if(goal<=0) {
+				// Time bonus
+				lasttimebonus = if(!levelTimeOut&&goalType!=GAMETYPE_SPECIAL)
+					maxOf(0, (TIMELIMIT_LEVEL-levelTimer)*(engine.statistics.level+1)).also {
+						engine.statistics.scoreBonus += it
+						engine.receiver.addScore(engine, +2, engine.field.highestBlockY-2, it, COLOR.RAINBOW, "TIME BONUS", true)
+					} else if(goalType==GAMETYPE_SPECIAL) TIMELIMIT_SPECIAL_BONUS.also {
+					totalTimer += it
+					engine.playSE("timebonus_10")
+					engine.receiver.addScore(engine, +2, engine.field.highestBlockY-2, it/60, COLOR.RAINBOW, "TIME EXTENSION", true)
+				} else 0
 				if(engine.statistics.level>=14&&(goalType==GAMETYPE_LV15_EASY||goalType==GAMETYPE_LV15_HARD)) {
-					// Ending (LV15-EASY/HARD）
+					// Ending (LV15-EASY/HARD)
 					engine.ending = 1
 					engine.statistics.rollClear = 2
 					engine.gameEnded()
 				} else if(engine.statistics.level>=29&&goalType==GAMETYPE_SPECIAL) {
-					// Ending (SPECIAL）
+					// Ending (SPECIAL)
 					engine.ending = 2
 					engine.timerActive = false
 					owner.musMan.bgm = BGM.Ending(0)
@@ -453,13 +440,10 @@ class MarathonShuttle:NetDummyMode() {
 					engine.playSE("endingstart")
 				} else {
 					// Level up
-					engine.statistics.level++
-					if(engine.statistics.level>29) engine.statistics.level = 29
+					if(engine.statistics.level<29) engine.statistics.level++
 
 					goalmax = (engine.statistics.level+1)*5
 					goal += goalmax
-					if(owner.bgMan.bg<19) owner.bgMan.nextBg = engine.statistics.level
-
 
 					levelTimer = 0
 					if(version>=1) engine.holdUsedCount = 0
@@ -467,6 +451,7 @@ class MarathonShuttle:NetDummyMode() {
 					setSpeed(engine)
 					engine.playSE("levelup")
 				}
+			}
 		}
 		return if(pts>0) lastScore else 0
 	}
@@ -474,13 +459,13 @@ class MarathonShuttle:NetDummyMode() {
 	/* Hard drop */
 	override fun afterHardDropFall(engine:GameEngine, fall:Int) {
 		engine.statistics.scoreHD += fall*2
-		scgettime += fall*2
+		scDisp += fall*2
 	}
 
 	/* Soft drop */
 	override fun afterSoftDropFall(engine:GameEngine, fall:Int) {
 		engine.statistics.scoreSD += fall
-		scgettime += fall
+		scDisp += fall
 	}
 
 	override fun onResult(engine:GameEngine):Boolean {
@@ -539,7 +524,7 @@ class MarathonShuttle:NetDummyMode() {
 		val msg = "game\tstats\t"+
 			engine.run {
 				statistics.run {"${scoreLine}\t${scoreSD}\t${scoreHD}\t${scoreBonus}\t${lines}\t${totalPieceLocked}\t${time}\t${level}\t"}+
-					"$goalType\t${gameActive}\t${timerActive}\t$lastScore\t$scgettime\t${lastEvent}\t"+
+					"$goalType\t${gameActive}\t${timerActive}\t$lastScore\t${lastEvent}\t"+
 					"$lastgoal\t$lasttimebonus\t$regretdispframe\t$bg\t${meterValue}\t${meterColor}\t$levelTimer\t$totalTimer\t$rollTime\t$goal\n"
 			}
 		netLobby?.netPlayerClient?.send(msg)
@@ -561,7 +546,6 @@ class MarathonShuttle:NetDummyMode() {
 			{engine.gameActive = it.toBoolean()},
 			{engine.timerActive = it.toBoolean()},
 			{lastScore = it.toInt()},
-			{scgettime = it.toInt()},
 			{engine.lastEvent = ScoreEvent.parseStr(it)},
 			{lastgoal = it.toInt()},
 			{lasttimebonus = it.toInt()},

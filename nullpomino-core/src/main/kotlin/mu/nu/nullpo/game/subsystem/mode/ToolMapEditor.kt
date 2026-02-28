@@ -136,7 +136,7 @@ class ToolMapEditor:AbstractMode() {
 
 	/* Initialization for each player */
 	override fun playerInit(engine:GameEngine) {
-		engine.frameSkin = GameEngine.FRAME_COLOR_GRAY
+		engine.frame = GameEngine.Frame.GRAY
 		engine.createFieldIfNeeded()
 		loadAllMaps(nowMapSetID)
 	}

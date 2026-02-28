@@ -31,8 +31,7 @@
 
 package mu.nu.nullpo.gui.common
 
-import mu.nu.nullpo.game.event.EventReceiver
-import java.util.Locale
+import mu.nu.nullpo.game.event.EventReceiver.COLOR
 
 abstract class BaseFontNano:BaseFont {
 	companion object {
@@ -41,31 +40,32 @@ abstract class BaseFontNano:BaseFont {
 	}
 
 	abstract override val rainbowCount:Int
-	override fun processTxt(x:Float, y:Float, str:String, color:EventReceiver.COLOR, scale:Float, alpha:Float, rainbow:Int,
+	override fun processTxt(x:Float, y:Float, str:String, color:COLOR, scale:Float, alpha:Float, rainbow:Int,
 		draw:(i:Int, dx:Float, dy:Float, scale:Float, sx:Int, sy:Int, sw:Int, sh:Int, a:Float)->Unit) {
-		var dx = x
+		var dx = x-2*scale
 		var dy = y
 
-		str.uppercase(Locale.getDefault()).forEachIndexed {i, char ->
+		str.forEachIndexed {i, char ->
 			val stringChar = char.code
 
 			if(stringChar==0x0A) {
-				// 改行 (\n）
+				// 改行 (\n)
 				dy = (dy+16*scale)
-				dx = x
+				dx = x-2*scale
 			} else {// 文字出力
-				val col = (if(color==EventReceiver.COLOR.RAINBOW) EventReceiver.getRainbowColor(rainbow, i) else color).ordinal
+				val shift = /*if(stringChar==0x31) -1 else */0
+				val col = (if(color==COLOR.RAINBOW) COLOR.getRainbowColor(rainbow, i) else color).ordinal
 				val c = stringChar-32// Character output
 				val sx = (c%32)*W
 				val sy = (c/32+col*3)*H
 
-				draw(0, dx, dy, scale, sx, sy, W, H, alpha)
-				dx += W*scale
+				draw(0, dx+shift*scale, dy, scale, sx, sy, W, H, alpha)
+				dx += (W-2)*scale
 			}
 		}
 	}
 
-	override fun printFont(x:Float, y:Float, str:String, color:EventReceiver.COLOR, scale:Float, alpha:Float, rainbow:Int) =
+	override fun printFont(x:Float, y:Float, str:String, color:COLOR, scale:Float, alpha:Float, rainbow:Int) =
 		processTxt(
 			x, y, str, color, scale, alpha, rainbow
 		) {i:Int, dx:Float, dy:Float, s:Float, sx:Int, sy:Int, w:Int, h:Int, a:Float ->

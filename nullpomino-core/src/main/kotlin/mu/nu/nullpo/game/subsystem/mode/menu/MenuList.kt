@@ -52,10 +52,10 @@ class MenuList(val propName:String = "", vararg items:AbstractMenuItem<*>) {
 	var menuCursor = 0
 	var menuSubPos = 0
 	var menuY = 0
-
+	val propStr get() = if(propName.isNotEmpty()) "$propName." else ""
 	fun change(cur:Int, dir:Int, fast:Int) {
-		val it = menus[cur]
-		items[it.first].change(dir, fast, it.second)
+		val (i, pos) = menus[cur]
+		items[i].change(dir, fast, pos)
 	}
 
 	fun drawMenu(engine:GameEngine, playerID:Int, receiver:EventReceiver, y:Int = menuY, cur:Int = menuCursor) =
@@ -68,7 +68,7 @@ class MenuList(val propName:String = "", vararg items:AbstractMenuItem<*>) {
 		items.slice(range).forEachIndexed {i, it ->
 			for(z in 0..<it.colMax) receiver.drawMenu(engine, -.4f, .5f+menuY+z*.5f, "${range.first+i+z}", NANO, COLOR.WHITE,
 				.5f, 1f)
-			val i1 = menuCursor-range.first
+			val i1 = (menuCursor-range.first).coerceIn(menus.indices)
 			it.draw(
 				engine, playerID, receiver, menuY, if(engine.owner.replayMode||menus[i1].first!=i) -1 else menus[i1].second
 			)
@@ -79,7 +79,7 @@ class MenuList(val propName:String = "", vararg items:AbstractMenuItem<*>) {
 
 	fun load(prop:CustomProperties, engine:GameEngine, ruleName:String = "", playerID:Int = -1) {
 		items.forEach {
-			it.load(prop, it.propName(propName, ruleName, playerID))
+			it.load(prop, propName, ruleName, playerID)
 			if(it is PresetItem)
 				it.presetLoad(engine, prop, ruleName, playerID)
 		}
@@ -87,7 +87,7 @@ class MenuList(val propName:String = "", vararg items:AbstractMenuItem<*>) {
 
 	fun save(prop:CustomProperties, engine:GameEngine, ruleName:String = "", playerID:Int = -1) {
 		items.forEach {
-			it.save(prop, it.propName(propName, ruleName, playerID))
+			it.save(prop, propName, ruleName, playerID)
 			if(it is PresetItem)
 				it.presetSave(engine, prop, ruleName, playerID)
 		}

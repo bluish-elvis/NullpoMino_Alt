@@ -1,0 +1,95 @@
+#Mode folder list
+
+#:Popular
+Marathon
+GrandRoads
+MarathonExtreme
+SprintUltra
+SprintLine
+Practice
+MarathonDrill
+SprintDig
+GrandBasic
+GrandPuzzle
+GrandM2
+GrandM3
+GrandS1
+GrandS2
+VSBattle
+
+:Guidelines Games
+Marathon
+SprintLine
+SprintUltra
+MarathonShuttle
+GrandRoads
+VSBattle
+ToolMapEditor
+MarathonExtreme
+Practice
+
+:Uniques Variety
+MarathonPlus
+MarathonDrill
+RetroModern
+SprintDig
+Practice
+MarathonSquare
+MarathonExtreme
+ToolMapEditor
+
+:ModePile Extras
+MarathonZone
+ColorPower
+Deltatris
+Joker
+Minesweeper
+MissionMode
+RollTraining
+ScoreTrial
+
+
+:Retrospective style
+RetroN
+RetroA
+RetroS
+RetroModern
+
+:Trial Rush
+SprintLine
+SprintScore
+SprintDig
+SprintCombo
+SprintUltra
+
+:Grand Challenges
+GrandBasic
+GrandCleaner
+GrandM1
+GrandM2
+GrandM2G
+GrandM3
+GrandOrders
+GrandPuzzle
+GrandRoads
+GrandS1
+GrandS2
+GrandSStealth
+GrandZ
+
+
+:TYPE AVALANCHE
+Avalanche1P
+Avalanche1PFever
+AvalancheVS
+AvalancheVSFever
+AvalancheVSDig
+AvalancheVSBOMB
+AvalancheVSSPF
+
+:TYPE PHYSICIAN
+Physician
+PhysicianVS
+
+:TYPE SPF
+SPF

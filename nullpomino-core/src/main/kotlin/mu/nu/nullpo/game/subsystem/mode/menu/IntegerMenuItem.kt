@@ -70,8 +70,8 @@ open class IntegerMenuItem(name:String, displayName:String, color:COLOR, default
 		else if(value>max) value = min
 	}
 
-	override fun load(prop:CustomProperties, propName:String) {
-		value = prop.getProperty(propName, defaultValue)
+	override fun load(prop:CustomProperties, propName:String):Int = prop.getProperty(propName, defaultValue).also {
+		value = it.coerceIn(min, max)
 	}
 
 	override fun save(prop:CustomProperties, propName:String) {

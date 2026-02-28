@@ -63,35 +63,34 @@ abstract class AbstractGrand:AbstractMode() {
 
 	/** medal 状態 */
 	protected val medals = Rankable.GrandRow.Medals()
-	protected var medalAC get() = medals.AC; set(v) {;medals.AC = v}
-	protected var medalsST get() = medals.ST; set(v) {;medals.ST = v}
-	protected val medalST get() = medalsST.indexOfFirst {it>0}.let {;if(it>=0) medalsST.size-it else 0;}
-	protected var medalSK get() = medals.SK; set(v) {;medals.SK = v}
+	protected var medalAC get() = medals.AC; set(v) {; medals.AC = v}
+	protected var medalsST get() = medals.ST; set(v) {; medals.ST = v}
+	protected val medalST get() = medalsST.indexOfFirst {it>0}.let {; if(it>=0) medalsST.size-it else 0;}
+	protected var medalSK get() = medals.SK; set(v) {; medals.SK = v}
 	/** SK medal conditions: Required Quads */
 	open val medalSKQuads = listOf(listOf(10, 20, 30), listOf(1, 2, 4))
 
-	protected var medalRE get() = medals.RE; set(v) {;medals.RE = v}
+	protected var medalRE get() = medals.RE; set(v) {; medals.RE = v}
 	/** 150個以上Blockがあるとtrue, 70個まで減らすとfalseになる */
 	protected var recoveryFlag = false
 
-	protected var medalRO get() = medals.RO; set(v) {;medals.RO = v}
+	protected var medalRO get() = medals.RO; set(v) {; medals.RO = v}
 	/** rotationした合計 count (Maximum4個ずつ増える) */
 	protected var spinCount = 0
 	/** rotationした合計 count (大セクションごとの合計rotation count to 大セクションごとのPiece配置数) */
 	private var sectionSpins = MutableList(3) {0 to 0}
 
-	protected var medalCO get() = medals.CO; set(v) {;medals.CO = v}
+	protected var medalCO get() = medals.CO; set(v) {; medals.CO = v}
 	/** CO medal conditions: Required Chains */
 	private val medalCOChain = listOf(listOf(3, 4, 5), listOf(2, 3, 4))
 
 	/** TS medal conditions: Twister Line*/
-	protected var medalTS get() = medals.RO; set(v) {;medals.RO = v}
-
+	protected var medalTS get() = medals.RO; set(v) {; medals.RO = v}
 
 	/** Section Time in Current run */
-	protected val sectionTime = MutableList(sectionMax) {0}
+	protected val sectionTime by lazy {MutableList(sectionMax) {0}}
 	/** 新記録が出たSection はtrue */
-	protected val sectionIsNewRecord = MutableList(sectionMax) {false}
+	protected val sectionIsNewRecord by lazy {MutableList(sectionMax) {false}}
 	/** どこかのSection で新記録を出すとtrue */
 	protected val sectionAnyNewRecord get() = sectionIsNewRecord.any()
 	/** Cleared Section count */
@@ -100,11 +99,9 @@ abstract class AbstractGrand:AbstractMode() {
 	protected val sectionAvgTime
 		get() = sectionTime.filter {it>0}.average().toFloat()
 
-	protected var decoration = 0
 	protected var decTemp = 0
 
 	override fun playerInit(engine:GameEngine) {
-		super.playerInit(engine)
 		nextSecLv = 0
 		lvupFlag = false
 
@@ -117,6 +114,7 @@ abstract class AbstractGrand:AbstractMode() {
 		recoveryFlag = false
 		spinCount = 0
 		sectionSpins.fill(0 to 0)
+		super.playerInit(engine)
 	}
 	/** ST medal check
 	 * @param engine GameEngine
@@ -148,7 +146,7 @@ abstract class AbstractGrand:AbstractMode() {
 	}
 	/** RO medal check */
 	protected fun roMedalCheck(engine:GameEngine, nextSecLv:Int) {
-		val lv = when (nextSecLv) {
+		val lv = when(nextSecLv) {
 			300 -> 0
 			700 -> 1
 			999 -> 2

@@ -73,7 +73,7 @@ class RetroN:AbstractMode() {
 	/** Selected garbage height */
 	private var startHeight:Int by DelegateMenuItem(itemHeight)
 
-	private val itemBig = BooleanMenuItem("big", "BIG", COLOR.BLUE, false)
+	private val itemBig = BooleanMenuItem("big", "BIG", COLOR.ORANGE, false)
 	/** Big mode on/off */
 	private var big:Boolean by DelegateMenuItem(itemBig)
 
@@ -88,7 +88,7 @@ class RetroN:AbstractMode() {
 
 	@Serializable
 	data class ScoreRow(override val st:Statistics = Statistics(),
-		val scMaxed:Int=-1):Rankable, Comparable<Rankable> {
+		val scMaxed:Int = -1):Rankable, Comparable<Rankable> {
 		override operator fun compareTo(other:Rankable):Int =
 			if(other is ScoreRow)
 				compareValuesBy(this, other, {it.sc}, {it.li}, {it.lv}, {-it.scMaxed}, {-it.ti})
@@ -97,7 +97,7 @@ class RetroN:AbstractMode() {
 	}
 
 	override val ranking = List(RANKING_TYPE) {
-		Leaderboard(rankingMax, serializer<List<ScoreRow>>()){ScoreRow()}
+		Leaderboard(rankingMax, serializer<List<ScoreRow>>()) {ScoreRow()}
 	}
 
 	/** Time records Reaches Score Max-out 999999 */
@@ -133,9 +133,14 @@ class RetroN:AbstractMode() {
 			owMinDAS = -1
 			owMaxDAS = -1
 			owSDSpd = 1
-			ruleOpt.nextDisplay = 1
-			ruleOpt.harddropEnable = false
-			ruleOpt.strWallkick = ""
+			ruleOpt.run {
+				replace(ruleOptBuf)
+				pieceOffsetX = RuleOptions.PIECEOFFSET_ARSPRESET[0]
+				pieceOffsetY = RuleOptions.PIECEOFFSET_ARSPRESET[1]
+				nextDisplay = 1
+				harddropEnable = false
+				strWallkick = ""
+			}
 			owSkin = if(speedType==2!=startLevel>=10) 8 else 9
 			owDelayCancel = 0
 		}
@@ -143,7 +148,7 @@ class RetroN:AbstractMode() {
 		owner.bgMan.bg = startLevel
 		if(owner.bgMan.bg>19) owner.bgMan.bg = 19
 		lvLines = ((startLevel-5)*10).coerceIn(minOf((startLevel+1)*10, 100), 100)
-		engine.frameSkin = GameEngine.FRAME_SKIN_GB
+		engine.frame = GameEngine.Frame.GB
 	}
 
 	/** Set the gravity speed
@@ -214,7 +219,7 @@ class RetroN:AbstractMode() {
 	override fun onMove(engine:GameEngine):Boolean {
 		// 新規ピース出現時
 		if(engine.ending==0&&engine.statc[0]==0&&!engine.holdDisable)
-			if(engine.run {getNextObjectCopy(nextPieceCount)}?.type!=Piece.Shape.I) drought++
+			if(engine.run {getNextObjectCopy(nextPieceCount)}?.shape!=Piece.Shape.I) drought++
 			else {
 				if(drought>7) droughts += drought
 				drought = 0
@@ -232,7 +237,7 @@ class RetroN:AbstractMode() {
 			if(!owner.replayMode&&!big&&engine.ai==null) {
 				receiver.drawScore(engine, 3, 3, "SCORE    LINE LV.", BASE, COLOR.BLUE)
 
-				ranking[gameType].forEachIndexed { i, it ->
+				ranking[gameType].forEachIndexed {i, it ->
 					receiver.drawScore(
 						engine, 0, 4+i, "%2d".format(i+1), GRADE, if(rankingRank==i) COLOR.RAINBOW else COLOR.YELLOW
 					)
@@ -274,7 +279,7 @@ class RetroN:AbstractMode() {
 		}
 	}
 
-	/** Calculates line-clear score
+	/** Calculates lines-clear score
 	 * (This function will be called even if no lines are cleared) */
 	override fun calcScore(engine:GameEngine, ev:ScoreEvent):Int {
 		sdScore /= 2

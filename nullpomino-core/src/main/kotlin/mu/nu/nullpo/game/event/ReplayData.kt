@@ -31,6 +31,7 @@
 package mu.nu.nullpo.game.event
 
 import kotlinx.serialization.Serializable
+import mu.nu.nullpo.game.component.Statistics
 import mu.nu.nullpo.util.CustomProperties
 
 /** リプレイで使用する button input dataのクラス */
@@ -40,7 +41,8 @@ data class ReplayData(
 	/** Button input data */
 	var inputDataArray:MutableMap<Int, Int> = mutableMapOf(),//(DEFAULT_ARRAYLIST_SIZE) {0},
 	var id:Int = 0,
-	var maxFrame:Int = 0
+	var maxFrame:Int = 0,
+	val statistics:Statistics = Statistics()
 ) {
 
 	/** Reset to defaults */
@@ -58,28 +60,28 @@ data class ReplayData(
 
 	/** button input状況を設定
 	 * @param input button input状況のビット flag
-	 * @param frame frame (経過 time）
+	 * @param frame frame (経過 time)
 	 */
 	fun setInputData(input:Int, frame:Int) {
 		if(input!=inputDataArray[frame-1]) inputDataArray[frame] = input
 	}
 
 	/** button input状況を取得
-	 * @param frame frame (経過 time）
+	 * @param frame frame (経過 time)
 	 * @return button input状況のビット flag
 	 */
 	fun getInputData(frame:Int):Int =
-		inputDataArray.getOrElse(frame) {inputDataArray.entries.lastOrNull {it.key<=frame}?.value ?: -1}
+		inputDataArray.getOrElse(frame) {inputDataArray.entries.lastOrNull {it.key<=frame}?.value?:-1}
 
 	/** プロパティセットに保存
 	 * @param p プロパティセット
-	 * @param _id 任意のID (Player IDなど）
-	 * @param _frames 保存する frame count (-1で全部保存）
+	 * @param _id 任意のID (Player IDなど)
+	 * @param _frames 保存する frame count (-1で全部保存)
 	 */
 	fun writeProperty(p:CustomProperties, _id:Int, _frames:Int) {
 		id = _id
 		val taken = inputDataArray.filter {it.key<=_frames}
-		val max = taken.keys.lastOrNull() ?: 0
+		val max = taken.keys.lastOrNull()?:0
 		taken.forEach {(i, d) ->
 			p.setProperty("$_id.r.$i", d)
 		}
@@ -90,7 +92,7 @@ data class ReplayData(
 
 	/** プロパティセットから読み込み
 	 * @param p プロパティセット
-	 * @param id 任意のID (Player IDなど）
+	 * @param id 任意のID (Player IDなど)
 	 */
 	fun readProperty(p:CustomProperties, id:Int) {
 		reset()

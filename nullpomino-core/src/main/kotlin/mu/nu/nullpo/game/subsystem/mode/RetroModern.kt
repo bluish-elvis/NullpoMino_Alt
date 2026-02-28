@@ -66,10 +66,10 @@ class RetroModern:AbstractMode() {
 	/** Selected game type */
 	private var gameType:Int by DelegateMenuItem(itemMode)
 
-	private val itemLevel = LevelMenuItem("startlevel", "LEVEL", COLOR.BLUE, 0, 0..15, false, true)
+	private val itemLevel = LevelMenuItem("startlevel", "LEVEL", COLOR.BLUE, 0, 0..15, true, true)
 	/** Selected starting level */
 	private var startLevel:Int by DelegateMenuItem(itemLevel)
-	private val itemBig = BooleanMenuItem("big", "BIG", COLOR.BLUE, false)
+	private val itemBig = BooleanMenuItem("big", "BIG", COLOR.ORANGE, false)
 	/** BigMode */
 	private var big:Boolean by DelegateMenuItem(itemBig)
 
@@ -83,7 +83,7 @@ class RetroModern:AbstractMode() {
 
 	/** Ranking records */
 	override val ranking = List(GAMETYPE_MAX) {
-		Leaderboard(rankingMax, kotlinx.serialization.serializer<List<Rankable.ScoreRow>>()){Rankable.ScoreRow()}
+		Leaderboard(rankingMax, kotlinx.serialization.serializer<List<Rankable.ScoreRow>>()) {Rankable.ScoreRow()}
 	}
 	/** Returns the name of this mode */
 	override val name = "Retro Modern.S"
@@ -126,7 +126,7 @@ class RetroModern:AbstractMode() {
 		engine.statistics.level = startLevel
 		setSpeed(engine)
 		owner.bgMan.bg = levelBG[startLevel]
-		engine.frameSkin = GameEngine.FRAME_SKIN_HEBO
+		engine.frame = GameEngine.Frame.HEBO
 	}
 
 	/** Set the gravity speed
@@ -312,10 +312,10 @@ class RetroModern:AbstractMode() {
 			}
 	}
 
-	/** Calculates line-clear score
+	/** Calculates lines-clear score
 	 * (This function will be called even if no lines are cleared) */
 	override fun calcScore(engine:GameEngine, ev:ScoreEvent):Int {
-		// Determines line-clear bonus
+		// Determines lines-clear bonus
 
 		val mult = tableScoreMult[gameType][engine.statistics.level]*10
 		val li = ev.lines
@@ -397,7 +397,7 @@ class RetroModern:AbstractMode() {
 			val pts1 = pts*10*tableBonusMult[engine.statistics.level]
 			lastScore = pts1
 			engine.statistics.scoreBonus += pts1
-			receiver.addScore(engine, engine.fieldWidth/2, engine.lastLineY, pts1, COLOR.RAINBOW)
+			receiver.addScore(engine, engine.fieldWidth/2, engine.lastLineY, pts1, COLOR.RAINBOW, big = true)
 		}
 
 		val slot = lineSlot.filter {it>0}

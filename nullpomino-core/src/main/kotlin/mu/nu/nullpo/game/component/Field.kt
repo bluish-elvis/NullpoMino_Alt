@@ -113,18 +113,18 @@ class Field {
 	/** Number of different colors in simultaneous color clears */
 	var colorsCleared = 0; private set
 
-	/** Number of gems cleared in last color or line color clear */
+	/** Number of gems cleared in last color or lines color clear */
 	var gemsCleared = 0; private set
 
 	/** Number of garbage blocks cleared in last color clear */
 	var garbageCleared = 0; private set
 
-	/** List of colors of lines cleared in most recent line color clear */
+	/** List of colors of lines cleared in most recent lines color clear */
 	var lineColorsCleared = emptyList<Int>()
 
-	/** List of last rows cleared in most recent horizontal line clear. */
-	var lastClearResult = ClearResult(0,emptyMap())
-	val lastLinesCleared get()=lastClearResult.blocksCleared
+	/** List of last rows cleared in most recent horizontal lines clear. */
+	var lastClearResult = ClearResult(0, emptyMap())
+	val lastLinesCleared get() = lastClearResult.blocksCleared
 	val lastLinesY get() = lastClearResult.linesYfolded
 	val lastLinesHeight get() = lastLinesY.map {it.size}
 
@@ -241,7 +241,7 @@ class Field {
 			return blocks
 		}
 
-	/** 全ての谷 (■ ■になっている地形）の深さを合計したものを返す (谷が多くて深いほど戻り値も大きくなる）
+	/** 全ての谷 (■ ■になっている地形)の深さを合計したものを返す (谷が多くて深いほど戻り値も大きくなる)
 	 * @return 全ての谷の深さを合計したもの
 	 */
 	val totalValleyDepth:Int
@@ -250,21 +250,21 @@ class Field {
 			if(d>=2) d else 0
 		}
 
-	/** I型が必要な谷 (深さ3以上）のcountを返す
+	/** I型が必要な谷 (深さ3以上)のcountを返す
 	 * @return I型が必要な谷のcount
 	 */
 	val totalValleyNeedIPiece:Int
 		get() = (0..<width).count {getValleyDepth(it)>=3}
 
 	/** @return an ArrayList of rows representing the TGM attack of the last
-	 * line
-	 * clear action The TGM attack is the lines of the last line clear
+	 * lines
+	 * clear action The TGM attack is the lines of the last lines clear
 	 * flipped vertically and without the blocks that caused it.
 	 */
 	// Put an empty block if the original block was in the last
 	// commit to the field.
 	val lastLinesAsTGMAttack
-		get() = lastLinesCleared.map {(y,r) ->
+		get() = lastLinesCleared.map {(y, r) ->
 			y to r.map {(x, b) -> x to if(b?.getAttribute(ATTRIBUTE.LAST_COMMIT)!=false) null else b}.toMap()
 		}.toMap()
 
@@ -305,8 +305,8 @@ class Field {
 		get() = (-hiddenHeight..<heightWithoutHurryupFloor).filter {getLineFlag(it)}
 			.sumOf {i -> getRow(i).filterNotNull().count {it.isGemBlock}}
 
-	/** Checks for inum blocks cleared
-	 * @return A boolean list with true at each index for which an inum block
+	/** Checks for item blocks cleared
+	 * @return A boolean list with true at each index for which an item block
 	 * of the corresponding ID number was cleared
 	 */
 	val itemClears
@@ -357,7 +357,7 @@ class Field {
 		colorClearExtraCount = 0
 		colorsCleared = 0
 		gemsCleared = 0
-		lastClearResult = ClearResult(0,emptyMap())
+		lastClearResult = ClearResult(0, emptyMap())
 
 		lastLinesSplited = false
 		explodWidth = 0
@@ -393,18 +393,20 @@ class Field {
 	/** [x],[y]座標の属性を取得
 	 * @return 座標の属性
 	 */
-	fun getCoordAttribute(x:Int, y:Int):Int = when {
-		y<0&&ceiling -> COORD_WALL// 天井
-		x<0||x>=width||y>=height -> COORD_WALL// 壁
-		y>=0 -> COORD_NORMAL// 通常
-		(y*-1-1)<hiddenHeight -> COORD_HIDDEN    // 見えない部分
-		else -> COORD_VANISH// 置いたBlockが消える
+	fun getCoordAttribute(x:Int, y:Int):Coord = when {
+		x !in 0..<width||y>=height -> Coord.WALL// 壁
+		y<0&&ceiling -> Coord.WALL// 天井
+		y<-hiddenHeight -> Coord.HIDDEN    // 見えない部分
+		y>=0 -> Coord.NORMAL// 通常
+		else -> Coord.VANISH// 置けるがBlockが消える
 	}
 
 	/** [x],[y]座標にBlockが置けるかを取得
+	 * @param b trueならCoord.VANISHに置けるが、[x],[y]座標にBlockがない場合に限る
 	 * @return Blockが置ける座標ならtrue
 	 */
-	fun getCoordVaild(x:Int, y:Int):Boolean = getCoordAttribute(x, y).let {it==COORD_NORMAL||it==COORD_HIDDEN}
+	fun getCoordVaild(x:Int, y:Int, b:Boolean = false):Boolean =
+		getCoordAttribute(x, y).let {it==Coord.NORMAL||it==Coord.HIDDEN||(b&&it==Coord.VANISH)}&&(!b||getBlockEmpty(x, y))
 
 	/** @param y height of the row in the field
 	 * @return a reference to the row
@@ -472,7 +474,7 @@ class Field {
 	/** [x],[y]座標にあるBlock colorを取得
 	 * @param gemSame If true, a gem block will return the color of the
 	 * corresponding normal block.
-	 * @return 指定した座標にあるBlock cint (失敗したらBLOCK_COLOR_INVALID）
+	 * @return 指定した座標にあるBlock color (失敗したらBLOCK_COLOR_INVALID)
 	 */
 	fun getBlockColor(x:Int, y:Int, gemSame:Boolean = false):Int =
 		if(getCoordVaild(x, y)) (getBlock(x, y)?.cint?:Block.COLOR_NONE).let {if(gemSame) Block.gemToNormalColor(it) else it}
@@ -510,7 +512,7 @@ class Field {
 */
 	/** [y]座標のLine clear flagを取得
 	 * @param y Y-coordinate
-	 * @return 消える列ならtrue, そうでないなら (もしくは座標が範囲外なら）false
+	 * @return 消える列ならtrue, そうでないなら (もしくは座標が範囲外なら)false
 	 */
 	fun getLineFlag(y:Int):Boolean = (if(y>=0) lineflagField.getOrNull(y)
 	else lineflagHidden.getOrNull(y*-1-1))?:false
@@ -521,7 +523,7 @@ class Field {
 	fun getBlockEmpty(x:Int, y:Int, ob:Boolean = true):Boolean = if(getCoordVaild(x, y)) getBlock(x, y)?.isEmpty?:true
 	else ob
 
-	/** [x],[y]座標にあるBlockが空白かどうか判定 (指定した座標が範囲外の場合はfalse）
+	/** [x],[y]座標にあるBlockが空白かどうか判定 (指定した座標が範囲外の場合はfalse)
 	 */
 	@Deprecated("overloaded", ReplaceWith("getBlockEmpty(x,y,false)"))
 	fun getBlockEmptyF(x:Int, y:Int):Boolean = getBlockEmpty(x, y, false)
@@ -544,7 +546,7 @@ class Field {
 	 */
 	fun checkLine(flag:Boolean = true) = checkLines(flag).size
 
-	/** Line clear check (消去 flagの設定とかはしない）
+	/** Line clear check (消去 flagの設定とかはしない)
 	 * @return 消えるLines count
 	 */
 	@Deprecated("renamed", ReplaceWith("checkLine(false)"))
@@ -563,9 +565,9 @@ class Field {
 	/** 上にあったBlockを1段だけ下ろす */
 	fun downFloatingBlocksSingleLine() = LineGravity.Native.fallSingle(this)
 
-	/** Check if specified line is completely empty
+	/** Check if specified lines is completely empty
 	 * @param y Y coord
-	 * @return `true` if the specified line is completely empty,
+	 * @return `true` if the specified lines is completely empty,
 	 * `false` otherwise.
 	 * @see mu.nu.nullpo.game.play.clearRule.isEmptyLine
 	 */
@@ -580,7 +582,7 @@ class Field {
 	 * @return Twisterになる地形だったらtrue
 	 */
 	fun isTwistSpot(x:Int, y:Int, big:Boolean):Boolean =
-		big.toInt().let {b -> tx[b].indices.count {(getBlock(x+tx[b][it], y+ty[b][it])!=null)}>=3}
+		big.toInt().let {b -> tw[b].count {(tx, ty) -> (getBlock(x+tx, y+ty)!=null)}>=3}
 
 	/** Twisterできそうな穴だったらtrue
 	 * @param x X-coordinate
@@ -609,10 +611,7 @@ class Field {
 		}
 
 		// 判定用相対座標を設定
-		val tx = tx[big.toInt()]
-		val ty = ty[big.toInt()]
-		// 判定
-		return tx.indices.count {(getBlock(x+tx[it], y+ty[it])!=null)}==3
+		return tw[big.toInt()].count {(tx, ty) -> (getBlock(x+tx, y+ty)!=null)}==3
 	}
 
 	/** Twisterできそうな穴が何個あるか調べる
@@ -668,9 +667,9 @@ class Field {
 			(startY..<heightWithoutHurryupFloor).takeWhile {getBlockEmpty(x, it, false)}.size
 		}
 
-	/** 谷 (■ ■になっている地形）の深さを調べる
+	/** 谷 (■ ■になっている地形)の深さを調べる
 	 * @param x 調べるX-coordinate
-	 * @return 谷の深さ (無かったら0）
+	 * @return 谷の深さ (無かったら0)
 	 */
 	fun getValleyDepth(x:Int):Int = minOf(getHighestBlockY(x-1), getHighestBlockY(x), getHighestBlockY(x+1)).let {startY ->
 		(startY..<heightWithoutHurryupFloor).takeWhile {
@@ -719,7 +718,7 @@ class Field {
 		}
 	}
 
-	/** Cut the specified line(s) then push down all things above
+	/** Cut the specified lines(s) then push down all things above
 	 * @param y Y coord
 	 * @param lines Number of lines to cut
 	 */
@@ -749,7 +748,7 @@ class Field {
 	 * @param lines Number of garbage lines to add
 	 */
 	fun addSingleHoleGarbage(hole:Int, color:Block.COLOR, skin:Int, lines:Int) {
-		for(it in 0..<lines) {
+		repeat(lines) {
 			pushUp(1)
 			setSingleHoleLine(hole, heightWithoutHurryupFloor-1, color, skin)
 		}
@@ -764,7 +763,7 @@ class Field {
 	 */
 	fun addRandomHoleGarbage(engine:GameEngine, hole:Int, messiness:Float, color:Block.COLOR, skin:Int, lines:Int):Int {
 		var x = hole
-		for(i in 0..<lines) {
+		repeat(lines) {i ->
 			if(i>0) {
 				val rand = engine.random.nextFloat()
 				if(rand<messiness) {
@@ -784,7 +783,7 @@ class Field {
 	 * @param lines 追加するgarbage blockのLines count
 	 */
 	fun addBottomCopyGarbage(skin:Int, lines:Int, vararg attrs:ATTRIBUTE) {
-		for(k in 0..<lines) {
+		repeat(lines) {
 			pushUp(1)
 
 			for(j in 0..<width) if(!getBlockEmpty(j, height-2)) {
@@ -835,9 +834,9 @@ class Field {
 		for(i in -hiddenHeight..<heightWithoutHurryupFloor-1) for(j in 0..<width-1) {
 			// rootBlk is the upper-left square
 			getBlock(j, i)?.let {rootBlk ->
-				var squareCheck = false          /* id is the cint of the top-left square: if it is a
+				var squareCheck = false          /* id is the color of the top-left square: if it is a
 					 * monosquare, every block in the 4x4 area will have this
-					 * cint. */
+					 * color. */
 				if(rootBlk.isGemBlock) {
 					squareCheck = true
 					for(k in 1..2) {
@@ -871,7 +870,7 @@ class Field {
 			val rootBlk = getBlock(j, i)
 			var squareCheck = false
 
-			/* id is the cint of the top-left square:
+			/* id is the color of the top-left square:
 			 if it is a monosquare, every block in the 4x4 area will have this color. */
 			var id = Block.COLOR_NONE
 			if(!(rootBlk==null||rootBlk.isEmpty)) id = rootBlk.cint
@@ -891,7 +890,7 @@ class Field {
 							k==0&&blk.getAttribute(ATTRIBUTE.CONNECT_UP)||k==3&&blk.getAttribute(ATTRIBUTE.CONNECT_DOWN)) {
 							/* Reasons why the entire area would not be a monosquare:
 							 this block does not exist, it is part of another square,
-							 it has been broken by line clears, is a garbage block,
+							 it has been broken by lines clears, is a garbage block,
 								is not the same color as id, or has connections outside the area. */
 							squareCheck = false
 							break
@@ -1727,9 +1726,15 @@ class Field {
 		/** 座標の属性 (壁) */
 		const val COORD_WALL = 3
 
+		private val tw = listOf(listOf(0 to 0, 2 to 0, 0 to 2, 2 to 2), listOf(1 to 1, 4 to 1, 1 to 4, 4 to 4))
+
 		/** Twister判定用相対x座標*/
 		private val tx = listOf(listOf(0, 2, 0, 2), listOf(1, 4, 1, 4))
 		/** Twister判定用相対y座標*/
 		private val ty = listOf(listOf(0, 0, 2, 2), listOf(1, 1, 4, 4))
+	}
+
+	enum class Coord {
+		NORMAL, HIDDEN, VANISH, WALL, CEIL
 	}
 }

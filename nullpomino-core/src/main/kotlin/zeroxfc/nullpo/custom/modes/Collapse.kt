@@ -42,6 +42,7 @@ import mu.nu.nullpo.game.component.Block
 import mu.nu.nullpo.game.component.Controller
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
 import mu.nu.nullpo.game.play.GameEngine
+import mu.nu.nullpo.game.play.GameEngine.Status
 import mu.nu.nullpo.game.subsystem.mode.AbstractMode
 import mu.nu.nullpo.gui.common.BaseFont.FONT.*
 import mu.nu.nullpo.gui.slick.MouseInput
@@ -134,7 +135,7 @@ class Collapse:AbstractMode() {
 			mainClass.contains("Slick") -> HOLDER_SLICK
 			else -> -1
 		}
-		engine.frameSkin = GameEngine.FRAME_COLOR_BRONZE
+		engine.frame = GameEngine.Frame.BRONZE
 	}
 
 	private fun resetSTextArr() {
@@ -197,7 +198,7 @@ class Collapse:AbstractMode() {
 			// New acc
 			if(engine.ctrl.isPush(Controller.BUTTON_E)&&engine.ai==null) {
 				engine.playSE("decide")
-				engine.stat = GameEngine.Status.CUSTOM
+				engine.stat = Status.CUSTOM
 				engine.resetStatc()
 				return true
 			}
@@ -267,7 +268,7 @@ class Collapse:AbstractMode() {
 			if(!engine.readyDone) engine.owner.musMan.bgm = BGM.Silent
 			startGame(engine)
 			engine.owner.receiver.startGame(engine)
-			engine.stat = GameEngine.Status.CUSTOM
+			engine.stat = Status.CUSTOM
 			for(i in 0..<lineSpawn) {
 				while(nextEmpty<engine.fieldWidth) {
 					val temp = if(linesLeft<=1) Block.COLOR.WHITE else tableColors[wRandomEngine.nextInt()]
@@ -335,11 +336,11 @@ class Collapse:AbstractMode() {
 				loadRankingPlayer(engine.playerProp)
 				loadSetting(engine, engine.playerProp.propProfile)
 			}
-			if(engine.stat===GameEngine.Status.SETTING) engine.isInGame = false
+			if(engine.stat===Status.SETTING) engine.isInGame = false
 			true
 		}
 	}
-	// DONE: Make the rest of the gamemode work.
+	// DONE: Make the rest of the gameMode work.
 	private fun clearSquares(engine:GameEngine) {
 		var score = 0
 		var squares = 0
@@ -496,12 +497,12 @@ class Collapse:AbstractMode() {
 		}
 		if(engine.field.highestBlockY<0) {
 			if(engine.statistics.level<19) {
-				engine.stat = GameEngine.Status.GAMEOVER
+				engine.stat = Status.GAMEOVER
 				engine.resetStatc()
 				engine.gameEnded()
 				engine.rainbowAnimate = false
 			} else {
-				engine.stat = GameEngine.Status.EXCELLENT
+				engine.stat = Status.EXCELLENT
 				engine.resetStatc()
 				engine.gameEnded()
 				engine.ending = 1
@@ -760,7 +761,7 @@ class Collapse:AbstractMode() {
 					if(i==engine.playerID||engine.dieAll) {
 						owner.engine[i].field.reset()
 						owner.engine[i].resetStatc()
-						owner.engine[i].stat = GameEngine.Status.RESULT
+						owner.engine[i].stat = Status.RESULT
 					}
 				}
 			}
@@ -784,7 +785,7 @@ class Collapse:AbstractMode() {
 			} else {
 				engine.lives--
 				engine.resetStatc()
-				engine.stat = GameEngine.Status.CUSTOM
+				engine.stat = Status.CUSTOM
 			}
 		}
 		return true
@@ -798,10 +799,10 @@ class Collapse:AbstractMode() {
 			updateSTextArr()
 			if(acTime in 0..119) acTime++ else acTime = -1
 		}
-		if(engine.stat===GameEngine.Status.SETTING||engine.stat===GameEngine.Status.RESULT&&!owner.replayMode||engine.stat===GameEngine.Status.CUSTOM) {
+		if(engine.stat===Status.SETTING||engine.stat===Status.RESULT&&!owner.replayMode||engine.stat===Status.CUSTOM) {
 			// Show rank
 			if(engine.ctrl.isPush(Controller.BUTTON_F)&&
-				engine.playerProp.isLoggedIn&&engine.stat!==GameEngine.Status.CUSTOM
+				engine.playerProp.isLoggedIn&&engine.stat!==Status.CUSTOM
 			) {
 				showPlayerStats = !showPlayerStats
 				engine.playSE("change")
@@ -815,7 +816,7 @@ class Collapse:AbstractMode() {
 		receiver.drawScore(
 			engine, 0, 1, "("+DIFFICULTY_NAMES[difficulty]+" DIFFICULTY)", BASE, COLOR.ORANGE
 		)
-		if(engine.stat===GameEngine.Status.SETTING||engine.stat===GameEngine.Status.RESULT&&!owner.replayMode) {
+		if(engine.stat===Status.SETTING||engine.stat===Status.RESULT&&!owner.replayMode) {
 			if(!owner.replayMode&&enableBombs&&engine.ai==null) {
 				val topY = if(receiver.nextDisplayType==2) 6 else 4
 				receiver.drawScore(engine, 3, topY-1, "SCORE    LEVEL", BASE, COLOR.BLUE)
@@ -841,7 +842,7 @@ class Collapse:AbstractMode() {
 						receiver.drawScore(engine, 0, topY+MAX_RANKING+5, "F:SWITCH RANK SCREEN", BASE, COLOR.GREEN)
 				}
 			}
-		} else if(!engine.gameActive&&engine.stat===GameEngine.Status.CUSTOM) {
+		} else if(!engine.gameActive&&engine.stat===Status.CUSTOM) {
 			engine.playerProp.loginScreen.renderScreen(receiver, engine)
 		} else {
 			receiver.drawScore(engine, 0, 3, "SCORE", BASE, COLOR.BLUE)
@@ -859,12 +860,11 @@ class Collapse:AbstractMode() {
 				receiver.drawScore(engine, 0, 16, engine.playerProp.nameDisplay, BASE, COLOR.WHITE, 2f)
 			}
 			sTextArr.forEach {
-				val x = it.location[0]
-				val y = it.location[1]
+				val (x, y) = it.location
 				val scale:Float
 				val rs:Float
-				val baseScale:Float = if(it.big) 2f else 1f
-				val baseDim = if(it.big) 32.0 else 16.0
+				val baseScale = if(it.big) 2f else 1f
+				val baseDim = if(it.big) 32f else 16f
 				if(it.lifeTime<24) {
 					scale = baseScale
 					rs = 1f

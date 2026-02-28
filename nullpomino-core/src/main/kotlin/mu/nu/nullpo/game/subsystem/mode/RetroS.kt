@@ -33,6 +33,7 @@ package mu.nu.nullpo.game.subsystem.mode
 import kotlinx.serialization.Serializable
 import mu.nu.nullpo.game.component.BGM
 import mu.nu.nullpo.game.component.Piece.Companion.createQueueFromIntStr
+import mu.nu.nullpo.game.component.RuleOptions
 import mu.nu.nullpo.game.component.Statistics
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
 import mu.nu.nullpo.game.event.Leaderboard
@@ -61,7 +62,7 @@ class RetroS:AbstractMode() {
 	/** Selected starting level */
 	private var startLevel:Int by DelegateMenuItem(itemLevel)
 
-	private val itemBig = BooleanMenuItem("big", "BIG", COLOR.BLUE, false)
+	private val itemBig = BooleanMenuItem("big", "BIG", COLOR.ORANGE, false)
 	/** Big mode on/off */
 	private var big:Boolean by DelegateMenuItem(itemBig)
 
@@ -89,7 +90,7 @@ class RetroS:AbstractMode() {
 	override val gameIntensity:Int = -1
 	@Serializable
 	data class ScoreRow(override val st:Statistics = Statistics(),
-		val scMaxed:Int=-1, val liMaxed:Int=-1, val lvMaxed:Int=-1):Rankable, Comparable<Rankable> {
+		val scMaxed:Int = -1, val liMaxed:Int = -1, val lvMaxed:Int = -1):Rankable, Comparable<Rankable> {
 		override operator fun compareTo(other:Rankable):Int =
 			if(other is ScoreRow)
 				compareValuesBy(this, other, {it.sc}, {it.li}, {it.lv}, {-it.scMaxed}, {-it.liMaxed}, {-it.lvMaxed}, {-it.ti})
@@ -98,7 +99,7 @@ class RetroS:AbstractMode() {
 	}
 
 	override val ranking = List(RANKING_TYPE) {
-		Leaderboard(rankingMax, kotlinx.serialization.serializer<List<ScoreRow>>()){ ScoreRow() }
+		Leaderboard(rankingMax, kotlinx.serialization.serializer<List<ScoreRow>>()) {ScoreRow()}
 	}
 
 	/** This function will be called when
@@ -134,7 +135,15 @@ class RetroS:AbstractMode() {
 			owSDSpd = 2
 			owDelayCancel = 0
 
-			frameSkin = GameEngine.FRAME_SKIN_SG
+			frame = GameEngine.Frame.SG
+			ruleOpt.run {
+				replace(ruleOptBuf)
+				fieldCeiling = true
+				pieceEnterAboveField = false
+				pieceOffsetX = RuleOptions.PIECEOFFSET_ARSPRESET[0]
+				pieceOffsetY = RuleOptions.PIECEOFFSET_ARSPRESET[1]
+				strWallkick = "mu.nu.nullpo.game.subsystem.wallkick.ClassicWallkick"
+			}
 		}
 		if(!owner.replayMode) version = CURRENT_VERSION
 		owner.bgMan.bg = startLevel/2
@@ -237,12 +246,12 @@ class RetroS:AbstractMode() {
 				alpha = if(engine.statistics.level>=MAX_LEVEL) 0.5f else 1f)
 			if(maxLevelTime>0) receiver.drawScore(engine, 1, 11, maxLevelTime.toTimeStr, NUM_T, COLOR.CYAN)
 
-			receiver.drawScore(engine, 0, 13, "Time", BASE, COLOR.BLUE)
-			receiver.drawScore(engine, 0, 14, engine.statistics.time.toTimeStr, BASE, COLOR.BLUE)
+			receiver.drawScore(engine, 0, 15, "Time", BASE, COLOR.BLUE)
+			receiver.drawScore(engine, 0, 16, engine.statistics.time.toTimeStr, NUM_T, COLOR.BLUE)
 
-			receiver.drawScore(engine, 0, 31, "${4-linesAfterLastLevelUp} LINES TO GO", NANO, COLOR.CYAN, .5f)
+			receiver.drawScore(engine, 0, 11, "${4-linesAfterLastLevelUp} LINES TO GO", NANO, COLOR.CYAN, .5f)
 			receiver.drawScore(
-				engine, 0, 32, "OR "+(levelTime[minOf(engine.statistics.level, 15)]-levelTimer).toTimeStr,
+				engine, 0, 12, "OR "+(levelTime[minOf(engine.statistics.level, 15)]-levelTimer).toTimeStr,
 				NANO,
 				COLOR.CYAN, .5f
 			)
@@ -258,10 +267,10 @@ class RetroS:AbstractMode() {
 		engine.meterValue += (1-engine.meterValue)*linesAfterLastLevelUp%4/4
 	}
 
-	/** Calculates line-clear score
+	/** Calculates lines-clear score
 	 * (This function will be called even if no lines are cleared) */
 	override fun calcScore(engine:GameEngine, ev:ScoreEvent):Int {
-		// Determines line-clear bonus
+		// Determines lines-clear bonus
 		val li = ev.lines
 		val pts = minOf(engine.statistics.level/2+1, 5)*when {
 			li==1 -> 100 // Single
@@ -318,8 +327,7 @@ class RetroS:AbstractMode() {
 					maxLevelTime = engine.statistics.time
 					engine.playSE("levelup_section")
 				}
-			}
-			engine.playSE("levelup")
+			} else engine.playSE("levelup")
 		}
 		return pts
 	}

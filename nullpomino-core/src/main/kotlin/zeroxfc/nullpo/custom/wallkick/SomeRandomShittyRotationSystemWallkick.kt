@@ -48,7 +48,7 @@ class SomeRandomShittyRotationSystemWallkick:Wallkick {
 	// So basically, it's a symmetric spiral checker.
 	// The bigger the field width, the more checks it performs.
 	override fun executeWallkick(x:Int, y:Int, rtDir:Int, rtOld:Int, rtNew:Int, allowUpward:Boolean,
-		piece:Piece, field:Field, ctrl:Controller?): WallkickResult? {
+		piece:Piece, field:Field, ctrl:Controller?):WallkickResult? {
 		var x2 = 0
 		var y2 = 0
 		var offsetRadius = field.width+1
@@ -67,11 +67,8 @@ class SomeRandomShittyRotationSystemWallkick:Wallkick {
 					x3 *= 2
 					y2 *= 2
 				}
-				if(!piece.checkCollision(x+x3, y+y2, rtNew, field)) {
-					if(!(x3==0&&y2==0)) {
-						return WallkickResult(x3, y2, rtNew)
-					}
-				}
+				if(!piece.checkCollision(x+x3, y+y2, rtNew, field)&&!(x3==0&&y2==0))
+					return WallkickResult(x3, y2, rtNew)
 				iter++
 				x2 += dx
 			}
@@ -84,11 +81,8 @@ class SomeRandomShittyRotationSystemWallkick:Wallkick {
 					x3 *= 2
 					y2 *= 2
 				}
-				if(!piece.checkCollision(x+x3, y+y2, rtNew, field)) {
-					if(!(x3==0&&y2==0)) {
-						return WallkickResult(x3, y2, rtNew)
-					}
-				}
+				if(!piece.checkCollision(x+x3, y+y2, rtNew, field)&&!(x3==0&&y2==0))
+					return WallkickResult(x3, y2, rtNew)
 				iter++
 				y2 += dy
 			}

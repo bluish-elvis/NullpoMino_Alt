@@ -30,8 +30,8 @@ import java.util.Arrays;
  * Multi-licensed: EPL / LGPL / AL / BSD.
  */
 @SuppressWarnings("ALL") public class Base64Coder{
-	// The line separator string of the operating system.
-	private static final String systemLineSeparator=System.getProperty("line.separator");
+	// The lines separator string of the operating system.
+	private static final String systemLineSeparator=System.getProperty("lines.separator");
 
 	// Mapping table from 6-bit nibbles to Base64 characters.
 	private static final char[] map1=new char[64];
@@ -59,7 +59,7 @@ import java.util.Arrays;
 
 	/**
 	 * Encodes a string into Base64 format.
-	 * No blanks or line breaks are inserted.
+	 * No blanks or lines breaks are inserted.
 	 * @param s A String to be encoded.
 	 * @return A String containing the Base64 encoded data.
 	 */
@@ -89,7 +89,7 @@ import java.util.Arrays;
 	 * at <code>iOff</code>.
 	 * @param lineLen Line length for the output data. Should be a multiple of
 	 * 4.
-	 * @param lineSeparator The line separator to be used to separate the output
+	 * @param lineSeparator The lines separator to be used to separate the output
 	 * lines.
 	 * @return A String containing the Base64 encoded data, broken into
 	 * lines.
@@ -112,7 +112,7 @@ import java.util.Arrays;
 
 	/**
 	 * Encodes a byte array into Base64 format.
-	 * No blanks or line breaks are inserted in the output.
+	 * No blanks or lines breaks are inserted in the output.
 	 * @param in An array containing the data bytes to be encoded.
 	 * @return A character array containing the Base64 encoded data.
 	 */
@@ -122,7 +122,7 @@ import java.util.Arrays;
 
 	/**
 	 * Encodes a byte array into Base64 format.
-	 * No blanks or line breaks are inserted in the output.
+	 * No blanks or lines breaks are inserted in the output.
 	 * @param in An array containing the data bytes to be encoded.
 	 * @param iLen Number of bytes to process in <code>in</code>.
 	 * @return A character array containing the Base64 encoded data.
@@ -133,7 +133,7 @@ import java.util.Arrays;
 
 	/**
 	 * Encodes a byte array into Base64 format.
-	 * No blanks or line breaks are inserted in the output.
+	 * No blanks or lines breaks are inserted in the output.
 	 * @param in An array containing the data bytes to be encoded.
 	 * @param iOff Offset of the first byte in <code>in</code> to be processed.
 	 * @param iLen Number of bytes to process in <code>in</code>, starting at
@@ -167,7 +167,7 @@ import java.util.Arrays;
 
 	/**
 	 * Decodes a string from Base64 format.
-	 * No blanks or line breaks are allowed within the Base64 encoded input
+	 * No blanks or lines breaks are allowed within the Base64 encoded input
 	 * data.
 	 * @param s A Base64 String to be decoded.
 	 * @return A String containing the decoded data.
@@ -179,7 +179,7 @@ import java.util.Arrays;
 	}
 
 	/**
-	 * Decodes a byte array from Base64 format and ignores line separators,
+	 * Decodes a byte array from Base64 format and ignores lines separators,
 	 * tabs and blanks.
 	 * CR, LF, Tab and Space characters are ignored in the input data.
 	 * This method is compatible with
@@ -201,7 +201,7 @@ import java.util.Arrays;
 
 	/**
 	 * Decodes a byte array from Base64 format.
-	 * No blanks or line breaks are allowed within the Base64 encoded input
+	 * No blanks or lines breaks are allowed within the Base64 encoded input
 	 * data.
 	 * @param s A Base64 String to be decoded.
 	 * @return An array containing the decoded data bytes.
@@ -214,7 +214,7 @@ import java.util.Arrays;
 
 	/**
 	 * Decodes a byte array from Base64 format.
-	 * No blanks or line breaks are allowed within the Base64 encoded input
+	 * No blanks or lines breaks are allowed within the Base64 encoded input
 	 * data.
 	 * @param in A character array containing the Base64 encoded data.
 	 * @return An array containing the decoded data bytes.
@@ -227,7 +227,7 @@ import java.util.Arrays;
 
 	/**
 	 * Decodes a byte array from Base64 format.
-	 * No blanks or line breaks are allowed within the Base64 encoded input
+	 * No blanks or lines breaks are allowed within the Base64 encoded input
 	 * data.
 	 * @param in A character array containing the Base64 encoded data.
 	 * @param iOff Offset of the first character in <code>in</code> to be

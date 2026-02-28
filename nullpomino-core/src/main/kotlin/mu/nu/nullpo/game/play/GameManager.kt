@@ -32,6 +32,7 @@ package mu.nu.nullpo.game.play
 
 import mu.nu.nullpo.game.component.BGMStatus
 import mu.nu.nullpo.game.component.BackgroundStatus
+import mu.nu.nullpo.game.component.Statistics
 import mu.nu.nullpo.game.event.EventReceiver
 import mu.nu.nullpo.game.subsystem.mode.GameMode
 import mu.nu.nullpo.util.CustomProperties
@@ -55,8 +56,9 @@ class GameManager(
 	 * contains setting & Presets */
 	var modeConfig = CustomProperties(cfgMode)
 
-	private val cfgMode get() = "config/setting/mode/${mode?.id ?: "_common"}.cfg"
+	private val cfgMode get() = "config/setting/mode/${mode?.id?:"_common"}.cfg"
 
+	val stats:Statistics = Statistics()
 	/** Properties used by statistics */
 	var statsProp = CustomProperties(statsFile)
 	val statsFile get() = "scores/stats"
@@ -65,7 +67,7 @@ class GameManager(
 	var recordProp = CustomProperties(recorder()+".rec")
 
 	fun recorder(ruleName:String? = null):String =
-		"scores/"+(ruleName?.let {"$it/"} ?: "")+(mode?.id ?: "")
+		"scores/"+(ruleName?.let {"$it/"}?:"")+(mode?.id?:"")
 	//fun recorder():String = "scores/${mode?.name ?: "mode"}.rec"
 
 	/** Properties for replay file */
@@ -82,7 +84,7 @@ class GameManager(
 	val musMan = BGMStatus()
 	/** BackgroundStatus: Manages the status of background image */
 	val bgMan = BackgroundStatus()
-	/** GameEngine: This is where the most action takes place */
+	/** GameEngine: This is where the most action takes place, at each player */
 	val engine = mutableListOf<GameEngine>()
 
 	/** True to show invisible blocks in replay */
@@ -118,12 +120,12 @@ class GameManager(
 
 		bgMan.fadeEnabled = receiver.heavyEffect>0
 		receiver.modeInit(this)
+		statsProp.load(statsFile)?.let {p -> stats.readProperty(p)}
 		val players = mode?.let {
 			modeConfig.load(cfgMode)
-			statsProp.load(statsFile)
 			it.modeInit(this)
 			it.players
-		} ?: 1
+		}?:1
 		for(i in 0..<players)
 			engine.add(GameEngine(this, i))
 	}
@@ -174,6 +176,8 @@ class GameManager(
 	fun saveReplay() {
 		replayProp.clear()
 		engine.forEach {it.saveReplay()}
+		stats.writeProperty(statsProp)
+		statsProp.save(statsFile)
 		receiver.saveReplay(this, replayProp)
 	}
 
@@ -190,7 +194,7 @@ class GameManager(
 		/** Get minor version (For compatibility with old replays)
 		 * @return Minor version
 		 */
-		val versionMinorOld get() = versionMinor.toFloat()
+		val versionMinorOld get() = versionMinor
 		/** Get version information as String
 		 * @return Version information
 		 */

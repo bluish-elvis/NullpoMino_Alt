@@ -1,0 +1,15 @@
+[
+ {
+  "name":"S1","showName":"Trial S1","missions":[
+  {"type":"BigBlock","lv":2,"time":120,"norm":20},
+  {"type":"LevelStar","lv":8,"time":60,"norm":12}
+ ]
+ },
+ {
+  "name":"S2","showName":"Trial S2","missions":[
+  {"type":"Ladder","lv":3,"time":100,"norm":3},
+  {"type":"Quads","lv":4,"time":120,"norm":5},
+  {"type":"LevelStar","lv":8,"time":60,"norm":15}
+ ]
+ }
+]

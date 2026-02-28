@@ -31,7 +31,6 @@
 package mu.nu.nullpo.gui.slick
 
 import mu.nu.nullpo.game.play.GameEngine
-import mu.nu.nullpo.game.play.GameEngine.Companion.FRAME_SKIN_GRADE
 import mu.nu.nullpo.game.play.GameManager
 import mu.nu.nullpo.gui.common.AbstractRenderer
 import mu.nu.nullpo.gui.common.BaseFont.FONT
@@ -48,7 +47,7 @@ import zeroxfc.nullpo.custom.libs.Vector
 import kotlin.math.PI
 import kotlin.math.absoluteValue
 
-/** ゲームの event 処理と描画処理 (Slick版） */
+/** ゲームの event 処理と描画処理 (Slick版) */
 class RendererSlick(
 	/** 描画先サーフェイス */
 	internal var graphics:Graphics? = null
@@ -198,6 +197,16 @@ class RendererSlick(
 		}
 	}
 
+	fun drawGradationSpecific(x:Float, y:Float, w:Float, h:Float, color1:Int, color2:Int, alpha:Float) {
+		val g = graphics?:return
+		val c = g.color
+		g.color = Color(color1).apply {a = alpha}
+		g.fillRect(x, y, w, h)
+		g.color = Color(color2).apply {a = alpha}
+		g.fillRect(x+w/2f, y, w/2f, h)
+		g.color = c
+	}
+
 	override fun fillRectSpecific(x:Float, y:Float, w:Float, h:Float, color:Int, alpha:Float) {
 		val g = graphics?:return
 		val c = g.color
@@ -280,8 +289,8 @@ class RendererSlick(
 		val width = engine.field.width//?: Field.DEFAULT_WIDTH
 		val height = engine.field.height//?: Field.DEFAULT_HEIGHT
 
-		if(engine.frameSkin>=0) {
-			val fi = resources.imgFrame[engine.frameSkin].res
+		if(engine.frame.type==GameEngine.Frame.Type.COLOR) {
+			val fi = resources.imgFrame[engine.frame.id].res
 			val rX = x+width*size
 			val bY = y+height*size
 
@@ -309,7 +318,7 @@ class RendererSlick(
 				Polygon(floatArrayOf(rX+size, y-size, rX, y, rX, bY, rX+size, bY+size)),
 				fi.getSubImage(16, 96, 16, 32), 1f, 1f, true
 			)
-		} else if(engine.frameSkin==FRAME_SKIN_GRADE) {
+		} else if(engine.frame==GameEngine.Frame.GRADE) {
 			val fi = resources.imgFrameOld[3]
 		}
 	}

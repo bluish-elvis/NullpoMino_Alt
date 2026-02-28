@@ -657,7 +657,7 @@ class SPF:AbstractMode() {
 		val fldPosX = receiver.fieldX(engine)
 		val fldPosY = receiver.fieldY(engine)
 		val pid = engine.playerID
-		val playerColor = EventReceiver.getPlayerColor(pid)
+		val playerColor = COLOR.fromPlayerID(pid)
 
 		// Timer
 		if(pid==0) receiver.drawFont(224, 0, engine.statistics.time.toTimeStr, BASE)
@@ -1485,7 +1485,7 @@ class SPF:AbstractMode() {
 		/** Names of rainbow power settings */
 		private val RAINBOW_POWER_NAMES = listOf("NONE", "50%", "80%", "100%", "50/100%")
 
-		/** Each player's frame cint */
+		/** Each player's frame color-int */
 		private val PLAYER_COLOR_FRAME = listOf(GameEngine.FRAME_COLOR_RED, GameEngine.FRAME_COLOR_BLUE)
 
 		fun getAttackMultiplier(set:Int, map:Int):Double {

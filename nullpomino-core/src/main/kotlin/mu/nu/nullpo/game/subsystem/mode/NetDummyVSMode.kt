@@ -39,6 +39,7 @@ import mu.nu.nullpo.game.net.NetPlayerClient
 import mu.nu.nullpo.game.net.NetPlayerInfo
 import mu.nu.nullpo.game.net.NetRoomInfo
 import mu.nu.nullpo.game.play.GameEngine
+import mu.nu.nullpo.game.play.GameEngine.Status
 import mu.nu.nullpo.game.play.GameManager
 import mu.nu.nullpo.gui.common.BaseFont.FONT.*
 import mu.nu.nullpo.gui.net.NetLobbyFrame
@@ -48,7 +49,7 @@ import kotlin.random.Random
 import mu.nu.nullpo.util.GeneralUtil as Util
 
 /** Special base class for netplay VS modes. Up to 6 players supported. */
-abstract class NetDummyVSMode:NetDummyMode() {
+internal abstract class NetDummyVSMode:NetDummyMode() {
 	/* -------------------- Variables -------------------- */
 	/** NET-VS: Local player's seat ID (-1:Spectator) */
 	private var netVSMySeatID = 0
@@ -245,7 +246,7 @@ abstract class NetDummyVSMode:NetDummyMode() {
 			netVSPlayerPlayCount[i] = 0
 			netVSPlayerName[i] = ""
 			netVSPlayerTeam[i] = ""
-			owner.engine[i].frameSkin = GameEngine.FRAME_COLOR_GRAY
+			owner.engine[i].frame = GameEngine.Frame.GRAY
 		}
 
 		val pList = netLobby!!.updateSameRoomPlayerInfoList()
@@ -269,11 +270,11 @@ abstract class NetDummyVSMode:NetDummyMode() {
 					netVSPlayerName[playerID] = pInfo.strName
 					netVSPlayerTeam[playerID] = pInfo.strTeam
 
-					// Set frame cint
+					// Set frame color
 					if(pInfo.seatID<NET_PLAYER_COLOR_FRAME.size)
 						owner.engine[playerID].frameSkin = NET_PLAYER_COLOR_FRAME[pInfo.seatID]
 
-					// Set team cint
+					// Set team color
 					if(netVSPlayerTeam[playerID].isNotEmpty())
 						if(!teamList.contains(netVSPlayerTeam[playerID])) {
 							teamList.add(netVSPlayerTeam[playerID])
@@ -401,7 +402,7 @@ abstract class NetDummyVSMode:NetDummyMode() {
 		// Set visible flag
 		if(netCurrentRoomInfo!=null&&engine.playerID>=netCurrentRoomInfo!!.maxPlayers) engine.isVisible = false
 
-		// Set frame cint
+		// Set frame color
 		val seatID = netVSPlayerSeatID[engine.playerID]
 		engine.frameSkin = if(seatID>=0&&seatID<NET_PLAYER_COLOR_FRAME.size)
 			NET_PLAYER_COLOR_FRAME[seatID] else GameEngine.FRAME_COLOR_GRAY
@@ -474,7 +475,7 @@ abstract class NetDummyVSMode:NetDummyMode() {
 		netVSIsPracticeExitAllowed = false
 
 		engine.init()
-		engine.stat = GameEngine.Status.READY
+		engine.stat = Status.READY
 		engine.resetStatc()
 		netUpdatePlayerExist()
 		netVSSetGameScreenLayout()
@@ -752,7 +753,7 @@ abstract class NetDummyVSMode:NetDummyMode() {
 			owner.musMan.bgm = BGM.Silent
 			engine.field.reset()
 			engine.gameEnded()
-			engine.stat = GameEngine.Status.SETTING
+			engine.stat = Status.SETTING
 			engine.resetStatc()
 		}
 	}
@@ -803,7 +804,7 @@ abstract class NetDummyVSMode:NetDummyMode() {
 				false
 			else {
 				engine.field.reset()
-				engine.stat = GameEngine.Status.RESULT
+				engine.stat = Status.RESULT
 				engine.resetStatc()
 				true
 			}
@@ -824,7 +825,7 @@ abstract class NetDummyVSMode:NetDummyMode() {
 		// Player/Opponent died
 		if(netVSPlayerDead[pid]) {
 			if(engine.field.isEmpty) {
-				engine.stat = GameEngine.Status.SETTING
+				engine.stat = Status.SETTING
 				engine.resetStatc()
 				return true
 			}
@@ -886,7 +887,7 @@ abstract class NetDummyVSMode:NetDummyMode() {
 			if(!netVSIsGameActive&&netVSPlayerResultReceived[pid]) {
 				engine.field.reset()
 				engine.resetStatc()
-				engine.stat = GameEngine.Status.RESULT
+				engine.stat = Status.RESULT
 			}
 		} else
 			engine.statc[0]++
@@ -920,7 +921,7 @@ abstract class NetDummyVSMode:NetDummyMode() {
 			if(engine.ctrl.isPush(Controller.BUTTON_A)) {
 				engine.playSE("decide")
 				netVSIsPractice = false
-				engine.stat = GameEngine.Status.SETTING
+				engine.stat = Status.SETTING
 				engine.resetStatc()
 				return true
 			}
@@ -997,7 +998,7 @@ abstract class NetDummyVSMode:NetDummyMode() {
 	/** NET-VS: Disconnected */
 	override fun onDisconnect(lobby:NetLobbyFrame, client:NetPlayerClient, ex:Throwable?) {
 		for(i in 0..<players)
-			owner.engine[i].stat = GameEngine.Status.NOTHING
+			owner.engine[i].stat = Status.NOTHING
 	}
 
 	/** NET-VS: Message received */
@@ -1040,14 +1041,14 @@ abstract class NetDummyVSMode:NetDummyMode() {
 				netVSIsPractice = false
 				if(netVSIsGameActive&&!netVSIsWatch()) netVSIsNewcomer = true
 
-				owner.engine[0].stat = GameEngine.Status.SETTING
+				owner.engine[0].stat = Status.SETTING
 
 				for(i in 0..<players) {
 					owner.engine[i].field.reset()
 					owner.engine[i].nowPieceObject = null
 
-					if(owner.engine[i].stat==GameEngine.Status.NOTHING||!netVSIsGameActive)
-						owner.engine[i].stat = GameEngine.Status.SETTING
+					if(owner.engine[i].stat==Status.NOTHING||!netVSIsGameActive)
+						owner.engine[i].stat = Status.SETTING
 					owner.engine[i].resetStatc()
 				}
 			}
@@ -1105,7 +1106,7 @@ abstract class NetDummyVSMode:NetDummyMode() {
 
 				if(netVSPlayerExist[i]) {
 					netVSPlayerActive[i] = true
-					engine.stat = GameEngine.Status.READY
+					engine.stat = Status.READY
 					engine.randSeed = randseed
 					engine.random = Random(randseed)
 
@@ -1124,14 +1125,14 @@ abstract class NetDummyVSMode:NetDummyMode() {
 						}
 					}
 				} else if(i<netCurrentRoomInfo!!.maxPlayers) {
-					engine.stat = GameEngine.Status.SETTING
+					engine.stat = Status.SETTING
 					engine.isVisible = true
 					engine.isNextVisible = false
 					engine.isHoldVisible = false
 
 					if(netCurrentRoomInfo!!.maxPlayers==2&&netVSNumPlayers==2) engine.isVisible = false
 				} else {
-					engine.stat = GameEngine.Status.SETTING
+					engine.stat = Status.SETTING
 					engine.isVisible = false
 				}
 
@@ -1148,7 +1149,7 @@ abstract class NetDummyVSMode:NetDummyMode() {
 			if(!netVSPlayerDead[playerID]) {
 				netVSPlayerDead[playerID] = true
 				netVSPlayerPlace[playerID] = message[4].toInt()
-				owner.engine[playerID].stat = GameEngine.Status.GAMEOVER
+				owner.engine[playerID].stat = Status.GAMEOVER
 				owner.engine[playerID].resetStatc()
 				netVSNumAlivePlayers--
 
@@ -1181,7 +1182,7 @@ abstract class NetDummyVSMode:NetDummyMode() {
 				netVSIsPracticeExitAllowed = false
 				owner.musMan.bgm = BGM.Silent
 				owner.engine[0].gameEnded()
-				owner.engine[0].stat = GameEngine.Status.SETTING
+				owner.engine[0].stat = Status.SETTING
 				owner.engine[0].resetStatc()
 			}
 
@@ -1193,7 +1194,7 @@ abstract class NetDummyVSMode:NetDummyMode() {
 					if(netVSPlayerExist[i]&&!netVSPlayerDead[i]) {
 						netVSPlayerPlace[i] = 1
 						owner.engine[i].gameEnded()
-						owner.engine[i].stat = GameEngine.Status.EXCELLENT
+						owner.engine[i].stat = Status.EXCELLENT
 						owner.engine[i].resetStatc()
 						owner.engine[i].statistics.time = netVSPlayTimer
 						netVSNumAlivePlayers--
@@ -1208,7 +1209,7 @@ abstract class NetDummyVSMode:NetDummyMode() {
 					if(netVSPlayerExist[playerID]) {
 						netVSPlayerPlace[playerID] = 1
 						owner.engine[playerID].gameEnded()
-						owner.engine[playerID].stat = GameEngine.Status.EXCELLENT
+						owner.engine[playerID].stat = Status.EXCELLENT
 						owner.engine[playerID].resetStatc()
 						owner.engine[playerID].statistics.time = netVSPlayTimer
 						netVSNumAlivePlayers--
@@ -1248,7 +1249,7 @@ abstract class NetDummyVSMode:NetDummyMode() {
 
 				// Force start
 				if(!netVSIsWatch()&&netVSPlayTimerActive&&!netVSIsPractice&&
-					engine.stat==GameEngine.Status.READY&&engine.statc[0]<engine.goEnd)
+					engine.stat==Status.READY&&engine.statc[0]<engine.goEnd)
 					engine.statc[0] = engine.goEnd
 			}
 			// Next and Hold
@@ -1269,14 +1270,14 @@ abstract class NetDummyVSMode:NetDummyMode() {
 				listOf(1, 2, 3, 0, 4, 5), listOf(1, 2, 3, 4, 0, 5), listOf(1, 2, 3, 4, 5, 0)
 			)
 
-		/** NET-VS: Each player's garbage block cint */
+		/** NET-VS: Each player's garbage block color */
 		internal val NET_PLAYER_COLOR_BLOCK =
 			listOf(
 				Block.COLOR.RED, Block.COLOR.BLUE, Block.COLOR.GREEN, Block.COLOR.YELLOW,
 				Block.COLOR.PURPLE, Block.COLOR.CYAN
 			)
 
-		/** NET-VS: Each player's frame cint */
+		/** NET-VS: Each player's frame color-int */
 		private val NET_PLAYER_COLOR_FRAME =
 			listOf(
 				GameEngine.FRAME_COLOR_RED, GameEngine.FRAME_COLOR_BLUE, GameEngine.FRAME_COLOR_GREEN,

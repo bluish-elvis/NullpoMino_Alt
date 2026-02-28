@@ -53,7 +53,8 @@ For now, drawing is manual.
 @param big         Should it be float size?
 @param largeClear  Should it flash and actually wave?
  */
-class SideWaveText(x:Int, y:Int, val frequency:Float, val offsetWidth:Float, val text:String, val big:Boolean, val largeClear:Boolean) {
+class SideWaveText(x:Int, y:Int, val frequency:Float, val offsetWidth:Float, val text:String, val big:Boolean,
+	val largeClear:Boolean) {
 	var position = Vector(x, y)
 		private set
 	var xOffset:Float = 0f
@@ -77,8 +78,8 @@ class SideWaveText(x:Int, y:Int, val frequency:Float, val offsetWidth:Float, val
 	 *
 	 * @return A 2-long int[] in the format { x, y }
 	 */
-	val location:IntArray
-		get() = intArrayOf((position.x+xOffset).toInt(), position.y.toInt())
+	val location
+		get() = (position.x+xOffset).toInt() to position.y.toInt()
 	/**
 	 * Automatic drawing of the text object.
 	 *
@@ -88,18 +89,10 @@ class SideWaveText(x:Int, y:Int, val frequency:Float, val offsetWidth:Float, val
 	 * @param flag     true ? orange : yellow
 	 */
 	fun drawCentral(receiver:EventReceiver, engine:GameEngine, playerID:Int, flag:Boolean) {
-		val location = location
-		val x = location[0]
-		val y = location[1]
-		var color:EventReceiver.COLOR = EventReceiver.COLOR.ORANGE
-		if(flag) color = EventReceiver.COLOR.YELLOW
-		var scale = 0f
-		val baseScale:Float = if(big) 2f else 1f
-		scale = if(lifeTime<24) {
-			baseScale
-		} else {
-			baseScale-baseScale*((lifeTime-24).toFloat()/96)
-		}
+		val (x, y) = location
+		val color = if(flag) EventReceiver.COLOR.YELLOW else EventReceiver.COLOR.ORANGE
+		val baseScale = if(big) 2f else 1f
+		val scale = if(lifeTime<24) baseScale else baseScale-baseScale*((lifeTime-24).toFloat()/96)
 		GameTextUtilities.drawDirectTextAlign(
 			receiver, x, y, GameTextUtilities.ALIGN_MIDDLE_MIDDLE, text, color, scale
 		)

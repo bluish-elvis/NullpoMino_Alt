@@ -33,7 +33,7 @@ package mu.nu.nullpo.game.subsystem.mode.another
 import mu.nu.nullpo.game.component.Block
 import mu.nu.nullpo.game.component.Block.COLOR.*
 import mu.nu.nullpo.game.component.Controller
-import mu.nu.nullpo.game.event.EventReceiver
+import mu.nu.nullpo.game.event.EventReceiver.COLOR
 import mu.nu.nullpo.game.event.ScoreEvent
 import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.game.play.GameEngine.GameStyle
@@ -57,7 +57,7 @@ class Physician:AbstractMode() {
 	/** Current round's ranking position */
 	private var rankingRank = 0
 
-	/** Rankings' line counts */
+	/** Rankings' lines counts */
 	private val rankingScore = MutableList(rankingMax) {0L}
 
 	/** Rankings' times */
@@ -95,7 +95,7 @@ class Physician:AbstractMode() {
 		} else
 			loadSetting(engine, owner.replayProp)
 
-		engine.frameSkin = GameEngine.FRAME_COLOR_PURPLE
+		engine.frame = GameEngine.Frame.PURPLE
 		engine.clearMode = ColorStraight(4, false, true)
 		engine.garbageColorClear = false
 		engine.colorClearSize = 4
@@ -167,7 +167,7 @@ class Physician:AbstractMode() {
 
 	/* Render the settings screen */
 	override fun renderSetting(engine:GameEngine) {
-		drawMenu(engine, receiver, 0, EventReceiver.COLOR.BLUE, 0, "GEMS" to hoverBlocks, "SPEED" to SPEED_NAME[speed])
+		drawMenu(engine, receiver, 0, COLOR.BLUE, 0, "GEMS" to hoverBlocks, "SPEED" to SPEED_NAME[speed])
 	}
 
 	/* Called for initialization during "Ready" screen */
@@ -183,23 +183,23 @@ class Physician:AbstractMode() {
 	}
 
 	override fun renderLast(engine:GameEngine) {
-		receiver.drawScore(engine, 0, 0, name, BASE, EventReceiver.COLOR.COBALT)
+		receiver.drawScore(engine, 0, 0, name, BASE, COLOR.COBALT)
 
 		if(engine.stat==GameEngine.Status.SETTING||engine.stat==GameEngine.Status.RESULT&&!owner.replayMode) {
 			if(!owner.replayMode&&engine.ai==null) {
-				receiver.drawScore(engine, 3, 3, "SCORE  TIME", BASE, EventReceiver.COLOR.BLUE)
+				receiver.drawScore(engine, 3, 3, "SCORE  TIME", BASE, COLOR.BLUE)
 				for(i in 0..<rankingMax) {
-					receiver.drawScore(engine, 0, 4+i, "%2d".format(i+1), BASE, EventReceiver.COLOR.YELLOW)
+					receiver.drawScore(engine, 0, 4+i, "%2d".format(i+1), BASE, COLOR.YELLOW)
 					receiver.drawScore(engine, 3, 4+i, "${rankingScore[i]}", BASE, i==rankingRank)
 					receiver.drawScore(engine, 10, 4+i, rankingTime[i].toTimeStr, BASE, i==rankingRank)
 				}
 			}
 		} else {
-			receiver.drawScore(engine, 0, 3, "Score", BASE, EventReceiver.COLOR.BLUE)
+			receiver.drawScore(engine, 0, 3, "Score", BASE, COLOR.BLUE)
 			receiver.drawScore(engine, 6, 3, "(+$lastScore)", BASE)
 			receiver.drawScore(engine, 0, 4, "$scDisp", BASE)
 
-			receiver.drawScore(engine, 0, 6, "Target", BASE, EventReceiver.COLOR.BLUE)
+			receiver.drawScore(engine, 0, 6, "Target", BASE, COLOR.BLUE)
 			receiver.drawScore(engine, 0, 7, engine.field.howManyGems.toString(), BASE)
 
 			var red = 0
@@ -217,15 +217,15 @@ class Physician:AbstractMode() {
 					}
 				}
 			receiver.drawScore(engine, 0, 8, "(", BASE)
-			receiver.drawScore(engine, 1, 8, "%2d".format(red), BASE, EventReceiver.COLOR.RED)
-			receiver.drawScore(engine, 4, 8, "%2d".format(yellow), BASE, EventReceiver.COLOR.YELLOW)
-			receiver.drawScore(engine, 7, 8, "%2d".format(blue), BASE, EventReceiver.COLOR.BLUE)
+			receiver.drawScore(engine, 1, 8, "%2d".format(red), BASE, COLOR.RED)
+			receiver.drawScore(engine, 4, 8, "%2d".format(yellow), BASE, COLOR.YELLOW)
+			receiver.drawScore(engine, 7, 8, "%2d".format(blue), BASE, COLOR.BLUE)
 			receiver.drawScore(engine, 9, 8, ")", BASE)
 
-			receiver.drawScore(engine, 0, 10, "SPEED", BASE, EventReceiver.COLOR.BLUE)
+			receiver.drawScore(engine, 0, 10, "SPEED", BASE, COLOR.BLUE)
 			receiver.drawScore(engine, 0, 11, SPEED_NAME[speed], BASE, SPEED_COLOR[speed])
 
-			receiver.drawScore(engine, 0, 13, "Time", BASE, EventReceiver.COLOR.BLUE)
+			receiver.drawScore(engine, 0, 13, "Time", BASE, COLOR.BLUE)
 			receiver.drawScore(engine, 0, 14, engine.statistics.time.toTimeStr, BASE)
 		}
 	}
@@ -300,14 +300,14 @@ class Physician:AbstractMode() {
 
 	/* Render results screen */
 	override fun renderResult(engine:GameEngine) {
-		receiver.drawMenu(engine, 0, 1, "PLAY DATA", BASE, EventReceiver.COLOR.ORANGE)
+		receiver.drawMenu(engine, 0, 1, "PLAY DATA", BASE, COLOR.ORANGE)
 
 		drawResult(
-			engine, receiver, 3, EventReceiver.COLOR.BLUE, "Score", "%10d".format(engine.statistics.score),
+			engine, receiver, 3, COLOR.BLUE, "Score", "%10d".format(engine.statistics.score),
 			"CLEARED", "%10d".format(engine.statistics.lines), "Time",
 			"%10s".format(engine.statistics.time.toTimeStr)
 		)
-		drawResultRank(engine, receiver, 9, EventReceiver.COLOR.BLUE, rankingRank)
+		drawResultRank(engine, receiver, 9, COLOR.BLUE, rankingRank)
 	}
 
 	/* Called when saving replay */
@@ -389,6 +389,6 @@ class Physician:AbstractMode() {
 		private val SPEED_NAME = listOf("LOW", "MED", "HI")
 
 		/** Colors for speed settings */
-		private val SPEED_COLOR = listOf(EventReceiver.COLOR.BLUE, EventReceiver.COLOR.YELLOW, EventReceiver.COLOR.RED)
+		private val SPEED_COLOR = listOf(COLOR.BLUE, COLOR.YELLOW, COLOR.RED)
 	}
 }

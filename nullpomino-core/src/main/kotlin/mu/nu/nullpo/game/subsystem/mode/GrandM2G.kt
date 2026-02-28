@@ -80,7 +80,7 @@ class GrandM2G:AbstractGrand() {
 	/** When true, always 20G */
 	private var always20g = false
 
-	private val itemBig = BooleanMenuItem("big", "BIG", COLOR.BLUE, false)
+	private val itemBig = BooleanMenuItem("big", "BIG", COLOR.ORANGE, false)
 	/** BigMode */
 	private var big:Boolean by DelegateMenuItem(itemBig)
 
@@ -252,19 +252,19 @@ class GrandM2G:AbstractGrand() {
 		)
 	}
 
-	/* Called at game start */
-	override fun startGame(engine:GameEngine) {
+	override fun onSettingChanged(engine:GameEngine) {
 		engine.statistics.level = startLevel*100
 		nextSecLv = (engine.statistics.level+100).coerceIn(100, 999)
 		owner.bgMan.bg = engine.statistics.level/100
 		garbageCount = 13-engine.statistics.level/100
 		engine.big = big
 		if(goalType==GOALTYPE_RANDOM)
-			garbagePos = if(big)
-				engine.random.nextInt(engine.field.width/2)
-			else
-				engine.random.nextInt(engine.field.width)
+			garbagePos = engine.random.nextInt(if(big) engine.field.width/2 else engine.field.width)
 		setSpeed(engine)
+		super.onSettingChanged(engine)
+	}
+	/* Called at game start */
+	override fun startGame(engine:GameEngine) {
 		setStartBgmlv(engine)
 		owner.musMan.bgm = BGM.values[bgmLv]
 	}
@@ -276,7 +276,7 @@ class GrandM2G:AbstractGrand() {
 	override fun renderLast(engine:GameEngine) {
 		receiver.drawScore(engine, 0, 0, name, BASE, COLOR.CYAN)
 		receiver.drawScore(engine, -1, -4*2, "DECORATION", BASE, scale = .5f)
-		receiver.drawScoreBadges(engine, 0, -3, 100, decoration)
+		receiver.drawScoreBadges(engine, 0, -3, 100, owner.stats.decoration)
 		receiver.drawScoreBadges(engine, 5, -4, 100, decTemp)
 		if(engine.stat==GameEngine.Status.SETTING||engine.stat==GameEngine.Status.RESULT&&!owner.replayMode) {
 			if(!owner.replayMode&&startLevel==0&&!big&&!always20g

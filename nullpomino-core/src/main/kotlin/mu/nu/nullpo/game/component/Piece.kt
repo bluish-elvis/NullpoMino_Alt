@@ -30,74 +30,69 @@
  */
 package mu.nu.nullpo.game.component
 
-import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import mu.nu.nullpo.game.component.Piece.Companion.DIRECTION_COUNT
 import kotlin.math.roundToInt
 
 /** Blockピース
-@param id BlockピースのID */
+@param id BlockピースのShape ID */
 @Serializable
-class Piece(@SerialName("id") private var shape:Int = 0) {
-	/** ID */
+class Piece(var shape:Shape) {
+	/** Shape ID */
 	var id:Int
-		get() = shape
+		get() = shape.ordinal
 		set(value) {
-			shape = value
-			direction = DIRECTION_UP
-			big = false
-			offsetApplied = false
-			connectBlocks = true
-			block = List(maxBlock) {Block()}
-
+			shape = Shape.all[value]
+//			direction = DIRECTION_UP
+//			big = false
+//			connectBlocks = true
+//			setColor()
+//			block = List(maxBlock) {Block()}
 			resetOffsetArray()
 		}
-	val type:Shape get() = Shape.all[id]
-
 	/** Direction */
-	var direction = DIRECTION_UP
-
+	var direction = DIRECTION_UP; get() = field%DIRECTION_COUNT
 	/** BigBlock */
 	var big = false
-
 	/** Connect blocks in this piece? */
 	var connectBlocks = true
-
-	/** 相対X位置 (4Direction×nBlock) */
-	var dataX = List(DIRECTION_COUNT) {MutableList(maxBlock) {0}}
-		private set
-	/** 相対Y位置 (4Direction×nBlock) */
-	var dataY = List(DIRECTION_COUNT) {MutableList(maxBlock) {0}}
-		private set
-	/** ピースを構成するBlock (nBlock) */
-	var block = List(maxBlock) {Block()}
-
-	val map
-		get() = dataY[direction].zip(dataX[direction]).zip(block)
-			.groupBy({it.first.first}) {it.first.second to it.second}
-			.mapValues {it.value.toMap()}
-
-	/** 相対X位置と相対Y位置がオリジナル stateからずらされているならtrue */
-	var offsetApplied = false
-	/** 相対X位置のずれ幅 */
-	var dataOffsetX = MutableList(DIRECTION_COUNT) {0}
-		private set
-	/** 相対Y位置のずれ幅 */
-	var dataOffsetY = MutableList(DIRECTION_COUNT) {0}
-		private set
-
-	/*dataX = List(DIRECTION_COUNT) {IntArray(maxBlock)}
-		dataY = List(DIRECTION_COUNT) {IntArray(maxBlock)}
-		block = List(maxBlock) {Block()}
-		dataOffsetX = IntArray(DIRECTION_COUNT)
-		dataOffsetY = IntArray(DIRECTION_COUNT)*/
 	/** 1つのピースに含まれるBlockのcountを取得
 	 * @return 1つのピースに含まれるBlockのcount
 	 */
-	val maxBlock get() = DEFAULT_PIECE_DATA_X[id][direction].size
+	val maxBlock get() = shape.pos[direction].size
+	/** ピースを構成するBlock (nBlock) */
+	var block = List(maxBlock) {Block()}
+	/** 相対X位置のずれ幅 */
+	val dataOffsetX = MutableList(DIRECTION_COUNT) {0}
+	/** 相対Y位置のずれ幅 */
+	val dataOffsetY = MutableList(DIRECTION_COUNT) {0}
+	/** 相対X位置と相対Y位置がオリジナル stateからずらされているならtrue */
+	val offsetApplied get() = dataOffsetX.any {it!=0}||dataOffsetY.any {it!=0}
+	/** shape position 相対X位置と相対Y位置の配列 (4Direction×nBlock×<x,y>) */
+	private val sp:List<List<Pair<Int, Int>>>
+		get() =
+			shape.pos.mapIndexed {i, it ->
+				it.map {(x, y) ->
+					(x+dataOffsetX.getOrElse(i) {0}) to (y+dataOffsetY.getOrElse(i) {0})
+				}
+			}
+	/** 相対X位置と相対Y位置の配列をオーバーライド (4Direction×nBlock×<x,y>) */
+	var overridePos:List<MutableList<Pair<Int, Int>>>? = null
+	val pos:List<List<Pair<Int, Int>>> get() = overridePos?:sp
+	val data:List<List<Triple<Int, Int, Block>>>
+		get() = pos.map {d -> d.zip(block).map {(pos, b) -> Triple(pos.first, pos.second, b)}}
+	/** 相対X位置 (4Direction×nBlock) */
+	val dataX:List<List<Int>> get() = pos.map {b -> b.map {(x) -> x}}
+	/** 相対Y位置 (4Direction×nBlock) */
+	val dataY:List<List<Int>> get() = pos.map {b -> b.map {(_, y) -> y}}
+	/** ピースを構成するBlockの位置とBlockの対応 map (at current Direction: x:<y: Block>) */
+	val map
+		get() = sp[direction].zip(block)
+			.groupBy({(pos, _) -> pos.first}) {(pos, b) -> pos.second to b}
+			.mapValues {(_, it) -> it.toMap()}
 
 	/** Fetches the colors of the blocks in the piece
-	 * @return An int array containing the cint of each block
+	 * @return An int array containing the color of each block
 	 */
 	val colors get() = List(block.size) {block[it].cint}
 
@@ -116,8 +111,8 @@ class Piece(@SerialName("id") private var shape:Int = 0) {
 	val width get() = maximumBlockX-minimumBlockX
 	/** @return ピースの高さ*/
 	val height get() = maximumBlockY-minimumBlockY
-	val centerX get() = (width/2.0).roundToInt()
-	val centerY get() = (height/2.0).roundToInt()
+	val centerX get() = (width/2.0f).roundToInt()
+	val centerY get() = (height/2.0f).roundToInt()
 	/** @return テトラミノの最も高いBlockのX-coordinate*/
 	val minimumBlockX get() = (dataX[direction].minOrNull()?:0)*if(big) 2 else 1
 
@@ -134,13 +129,14 @@ class Piece(@SerialName("id") private var shape:Int = 0) {
 		resetOffsetArray()
 	}
 
-	/** Copy constructor from [p]
-	 */
+	/** Copy constructor from [p] */
 	constructor(p:Piece):this(p.id) {
 		replace(p)
 		updateConnectData()
 	}
 
+	constructor(id:Int = 0):this(Shape.all[id])
+	constructor():this(0)
 	/** Blockピースの dataを[p]からコピー
 	 * @param keep idを保持
 	 */
@@ -148,15 +144,12 @@ class Piece(@SerialName("id") private var shape:Int = 0) {
 		if(keep) id = p.id
 		direction = p.direction
 		big = p.big
-		offsetApplied = p.offsetApplied
 		connectBlocks = p.connectBlocks
 		block = List(p.maxBlock) {Block(p.block[it])}
 
-		dataX = p.dataX.map {it.toMutableList()}
-		dataY = p.dataY.map {it.toMutableList()}
 		block = p.block.toList()
-		dataOffsetX = p.dataOffsetX.toMutableList()
-		dataOffsetY = p.dataOffsetY.toMutableList()
+		p.dataOffsetX.forEachIndexed {i, it -> dataOffsetX[i] = it}
+		p.dataOffsetY.forEachIndexed {i, it -> dataOffsetY[i] = it}
 	}
 
 	/** すべてのBlock stateを[_blk]と同じに設定
@@ -171,7 +164,7 @@ class Piece(@SerialName("id") private var shape:Int = 0) {
 
 	/** Changes the colors of the blocks individually; allows one piece to have
 	 * blocks of multiple colors
-	 * @param color Array with each cell specifying a cint of a block
+	 * @param color Array with each cell specifying a color of a block
 	 */
 	fun setColor(color:List<*>) {
 		when(color.firstOrNull()) {
@@ -182,18 +175,18 @@ class Piece(@SerialName("id") private var shape:Int = 0) {
 
 	/** Changes the colors of the blocks individually; allows one piece to have
 	 * blocks of multiple colors
-	 * @param color Array with each cell specifying a cint of a block
+	 * @param color Array with each cell specifying a color of a block
 	 */
 	fun setColor(color:IntArray) = block.forEachIndexed {i, it -> it.cint = color[i%color.size]}
 
-	/** Sets all blocks to an inum block
-	 * @param item ID number of the inum
+	/** Sets all blocks to an item block
+	 * @param item ID number of the item
 	 */
 	fun setItem(item:Int) = block.forEach {it.iNum = item}
 
 	/** Sets the items of the blocks individually; allows one piece to have
-	 * different inum settings for each block
-	 * @param item Array with each element specifying a cint of a block
+	 * different item settings for each block
+	 * @param item Array with each element specifying a color of a block
 	 */
 	fun setItem(item:List<Int>) = block.forEachIndexed {i, it -> it.iNum = item[i%item.size]}
 
@@ -218,12 +211,12 @@ class Piece(@SerialName("id") private var shape:Int = 0) {
 	fun setElapsedFrames(elapsedFrames:Int) = block.forEach {it.elapsedFrames = elapsedFrames}
 
 	/** すべてのBlockの暗さまたは明るさを変更
-	 * @param darkness 暗さまたは明るさ (0.03だったら3%暗く, -0.05だったら5%明るい）
+	 * @param darkness 暗さまたは明るさ (0.03だったら3%暗く, -0.05だったら5%明るい)
 	 */
 	fun setDarkness(darkness:Float) = block.forEach {it.darkness = darkness}
 
 	/** すべてのBlockの透明度を変更
-	 * @param alpha 透明度 (1fで不透明, 0fで完全に透明）
+	 * @param alpha 透明度 (1fで不透明, 0fで完全に透明)
 	 */
 	fun setAlpha(alpha:Float) = block.forEach {it.alpha = alpha}
 
@@ -236,8 +229,8 @@ class Piece(@SerialName("id") private var shape:Int = 0) {
 	}
 
 	/** 相対X位置と相対Y位置をずらす
-	 * @param offsetX X位置補正量の配列 (int[DIRECTION_COUNT]）
-	 * @param offsetY Y位置補正量の配列 (int[DIRECTION_COUNT]）
+	 * @param offsetX X位置補正量の配列 (int[DIRECTION_COUNT])
+	 * @param offsetY Y位置補正量の配列 (int[DIRECTION_COUNT])
 	 */
 	fun applyOffsetArray(offsetX:List<Int>, offsetY:List<Int>) {
 		applyOffsetArrayX(offsetX)
@@ -245,38 +238,23 @@ class Piece(@SerialName("id") private var shape:Int = 0) {
 	}
 
 	/** 相対X位置をずらす
-	 * @param offsetX X位置補正量の配列 (int[DIRECTION_COUNT]）
+	 * @param offsetX X位置補正量の配列 (int[DIRECTION_COUNT])
 	 */
 	fun applyOffsetArrayX(offsetX:List<Int>) {
-		offsetApplied = true
-
-		for(i in 0..<DIRECTION_COUNT) {
-			for(j in 0..<maxBlock)
-				dataX[i][j] += offsetX[i]
-			dataOffsetX[i] += offsetX[i]
-		}
+		for(i in 0..<DIRECTION_COUNT) dataOffsetX[i] += offsetX[i]
 	}
 
 	/** 相対Y位置をずらす
-	 * @param offsetY Y位置補正量の配列 (int[DIRECTION_COUNT]）
+	 * @param offsetY Y位置補正量の配列 (int[DIRECTION_COUNT])
 	 */
 	fun applyOffsetArrayY(offsetY:List<Int>) {
-		offsetApplied = true
-
-		for(i in 0..<DIRECTION_COUNT) {
-			for(j in 0..<maxBlock)
-				dataY[i][j] += offsetY[i]
-			dataOffsetY[i] += offsetY[i]
-		}
+		for(i in 0..<DIRECTION_COUNT) dataOffsetY[i] += offsetY[i]
 	}
 
 	/** 相対X位置と相対Y位置を初期状態に戻す */
 	fun resetOffsetArray() {
-		dataX = DEFAULT_PIECE_DATA_X[id].map {it.toMutableList()}
-		dataY = DEFAULT_PIECE_DATA_Y[id].map {it.toMutableList()}
 		dataOffsetX.fill(0)
 		dataOffsetY.fill(0)
-		offsetApplied = false
 		updateConnectData()
 	}
 
@@ -291,16 +269,14 @@ class Piece(@SerialName("id") private var shape:Int = 0) {
 
 			if(connectBlocks) {
 				// 相対X位置と相対Y位置
-				val bx = dataX[direction][j]
-				val by = dataY[direction][j]
+				val (bx, by) = sp[direction][j]
 				val fx = bx+x
 				val fy = by+y
 				b.setAttribute(false, Block.ATTRIBUTE.BROKEN)
 				// 他の3つのBlockとの繋がりを調べる
 				block.forEachIndexed {k, _ ->
 					if(k!=j) {
-						val bx2 = dataX[direction][k]
-						val by2 = dataY[direction][k]
+						val (bx2, by2) = sp[direction][k]
 						if(bx==bx2&&by-1==by2) b.setAttribute(true, Block.ATTRIBUTE.CONNECT_UP) // Up
 						if(bx==bx2&&by+1==by2) b.setAttribute(true, Block.ATTRIBUTE.CONNECT_DOWN) // Down
 						if(by==by2&&bx-1==bx2) b.setAttribute(true, Block.ATTRIBUTE.CONNECT_LEFT) // 左
@@ -463,12 +439,11 @@ If the piece is big (size == 2), a 2x2 space is allotted per block. */
 			else (0..<maxBlock).any {i ->
 				val x2 = x+dataX[rt][i]
 				val y2 = y+dataY[rt][i]
-				(x2>=it.width||y2>=it.height||it.getCoordAttribute(x2, y2)==Field.COORD_WALL)
-					||(it.getCoordAttribute(x2, y2)!=Field.COORD_VANISH&&!it.getBlockEmpty(x2, y2))
+				!it.getCoordVaild(x2, y2, true)
 			}
 		}?:false
 
-	/** ピースの当たり判定 (Big用）
+	/** ピースの当たり判定 (Big用)
 	 * @param x X-coordinate
 	 * @param y Y-coordinate
 	 * @param rt Direction
@@ -484,8 +459,7 @@ If the piece is big (size == 2), a 2x2 space is allotted per block. */
 			mapOf(0 to 0, 0 to 1, 1 to 0, 1 to 1).any {(k, l) ->
 				val x3 = x2+k
 				val y3 = y2+l
-				(x3>=fld.width||y3>=fld.height||fld.getCoordAttribute(x3, y3)==Field.COORD_WALL)
-					||(fld.getCoordAttribute(x3, y3)!=Field.COORD_VANISH&&fld.getBlockEmpty(x3, y3))
+				!fld.getCoordVaild(x3, y3, true)
 			}
 		}
 	}
@@ -538,7 +512,7 @@ If the piece is big (size == 2), a 2x2 space is allotted per block. */
 	}
 
 	/** spin buttonを押したあとのピースのDirectionを取得
-	 * @param move spinDirection (-1:左 1:右 2:180度）
+	 * @param move spinDirection (-1:左 1:右 2:180度)
 	 * @param dir 元のDirection
 	 * @return spin buttonを押したあとのピースのDirection
 	 */
@@ -556,12 +530,12 @@ If the piece is big (size == 2), a 2x2 space is allotted per block. */
 	 */
 	fun canMakeRoof(x:Int, y:Int, fld:Field?):Boolean = fld?.let {
 		val rt = direction
-		dataX[rt].zip(dataY[rt]).groupBy({it.first}) {it.second}.map {(x, y) -> x to (y.maxOrNull()?:0)}
+		sp[rt].groupBy({it.first}) {it.second}.map {(x, y) -> x to (y.maxOrNull()?:0)}
 			.any {(px, py) ->
 				val x2 = x+px
 				val y2 = y+py
 				it.getCoordVaild(x2, y2)&&!it.getBlockEmpty(x2, y2)&&
-					(it.getCoordVaild(x2, y2+1)||it.getCoordAttribute(x2, y2+1)!=Field.COORD_VANISH)
+					(it.getCoordVaild(x2, y2+1)||it.getCoordAttribute(x2, y2+1)!=Field.Coord.VANISH)
 					&&it.getBlockEmpty(x2, y2+1, false)
 			}
 	}?:false
@@ -574,7 +548,7 @@ If the piece is big (size == 2), a 2x2 space is allotted per block. */
 	 */
 	fun isUnderRoof(x:Int, y:Int, fld:Field?):Boolean = fld?.let {
 		val rt = direction
-		dataX[rt].zip(dataY[rt]).groupBy({it.first}) {it.second}.map {(x, y) -> x to (y.minOrNull()?:0)}
+		sp[rt].groupBy({it.first}) {it.second}.map {(x, y) -> x to (y.minOrNull()?:0)}
 			.any {(px, py) ->
 				val x2 = x+px
 				val y2 = y+py
@@ -583,8 +557,7 @@ If the piece is big (size == 2), a 2x2 space is allotted per block. */
 	}?:false
 
 	fun finesseLimit(nowPieceX:Int):Int =
-		FINESSE_LIST.getOrNull(id)?.let {it[direction%(it.size)]}
-			?.let {it[(nowPieceX+minimumBlockX).coerceIn(0, maxOf(0, it.size-1))]}?:0
+		shape.finesse.let {it[direction%(it.size)]}.let {it[(nowPieceX+minimumBlockX).coerceIn(it.indices)]}
 
 	companion object {
 
@@ -602,106 +575,12 @@ If the piece is big (size == 2), a 2x2 space is allotted per block. */
 		val PIECE_L3 = Shape.L3.ordinal
 
 		/** 通常のBlockピースのIDのMaximumcount */
-		const val PIECE_STANDARD_COUNT = 7
+		@Deprecated("This will be moved", ReplaceWith("Piece.Shape.numTetras"))
+		val PIECE_STANDARD_COUNT = Shape.numTetras
 
 		/** BlockピースのIDのMaximumcount */
-		val PIECE_COUNT get() = Shape.all.size// = 11
-
-		/** default のBlockピースの data (X-coordinate) */
-		val DEFAULT_PIECE_DATA_X =
-			listOf(
-				listOf(listOf(0, 1, 2, 3), listOf(2, 2, 2, 2), listOf(3, 2, 1, 0), listOf(1, 1, 1, 1)), // I
-				listOf(listOf(2, 2, 1, 0), listOf(2, 1, 1, 1), listOf(0, 0, 1, 2), listOf(0, 1, 1, 1)), // L
-				listOf(listOf(0, 1, 1, 0), listOf(1, 1, 0, 0), listOf(1, 0, 0, 1), listOf(0, 0, 1, 1)), // O
-				listOf(listOf(0, 1, 1, 2), listOf(2, 2, 1, 1), listOf(2, 1, 1, 0), listOf(0, 0, 1, 1)), // Z
-				listOf(listOf(1, 0, 1, 2), listOf(2, 1, 1, 1), listOf(1, 2, 1, 0), listOf(0, 1, 1, 1)), // T
-				listOf(listOf(0, 0, 1, 2), listOf(2, 1, 1, 1), listOf(2, 2, 1, 0), listOf(0, 1, 1, 1)), // J
-				listOf(listOf(2, 1, 1, 0), listOf(2, 2, 1, 1), listOf(0, 1, 1, 2), listOf(0, 0, 1, 1)), // S
-				listOf(listOf(0), listOf(0), listOf(0), listOf(0)), // I1
-				listOf(listOf(0, 1), listOf(1, 1), listOf(1, 0), listOf(0, 0)), // I2
-				listOf(listOf(0, 1, 2), listOf(1, 1, 1), listOf(2, 1, 0), listOf(1, 1, 1)), // I3
-				listOf(listOf(1, 0, 0), listOf(0, 0, 1), listOf(0, 1, 1), listOf(1, 1, 0))// L3
-			)
-
-		/** default のBlockピースの data (Y-coordinate) */
-		val DEFAULT_PIECE_DATA_Y =
-			listOf(
-				listOf(listOf(1, 1, 1, 1), listOf(0, 1, 2, 3), listOf(2, 2, 2, 2), listOf(3, 2, 1, 0)), // I
-				listOf(listOf(0, 1, 1, 1), listOf(2, 2, 1, 0), listOf(2, 1, 1, 1), listOf(0, 0, 1, 2)), // L
-				listOf(listOf(0, 0, 1, 1), listOf(0, 1, 1, 0), listOf(1, 1, 0, 0), listOf(1, 0, 0, 1)), // O
-				listOf(listOf(0, 0, 1, 1), listOf(0, 1, 1, 2), listOf(2, 2, 1, 1), listOf(2, 1, 1, 0)), // Z
-				listOf(listOf(0, 1, 1, 1), listOf(1, 0, 1, 2), listOf(2, 1, 1, 1), listOf(1, 2, 1, 0)), // T
-				listOf(listOf(0, 1, 1, 1), listOf(0, 0, 1, 2), listOf(2, 1, 1, 1), listOf(2, 2, 1, 0)), // J
-				listOf(listOf(0, 0, 1, 1), listOf(2, 1, 1, 0), listOf(2, 2, 1, 1), listOf(0, 1, 1, 2)), // S
-				listOf(listOf(0), listOf(0), listOf(0), listOf(0)), // I1
-				listOf(listOf(0, 0), listOf(0, 1), listOf(1, 1), listOf(1, 0)), // I2
-				listOf(listOf(1, 1, 1), listOf(0, 1, 2), listOf(1, 1, 1), listOf(2, 1, 0)), // I3
-				listOf(listOf(1, 1, 0), listOf(1, 0, 0), listOf(0, 0, 1), listOf(0, 1, 1))// L3
-			)
-
-		/** 新スピン bonus用座標 dataA(X-coordinate) */
-		val SPINBONUSDATA_HIGH_X =
-			listOf(
-				listOf(listOf(1, 2, 2, 1), listOf(1, 3, 1, 3), listOf(1, 2, 2, 1), listOf(0, 2, 0, 2)), // I
-				listOf(listOf(1, 0), listOf(2, 2), listOf(1, 2), listOf(0, 0)), // L
-				listOf(listOf(), listOf(), listOf(), listOf()), // O
-				listOf(listOf(2, 0), listOf(2, 1), listOf(0, 2), listOf(0, 1)), // Z
-				listOf(listOf(0, 2), listOf(2, 2), listOf(0, 2), listOf(0, 0)), // T
-				listOf(listOf(1, 2), listOf(2, 2), listOf(1, 0), listOf(0, 0)), // J
-				listOf(listOf(0, 2), listOf(1, 2), listOf(2, 0), listOf(1, 0)), // S
-				listOf(listOf(), listOf(), listOf(), listOf()), // I1
-				listOf(listOf(), listOf(), listOf(), listOf()), // I2
-				listOf(listOf(), listOf(), listOf(), listOf()), // I3
-				listOf(listOf(), listOf(), listOf(), listOf())
-			)// L3
-
-		/** 新スピン bonus用座標 dataA(Y-coordinate) */
-		val SPINBONUSDATA_HIGH_Y =
-			listOf(
-				listOf(listOf(0, 2, 0, 2), listOf(1, 2, 2, 1), listOf(1, 3, 1, 3), listOf(1, 2, 2, 1)), // I
-				listOf(listOf(0, 0), listOf(1, 0), listOf(2, 2), listOf(1, 2)), // L
-				listOf(listOf(), listOf(), listOf(), listOf()), // O
-				listOf(listOf(0, 1), listOf(2, 0), listOf(2, 1), listOf(0, 2)), // Z
-				listOf(listOf(0, 0), listOf(0, 2), listOf(2, 2), listOf(0, 2)), // T
-				listOf(listOf(0, 0), listOf(1, 2), listOf(2, 2), listOf(1, 0)), // J
-				listOf(listOf(0, 1), listOf(2, 0), listOf(2, 1), listOf(0, 2)), // S
-				listOf(listOf(), listOf(), listOf(), listOf()), // I1
-				listOf(listOf(), listOf(), listOf(), listOf()), // I2
-				listOf(listOf(), listOf(), listOf(), listOf()), // I3
-				listOf(listOf(), listOf(), listOf(), listOf())
-			)// L3
-
-		/** 新スピン bonus用座標 dataB(X-coordinate) */
-		val SPINBONUSDATA_LOW_X =
-			listOf(
-				listOf(listOf(-1, 4, -1, 4), listOf(2, 2, 2, 2), listOf(-1, 4, -1, 4), listOf(1, 1, 1, 1)), // I
-				listOf(listOf(2, 0), listOf(0, 0), listOf(0, 2), listOf(2, 2)), // L
-				listOf(listOf(), listOf(), listOf(), listOf()), // O
-				listOf(listOf(-1, 3), listOf(2, 1), listOf(3, -1), listOf(0, 1)), // Z
-				listOf(listOf(0, 2), listOf(0, 0), listOf(0, 2), listOf(2, 2)), // T
-				listOf(listOf(0, 2), listOf(0, 0), listOf(2, 0), listOf(2, 2)), // J
-				listOf(listOf(3, -1), listOf(1, 2), listOf(-1, 3), listOf(1, 0)), // S
-				listOf(listOf(), listOf(), listOf(), listOf()), // I1
-				listOf(listOf(), listOf(), listOf(), listOf()), // I2
-				listOf(listOf(), listOf(), listOf(), listOf()), // I3
-				listOf(listOf(), listOf(), listOf(), listOf())
-			)// L3
-
-		/** 新スピン bonus用座標 dataB(Y-coordinate) */
-		val SPINBONUSDATA_LOW_Y =
-			listOf(
-				listOf(listOf(1, 1, 1, 1), listOf(-1, 4, -1, 4), listOf(2, 2, 2, 2), listOf(-1, 4, -1, 4)), // I
-				listOf(listOf(2, 2), listOf(2, 0), listOf(0, 0), listOf(0, 3)), // L
-				listOf(listOf(), listOf(), listOf(), listOf()), // O
-				listOf(listOf(0, 1), listOf(-1, 3), listOf(2, 1), listOf(3, -1)), // Z
-				listOf(listOf(2, 2), listOf(0, 2), listOf(0, 0), listOf(0, 2)), // T
-				listOf(listOf(2, 2), listOf(0, 2), listOf(0, 0), listOf(2, 0)), // J
-				listOf(listOf(0, 1), listOf(-1, 3), listOf(2, 1), listOf(3, -1)), // S
-				listOf(listOf(), listOf(), listOf(), listOf()), // I1
-				listOf(listOf(), listOf(), listOf(), listOf()), // I2
-				listOf(listOf(), listOf(), listOf(), listOf()), // I3
-				listOf(listOf(), listOf(), listOf(), listOf())
-			)// L3
+		@Deprecated("This will be moved", ReplaceWith("Piece.Shape.num"))
+		val PIECE_COUNT get() = Shape.num
 
 		/** Directionの定数 */
 		const val DIRECTION_UP = 0
@@ -713,47 +592,11 @@ If the piece is big (size == 2), a 2x2 space is allotted per block. */
 		/** DirectionのMaximumcount */
 		const val DIRECTION_COUNT = 4
 
-		val FINESSE_LIST = listOf(
-			listOf(
-				listOf(1, 2, 1, 0, 1, 2, 1),
-				listOf(2, 2, 2, 2, 1, 1, 2, 2, 2, 2),
-			), // I
-			listOf(
-				listOf(1, 2, 1, 0, 1, 2, 2, 1),
-				listOf(2, 2, 3, 2, 1, 2, 3, 3, 2),
-				listOf(3, 4, 3, 2, 3, 4, 4, 3),
-				listOf(2, 3, 2, 1, 2, 3, 3, 2, 2),
-			), // L
-			listOf(
-				listOf(1, 2, 2, 1, 0, 1, 2, 2, 1),
-			), // O
-			listOf(
-				listOf(1, 2, 1, 0, 1, 2, 2, 1),
-				listOf(2, 2, 2, 1, 1, 2, 3, 2, 2),
-			), // Z
-			listOf(
-				listOf(1, 2, 1, 0, 1, 2, 2, 1),
-				listOf(2, 2, 3, 2, 1, 2, 3, 3, 2),
-				listOf(3, 4, 3, 2, 3, 4, 4, 3),
-				listOf(2, 3, 2, 1, 2, 3, 3, 2, 2),
-			), // T
-			listOf(
-				listOf(1, 2, 1, 0, 1, 2, 2, 1),
-				listOf(2, 2, 3, 2, 1, 2, 3, 3, 2),
-				listOf(3, 4, 3, 2, 3, 4, 4, 3),
-				listOf(2, 3, 2, 1, 2, 3, 3, 2, 2),
-			), // J
-			listOf(
-				listOf(1, 2, 1, 0, 1, 2, 2, 1),
-				listOf(2, 2, 2, 1, 1, 2, 3, 2, 2),
-			), // S
-
-		)
 		/** ピース名を取得
 		 * @param id ピースID
 		 * @return ピース名(不正な場合は ? を返す)
 		 */
-		@Deprecated("This will be enumed", ReplaceWith("Shape.name", "mu.nu.nullpo.game.component.Shape"))
+		@Deprecated("This will be enumed", ReplaceWith("Piece.Shape.name"))
 		fun getPieceName(id:Int):String = if(id>=0&&id<Shape.names.size) Shape.names[id] else "?"
 
 		/** Returns true if enabled piece types are S,Z,O only.
@@ -773,23 +616,110 @@ If the piece is big (size == 2), a 2x2 space is allotted per block. */
 				var pieceID = PIECE_I
 
 				try {
-					pieceID = maxOf(0, Character.getNumericValue(strSrc[it])%PIECE_STANDARD_COUNT)
+					pieceID = maxOf(0, Character.getNumericValue(strSrc[it])%Shape.numTetras)
 				} catch(_:NumberFormatException) {
 				}
 				pieceID
 			}
 		}
+
 	}
 
 	/** BlockピースのIDの定数 */
-	enum class Shape {
-		I, L, O, Z, T, J, S, I1, I2, I3, L3;
+	enum class Shape(
+		/** ピースの相対X位置と相対Y位置の配列 (4Direction×nBlock×<x,y>) */
+		val pos:List<List<Pair<Int, Int>>>,
+		/** ピースのfinesse limit (4Direction×width) */
+		val finesse:List<List<Int>> = emptyList(),
+		/** spin bonus判定位置 (4Direction×nBlock×<highX,highY> to <lowX, lowY>) */
+		val spinBonus:List<Pair<List<Pair<Int, Int>>, List<Pair<Int, Int>>>> =
+			List(DIRECTION_COUNT) {emptyList<Pair<Int, Int>>() to emptyList()}) {
+		I(listOf(
+			listOf(0 to 1, 1 to 1, 2 to 1, 3 to 1), listOf(2 to 0, 2 to 1, 2 to 2, 2 to 3),
+			listOf(3 to 2, 2 to 2, 1 to 2, 0 to 2), listOf(1 to 3, 1 to 2, 1 to 1, 1 to 0)
+		), listOf(listOf(1, 2, 1, 0, 1, 2, 1), listOf(2, 2, 2, 2, 1, 1, 2, 2, 2, 2)), listOf(
+			listOf(1 to 0, 2 to 2, 2 to 0, 1 to 2) to listOf(-1 to 1, 4 to 1, -1 to 1, 4 to 1),
+			listOf(1 to 1, 3 to 2, 1 to 2, 3 to 1) to listOf(2 to -1, 2 to 4, 2 to -1, 2 to 4),
+			listOf(1 to 1, 2 to 3, 2 to 1, 1 to 3) to listOf(-1 to 2, 4 to 2, -1 to 2, 4 to 2),
+			listOf(0 to 1, 2 to 2, 0 to 1, 2 to 2) to listOf(1 to -1, 1 to 4, 1 to -1, 1 to 4))),
+		L(listOf(
+			listOf(2 to 0, 2 to 1, 1 to 1, 0 to 1), listOf(2 to 2, 1 to 2, 1 to 1, 1 to 0),
+			listOf(0 to 2, 0 to 1, 1 to 1, 2 to 1), listOf(0 to 0, 1 to 0, 1 to 1, 1 to 2)
+		), listOf(
+			listOf(1, 2, 1, 0, 1, 2, 2, 1), listOf(2, 2, 3, 2, 1, 2, 3, 3, 2),
+			listOf(3, 4, 3, 2, 3, 4, 4, 3), listOf(2, 3, 2, 1, 2, 3, 3, 2, 2)
+		), listOf(
+			listOf(1 to 0, 0 to 0) to listOf(2 to 2, 0 to 2),
+			listOf(1 to 0, 0 to 0) to listOf(2 to 0, 0 to 2),
+			listOf(1 to 2, 2 to 2) to listOf(0 to 0, 2 to 0),
+			listOf(0 to 0, 0 to 2) to listOf(2 to 3, 2 to 3))),
+		O(listOf(
+			listOf(0 to 0, 1 to 0, 1 to 1, 0 to 1), listOf(1 to 0, 1 to 1, 0 to 1, 0 to 0),
+			listOf(1 to 1, 0 to 1, 0 to 0, 1 to 0), listOf(0 to 1, 0 to 0, 1 to 0, 1 to 1)
+		), listOf(listOf(1, 2, 2, 1, 0, 1, 2, 2, 1))),
+		Z(listOf(
+			listOf(0 to 0, 1 to 0, 1 to 1, 2 to 1), listOf(2 to 0, 2 to 1, 1 to 1, 1 to 2),
+			listOf(2 to 2, 1 to 2, 1 to 1, 0 to 1), listOf(0 to 2, 0 to 1, 1 to 1, 1 to 0)
+		), listOf(listOf(1, 2, 1, 0, 1, 2, 2, 1), listOf(2, 2, 2, 1, 1, 2, 3, 2, 2)), listOf(
+			listOf(2 to 0, 0 to 1) to listOf(-1 to 0, 3 to 1),
+			listOf(2 to 1, 1 to 2) to listOf(2 to -1, 1 to 3),
+			listOf(0 to 2, 2 to 1) to listOf(3 to 2, -1 to 1),
+			listOf(0 to 1, 1 to 0) to listOf(0 to 3, 1 to -1))),
+		T(listOf(
+			listOf(1 to 0, 0 to 1, 1 to 1, 2 to 1), listOf(2 to 1, 1 to 0, 1 to 1, 1 to 2),
+			listOf(1 to 2, 2 to 1, 1 to 1, 0 to 1), listOf(0 to 1, 1 to 2, 1 to 1, 1 to 0)
+		), listOf(
+			listOf(1, 2, 1, 0, 1, 2, 2, 1), listOf(2, 2, 3, 2, 1, 2, 3, 3, 2),
+			listOf(3, 4, 3, 2, 3, 4, 4, 3), listOf(2, 3, 2, 1, 2, 3, 3, 2, 2)
+		), listOf(
+			listOf(0 to 0, 2 to 2) to listOf(2 to 2, 0 to 2),
+			listOf(2 to 2, 2 to 2) to listOf(0 to 2, 0 to 2),
+			listOf(0 to 2, 2 to 2) to listOf(0 to 0, 0 to 2),
+			listOf(0 to 0, 0 to 2) to listOf(2 to 2, 2 to 2))),
+		J(listOf(
+			listOf(0 to 0, 0 to 1, 1 to 1, 2 to 1), listOf(2 to 0, 1 to 0, 1 to 1, 1 to 2),
+			listOf(2 to 2, 2 to 1, 1 to 1, 0 to 1), listOf(0 to 2, 1 to 2, 1 to 1, 1 to 0)
+		), listOf(
+			listOf(1, 2, 1, 0, 1, 2, 2, 1), listOf(2, 2, 3, 2, 1, 2, 3, 3, 2),
+			listOf(3, 4, 3, 2, 3, 4, 4, 3), listOf(2, 3, 2, 1, 2, 3, 3, 2, 2)
+		), listOf(
+			listOf(1 to 2, 2 to 2) to listOf(0 to 2, 0 to 2),
+			listOf(2 to 2, 2 to 2) to listOf(0 to 2, 0 to 2),
+			listOf(1 to 0, 0 to 0) to listOf(2 to 0, 2 to 0),
+			listOf(0 to 0, 0 to 0) to listOf(2 to 2, 2 to 2))),
+		S(listOf(
+			listOf(2 to 0, 1 to 0, 1 to 1, 0 to 1), listOf(2 to 2, 2 to 1, 1 to 1, 1 to 0),
+			listOf(0 to 2, 1 to 2, 1 to 1, 2 to 1), listOf(0 to 0, 0 to 1, 1 to 1, 1 to 2)
+		), listOf(listOf(1, 2, 1, 0, 1, 2, 2, 1), listOf(2, 2, 2, 1, 1, 2, 3, 2, 2)), listOf(
+			listOf(0 to 2, 1 to 2) to listOf(3 to 0, -1 to 1),
+			listOf(1 to 2, 2 to 0) to listOf(1 to -1, 2 to 3),
+			listOf(2 to 0, 1 to 0) to listOf(-1 to 2, 3 to 1),
+			listOf(1 to 0, 0 to 0) to listOf(1 to 3, -1 to 0))),
+		I1(listOf(listOf(0 to 0), listOf(0 to 0), listOf(0 to 0), listOf(0 to 0))),
+		I2(listOf(listOf(0 to 0, 1 to 0), listOf(1 to 0, 1 to 1), listOf(1 to 1, 0 to 1), listOf(0 to 1, 0 to 0))),
+		I3(listOf(
+			listOf(0 to 1, 1 to 1, 2 to 1), listOf(1 to 0, 1 to 1, 1 to 2),
+			listOf(2 to 1, 1 to 1, 0 to 1), listOf(1 to 2, 1 to 1, 1 to 0)
+		)),
+		L3(listOf(
+			listOf(1 to 1, 0 to 1, 0 to 0), listOf(0 to 1, 0 to 0, 1 to 0),
+			listOf(0 to 0, 1 to 0, 1 to 1), listOf(1 to 0, 1 to 1, 0 to 1)
+		));
 
 		companion object {
-			val all = entries
+			val all get() = entries
+			val num get() = all.size
+			val Tetras
+				get() = entries.filter {
+					it.pos.all {a ->
+						a.size==4&&a.any {(ax, ay) ->
+							a.any {(bx, by) -> ax==bx&&(ay==by-1||ay==by+1)||ay==by&&(ax==bx-1||ax==bx+1)}
+						}
+					}
+				}
+			val numTetras get() = Tetras.size
 			val names:List<String> get() = all.map {it.name}
 			fun name(id:Int):String = all.getOrNull(id)?.name?:"?"
 		}
 	}
-
 }

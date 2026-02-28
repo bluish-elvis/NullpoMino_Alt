@@ -58,34 +58,22 @@ class ClassicLenientWallkick:Wallkick {
 	 * @param ctrl        Button input status (it may be null, when controlled by an AI)
 	 * @return WallkickResult object, or null if you don't want a kick
 	 */
-	override fun executeWallkick(x:Int, y:Int, rtDir:Int, rtOld:Int, rtNew:Int, allowUpward:Boolean, piece:Piece, field:Field,
-		ctrl:Controller?): WallkickResult? {
-		var x2:Int
-		var y2:Int
-		val wallkick = if(piece.type==Piece.Shape.I) I_WALLKICK else BASE_WALLKICK
-		for(i in wallkick.indices) {
-			x2 = if(rtDir<0||rtDir==2) {
-				wallkick[i][0]
-			} else {
-				-wallkick[i][0]
-			}
-			y2 = wallkick[i][1]
+	override fun executeWallkick(x:Int, y:Int, rtDir:Int, rtOld:Int, rtNew:Int, allowUpward:Boolean, piece:Piece,
+		field:Field, ctrl:Controller?):WallkickResult? {
+		val wallkick = if(piece.shape==Piece.Shape.I) I_WALLKICK else BASE_WALLKICK
+		for(w in wallkick) {
+			var (x2, y2) = w
 			if(piece.big) {
 				x2 *= 2
 				y2 *= 2
 			}
-			if(!piece.checkCollision(x+x2, y+y2, rtNew, field)) {
-				return WallkickResult(x2, y2, rtNew)
-			}
+			if(!piece.checkCollision(x+x2, y+y2, rtNew, field)) return WallkickResult(x2, y2, rtNew)
 		}
 		return null
 	}
 
 	companion object {
-		private val BASE_WALLKICK = arrayOf(intArrayOf(-1, 0), intArrayOf(1, 0), intArrayOf(0, 1), intArrayOf(0, -1))
-		private val I_WALLKICK = arrayOf(
-			intArrayOf(-1, 0), intArrayOf(1, 0), intArrayOf(-2, 0), intArrayOf(2, 0), intArrayOf(0, 1),
-			intArrayOf(0, -1)
-		)
+		private val BASE_WALLKICK = listOf(-1 to 0, 1 to 0, 0 to 1, 0 to -1)
+		private val I_WALLKICK = listOf(-1 to 0, 1 to 0, -2 to 0, 2 to 0, 0 to 1, 0 to -1)
 	}
 }

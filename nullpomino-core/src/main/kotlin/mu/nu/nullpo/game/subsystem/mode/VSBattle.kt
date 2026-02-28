@@ -38,6 +38,7 @@ import mu.nu.nullpo.game.event.EventReceiver
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
 import mu.nu.nullpo.game.event.ScoreEvent
 import mu.nu.nullpo.game.play.GameEngine
+import mu.nu.nullpo.game.play.GameEngine.Status
 import mu.nu.nullpo.game.play.GameManager
 import mu.nu.nullpo.gui.common.BaseFont.FONT.*
 import mu.nu.nullpo.gui.common.GameKeyDummy.Companion.MAX_PLAYERS
@@ -450,8 +451,8 @@ open class VSBattle:AbstractMode() {
 			if(menuTime>=120) engine.statc[4] = 1
 		} else // Start
 			if(owner.engine.all {it.statc[4]==1}) {
-				owner.engine[0].stat = GameEngine.Status.READY
-				owner.engine[1].stat = GameEngine.Status.READY
+				owner.engine[0].stat = Status.READY
+				owner.engine[1].stat = Status.READY
 				owner.engine[0].resetStatc()
 				owner.engine[1].resetStatc()
 			} else if(engine.ctrl.isPush(Controller.BUTTON_B)) engine.statc[4] = 0// Cancel
@@ -572,7 +573,7 @@ open class VSBattle:AbstractMode() {
 
 	/* Render score */
 	override fun renderLast(engine:GameEngine) {
-		fun col(it:Int) = EventReceiver.getPlayerColor(it)
+		fun col(it:Int) = COLOR.fromPlayerID(it)
 		// Status display
 		val pid = engine.playerID
 		if(pid==0) {
@@ -613,7 +614,7 @@ open class VSBattle:AbstractMode() {
 			garbageEntries[pid].forEachIndexed {i, (lines, playerID, time) ->
 				receiver.drawFont(
 					x+engine.fieldWidth*EventReceiver.BS, y-i*16, "$lines", NUM, when {
-						time>0&&(time/2)%2==1 -> EventReceiver.getPlayerColor(playerID)
+						time>0&&(time/2)%2==1 -> COLOR.fromPlayerID(playerID)
 						lines>=5 -> COLOR.RED
 						lines>=3 -> COLOR.ORANGE
 						lines>=1 -> COLOR.YELLOW
@@ -668,7 +669,6 @@ open class VSBattle:AbstractMode() {
 	}
 	/* Calculate score */
 	override fun calcScore(engine:GameEngine, ev:ScoreEvent):Int {
-
 		//  Attack
 		val pid = engine.playerID
 		val pts = if(ev.lines>0) {
@@ -754,7 +754,7 @@ open class VSBattle:AbstractMode() {
 
 		// Settlement
 		if(pid==1&&owner.engine[0].gameActive)
-			if(owner.engine[0].stat==GameEngine.Status.GAMEOVER&&owner.engine[1].stat==GameEngine.Status.GAMEOVER) {
+			if(owner.engine[0].stat==Status.GAMEOVER&&owner.engine[1].stat==Status.GAMEOVER) {
 				// Draw
 				winnerID = -1
 				owner.engine.forEach {
@@ -762,26 +762,26 @@ open class VSBattle:AbstractMode() {
 					it.stopSE("danger")
 				}
 				owner.musMan.bgm = BGM.Silent
-			} else if(owner.engine[0].stat!=GameEngine.Status.GAMEOVER&&owner.engine[1].stat==GameEngine.Status.GAMEOVER) {
+			} else if(owner.engine[0].stat!=Status.GAMEOVER&&owner.engine[1].stat==Status.GAMEOVER) {
 				// 1P win
 				winnerID = 0
 				owner.engine.forEach {
 					it.gameEnded()
 					it.stopSE("danger")
 				}
-				owner.engine[0].stat = GameEngine.Status.EXCELLENT
+				owner.engine[0].stat = Status.EXCELLENT
 				owner.engine[0].resetStatc()
 				owner.engine[0].statc[1] = 1
 				owner.musMan.bgm = BGM.Silent
 				if(!owner.replayMode) winCount[0]++
-			} else if(owner.engine[0].stat==GameEngine.Status.GAMEOVER&&owner.engine[1].stat!=GameEngine.Status.GAMEOVER) {
+			} else if(owner.engine[0].stat==Status.GAMEOVER&&owner.engine[1].stat!=Status.GAMEOVER) {
 				// 2P win
 				winnerID = 1
 				owner.engine.forEach {
 					it.gameEnded()
 					it.stopSE("danger")
 				}
-				owner.engine[1].stat = GameEngine.Status.EXCELLENT
+				owner.engine[1].stat = Status.EXCELLENT
 				owner.engine[1].resetStatc()
 				owner.engine[1].statc[1] = 1
 				owner.musMan.bgm = BGM.Silent
@@ -830,10 +830,10 @@ open class VSBattle:AbstractMode() {
 			/** All garbages will put-out on Once placing**/
 			OnceAll;
 		}
-		/** Each player's garbage block cint */
+		/** Each player's garbage block color */
 		private val PLAYER_COLOR_BLOCK = listOf(Block.COLOR.RED, Block.COLOR.BLUE)
 
-		/** Each player's frame cint */
+		/** Each player's frame color-int */
 		private val PLAYER_COLOR_FRAME = listOf(GameEngine.FRAME_COLOR_GREEN, GameEngine.FRAME_COLOR_BLUE)
 
 		/** Current version */

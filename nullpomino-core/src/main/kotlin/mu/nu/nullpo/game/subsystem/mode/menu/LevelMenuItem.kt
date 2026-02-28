@@ -34,7 +34,6 @@ package mu.nu.nullpo.game.subsystem.mode.menu
 import mu.nu.nullpo.game.event.EventReceiver
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
 import mu.nu.nullpo.game.play.GameEngine
-import mu.nu.nullpo.gui.common.BaseFont
 import mu.nu.nullpo.gui.common.BaseFont.FONT.*
 import mu.nu.nullpo.util.GeneralUtil.toInt
 
@@ -52,11 +51,9 @@ open class LevelMenuItem(name:String, displayName:String, color:COLOR, defaultVa
 	override fun draw(engine:GameEngine, playerID:Int, receiver:EventReceiver, y:Int, focus:Int) {
 		super.draw(engine, playerID, receiver, y, focus)
 		receiver.drawMenuSpeed(engine, 5.5f, y+.7f, (value-min)*1f/max, 5f)
-		val spd = engine.speed
+		val (g, d, are, areLine, lineDelay, lockDelay, das) = engine.speed
 		if(showG) {
 			val z = y+1+(!mini).toInt()
-			val g = spd.gravity
-			val d = spd.denominator
 			receiver.drawMenu(engine, 0, z, "SPEED", BASE, color = COLOR.WHITE)
 			receiver.drawMenuNum(engine, 1, z+1, if(g<0||d<0) engine.field.height*1f else g*1f/d, 7 to 4)
 			receiver.drawMenu(engine, 2.5f, z+1, "GRAVITY", NANO, color, .5f)
@@ -68,19 +65,19 @@ open class LevelMenuItem(name:String, displayName:String, color:COLOR, defaultVa
 			val z = y+1+(!mini).toInt()+(showG.toInt())*2
 
 			for(i in 0..1) {
-				val show = if(i==0) "ARE" to spd.are else "LINE" to spd.areLine
+				val (str, it) = if(i==0) "ARE" to are else "LINE" to areLine
 
-				receiver.drawMenu(engine, 4+i*3, z, String.format(if(i==0) "%2d/" else "%2d", show.second), NUM)
-				receiver.drawMenu(engine, 3+i*2.5f, z+.5f, show.first, NANO, color, .5f)
+				receiver.drawMenu(engine, 4+i*3, z, String.format(if(i==0) "%2d/" else "%2d", it), NUM)
+				receiver.drawMenu(engine, 3+i*2.5f, z+.5f, str, NANO, color, .5f)
 			}
 			for(i in 0..2) {
-				val show = when(i) {
-					0 -> "LINE" to spd.lineDelay
-					1 -> "LOCK" to spd.lockDelay
-					else -> " DAS" to spd.das
+				val (str, it) = when(i) {
+					0 -> "LINE" to lineDelay
+					1 -> "LOCK" to lockDelay
+					else -> " DAS" to das
 				}
-				receiver.drawMenu(engine, 8-i*3, z+1, String.format(if(i==1) "%2d+" else "%2d", show.second), NUM)
-				receiver.drawMenu(engine, 6.5f-i*3, z+1f, show.first, NANO, color, .5f)
+				receiver.drawMenu(engine, 8-i*3, z+1, String.format(if(i==1) "%2d+" else "%2d", it), NUM)
+				receiver.drawMenu(engine, 6.5f-i*3, z+1f, str, NANO, color, .5f)
 			}
 			receiver.drawMenu(engine, 0f, z*1f, "DELAYS", NANO, color, .75f)
 		}

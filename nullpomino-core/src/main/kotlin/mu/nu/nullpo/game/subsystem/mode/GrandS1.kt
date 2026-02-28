@@ -64,7 +64,7 @@ class GrandS1:AbstractGrand() {
 	/** Section Time記録表示中ならtrue */
 	private var isShowBestSectionTime = false
 
-	private val itemLevel = LevelGrandMenuItem(COLOR.BLUE)
+	private val itemLevel = LevelGrandMenuItem(COLOR.BLUE, false)
 	/** Level at start */
 	private var startLevel:Int by DelegateMenuItem(itemLevel)
 
@@ -72,7 +72,7 @@ class GrandS1:AbstractGrand() {
 	private val itemQualify = TimeMenuItem("lv500torikan", "QUALIFY", COLOR.BLUE, 12300, 0..36000)
 	private var qualify:Int by DelegateMenuItem(itemQualify)
 
-	private val itemBig = BooleanMenuItem("big", "BIG", COLOR.BLUE, false)
+	private val itemBig = BooleanMenuItem("big", "BIG", COLOR.ORANGE, false)
 	/** BigMode */
 	private var big:Boolean by DelegateMenuItem(itemBig)
 
@@ -117,7 +117,7 @@ class GrandS1:AbstractGrand() {
 		engine.b2bEnable = true
 		engine.splitB2B = true
 		engine.comboType = GameEngine.COMBO_TYPE_DOUBLE
-		engine.frameSkin = GameEngine.FRAME_COLOR_RED
+		engine.frame = GameEngine.Frame.RED
 		engine.bigHalf = true
 		engine.bigMove = true
 		engine.staffrollEnable = true
@@ -171,9 +171,16 @@ class GrandS1:AbstractGrand() {
 	}
 
 	override fun onSettingChanged(engine:GameEngine) {
+		super.onSettingChanged(engine)
 		if(qualify in 1..6150) qualify = 12300
 		if(qualify in 6151..12299) qualify = 0
-		super.onSettingChanged(engine)
+		val lv = startLevel*100
+		engine.statistics.level = lv
+		nextSecLv = (lv+100).coerceIn(100, 999)
+		setSpeed(engine)
+
+		owner.bgMan.bg = startLevel
+		engine.big = big
 	}
 
 	override fun onReady(engine:GameEngine):Boolean {
@@ -186,16 +193,8 @@ class GrandS1:AbstractGrand() {
 
 	/* Called at game start */
 	override fun startGame(engine:GameEngine) {
-		val lv = startLevel*100
-		engine.statistics.level = lv
-		nextSecLv = (lv+100).coerceIn(100, 999)
-
-		owner.bgMan.bg = engine.statistics.level/100
-
-		engine.big = big
 		decTemp = 0
-		setSpeed(engine)
-		owner.musMan.bgm = BGM.GrandA(calcBgmLv(lv))
+		owner.musMan.bgm = BGM.GrandA(calcBgmLv(startLevel*100))
 	}
 
 	override fun renderFirst(engine:GameEngine) {
@@ -206,7 +205,7 @@ class GrandS1:AbstractGrand() {
 		receiver.drawScore(engine, 0, 0, name, BASE, COLOR.RED)
 
 		receiver.drawScore(engine, -1, -4*2, "DECORATION", NANO, scale = .5f)
-		receiver.drawScoreBadges(engine, 0, -3, 100, decoration)
+		receiver.drawScoreBadges(engine, 0, -3, 100,owner.stats.decoration)
 		receiver.drawScoreBadges(engine, 5, -4, 100, decTemp)
 		if(engine.stat==GameEngine.Status.SETTING||engine.stat==GameEngine.Status.RESULT&&!owner.replayMode) {
 			if(!owner.replayMode&&startLevel==0&&!big&&engine.ai==null)
@@ -473,7 +472,7 @@ class GrandS1:AbstractGrand() {
 			engine.blockOutlineType = GameEngine.BLOCK_OUTLINE_NORMAL
 			// 裏段位
 			secretGrade = engine.field.secretGrade
-			decoration += decTemp+secretGrade
+			owner.stats.decoration += decTemp+secretGrade
 		}
 		return false
 	}
@@ -564,7 +563,7 @@ class GrandS1:AbstractGrand() {
 
 		// Update rankings
 		if(!owner.replayMode&&startLevel==0&&!big&&engine.ai==null) {
-			owner.statsProp.setProperty("decoration", decoration)
+			owner.statsProp.setProperty("decoration", owner.stats.decoration)
 			rankingRank = ranking[0].add(Rankable.GrandRow(grade, engine.statistics, medals.copy()))
 			if(medalST==3) updateBestSectionTime()
 
@@ -585,7 +584,7 @@ class GrandS1:AbstractGrand() {
 
 		/** ARE table */
 		private val tableARE = listOf(16, 12, 10, 8, 6, 4)
-		/** ARE after line clear table */
+		/** ARE after lines clear table */
 		private val tableARELine = listOf(12, 9, 7, 6, 5, 4)
 		/** Line clear times table */
 		private val tableLineDelay = listOf(12, 9, 7, 6, 5, 4)

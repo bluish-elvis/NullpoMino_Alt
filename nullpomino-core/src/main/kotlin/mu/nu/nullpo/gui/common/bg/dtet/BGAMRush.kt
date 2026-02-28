@@ -32,20 +32,22 @@
 package mu.nu.nullpo.gui.common.bg.dtet
 
 import mu.nu.nullpo.gui.common.AbstractRenderer
+import mu.nu.nullpo.gui.common.bg.AbstractBG
+import mu.nu.nullpo.util.GeneralUtil.toInt
 
-class BGAMRush<T>(res:mu.nu.nullpo.gui.common.ResourceImage<T>):mu.nu.nullpo.gui.common.bg
-.AbstractBG<T>(res) {
+class BGAMRush<T>(res:mu.nu.nullpo.gui.common.ResourceImage<T>, addBGFX:AbstractBG<*>? = null):
+	AbstractBG<T>(res, addBGFX) {
 	private var tickY = 0f
 	override fun update() {
-		tick -= 73
-		if(tick<0) tick += 640
-		tickY -= 72+(speed)
-		if(tickY<0) tickY += 480
+		super.update()
+		tick = (tick-73).mod(640)
+		tickY = (tickY-72-(speed>=1).toInt()).mod(480f)
 	}
 
 	override fun reset() {
 		tick = 0
 		tickY = 0f
+		addBGFX?.reset()
 	}
 
 	override fun draw(render:AbstractRenderer, bg:Boolean) {
@@ -54,6 +56,7 @@ class BGAMRush<T>(res:mu.nu.nullpo.gui.common.ResourceImage<T>):mu.nu.nullpo.gui
 			render.drawBlackBG(0.3f)
 			render.drawBlendAdd {drawLite()}
 		}
+		addBGFX?.draw(render, false)
 	}
 
 	override fun drawLite() {
@@ -65,7 +68,7 @@ class BGAMRush<T>(res:mu.nu.nullpo.gui.common.ResourceImage<T>):mu.nu.nullpo.gui
 
 	}
 }
-/*Case 11 'レベル200（電流）
+/*Case 11 'レベル200(電流)
 With EdG
 .X = .X - 73: If .X < 0 Then .X = .X + 640
 .Y = .Y - 72 - TA * 6: If .Y < 0 Then .Y = .Y + 480

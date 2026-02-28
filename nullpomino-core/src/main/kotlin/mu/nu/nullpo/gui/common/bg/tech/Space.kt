@@ -34,8 +34,12 @@ package mu.nu.nullpo.gui.common.bg.tech
 import zeroxfc.nullpo.custom.libs.Vector
 import kotlin.random.Random
 
-class Space():mu.nu.nullpo.gui.common.bg.AbstractBG<Nothing?>(mu.nu.nullpo.gui.common.ResourceImage.Blank) {
-	private class Star() {
+class Space:mu.nu.nullpo.gui.common.bg.AbstractBG<Nothing?>(mu.nu.nullpo.gui.common.ResourceImage.Blank) {
+	private class Star {
+		operator fun component1() = x
+		operator fun component2() = y
+		operator fun component3() = sc
+
 		var pos = Vector()
 		var vel = Vector()
 		val x get() = pos.x
@@ -43,15 +47,15 @@ class Space():mu.nu.nullpo.gui.common.bg.AbstractBG<Nothing?>(mu.nu.nullpo.gui.c
 		var sc = 0f
 		fun update(spd:Float) {
 			pos += vel*spd
-			pos.x %= 640+sc
-			pos.y %= 480+sc
+			pos.set((pos+(sc to sc)).mod(640f+sc*2, 480f+sc*2)-(sc to sc))
 		}
 	}
 
+	var vel = Vector()
 	private val children = List(256) {Star()}
 	/** Performs an update tick on the background. Advisably used in onLast.*/
 	override fun update() {
-		children.forEach {it.update(spdN)}
+		children.forEach {it.pos += vel*it.sc/2.5f; it.update(spdN)}
 		super.update()
 	}
 
@@ -62,7 +66,7 @@ class Space():mu.nu.nullpo.gui.common.bg.AbstractBG<Nothing?>(mu.nu.nullpo.gui.c
 			val s = Random.nextInt(26, 41)*.1f
 			it.sc = s*2.5f
 			it.pos.set(Random.nextFloat()*640 to Random.nextFloat()*480)
-			it.vel.set((Random.nextFloat()-.5f)*.01f*s to (Random.nextFloat()-.5f)*.01f*s)
+			it.vel.set(((Random.nextFloat()-.5f)*.01f*s to (Random.nextFloat()-.5f)*.01f*s))
 		}
 	}
 
@@ -71,8 +75,8 @@ class Space():mu.nu.nullpo.gui.common.bg.AbstractBG<Nothing?>(mu.nu.nullpo.gui.c
 		if(bg) render.drawBlackBG()
 		render.resources.imgFrags.let {img ->
 			render.drawBlendAdd {
-				children.forEach {
-					img[0].draw(it.x-it.sc/2, it.y-it.sc/2, it.x+it.sc/2, it.y+it.sc/2, .6f)
+				children.forEach {(x, y, sc) ->
+					img[0].draw(x-sc/2, y-sc/2, x+sc/2, y+sc/2, .6f)
 				}
 			}
 		}

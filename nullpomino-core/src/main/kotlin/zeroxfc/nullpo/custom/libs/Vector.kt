@@ -36,6 +36,7 @@
  */
 package zeroxfc.nullpo.custom.libs
 
+import zeroxfc.nullpo.custom.libs.MathHelper.zeroCoerce
 import kotlin.math.*
 
 /**
@@ -46,7 +47,8 @@ Generate a vector for handling directions.
  */
 class Vector @JvmOverloads constructor(sx:Float = 0f, sy:Float = 0f, isDir:Boolean = false) {
 	constructor(sx:Number, sy:Number = 0, isDir:Boolean = false):this(sx.toFloat(), sy.toFloat(), isDir)
-
+	operator fun component1() = x
+	operator fun component2() = y
 	/** X-coordinate */
 	var x = 0f
 
@@ -56,28 +58,22 @@ class Vector @JvmOverloads constructor(sx:Float = 0f, sy:Float = 0f, isDir:Boole
 	var magnitude:Float
 		get() = sqrt(x.pow(2f)+y.pow(2f))
 		set(value) {
-			x = abs(value)*cos(direction)
-			if(almostEqual(x, 0f, Float.MIN_VALUE)) x = 0f
-			y = abs(value)*sin(direction)
-			if(almostEqual(y, 0f, Float.MIN_VALUE)) y = 0f
+			x = abs(value)*cos(direction).zeroCoerce
+			y = abs(value)*sin(direction).zeroCoerce
 		}
 	/** radian */
 	var direction:Float
 		get() = atan2(y, x).let {if(it<0) it+(2f*PI).toFloat() else it}
 		set(value) {
-			x = magnitude*cos(value)
-			if(almostEqual(x, 0f, Float.MIN_VALUE)) x = 0f
-			y = magnitude*sin(value)
-			if(almostEqual(y, 0f, Float.MIN_VALUE)) y = 0f
+			x = magnitude*cos(value).zeroCoerce
+			y = magnitude*sin(value).zeroCoerce
 		}
 
 	init {
 		if(isDir) {
 			// MAGNITUDE AND DIRECTION
-			x = abs(sx)*cos(sy)
-			if(almostEqual(x, 0f, Float.MIN_VALUE)) x = 0f
-			y = abs(sx)*sin(sy)
-			if(almostEqual(y, 0f, Float.MIN_VALUE)) y = 0f
+			x = abs(sx)*cos(sy).zeroCoerce
+			y = abs(sx)*sin(sy).zeroCoerce
 		} else {
 			// CARTESIAN
 			x = sx
@@ -90,8 +86,16 @@ class Vector @JvmOverloads constructor(sx:Float = 0f, sy:Float = 0f, isDir:Boole
 
 	/** Adds [e] to this vector. */
 	operator fun plus(e:Vector):Vector = Vector(x+e.x, y+e.y)
+	@JvmName("plusPairFloat")
+	operator fun plus(e:Pair<Float,Float>):Vector = Vector(x+e.first, y+e.second)
+	@JvmName("plusPairNumber")
+	operator fun plus(e:Pair<Number,Number>):Vector = plus(e.first.toFloat() to e.second.toFloat())
 	/** Subtracts [e] from this vector.*/
 	operator fun minus(e:Vector):Vector = Vector(x-e.x, y-e.y)
+	@JvmName("minusPairFloat")
+	operator fun minus(e:Pair<Float,Float>):Vector = Vector(x-e.first, y-e.second)
+	@JvmName("minusPairNumber")
+	operator fun minus(e:Pair<Number,Number>):Vector = minus(e.first.toFloat() to e.second.toFloat())
 
 	/** Multiplies the magnitude of this vector by [e].*/
 	operator fun times(e:Int):Vector = Vector(magnitude*e, direction, true)
@@ -104,6 +108,7 @@ class Vector @JvmOverloads constructor(sx:Float = 0f, sy:Float = 0f, isDir:Boole
 	/** Spins this vector by PI radians.*/
 	operator fun unaryMinus():Vector = Vector(-x, -y)
 
+	fun mod(mx:Float,my:Float=mx):Vector = Vector(x.mod(mx), y.mod(my))
 	fun set(e:Vector) {
 		x = e.x
 		y = e.y
@@ -139,8 +144,6 @@ class Vector @JvmOverloads constructor(sx:Float = 0f, sy:Float = 0f, isDir:Boole
 		 * @return DoubleVector that treats [a] as origin and [b] as end.
 		 */
 		fun directionBetween(a:Vector, b:Vector):Float = (b-a).direction
-		// Fuzzy equals.
-		fun almostEqual(a:Float, b:Float, eps:Float):Boolean = abs(a-b)<eps
 	}
 
 	override fun toString():String = "($x, $y)"

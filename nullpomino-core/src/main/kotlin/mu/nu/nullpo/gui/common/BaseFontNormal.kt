@@ -31,7 +31,6 @@
 
 package mu.nu.nullpo.gui.common
 
-import mu.nu.nullpo.game.event.EventReceiver
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
 
 abstract class BaseFontNormal:BaseFont {
@@ -47,13 +46,13 @@ abstract class BaseFontNormal:BaseFont {
 		str.forEachIndexed {i, char ->
 
 			if(char.code==0x0A) {
-				// New line (\n)
+				// New lines (\n)
 				dy += H*scale
 				dx = x
 			} else {
 				val c = if(char.code==0x20) 96 else char.code-32// Character output
 				val a = if(char.code==0x20) alpha/3f else alpha
-				val fontColor = (if(color==COLOR.RAINBOW) EventReceiver.getRainbowColor(rainbow, i) else color).ordinal
+				val fontColor = (if(color==COLOR.RAINBOW) COLOR.getRainbowColor(rainbow, i) else color).ordinal
 				val wy = dy+if(char.isLowerCase()) 3f*scale else 0f
 
 				when {

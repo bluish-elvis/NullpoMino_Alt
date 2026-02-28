@@ -57,8 +57,8 @@ open class BooleanMenuItem(name:String, label:String, color:COLOR, defaultValue:
 		value = !value
 	}
 
-	override fun load(prop:CustomProperties, propName:String) {
-		value = prop.getProperty(propName, defaultValue)
+	override fun load(prop:CustomProperties, propName:String):Boolean = prop.getProperty(propName, defaultValue).also {
+		value = it
 	}
 
 	override fun save(prop:CustomProperties, propName:String) {

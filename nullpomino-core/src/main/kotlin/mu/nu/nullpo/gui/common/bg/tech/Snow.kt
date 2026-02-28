@@ -34,7 +34,7 @@ package mu.nu.nullpo.gui.common.bg.tech
 import zeroxfc.nullpo.custom.libs.Vector
 import kotlin.random.Random
 
-class Snow():mu.nu.nullpo.gui.common.bg.AbstractBG<Nothing?>(mu.nu.nullpo.gui.common.ResourceImage.Blank) {
+class Snow:mu.nu.nullpo.gui.common.bg.AbstractBG<Nothing?>(mu.nu.nullpo.gui.common.ResourceImage.Blank) {
 	private class Flake(x:Float, vx:Float, vy:Float, var rx:Float, var ry:Float) {
 		var pos = Vector(x, 0f)
 		var vel = Vector(vx, vy)

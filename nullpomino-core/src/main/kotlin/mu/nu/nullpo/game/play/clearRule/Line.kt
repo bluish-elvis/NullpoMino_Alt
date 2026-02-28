@@ -37,7 +37,7 @@ import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.game.play.GameEngine.Companion.COMBO_TYPE_DISABLE
 import mu.nu.nullpo.game.play.GameEngine.Companion.COMBO_TYPE_DOUBLE
 import mu.nu.nullpo.game.play.GameEngine.Companion.COMBO_TYPE_NORMAL
-import mu.nu.nullpo.game.play.GameEngine.Companion.FRAME_SKIN_SG
+import mu.nu.nullpo.game.play.GameEngine.Frame
 import mu.nu.nullpo.game.play.clearRule.ClearType.ClearResult
 import mu.nu.nullpo.gui.common.fx.PopupCombo.CHAIN
 import mu.nu.nullpo.util.GeneralUtil.filterNotNullIndexed
@@ -48,25 +48,25 @@ import kotlin.math.absoluteValue
 /** TETROMINO:clears filled lines */
 data object Line:ClearType {
 	override fun check(field:Field) = field.checkLines(false)
-	override fun flag(engine:GameEngine, field:Field) = field.checkLines(true).also {check ->
+	override fun flag(engine:GameEngine, field:Field) = field.checkLines(true, engine.big&&engine.bigHalf).also {check ->
 		engine.run {
 //			if(check.size>0) log.debug("flag.Line: {} {} {} {}", check.linesY, check.linesYfolded, check.linesSplited, check)
 			val inGame = ending==0||staffrollEnableStatistics
-			val li = check.size.let {if(big&&bigHalf) it shr 1 else it}
+			val (li) = check
 			lineClearing = li
 			split = check.linesSplited
 			if(li>0) {
 				playSE(
 					when {
 						split -> "split"
-						li>=(if(twist) 2 else if(combo>0) 3 else 4) -> "erase2"
-						li>=(if(twist) 1 else 2) -> "erase1"
-						else -> "erase0"
+						li>=(if(twist) 2 else if(combo>0) 3 else 4) -> if(frame==Frame.GB) "eraseold2" else "erase2"
+						li>=(if(twist) 1 else 2) -> if(frame==Frame.GB) "eraseold1" else "erase1"
+						else -> if(frame==Frame.GB) "eraseold0" else "erase0"
 					}
 				)
 //				lastLinesY = check.linesYfolded
 //				lastLineY = check.linesY.maxOrNull()?:0
-				if(frameSkin!=FRAME_SKIN_SG) playSE("line${li.coerceIn(1, 4)}")
+				if(frame!=Frame.SG)playSE("lines${li.coerceIn(1, 4)}")
 				if(li>=4) playSE("applause${(2+b2bCount).coerceIn(0, 4)}")
 				if(twist) {
 					playSE("twister")
@@ -109,14 +109,15 @@ data object Line:ClearType {
 						b2bCount = 0
 					}
 				} else if(b2bCount>=0&&combo<0) {
-					b2bCount = -b2bCount.absoluteValue
+					b2bCount = if(b2bCount==0) -1 else -b2bCount.absoluteValue
 					playSE("b2b_end")
 				}
 			// Combo
 			if(comboType!=COMBO_TYPE_DISABLE&&chain==0) {
-				if(comboType==COMBO_TYPE_NORMAL||comboType==COMBO_TYPE_DOUBLE&&li>=2) combo++
+				if(comboType==COMBO_TYPE_DOUBLE&&(li>=2||twist)||comboType==COMBO_TYPE_NORMAL) combo++
 				if(combo>0) {
-					playSE("combo", minOf(2f, 1f+(combo-1)/14f))
+					playSE(if(comboType==COMBO_TYPE_DOUBLE||li>=2||twist) "combo_pow" else "combo",
+						minOf(2f, 1f+(combo-1)/14f))
 					owner.receiver.addCombo(this, nowPieceX, nowPieceBottomY+b2b.toInt(), combo, CHAIN.COMBO)
 					if(inGame) if(combo>=statistics.maxCombo) statistics.maxCombo = combo
 				}
@@ -130,7 +131,7 @@ data object Line:ClearType {
 
 	override fun clear(field:Field) = field.clearLines()
 
-	fun Field.checkLines(flag:Boolean = true):ClearResult {
+	fun Field.checkLines(flag:Boolean = true, bigHalf:Boolean = false):ClearResult {
 		if(height<=0) return ClearResult()
 		/*val lines1 = (-hiddenHeight..<heightWithoutHurryupFloor).filter {
 				getRow(it).all {b -> b?.isEmpty==false&&!b.getAttribute(ATTRIBUTE.WALL)}
@@ -154,7 +155,7 @@ data object Line:ClearType {
 			}
 		}
 //		if(lines.isNotEmpty()) log.debug("clearLines {}: {}", flag, lines)
-		return ClearResult(lines.size, lines.associateWith {y ->
+		return ClearResult(lines.size.let {if(bigHalf) it shr 1 else it}, lines.associateWith {y ->
 			getRow(y).filterNotNullIndexed().associate {(x, b) -> x to b}
 		}).also {check -> if(flag) this.lastClearResult = check}
 	}

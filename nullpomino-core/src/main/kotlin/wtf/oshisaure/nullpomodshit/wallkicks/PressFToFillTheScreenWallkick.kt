@@ -45,54 +45,12 @@ import mu.nu.nullpo.game.component.Controller
 import mu.nu.nullpo.game.component.Field
 import mu.nu.nullpo.game.component.Piece
 import mu.nu.nullpo.game.event.WallkickResult
-import mu.nu.nullpo.game.subsystem.wallkick.Wallkick
-import org.apache.logging.log4j.LogManager
-import org.apache.logging.log4j.Logger
 
-class PressFToFillTheScreenWallkick:Wallkick {
+class PressFToFillTheScreenWallkick:ClassicRecoveryOnFailWallkick() {
 	override fun executeWallkick(
 		x:Int, y:Int, rtDir:Int, rtOld:Int, rtNew:Int, allowUpward:Boolean, piece:Piece, field:Field, ctrl:Controller?
-	): WallkickResult? {
-		return if(!ctrl!!.isPress(9)) {
-			null
-		} else {
-			piece.big = false
-			var blockCount = 0
-			var xi:Int
-			run {
-				var xi = 0
-				while(xi<field.width) {
-					xi = -field.hiddenHeight
-					while(xi<field.height) {
-						if(!this.isABlockOnTheField(xi, xi, field)) ++blockCount
-						++xi
-					}
-					++xi
-				}
-			}
-			piece.block = List(blockCount) {piece.block[0]}
-			piece.dataX.forEach {it.clear()}
-			piece.dataY.forEach {it.clear()}
-			blockCount = 0
-			xi = 0
-			while(xi<field.width) {
-				for(yi in -field.hiddenHeight..<field.height) {
-					if(!isABlockOnTheField(xi, yi, field)) {
-						piece.dataX.forEach {it.add(xi)}
-						piece.dataY.forEach {it.add(xi)}
-						++blockCount
-					}
-				}
-				++xi
-			}
-			WallkickResult(-x, -y, 0)
-		}
-	}
+	):WallkickResult? = if(ctrl?.isPress(Controller.BUTTON_F)?:false)
+		super.executeWallkick(x, y, rtDir, rtOld, rtNew, allowUpward, piece, field, ctrl)
+	else fallbackWallKick(x, y, rtDir, rtOld, rtNew, allowUpward, piece, field, ctrl)
 
-	fun isABlockOnTheField(x:Int, y:Int, fld:Field):Boolean =
-		x>=fld.width||y>=fld.height||fld.getCoordAttribute(x, y)==3||fld.getCoordAttribute(x, y)!=2&&fld.getBlockColor(x, y)!=null
-
-	companion object {
-		var log:Logger? = LogManager.getLogger()
-	}
 }

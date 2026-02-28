@@ -36,8 +36,8 @@ import kotlin.math.cos
 import kotlin.math.sin
 import kotlin.random.Random
 
-class Galaxy():mu.nu.nullpo.gui.common.bg.AbstractBG<Nothing?>(mu.nu.nullpo.gui.common.ResourceImage.Blank, Space()) {
-	private class Star() {
+class Galaxy:mu.nu.nullpo.gui.common.bg.AbstractBG<Nothing?>(mu.nu.nullpo.gui.common.ResourceImage.Blank, Space()) {
+	private class Star {
 		var dist:Float = 0f
 		var rev:Float = 0f
 		fun update(tick:Float) {

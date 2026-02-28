@@ -45,104 +45,33 @@ import mu.nu.nullpo.game.component.Controller
 import mu.nu.nullpo.game.component.Field
 import mu.nu.nullpo.game.component.Piece
 import mu.nu.nullpo.game.event.WallkickResult
-import mu.nu.nullpo.game.subsystem.wallkick.Wallkick
+import mu.nu.nullpo.game.subsystem.wallkick.ClassicWallkick
 import org.apache.logging.log4j.LogManager
-import org.apache.logging.log4j.Logger
 
-class ClassicRecoveryOnFailWallkick:Wallkick {
+open class ClassicRecoveryOnFailWallkick:ClassicWallkick() {
+	fun fallbackWallKick(
+		x:Int, y:Int, rtDir:Int, rtOld:Int, rtNew:Int, allowUpward:Boolean, piece:Piece, field:Field, ctrl:Controller?
+	):WallkickResult? = super.executeWallkick(x, y, rtDir, rtOld, rtNew, allowUpward, piece, field, ctrl)
+
 	override fun executeWallkick(
 		x:Int, y:Int, rtDir:Int, rtOld:Int, rtNew:Int, allowUpward:Boolean, piece:Piece, field:Field, ctrl:Controller?
-	): WallkickResult? {
-		var check = 0
-		if(piece.big) check = 1
-		return if(piece.id!=0&&(checkCollisionKick(piece, x, y, rtNew, field)||piece.id==8||piece.id==10)) {
-			var temp = 0
-			if(!piece.checkCollision(x-1-check, y, rtNew, field)) temp = -1-check
-			if(!piece.checkCollision(x+1+check, y, rtNew, field)) temp = 1+check
-			if(temp!=0) WallkickResult(temp, 0, rtNew) else {
-				var blockCount = 0
-				run {
-					var _xi = 0
-					while(_xi<10) {
-						_xi = 0
-						while(_xi<20) {
-							if(!this.isABlockOnTheField(_xi, _xi, field)) ++blockCount
-							++_xi
-						}
-						++_xi
-					}
-				}
-				piece.block = List(blockCount) {piece.block[0]}
-				piece.dataX.forEach {it.fill(0)}
-				piece.dataY.forEach {it.fill(0)}
-				blockCount = 0
-				var xi = 0
-				while(xi<field.width) {
-					for(yi in 0..<field.height) {
-						if(!isABlockOnTheField(xi, yi, field)) {
-							piece.dataX[0][blockCount] = xi
-							piece.dataX[1][blockCount] = xi
-							piece.dataX[2][blockCount] = xi
-							piece.dataX[3][blockCount] = xi
-							piece.dataY[0][blockCount] = yi
-							piece.dataY[1][blockCount] = yi
-							piece.dataY[2][blockCount] = yi
-							piece.dataY[3][blockCount] = yi
-							++blockCount
-						}
-					}
-					++xi
-				}
-				WallkickResult(-x, -y, 0)
+	):WallkickResult? {
+		return if(piece.shape!=Piece.Shape.I&&(checkCollisionKick(piece, x, y, rtNew, field)||
+				piece.shape==Piece.Shape.I2||piece.shape==Piece.Shape.L3)) {
+			val blockCount = (0..<field.width).sumOf {xi ->
+				(-field.hiddenHeight..<field.height).count {yi -> !isABlockOnTheField(xi, yi, field)}
 			}
-		} else {
-			null
-		}
+			piece.block = List(blockCount) {piece.block[0]}
+			piece.overridePos = List(Piece.DIRECTION_COUNT) {mutableListOf()}
+			for(xi in 0..<field.width) for(yi in 0..<field.height)
+				if(!isABlockOnTheField(xi, yi, field)) piece.overridePos?.forEach {it.add(xi to yi)}
+			WallkickResult(-x, -y, 0)
+		} else fallbackWallKick(x, y, rtDir, rtOld, rtNew, allowUpward, piece, field, ctrl)
 	}
 
-	private fun isABlockOnTheField(x:Int, y:Int, fld:Field):Boolean =
-		if(x>=fld.width||y>=fld.height||fld.getCoordAttribute(x, y)==3) true else
-			fld.getCoordAttribute(x, y)!=2&&fld.getBlockColor(x, y)!=null
-
-	private fun checkCollisionKick(piece:Piece, x:Int, y:Int, rt:Int, fld:Field):Boolean {
-		return if(piece.big) {
-			checkCollisionKickBig(piece, x, y, rt, fld)
-		} else {
-			for(i in 0..<piece.maxBlock) {
-				if(piece.dataX[rt][i]!=1+piece.dataOffsetX[rt]) {
-					val x2 = x+piece.dataX[rt][i]
-					val y2 = y+piece.dataY[rt][i]
-					if(x2>=fld.width) return true else
-						if(y2>=fld.height) return true else
-							if(fld.getCoordAttribute(x2, y2)==3) return true else
-								if(fld.getCoordAttribute(x2, y2)!=2&&fld.getBlockColor(x2, y2)!=null) return true
-				}
-			}
-			false
-		}
-	}
-
-	private fun checkCollisionKickBig(piece:Piece, x:Int, y:Int, rt:Int, fld:Field):Boolean {
-		for(i in 0..<piece.maxBlock) {
-			if(piece.dataX[rt][i]!=1+piece.dataOffsetX[rt]) {
-				val x2 = x+piece.dataX[rt][i]*2
-				val y2 = y+piece.dataY[rt][i]*2
-				for(k in 0..1) {
-					for(l in 0..1) {
-						val x3 = x2+k
-						val y3 = y2+l
-						if(x3>=fld.width) return true else
-							if(y3>=fld.height) return true else
-								if(fld.getCoordAttribute(x3, y3)==3) return true else
-									if(fld.getCoordAttribute(x3, y3)!=2&&fld.getBlockColor(x3, y3)!=null) return true
-					}
-				}
-			}
-		}
-		return false
-	}
+	private fun isABlockOnTheField(x:Int, y:Int, fld:Field):Boolean = !fld.getCoordVaild(x, y, true)
 
 	companion object {
-		var log:Logger? = LogManager.getLogger()
+		var log = LogManager.getLogger()
 	}
 }

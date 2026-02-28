@@ -231,9 +231,9 @@ class TLabel(w:Int, h:Int) {
 	fun remMWL(frame:MouseWheelListener?) {
 		draw.removeMouseWheelListener(frame)
 	}
-	// draw a line from (x0, y0) to (x1, y1)
+	// draw a lines from (x0, y0) to (x1, y1)
 	fun line(x0:Double, y0:Double, x1:Double, y1:Double) {
-//		System.out.println("drawing a line from " + new Point(x0, y0).toString()+ " to " + new Point(x1,y1).toString());
+//		System.out.println("drawing a lines from " + new Point(x0, y0).toString()+ " to " + new Point(x1,y1).toString());
 		offscreen.draw(Line2D.Double(scaleX(x0), scaleY(y0), scaleX(x1), scaleY(y1)))
 	}
 	// draw one pixel at (x, y)

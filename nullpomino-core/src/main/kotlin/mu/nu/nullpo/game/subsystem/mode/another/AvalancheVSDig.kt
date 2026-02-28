@@ -36,6 +36,7 @@ import mu.nu.nullpo.game.component.Controller
 import mu.nu.nullpo.game.event.EventReceiver
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
 import mu.nu.nullpo.game.play.GameEngine
+import mu.nu.nullpo.game.play.GameEngine.Status
 import mu.nu.nullpo.game.play.GameManager
 import mu.nu.nullpo.game.play.LineGravity
 import mu.nu.nullpo.game.play.clearRule.Color.Companion.clearAll
@@ -237,8 +238,8 @@ class AvalancheVSDig:AvalancheVSDummyMode() {
 			}
 		} else // Start
 			if(owner.engine[0].statc[4]==1&&owner.engine[1].statc[4]==1&&pid==1) {
-				owner.engine[0].stat = GameEngine.Status.READY
-				owner.engine[1].stat = GameEngine.Status.READY
+				owner.engine[0].stat = Status.READY
+				owner.engine[1].stat = Status.READY
 				owner.engine[0].resetStatc()
 				owner.engine[1].resetStatc()
 			} else if(engine.ctrl.isPush(Controller.BUTTON_B)) engine.statc[4] = 0// Cancel
@@ -365,7 +366,7 @@ class AvalancheVSDig:AvalancheVSDummyMode() {
 		val fldPosX = receiver.fieldX(engine)
 		val fldPosY = receiver.fieldY(engine)
 		val pid = engine.playerID
-		val playerColor = EventReceiver.getPlayerColor(pid)
+		val playerColor = COLOR.fromPlayerID(pid)
 		// Timer
 		if(pid==0) receiver.drawFont(224, 8, engine.statistics.time.toTimeStr, BASE)
 
@@ -394,7 +395,7 @@ class AvalancheVSDig:AvalancheVSDummyMode() {
 		}
 
 		if(!owner.engine[pid].gameActive) return
-		if(engine.stat!=GameEngine.Status.MOVE&&engine.stat!=GameEngine.Status.RESULT
+		if(engine.stat!=Status.MOVE&&engine.stat!=Status.RESULT
 			&&engine.gameStarted)
 			drawX(engine)
 		drawHardOjama(engine)
@@ -421,7 +422,7 @@ class AvalancheVSDig:AvalancheVSDummyMode() {
 		//Check for game over
 		engine.field.also {
 			if(!it.getBlockEmpty(2, 0)||dangerColumnDouble[pid]&&!it.getBlockEmpty(3, 0))
-				engine.stat = GameEngine.Status.GAMEOVER
+				engine.stat = Status.GAMEOVER
 		}
 		return false
 	}
@@ -437,27 +438,27 @@ class AvalancheVSDig:AvalancheVSDummyMode() {
 
 		// Settlement
 		if(pid==1&&owner.engine[0].gameActive) {
-			var p1Lose = owner.engine[0].stat==GameEngine.Status.GAMEOVER
-			if(!p1Lose&&owner.engine[1].stat!=GameEngine.Status.READY)
+			var p1Lose = owner.engine[0].stat==Status.GAMEOVER
+			if(!p1Lose&&owner.engine[1].stat!=Status.READY)
 				p1Lose = owner.engine[1].field.howManyGems==0
-			var p2Lose = owner.engine[1].stat==GameEngine.Status.GAMEOVER
-			if(!p2Lose&&owner.engine[0].stat!=GameEngine.Status.READY)
+			var p2Lose = owner.engine[1].stat==Status.GAMEOVER
+			if(!p2Lose&&owner.engine[0].stat!=Status.READY)
 				p2Lose = owner.engine[0].field.howManyGems==0
 			if(p1Lose&&p2Lose) {
 				// Draw
 				winnerID = -1
-				owner.engine[0].stat = GameEngine.Status.GAMEOVER
-				owner.engine[1].stat = GameEngine.Status.GAMEOVER
+				owner.engine[0].stat = Status.GAMEOVER
+				owner.engine[1].stat = Status.GAMEOVER
 			} else if(p2Lose) {
 				// 1P win
 				winnerID = 0
-				owner.engine[0].stat = GameEngine.Status.EXCELLENT
-				owner.engine[1].stat = GameEngine.Status.GAMEOVER
+				owner.engine[0].stat = Status.EXCELLENT
+				owner.engine[1].stat = Status.GAMEOVER
 			} else if(p1Lose) {
 				// 2P win
 				winnerID = 1
-				owner.engine[0].stat = GameEngine.Status.GAMEOVER
-				owner.engine[1].stat = GameEngine.Status.EXCELLENT
+				owner.engine[0].stat = Status.GAMEOVER
+				owner.engine[1].stat = Status.EXCELLENT
 			}
 			if(p1Lose||p2Lose) {
 				owner.engine[0].gameEnded()

@@ -36,6 +36,7 @@ import mu.nu.nullpo.game.component.Controller
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
 import mu.nu.nullpo.game.event.ScoreEvent
 import mu.nu.nullpo.game.play.GameEngine
+import mu.nu.nullpo.game.play.GameEngine.Status
 import mu.nu.nullpo.game.play.GameManager
 import mu.nu.nullpo.gui.common.BaseFont.FONT.*
 import mu.nu.nullpo.gui.common.GameKeyDummy.Companion.MAX_PLAYERS
@@ -228,8 +229,8 @@ class VSSprintLine:AbstractMode() {
 			if(menuTime>=60) engine.statc[4] = 1
 		} else // Start the game when both players are ready
 			if(owner.engine[0].statc[4]==1&&owner.engine[1].statc[4]==1&&playerID==1) {
-				owner.engine[0].stat = GameEngine.Status.READY
-				owner.engine[1].stat = GameEngine.Status.READY
+				owner.engine[0].stat = Status.READY
+				owner.engine[1].stat = Status.READY
 				owner.engine[0].resetStatc()
 				owner.engine[1].resetStatc()
 			} else if(engine.ctrl.isPush(Controller.BUTTON_B)) engine.statc[4] = 0// Cancel
@@ -349,7 +350,7 @@ class VSSprintLine:AbstractMode() {
 		// Game completed
 		if(engine.statistics.lines>=goalLines[pid]) {
 			engine.timerActive = false
-			owner.engine[enemyID].stat = GameEngine.Status.GAMEOVER
+			owner.engine[enemyID].stat = Status.GAMEOVER
 			owner.engine[enemyID].resetStatc()
 		}
 		return 0
@@ -359,28 +360,28 @@ class VSSprintLine:AbstractMode() {
 		super.onLast(engine)
 		// Game End
 		if(engine.playerID==1&&owner.engine[0].gameActive)
-			if(owner.engine[0].stat==GameEngine.Status.GAMEOVER&&owner.engine[1].stat==GameEngine.Status.GAMEOVER) {
+			if(owner.engine[0].stat==Status.GAMEOVER&&owner.engine[1].stat==Status.GAMEOVER) {
 				// Draw
 				winnerID = -1
 				owner.engine[0].gameEnded()
 				owner.engine[1].gameEnded()
 				owner.musMan.bgm = BGM.Silent
-			} else if(owner.engine[0].stat!=GameEngine.Status.GAMEOVER&&owner.engine[1].stat==GameEngine.Status.GAMEOVER) {
+			} else if(owner.engine[0].stat!=Status.GAMEOVER&&owner.engine[1].stat==Status.GAMEOVER) {
 				// 1P win
 				winnerID = 0
 				owner.engine[0].gameEnded()
 				owner.engine[1].gameEnded()
-				owner.engine[0].stat = GameEngine.Status.EXCELLENT
+				owner.engine[0].stat = Status.EXCELLENT
 				owner.engine[0].resetStatc()
 				owner.engine[0].statc[1] = 1
 				owner.musMan.bgm = BGM.Silent
 				if(!owner.replayMode) winCount[0]++
-			} else if(owner.engine[0].stat==GameEngine.Status.GAMEOVER&&owner.engine[1].stat!=GameEngine.Status.GAMEOVER) {
+			} else if(owner.engine[0].stat==Status.GAMEOVER&&owner.engine[1].stat!=Status.GAMEOVER) {
 				// 2P win
 				winnerID = 1
 				owner.engine[0].gameEnded()
 				owner.engine[1].gameEnded()
-				owner.engine[1].stat = GameEngine.Status.EXCELLENT
+				owner.engine[1].stat = Status.EXCELLENT
 				owner.engine[1].resetStatc()
 				owner.engine[1].statc[1] = 1
 				owner.musMan.bgm = BGM.Silent
@@ -414,7 +415,7 @@ class VSSprintLine:AbstractMode() {
 		/** Current version */
 		private const val CURRENT_VERSION = 0
 
-		/** Each player's frame cint */
+		/** Each player's frame color-int */
 		private val PLAYER_COLOR_FRAME = listOf(GameEngine.FRAME_COLOR_RED, GameEngine.FRAME_COLOR_BLUE)
 	}
 }

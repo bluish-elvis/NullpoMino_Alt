@@ -52,5 +52,5 @@ interface Wallkick {
 	 * @return WallkickResult object, or null if you don't want a kick
 	 */
 	fun executeWallkick(x:Int, y:Int, rtDir:Int, rtOld:Int, rtNew:Int, allowUpward:Boolean, piece:Piece,
-		field:Field, ctrl:Controller?): WallkickResult?
+		field:Field, ctrl:Controller?):WallkickResult?
 }

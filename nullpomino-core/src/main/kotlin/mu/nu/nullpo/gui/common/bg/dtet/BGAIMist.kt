@@ -35,14 +35,13 @@ import mu.nu.nullpo.gui.common.AbstractRenderer
 import kotlin.random.Random
 
 class BGAIMist<T>(bg:mu.nu.nullpo.gui.common.ResourceImage<T>):mu.nu.nullpo.gui.common.bg.AbstractBG<T>(bg) {
-	/*'（スターダスト）
+	/*'(スターダスト)
 For I = 0 To 59: StD(I) = Rnd * 152: Next I*/
 	private val py = MutableList(60) {Random.nextFloat()*152}
 	override fun update() {
+		super.update()
 		py.forEachIndexed {i, _ ->
-			py[i] += (i*.1f-2.95f)*(.5f+speed)
-			if(py[i]<0) py[i] += 152f
-			if(py[i]>=152) py[i] -= 152f
+			py[i] = (py[i]+(i*.1f-2.95f)*(.5f+spdN)).mod(152f)
 		}
 	}
 
@@ -58,7 +57,7 @@ For I = 0 To 59: StD(I) = Rnd * 152: Next I*/
 	}
 }
 
-/*Case 8 '（スターダスト）
+/*Case 8 '(スターダスト)
 For I = 0 To 59
 StD(I) = StD(I) + (I * 0.1 - 2.95) * (1 + (TrM >= 2) * 2)
 If StD(I) < 0 Then StD(I) = StD(I) + 152

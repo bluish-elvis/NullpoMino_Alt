@@ -68,10 +68,10 @@ abstract class ResourceHolder {
 	protected val File.isImage get() = isFile&&canRead()&&extension=="png"
 	open val skinDir = "res"
 
-	/** Number of image splits for block spatter animation during line clears */
+	/** Number of image splits for block spatter animation during lines clears */
 	internal val blockBreakSegments:Int = 2
 
-	/** Number of images for block spatter animation during line clears */
+	/** Number of images for block spatter animation during lines clears */
 	internal val blockBreakMax = Block.COLOR.COLOR_NUM+1
 
 	/** Number of gem block clear effects */
@@ -116,7 +116,7 @@ abstract class ResourceHolder {
 	internal open val imgFont:List<ResourceImage<*>> = listOf("_small", "", "_big").map {ResourceImageStr("font$it")}
 	internal open val imgFontNano:ResourceImage<*> = ResourceImageStr("font_nano")
 	/** Number fonts */
-	internal open val imgNum:List<ResourceImage<*>> = listOf("small", "big").map {ResourceImageStr("number_$it")}
+	internal open val imgNum:List<ResourceImage<*>> = listOf("small", "big", "tall").map {ResourceImageStr("number_$it")}
 	internal open val imgNumT:ResourceImage<*> = ResourceImageStr("number_tall")
 	/** Grade fonts */
 	internal open val imgGrade:List<ResourceImage<*>> = listOf("small", "big").map {ResourceImageStr("grade_$it")}
@@ -140,9 +140,11 @@ abstract class ResourceHolder {
 		listOf("gb", "sa", "hebo", "grade").map {ResourceImageStr("frames/$it")}
 
 	/** Field background */
-	internal open val imgFieldBG:List<ResourceImage<*>> =
-		listOf("_small", "", "_big").map {ResourceImageStr("fieldbg2$it")}
-	//public static Image imgFieldbg;
+	internal open val imgFieldBG:List<List<ResourceImage<*>>> =
+		listOf("_small", "", "_big").map {i -> (0..3).map {ResourceImageStr("fieldbg$i$it")}}
+
+	/** Field background Overlay*/
+	internal open val imgFieldBGO:ResourceImage<*> = ResourceImageStr("fieldbg")
 
 	/**Particles sprite*/
 	internal open val imgFrags:List<ResourceImage<*>> =
@@ -153,9 +155,9 @@ abstract class ResourceHolder {
 		listOf("mirr", "roll", "big", "xray", "col", "dark", "morph", "nega", "shot", "excg", "hard", "reve").map {
 			ResourceImageStr("effects/frag_$it")
 		}
-	/** Beam Spritesheets for line clears */
+	/** Beam Spritesheets for lines clears */
 	internal open val imgLine:List<ResourceImage<*>> = listOf("h", "v").map {ResourceImageStr("effects/del_$it")}
-	/** Block spatter Spritesheets for line clears */
+	/** Block spatter Spritesheets for lines clears */
 	internal open val imgBreak:List<List<ResourceImage<*>>> = List(blockBreakMax) {i ->
 		List(blockBreakSegments) {
 			ResourceImageStr("effects/break${i}_$it")
@@ -228,7 +230,7 @@ abstract class ResourceHolder {
 		imgPlayBGA.forEach {it.load()}
 	}
 
-	/** Load line clear effect images. */
+	/** Load lines clear effect images. */
 	internal fun loadLineClearEffectImages() {
 		flattenList<ResourceImage<*>>(listOf(imgBreak, imgPErase, imgHanabi, imgFrags)).forEach {it.load()}
 	}
@@ -248,13 +250,15 @@ abstract class ResourceHolder {
 		"endingstart", "excellent",
 		"bravo", "cool", "regret",
 
-		"countdown", "hurryup", "timeout",
+		"countdown", "hurryup", "timeover",
 		"stageclear", "stagefail", "matchend",
 		"gem", "bomb", "square_s", "square_g"
 	)+((0..1).flatMap {setOf("start$it", "crowd$it")}+
 		(0..2).flatMap {setOf("decide$it", "garbage$it", "erase$it", "eraseold$it", "firecracker$it")}+
 		(0..4).map {"grade$it"}+(0..5).map {"applause$it"}+
-		Piece.Shape.names.map {"piece_${it.lowercase()}"}+
-		(1..3).map {"medal$it"}+(1..4).map {"line$it"}).toSet()
+		Piece.Shape.names.map {"piece_${it.lowercase()}"}+(1..4).map {"lines$it"}+
+		setOf("spawn", "trigger", "laser").map {"item_$it"}+
+		(1..3).map {"medal$it"}+(1..5).map {"countdown$it"}+setOf(5, 10).map {"timebonus_$it"}
+		).toSet()
 
 }

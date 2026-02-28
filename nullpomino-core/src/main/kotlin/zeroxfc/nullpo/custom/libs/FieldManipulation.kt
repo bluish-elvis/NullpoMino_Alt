@@ -64,7 +64,7 @@ fun Field.delColor(color:Block.COLOR, dir:Boolean = true):Int =
 	}
 
 /**
-Erases a mino in every filled line on a field. Displays the blockbreak effect.
+Erases a mino in every filled lines on a field. Displays the blockbreak effect.
 
 @param receiver EventReceiver instance to display blockbreak effect on.
 @param engine   Current GameEngine
@@ -348,7 +348,7 @@ fun lcm(a:Int, b:Int):Int = a*b/gcd(a, b)
 /**
 Gets the number of empty blocks inside the field.
 
-@return Number of empty spaces inside (including in hidden height and clear queued line)
+@return Number of empty spaces inside (including in hidden height and clear queued lines)
  */
 val Field.getNumberOfEmptySpaces:Int
 	get() = (hiddenHeight*-1..<heightWithoutHurryupFloor).sumOf {

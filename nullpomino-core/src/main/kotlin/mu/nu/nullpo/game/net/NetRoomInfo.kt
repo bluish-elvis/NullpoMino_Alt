@@ -31,8 +31,9 @@
 package mu.nu.nullpo.game.net
 
 import mu.nu.nullpo.game.component.RuleOptions
+import mu.nu.nullpo.game.component.SpeedParam
 import java.io.Serializable
-import java.util.LinkedList
+import java.util.*
 
 /** ルーム情報 */
 class NetRoomInfo:Serializable {
@@ -48,27 +49,46 @@ class NetRoomInfo:Serializable {
 	/** 自動開始までの待機 time */
 	var autoStartSeconds = 0
 
+	var speed = SpeedParam(1, 60, 30, 30, 40, 30, 14)
 	/** 落下速度(分子) */
-	var gravity = 1
+	var gravity get() = speed.gravity
+		set(value) {
+			speed.gravity = value
+		}
 
 	/** 落下速度(分母) */
-	var denominator = 60
-
+	var denominator get() = speed.denominator
+		set(value) {
+			speed.denominator = value
+		}
 	/** ARE */
-	var are = 30
-
-	/** ARE after line clear */
-	var areLine = 30
+	var are get() = speed.are
+		set(value) {
+			speed.are = value
+		}
+	/** ARE after lines clear */
+	var areLine get() = speed.areLine
+		set(value) {
+			speed.areLine = value
+		}
 
 	/** Line clear time */
-	var lineDelay = 40
+	var lineDelay  get() = speed.lineDelay
+		set(value) {
+			speed.lineDelay = value
+		}
 
 	/** 固定 time */
-	var lockDelay = 30
+	var lockDelay get() = speed.lockDelay
+		set(value) {
+			speed.lockDelay = value
+		}
 
 	/** DAS */
-	var das = 14
-
+	var das get() = speed.das
+		set(value) {
+			speed.das = value
+		}
 	/** Flag for types of Twisters allowed (0=none, 1=normal, 2=all spin) */
 	var twistEnableType = 1
 
@@ -134,7 +154,7 @@ class NetRoomInfo:Serializable {
 	/** Rate of change of garbage holes */
 	var messiness = 100
 
-	/** Hole change style (false=line true=attack) */
+	/** Hole change style (false=lines true=attack) */
 	var garbageChangePerAttack = true
 
 	/** Divide change rate by number of live players/teams to mimic feel of
@@ -419,7 +439,8 @@ class NetRoomInfo:Serializable {
 	private fun exportStringArray():List<String> =
 		listOf(
 			"$roomID", NetUtil.urlEncode(strName), "$maxPlayers", "$playerSeatedCount", "$spectatorCount", "$playerListCount",
-			"$playing", "$ruleLock", NetUtil.urlEncode(ruleName), "$autoStartSeconds", "$gravity", "$denominator", "$are", "$areLine",
+			"$playing", "$ruleLock", NetUtil.urlEncode(ruleName), "$autoStartSeconds", "$gravity", "$denominator", "$are",
+			"$areLine",
 			"$lineDelay", "$lockDelay", "$das", "$twistEnableType", "$b2b", "$combo", "$rensaBlock", "$counter", "$bravo",
 			"$reduceLineSend", "$hurryUpSeconds", "$hurryUpInterval", "$autoStartTNET2", "$disableTimerAfterSomeoneCancelled",
 			"$useMap", "$useFractionalGarbage", "$garbageChangePerAttack", "$messiness", "", "$twistEnableEZ",
@@ -459,7 +480,7 @@ class NetRoomInfo:Serializable {
 	 * @param pInfo Player
 	 * @return ゲーム席 number(いないなら-1)
 	 */
-	fun getPlayerSeatNumber(pInfo:NetPlayerInfo):Int = playerSeat.indices.firstOrNull {playerSeat[it]===pInfo} ?: -1
+	fun getPlayerSeatNumber(pInfo:NetPlayerInfo):Int = playerSeat.indices.firstOrNull {playerSeat[it]===pInfo}?:-1
 
 	/** @return 順番待ちなしですぐにゲーム席に入れるならtrue
 	 */

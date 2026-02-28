@@ -42,14 +42,8 @@ import java.awt.event.ActionEvent
 import java.awt.event.ActionListener
 import java.awt.event.InputEvent
 import java.awt.event.KeyEvent
-import java.io.BufferedWriter
-import java.io.File
-import java.io.FileInputStream
-import java.io.FileReader
-import java.io.FileWriter
-import java.io.IOException
-import java.util.Locale
-import java.util.Vector
+import java.io.*
+import java.util.*
 import java.util.zip.GZIPInputStream
 import javax.swing.*
 import javax.swing.filechooser.FileFilter
@@ -96,7 +90,7 @@ class Sequencer:JFrame(), ActionListener {
 	private var sequence = IntArray(0)
 
 	/** Enabled Pieces */
-	private var nextPieceEnable = MutableList(Piece.PIECE_COUNT) {it<Piece.PIECE_STANDARD_COUNT}
+	private var nextPieceEnable = MutableList(Piece.Shape.num) {it<Piece.Shape.numTetras}
 
 	/** Constructor */
 	init {
@@ -137,7 +131,7 @@ class Sequencer:JFrame(), ActionListener {
 			}
 
 		// Initialize enabled pieces
-		nextPieceEnable = MutableList(Piece.PIECE_COUNT) {it<Piece.PIECE_STANDARD_COUNT}
+		nextPieceEnable = MutableList(Piece.Shape.num) {it<Piece.Shape.numTetras}
 
 		title = getUIText("Title_Sequencer")
 		defaultCloseOperation = WindowConstants.EXIT_ON_CLOSE
@@ -363,17 +357,17 @@ class Sequencer:JFrame(), ActionListener {
 	 * @param str Text
 	 * @return Translated text (If translated text is NOT available, it will return str itself)
 	 */
-	private fun getUIText(str:String):String = propLang.getProperty(str, propLangDefault.getProperty(str, str)) ?: ""
+	private fun getUIText(str:String):String = propLang.getProperty(str, propLangDefault.getProperty(str, str))?:""
 
 	/** Get int value from a [txtFld]
 	 * @return An int value from JTextField (If fails, it will return zero)
 	 */
-	private fun getIntTextField(txtFld:JTextField?):Int = txtFld?.text?.toIntOrNull() ?: 0
+	private fun getIntTextField(txtFld:JTextField?):Int = txtFld?.text?.toIntOrNull()?:0
 
 	/** Get long value from a [txtFld]
 	 * @return A long value from JTextField (If fails, it will return zero)
 	 */
-	private fun getLongTextField(txtFld:JTextField?):Long = txtFld?.text?.toLongOrNull() ?: 0L
+	private fun getLongTextField(txtFld:JTextField?):Long = txtFld?.text?.toLongOrNull()?:0L
 
 	private fun generate() {
 		val randomizerClass:Class<*>
@@ -474,8 +468,8 @@ class Sequencer:JFrame(), ActionListener {
 	private fun setPieceEnable() {
 		val setPieceEnableFrame = JFrame(getUIText("Title_SetPieceEnable"))
 		setPieceEnableFrame.contentPane.layout = GridLayout(0, 2, 10, 10)
-		val chkboxEnable = arrayOfNulls<JCheckBox>(Piece.PIECE_COUNT)
-		for(i in 0..<Piece.PIECE_COUNT) {
+		val chkboxEnable = arrayOfNulls<JCheckBox>(Piece.Shape.num)
+		for(i in 0..<Piece.Shape.num) {
 			chkboxEnable[i] = JCheckBox("Piece ${getUIText("PieceName$i")}").apply {
 				isSelected = nextPieceEnable[i]
 			}
@@ -484,8 +478,8 @@ class Sequencer:JFrame(), ActionListener {
 		//if(Piece.PIECE_COUNT%2==0) setPieceEnableFrame.getContentPane().add(new JLabel(""));
 		val btnConfirm = JButton(getUIText("Button_Confirm"))
 		btnConfirm.addActionListener {
-			for(i in 0..<Piece.PIECE_COUNT)
-				nextPieceEnable[i] = chkboxEnable[i]?.isSelected ?: false
+			for(i in 0..<Piece.Shape.num)
+				nextPieceEnable[i] = chkboxEnable[i]?.isSelected?:false
 			setPieceEnableFrame.dispose()
 		}
 		setPieceEnableFrame.contentPane.add(btnConfirm)

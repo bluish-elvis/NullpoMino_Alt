@@ -46,7 +46,8 @@ class BGAKVWave<T>(bg:mu.nu.nullpo.gui.common.ResourceImage<T>):mu.nu.nullpo.gui
 		}
 
 	override fun update() {
-		t += 1+speed
+		super.update()
+		t += 1+spdN
 //		bg.rotation = t*.04f
 //		bg.setCenterOfRotation(cx, cy)
 		while(t>=360/.04f) t -= 360

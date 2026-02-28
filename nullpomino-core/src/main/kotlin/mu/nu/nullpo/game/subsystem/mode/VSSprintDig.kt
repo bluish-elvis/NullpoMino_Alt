@@ -33,17 +33,18 @@ package mu.nu.nullpo.game.subsystem.mode
 
 import mu.nu.nullpo.game.component.BGM
 import mu.nu.nullpo.game.component.Block
-import mu.nu.nullpo.game.component.Block.COLOR
 import mu.nu.nullpo.game.component.Controller
-import mu.nu.nullpo.game.event.EventReceiver
+import mu.nu.nullpo.game.event.EventReceiver.COLOR
 import mu.nu.nullpo.game.event.ScoreEvent
 import mu.nu.nullpo.game.play.GameEngine
+import mu.nu.nullpo.game.play.GameEngine.Status
 import mu.nu.nullpo.game.play.GameManager
 import mu.nu.nullpo.gui.common.BaseFont.FONT.*
 import mu.nu.nullpo.gui.common.GameKeyDummy.Companion.MAX_PLAYERS
 import mu.nu.nullpo.util.CustomProperties
 import mu.nu.nullpo.util.GeneralUtil.toTimeStr
 import kotlin.random.Random
+import mu.nu.nullpo.game.component.Block.COLOR as BCOLOR
 
 /** VS-DIG RACE mode */
 class VSSprintDig:AbstractMode() {
@@ -234,8 +235,8 @@ class VSSprintDig:AbstractMode() {
 			if(menuTime>=120) engine.statc[4] = 1
 		} else // Start the game when both players are ready
 			if(owner.engine[0].statc[4]==1&&owner.engine[1].statc[4]==1&&pid==1) {
-				owner.engine[0].stat = GameEngine.Status.READY
-				owner.engine[1].stat = GameEngine.Status.READY
+				owner.engine[0].stat = Status.READY
+				owner.engine[1].stat = Status.READY
 				owner.engine[0].resetStatc()
 				owner.engine[1].resetStatc()
 			} else if(engine.ctrl.isPush(Controller.BUTTON_B)) engine.statc[4] = 0// Cancel
@@ -248,22 +249,22 @@ class VSSprintDig:AbstractMode() {
 		if(engine.statc[4]==0) {
 			val pid = engine.playerID
 			if(menuCursor<9) {
-				drawMenuSpeeds(engine, receiver, 0, EventReceiver.COLOR.ORANGE, 0)
+				drawMenuSpeeds(engine, receiver, 0, COLOR.ORANGE, 0)
 				drawMenu(
-					engine, receiver, 14, EventReceiver.COLOR.GREEN, 7,
+					engine, receiver, 14, COLOR.GREEN, 7,
 					"LOAD" to presetNumber[pid], "SAVE" to presetNumber[pid]
 				)
 			} else {
 				drawMenu(
-					engine, receiver, 0, EventReceiver.COLOR.CYAN, 9,
+					engine, receiver, 0, COLOR.CYAN, 9,
 					"GOAL" to goalLines[pid],
 					"CHANGERATE" to "${messiness[pid]}%",
 					"SE" to enableSE[pid]
 				)
-				drawMenu(engine, receiver, 6, EventReceiver.COLOR.PINK, 12, "BGM" to BGM.values[bgmId])
+				drawMenu(engine, receiver, 6, COLOR.PINK, 12, "BGM" to BGM.values[bgmId])
 			}
 		} else
-			receiver.drawMenu(engine, 3, 10, "WAIT", BASE, EventReceiver.COLOR.YELLOW)
+			receiver.drawMenu(engine, 3, 10, "WAIT", BASE, COLOR.YELLOW)
 	}
 
 	/* Ready */
@@ -305,13 +306,12 @@ class VSSprintDig:AbstractMode() {
 				hole = newHole
 			}
 
-			var prevColor:COLOR? = null
+			var prevColor:BCOLOR? = null
 			for(x:Int in 0..<w)
 				if(x!=hole) {
-					var color:COLOR = COLOR.WHITE
+					var color = BCOLOR.WHITE
 					if(y==h-1) {
-						do
-							color = COLOR.all[1+engine.random.nextInt(7)]
+						do color = BCOLOR.all[1+engine.random.nextInt(7)]
 						while(color==prevColor)
 						prevColor = color
 					}
@@ -368,11 +368,11 @@ class VSSprintDig:AbstractMode() {
 		val y = receiver.fieldY(engine)
 
 		val remainLines = maxOf(0, getRemainGarbageLines(engine))
-		val fontColor = when (remainLines) {
-			in 1..4 -> EventReceiver.COLOR.RED
-			in 5..8 -> EventReceiver.COLOR.ORANGE
-			in 9..14 -> EventReceiver.COLOR.YELLOW
-			else -> EventReceiver.COLOR.WHITE
+		val fontColor = when(remainLines) {
+			in 1..4 -> COLOR.RED
+			in 5..8 -> COLOR.ORANGE
+			in 9..14 -> COLOR.YELLOW
+			else -> COLOR.WHITE
 		}
 
 		val enemyRemainLines = maxOf(0, getRemainGarbageLines(owner.engine[enemyID]))
@@ -396,32 +396,32 @@ class VSSprintDig:AbstractMode() {
 
 		// 1st/2nd
 		if(remainLines<enemyRemainLines)
-			receiver.drawMenu(engine, -3, 22, "1ST", BASE, EventReceiver.COLOR.ORANGE)
-		else if(remainLines>enemyRemainLines) receiver.drawMenu(engine, -3, 22, "2ND", BASE, EventReceiver.COLOR.WHITE)
+			receiver.drawMenu(engine, -3, 22, "1ST", BASE, COLOR.ORANGE)
+		else if(remainLines>enemyRemainLines) receiver.drawMenu(engine, -3, 22, "2ND", BASE, COLOR.WHITE)
 
 		// Timer
 		if(pid==0) receiver.drawFont(256, 16, engine.statistics.time.toTimeStr, BASE)
 
 		// Normal layout
 		if(owner.receiver.nextDisplayType!=2&&pid==0) {
-			receiver.drawScore(engine, 0, 2, "1P LINES", BASE, EventReceiver.COLOR.RED)
+			receiver.drawScore(engine, 0, 2, "1P LINES", BASE, COLOR.RED)
 			receiver.drawScore(engine, 0, 3, owner.engine[0].statistics.lines.toString(), BASE)
 
-			receiver.drawScore(engine, 0, 5, "2P LINES", BASE, EventReceiver.COLOR.BLUE)
+			receiver.drawScore(engine, 0, 5, "2P LINES", BASE, COLOR.BLUE)
 			receiver.drawScore(engine, 0, 6, owner.engine[1].statistics.lines.toString(), BASE)
 
 			if(!owner.replayMode) {
-				receiver.drawScore(engine, 0, 8, "1P WINS", BASE, EventReceiver.COLOR.RED)
+				receiver.drawScore(engine, 0, 8, "1P WINS", BASE, COLOR.RED)
 				receiver.drawScore(engine, 0, 9, "${winCount[0]}", BASE)
 
-				receiver.drawScore(engine, 0, 11, "2P WINS", BASE, EventReceiver.COLOR.BLUE)
+				receiver.drawScore(engine, 0, 11, "2P WINS", BASE, COLOR.BLUE)
 				receiver.drawScore(engine, 0, 12, "${winCount[1]}", BASE)
 			}
 		}
 
 		// Big-side-next layout
 		if(owner.receiver.nextDisplayType==2) {
-			val fontColor2 = if(pid==0) EventReceiver.COLOR.RED else EventReceiver.COLOR.BLUE
+			val fontColor2 = if(pid==0) COLOR.RED else COLOR.BLUE
 
 			if(!owner.replayMode) {
 				receiver.drawFont(x-44, y+190, "WINS", BASE, fontColor2, .5f)
@@ -442,7 +442,7 @@ class VSSprintDig:AbstractMode() {
 		// Game completed
 		if(ev.lines>0&&remainLines<=0) {
 			engine.timerActive = false
-			owner.engine[enemyID].stat = GameEngine.Status.GAMEOVER
+			owner.engine[enemyID].stat = Status.GAMEOVER
 			owner.engine[enemyID].resetStatc()
 		}
 		return 0
@@ -452,28 +452,28 @@ class VSSprintDig:AbstractMode() {
 		super.onLast(engine)
 		// Game End
 		if(engine.playerID==1&&owner.engine[0].gameActive)
-			if(owner.engine[0].stat==GameEngine.Status.GAMEOVER&&owner.engine[1].stat==GameEngine.Status.GAMEOVER) {
+			if(owner.engine[0].stat==Status.GAMEOVER&&owner.engine[1].stat==Status.GAMEOVER) {
 				// Draw
 				winnerID = -1
 				owner.engine[0].gameEnded()
 				owner.engine[1].gameEnded()
 				owner.musMan.bgm = BGM.Silent
-			} else if(owner.engine[0].stat!=GameEngine.Status.GAMEOVER&&owner.engine[1].stat==GameEngine.Status.GAMEOVER) {
+			} else if(owner.engine[0].stat!=Status.GAMEOVER&&owner.engine[1].stat==Status.GAMEOVER) {
 				// 1P win
 				winnerID = 0
 				owner.engine[0].gameEnded()
 				owner.engine[1].gameEnded()
-				owner.engine[0].stat = GameEngine.Status.EXCELLENT
+				owner.engine[0].stat = Status.EXCELLENT
 				owner.engine[0].resetStatc()
 				owner.engine[0].statc[1] = 1
 				owner.musMan.bgm = BGM.Silent
 				if(!owner.replayMode) winCount[0]++
-			} else if(owner.engine[0].stat==GameEngine.Status.GAMEOVER&&owner.engine[1].stat!=GameEngine.Status.GAMEOVER) {
+			} else if(owner.engine[0].stat==Status.GAMEOVER&&owner.engine[1].stat!=Status.GAMEOVER) {
 				// 2P win
 				winnerID = 1
 				owner.engine[0].gameEnded()
 				owner.engine[1].gameEnded()
-				owner.engine[1].stat = GameEngine.Status.EXCELLENT
+				owner.engine[1].stat = Status.EXCELLENT
 				owner.engine[1].resetStatc()
 				owner.engine[1].statc[1] = 1
 				owner.musMan.bgm = BGM.Silent
@@ -483,14 +483,14 @@ class VSSprintDig:AbstractMode() {
 
 	/* Render results screen */
 	override fun renderResult(engine:GameEngine) {
-		receiver.drawMenu(engine, 0, 0, "RESULT", BASE, EventReceiver.COLOR.ORANGE)
+		receiver.drawMenu(engine, 0, 0, "RESULT", BASE, COLOR.ORANGE)
 		when(winnerID) {
-			-1 -> receiver.drawMenu(engine, 6, 1, "DRAW", BASE, EventReceiver.COLOR.GREEN)
-			engine.playerID -> receiver.drawMenu(engine, 6, 1, "WIN!", BASE, EventReceiver.COLOR.YELLOW)
-			else -> receiver.drawMenu(engine, 6, 1, "LOSE", BASE, EventReceiver.COLOR.WHITE)
+			-1 -> receiver.drawMenu(engine, 6, 1, "DRAW", BASE, COLOR.GREEN)
+			engine.playerID -> receiver.drawMenu(engine, 6, 1, "WIN!", BASE, COLOR.YELLOW)
+			else -> receiver.drawMenu(engine, 6, 1, "LOSE", BASE, COLOR.WHITE)
 		}
 		drawResultStats(
-			engine, receiver, 2, EventReceiver.COLOR.ORANGE, Statistic.LINES, Statistic.PIECE, Statistic.LPM, Statistic.PPS,
+			engine, receiver, 2, COLOR.ORANGE, Statistic.LINES, Statistic.PIECE, Statistic.LPM, Statistic.PPS,
 			Statistic.TIME
 		)
 	}
@@ -507,7 +507,7 @@ class VSSprintDig:AbstractMode() {
 		/** Current version */
 		private const val CURRENT_VERSION = 0
 
-		/** Each player's frame cint */
+		/** Each player's frame color-int */
 		private val PLAYER_COLOR_FRAME = listOf(GameEngine.FRAME_COLOR_RED, GameEngine.FRAME_COLOR_BLUE)
 	}
 }

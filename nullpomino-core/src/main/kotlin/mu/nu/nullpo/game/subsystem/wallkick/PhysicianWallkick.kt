@@ -39,17 +39,13 @@ import mu.nu.nullpo.game.event.WallkickResult
 class PhysicianWallkick:Wallkick {
 	/* Wallkick */
 	override fun executeWallkick(x:Int, y:Int, rtDir:Int, rtOld:Int, rtNew:Int, allowUpward:Boolean, piece:Piece,
-		field:Field, ctrl:Controller?): WallkickResult? {
-		var check = 1
-		if(piece.big) check = 2
-
-		if(!piece.checkCollision(x, y, rtNew, field)) return null
-		when(rtNew) {
-			Piece.DIRECTION_UP, Piece.DIRECTION_DOWN -> if(!piece.checkCollision(x-check, y, rtNew, field))
-				return WallkickResult(-1*check, 0, rtNew)
-			Piece.DIRECTION_LEFT, Piece.DIRECTION_RIGHT -> if(!piece.checkCollision(x+check, y, rtNew, field))
-				return WallkickResult(check, 0, rtNew)
-		}
-		return null
+		field:Field, ctrl:Controller?):WallkickResult? = (if(piece.big) 2 else 1).let {check ->
+		return if(!piece.checkCollision(x, y, rtNew, field)) null
+		else if((rtNew==Piece.DIRECTION_UP||rtNew==Piece.DIRECTION_DOWN)&&!piece.checkCollision(x-check, y, rtNew, field))
+			WallkickResult(-1*check, 0, rtNew)
+		else if((rtNew==Piece.DIRECTION_LEFT||rtNew==Piece.DIRECTION_RIGHT)&&!piece.checkCollision(x+check, y, rtNew, field))
+			WallkickResult(check, 0, rtNew)
+		else null
 	}
 }
+

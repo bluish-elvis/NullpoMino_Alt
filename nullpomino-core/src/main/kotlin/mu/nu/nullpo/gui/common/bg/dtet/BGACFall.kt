@@ -35,7 +35,7 @@ import mu.nu.nullpo.gui.common.AbstractRenderer
 import kotlin.random.Random
 
 class BGACFall<T>(bg:mu.nu.nullpo.gui.common.ResourceImage<T>):mu.nu.nullpo.gui.common.bg.AbstractBG<T>(bg) {
-	/*'（紫空）
+	/*'(紫空)
 PSkD(0) = 0: PSkD(1) = 24: PSkD(2) = 72: PSkD(3) = 144
 PSkD(4) = 240: PSkD(5) = 336: PSkD(6) = 408: PSkD(7) = 456
 PSkS1(0) = 0: PSkS2(0) = 24
@@ -57,9 +57,8 @@ PSkP = Rnd*/
 		}
 
 	override fun update() {
-		py += .01f+speed*.03f*if(speed>=1.5f) -1 else 1
-		if(py<0) py += 1
-		if(py>=1) py -= 1
+		super.update()
+		py = (py+(.01f+spdN*.03f*if(speed>=1.5f) -1 else 1)).mod(1f)
 	}
 
 	override fun reset() {
@@ -69,8 +68,7 @@ PSkP = Rnd*/
 	override fun draw(render:AbstractRenderer, bg:Boolean) {
 		dy.zip(dh).forEachIndexed {i, (d, second) ->
 			val r = ((i%2)+py*2).let {it+if(it<0) 2 else 0}%2
-			val s1 = second.first
-			val s2 = second.second
+			val (s1,s2) = second
 			val sy = s1+r*s2
 			if(r<1) img.draw(0f, 0f+d, 0f, sy, 640f, sy+s2)
 			else {
@@ -80,7 +78,7 @@ PSkP = Rnd*/
 		}
 	}
 }
-/*Case 2 '（紫空）
+/*Case 2 '(紫空)
 For I = 0 To 7
 R = (I Mod 2) + PSkP * 2: If R >= 2 Then R = R - 2
 If R < 1 Then

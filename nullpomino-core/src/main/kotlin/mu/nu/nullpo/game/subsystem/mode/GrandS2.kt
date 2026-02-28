@@ -47,10 +47,6 @@ import mu.nu.nullpo.util.GeneralUtil.toTimeStr
 
 /** SPEED MANIA 2 Mode */
 class GrandS2:AbstractGrand() {
-	/** Number of sections */
-	override val sectionMax = 13
-
-	override val medalSKQuads = listOf(listOf(5, 10, 17, 25), listOf(1, 2, 4, 6))
 
 	/** 最終結果などに表示される実際の段位 */
 	private var grade = 0
@@ -79,6 +75,11 @@ class GrandS2:AbstractGrand() {
 	/** Section Time記録表示中ならtrue */
 	private var isShowBestSectionTime = false
 
+	/** Number of sections */
+	override val sectionMax get() = tableSectionMax[goalType]
+
+	override val medalSKQuads = listOf(listOf(5, 10, 17, 25), listOf(1, 2, 4, 6))
+
 	private val itemGoal = StringsMenuItem(
 		"goalType", "GOAL", COLOR.BLUE, 0,
 		tableGoalLevel.map {"$it LEVEL"}
@@ -86,15 +87,15 @@ class GrandS2:AbstractGrand() {
 	/** Game type  */
 	private var goalType:Int by DelegateMenuItem(itemGoal)
 
-	private val itemLevel = LevelGrandMenuItem(COLOR.BLUE, sectionMax)
+	private val itemLevel = LevelGrandMenuItem(COLOR.BLUE, sectionMax, false)
 	/** Level at start */
 	private var startLevel:Int by DelegateMenuItem(itemLevel)
 
 	/** LV500の足切りTime */
-	private val itemQualify = TimeMenuItem("lv500torikan", "QUALIFY", COLOR.BLUE, 12300, 0..72000)
+	private val itemQualify = TimeMenuItem("lv500torikan", "QUALIFY", COLOR.BLUE, DEFAULT_TORIKAN, 0..72000)
 	private var qualify:Int by DelegateMenuItem(itemQualify)
 
-	private val itemBig = BooleanMenuItem("big", "BIG", COLOR.BLUE, false)
+	private val itemBig = BooleanMenuItem("big", "BIG", COLOR.ORANGE, false)
 	/** BigMode */
 	private var big:Boolean by DelegateMenuItem(itemBig)
 
@@ -153,19 +154,14 @@ class GrandS2:AbstractGrand() {
 		engine.b2bEnable = true
 		engine.splitB2B = true
 		engine.comboType = GameEngine.COMBO_TYPE_DOUBLE
-		engine.frameSkin = GameEngine.FRAME_COLOR_RED
+		engine.frame = GameEngine.Frame.RED
 		engine.bigHalf = true
 		engine.bigMove = true
 		engine.staffrollEnable = true
 		engine.staffrollNoDeath = false
-
 		if(!owner.replayMode) {
 			version = CURRENT_VERSION
-			qualify =
-				owner.modeConfig.getProperty(
-					"speedmania2.torikan.${engine.ruleOpt.strRuleName}",
-					if(engine.ruleOpt.lockResetMove) DEFAULT_TORIKAN else DEFAULT_TORIKAN_CLASSIC
-				)
+			qualify = if(engine.ruleOpt.lockResetMove) DEFAULT_TORIKAN else DEFAULT_TORIKAN_CLASSIC
 		} else {
 			version = owner.replayProp.getProperty("speedmania2.version", 0)
 			System.arraycopy(tableTimeRegret, 0, bestSectionTime, 0, sectionMax)
@@ -213,20 +209,20 @@ class GrandS2:AbstractGrand() {
 		return super.onSetting(engine)
 	}
 
-	/* Called at game start */
-	override fun startGame(engine:GameEngine) {
+	override fun onSettingChanged(engine:GameEngine) {
+		super.onSettingChanged(engine)
 		val lv = startLevel*100
 		engine.statistics.level = lv
 
 		nextSecLv = (lv+100).coerceIn(100, 1300)
-		if(engine.statistics.level>=1000) engine.bone = true
-
-		owner.bgMan.bg = 20+engine.statistics.level/100
-
+		engine.bone = lv>=1000
+		owner.bgMan.bg = 20+startLevel
 		engine.big = big
-
 		setSpeed(engine)
-		owner.musMan.bgm = BGM.GrandTS(calcBgmLv(lv))
+	}
+	/* Called at game start */
+	override fun startGame(engine:GameEngine) {
+		owner.musMan.bgm = BGM.GrandTS(calcBgmLv(startLevel*100))
 	}
 
 	override fun renderFirst(engine:GameEngine) {
@@ -237,7 +233,7 @@ class GrandS2:AbstractGrand() {
 		receiver.drawScore(engine, 0, 0, name, BASE, COLOR.RED)
 
 		receiver.drawScore(engine, -1, -4*2, "DECORATION", BASE, scale = .5f)
-		receiver.drawScoreBadges(engine, 0, -3, 100, decoration)
+		receiver.drawScoreBadges(engine, 0, -3, 100,owner.stats.decoration)
 		receiver.drawScoreBadges(engine, 5, -4, 100, decTemp)
 		if(engine.stat==GameEngine.Status.SETTING||engine.stat==GameEngine.Status.RESULT&&!owner.replayMode) {
 			if(!owner.replayMode&&startLevel==0&&!big&&engine.ai==null)
@@ -417,7 +413,7 @@ class GrandS2:AbstractGrand() {
 			val isRegret = goalType<=0&&sectionTime[section]>tableTimeRegret[minOf(section, tableTimeRegret.lastIndex)]
 			levelUp(engine, li.let {it+maxOf(0, it-2)})
 
-			val nextTorikanLv = tableTorikanLevel[goalType].firstOrNull {it>levelb}?:tableGoalLevel[goalType]
+			val nextTorikanLv = tableTorikanLevel[goalType].firstOrNull {it>levelb}?:(sectionMax*100+1)
 			if(nextSecLv==nextTorikanLv&&engine.statistics.level>=nextTorikanLv&&
 				qualify>0&&engine.statistics.time>(qualify*nextTorikanLv/500)) {
 				// level500/1000とりカン
@@ -443,10 +439,10 @@ class GrandS2:AbstractGrand() {
 					if(grade<tableSectionMax[goalType]) grade++
 					gradeFlash = 180
 				}
-			} else if(engine.statistics.level>=tableGoalLevel[goalType]) {
+			} else if(engine.statistics.level>=sectionMax*100) {
 				// Ending
 				engine.playSE("endingstart")
-				engine.statistics.level = tableGoalLevel[goalType]
+				engine.statistics.level = sectionMax*100
 				engine.timerActive = false
 				engine.ending = 1
 				engine.statistics.rollClear = 1
@@ -559,7 +555,7 @@ class GrandS2:AbstractGrand() {
 			engine.blockOutlineType = GameEngine.BLOCK_OUTLINE_NORMAL
 			// 裏段位
 			secretGrade = engine.field.secretGrade
-			decoration += decTemp+secretGrade
+			owner.stats.decoration += decTemp+secretGrade
 		}
 		return false
 	}
@@ -651,7 +647,7 @@ class GrandS2:AbstractGrand() {
 
 		// Update rankings
 		if(!owner.replayMode&&startLevel==0&&!big&&engine.ai==null) {
-			owner.statsProp.setProperty("decoration", decoration)
+			owner.statsProp.setProperty("decoration",owner.stats.decoration)
 			rankingRank = ranking[goalType].add(Rankable.GrandRow(grade, engine.statistics, medals.copy()))
 			if(medalST==3) updateBestSectionTime(goalType)
 
@@ -683,7 +679,7 @@ class GrandS2:AbstractGrand() {
 		private val RANKING_TYPE = tableSectionMax.size
 		/** ARE table */
 		private val tableARE = listOf(16, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 2, 2)
-		/** ARE after line clear table */
+		/** ARE after lines clear table */
 		private val tableARELine = listOf(6, 6, 5, 5, 4, 4, 3, 3, 2, 2, 1, 1, 1, 2)
 		/** Line clear times table */
 		private val tableLineDelay = listOf(7, 6, 6, 5, 5, 4, 4, 3, 3, 2, 2, 2, 1, 6)

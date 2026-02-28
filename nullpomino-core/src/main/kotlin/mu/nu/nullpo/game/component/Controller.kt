@@ -156,7 +156,7 @@ data class Controller(
 		/** E (180-degree spin) button */
 		const val BUTTON_E = 8
 
-		/** F (Reverse spin, Use inum, staff roll fast-forward, etc.) button */
+		/** F (Reverse spin, Use item, staff roll fast-forward, etc.) button */
 		const val BUTTON_F = 9
 
 		/** Number of buttons */

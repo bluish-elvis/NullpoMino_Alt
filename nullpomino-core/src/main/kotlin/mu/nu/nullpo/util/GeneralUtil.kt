@@ -44,6 +44,8 @@ import java.text.SimpleDateFormat
 import java.util.*
 import java.util.zip.GZIPInputStream
 import java.util.zip.ZipException
+import kotlin.math.absoluteValue
+import kotlin.math.log10
 
 /** Generic static utils */
 object GeneralUtil {
@@ -303,6 +305,12 @@ object GeneralUtil {
 	 */
 	@Deprecated("Kotlin has collecton method", ReplaceWith("strings.drop(startIndex).joinToString(separator)"))
 	fun stringCombine(strings:List<String>, separator:String, startIndex:Int):String = strings.drop(1).joinToString(" ")
+
+	val Int.length
+		get() = when(this) {
+			0 -> 1
+			else -> log10(toDouble().absoluteValue).toInt()+1
+		}
 
 	fun capsNum(x:Long, digits:Int):String = when {
 		digits<=0 -> ""

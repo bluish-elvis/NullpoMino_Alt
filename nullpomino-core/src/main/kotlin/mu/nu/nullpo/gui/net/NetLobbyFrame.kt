@@ -30,56 +30,30 @@
  */
 package mu.nu.nullpo.gui.net
 
-import mu.nu.nullpo.util.GeneralUtil.Json
 import mu.nu.nullpo.game.component.RuleOptions
-import mu.nu.nullpo.game.net.NetBaseClient
-import mu.nu.nullpo.game.net.NetMessageListener
-import mu.nu.nullpo.game.net.NetPlayerClient
-import mu.nu.nullpo.game.net.NetPlayerInfo
-import mu.nu.nullpo.game.net.NetRoomInfo
-import mu.nu.nullpo.game.net.NetUtil
+import mu.nu.nullpo.game.net.*
 import mu.nu.nullpo.game.play.GameEngine
-import mu.nu.nullpo.game.play.GameManager
 import mu.nu.nullpo.game.play.GameEngine.GameStyle
+import mu.nu.nullpo.game.play.GameManager
 import mu.nu.nullpo.game.subsystem.mode.NetDummyMode
 import mu.nu.nullpo.gui.common.ConfigGlobal
 import mu.nu.nullpo.gui.common.ConfigGlobal.RuleConf
 import mu.nu.nullpo.tool.ruleeditor.RuleEditor
 import mu.nu.nullpo.util.CustomProperties
 import mu.nu.nullpo.util.GeneralUtil
+import mu.nu.nullpo.util.GeneralUtil.Json
 import mu.nu.nullpo.util.GeneralUtil.strDateTime
 import mu.nu.nullpo.util.GeneralUtil.toTimeStr
 import org.apache.logging.log4j.LogManager
-import java.awt.BorderLayout
-import java.awt.CardLayout
-import java.awt.Color
-import java.awt.Component
-import java.awt.Dimension
-import java.awt.Toolkit
+import java.awt.*
 import java.awt.datatransfer.StringSelection
-import java.awt.event.ActionEvent
-import java.awt.event.ActionListener
-import java.awt.event.KeyAdapter
-import java.awt.event.KeyEvent
-import java.awt.event.MouseAdapter
-import java.awt.event.MouseEvent
-import java.awt.event.WindowAdapter
-import java.awt.event.WindowEvent
+import java.awt.event.*
 import java.awt.image.BufferedImage
-import java.io.File
-import java.io.FileInputStream
-import java.io.FileOutputStream
-import java.io.FileReader
-import java.io.IOException
-import java.io.PrintWriter
+import java.io.*
 import java.net.MalformedURLException
 import java.net.URL
 import java.text.SimpleDateFormat
-import java.util.Calendar
-import java.util.GregorianCalendar
-import java.util.LinkedList
-import java.util.Locale
-import java.util.Vector
+import java.util.*
 import java.util.zip.Adler32
 import java.util.zip.GZIPInputStream
 import java.util.zip.GZIPOutputStream
@@ -193,13 +167,13 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 	/** Lobby popup menu (Lobby screen) */
 	private val popupLobbyOptions:JPopupMenu = JPopupMenu()
 
-	/** Rule change menu inum (Lobby screen) */
+	/** Rule change menu item (Lobby screen) */
 	private val itemLobbyMenuRuleChange:JMenuItem = JMenuItem()
 
-	/** Team change menu inum (Lobby screen) */
+	/** Team change menu item (Lobby screen) */
 	private val itemLobbyMenuTeamChange:JMenuItem = JMenuItem()
 
-	/** Leaderboard menu inum (Lobby screen) */
+	/** Leaderboard menu item (Lobby screen) */
 	private val itemLobbyMenuRanking:JMenuItem = JMenuItem()
 
 	/** Quick Start button(Lobby screen) */
@@ -223,7 +197,7 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 	/** Room list tableの data */
 	private var tablemodelRoomList:DefaultTableModel = DefaultTableModel()
 
-	/** Chat logAndPlayerPartition line of the list(Lobby screen) */
+	/** Chat logAndPlayerPartition lines of the list(Lobby screen) */
 	private val splitLobbyChat:JSplitPane = JSplitPane()
 
 	/** Chat log(Lobby screen) */
@@ -256,7 +230,7 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 	/** Leaderboard button (Room screen) */
 	private val btnRoomButtonsRanking:JButton = JButton()
 
-	/** Partition line separating the upper and lower(Room screen) */
+	/** Partition lines separating the upper and lower(Room screen) */
 	private val splitRoom:JSplitPane = JSplitPane()
 
 	/** Room at the top of the screen layout manager */
@@ -283,7 +257,7 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 	/** Multiplayer game stats table data */
 	private val tableModelGameStat1P:DefaultTableModel = DefaultTableModel()
 
-	/** Chat logAndPlayerPartition line of the list(Room screen) */
+	/** Chat logAndPlayerPartition lines of the list(Room screen) */
 	private val splitRoomChat:JSplitPane = JSplitPane()
 
 	/** Chat log(Room screen) */
@@ -356,7 +330,7 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 	/** ARE(Create room screen) */
 	private val spinnerCreateRoomARE:JSpinner = JSpinner()
 
-	/** ARE after line clear(Create room screen) */
+	/** ARE after lines clear(Create room screen) */
 	private val spinnerCreateRoomARELine:JSpinner = JSpinner()
 
 	/** Line clear time(Create room screen) */
@@ -571,7 +545,8 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 
 		// Load global settings
 		try {
-			propGlobal = Json.decodeFromString(FileInputStream("config/setting/global.json").bufferedReader().use {it.readText()})
+			propGlobal =
+				Json.decodeFromString(FileInputStream("config/setting/global.json").bufferedReader().use {it.readText()})
 		} catch(_:Exception) {
 		}
 
@@ -835,7 +810,7 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 		tabLobbyAndRoom.addTab(getUIText("Lobby_Tab_Lobby"), mainpanelLobby)
 		tabLobbyAndRoom.setMnemonicAt(0, 'Y'.code)
 
-		// * Partition line separating the upper and lower
+		// * Partition lines separating the upper and lower
 		mainpanelLobby.add(splitLobby.apply {
 			orientation = JSplitPane.VERTICAL_SPLIT
 			dividerLocation = propConfig.getProperty("lobby.splitLobby.location", 200)
@@ -958,7 +933,7 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 		}
 		splitLobby.bottomComponent = subpanelLobbyChat
 
-		// *** Chat logAndPlayerPartition line of the list
+		// *** Chat logAndPlayerPartition lines of the list
 		splitLobbyChat.dividerLocation = propConfig.getProperty("lobby.splitLobbyChat.location", 350)
 
 		subpanelLobbyChat.add(splitLobbyChat, BorderLayout.CENTER)
@@ -1000,7 +975,7 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 		tabLobbyAndRoom.setMnemonicAt(1, 'R'.code)
 		tabLobbyAndRoom.setEnabledAt(1, false)
 
-		// * Partition line separating the upper and lower
+		// * Partition lines separating the upper and lower
 
 		mainpanelRoom.add(splitRoom.apply {
 			orientation = JSplitPane.VERTICAL_SPLIT
@@ -1160,7 +1135,7 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 		subpanelRoomChat.minimumSize = Dimension(0, 0)
 		splitRoom.bottomComponent = subpanelRoomChat
 
-		// *** Chat logAndPlayerPartition line of the list(Room screen)
+		// *** Chat logAndPlayerPartition lines of the list(Room screen)
 		subpanelRoomChat.add(splitRoomChat.apply {
 			dividerLocation = propConfig.getProperty("room.splitRoomChat.location", 350)
 		}, BorderLayout.CENTER)
@@ -1269,7 +1244,8 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 		btnCreateRatedWaitingCancel.addActionListener(this)
 		btnCreateRatedWaitingCancel.actionCommand = "CreateRated_Waiting_Cancel"
 		btnCreateRatedWaitingCancel.setMnemonic('C')
-		btnCreateRatedWaitingCancel.maximumSize = Dimension(Short.MAX_VALUE.toInt(), btnCreateRatedWaitingCancel.maximumSize.height)
+		btnCreateRatedWaitingCancel.maximumSize =
+			Dimension(Short.MAX_VALUE.toInt(), btnCreateRatedWaitingCancel.maximumSize.height)
 		subpanelButtons.add(btnCreateRatedWaitingCancel, BorderLayout.SOUTH)
 	}
 
@@ -1541,14 +1517,14 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 		spinnerCreateRoomARE.preferredSize = Dimension(200, 20)
 		subpanelARE.add(spinnerCreateRoomARE, BorderLayout.EAST)
 
-		// ** ARE after line clearPanel
+		// ** ARE after lines clearPanel
 		val subpanelARELine = JPanel(BorderLayout())
 		containerpanelCreateRoomSpeed.add(subpanelARELine)
 
-		// *** &#39;ARE after line clear:&quot;Label
+		// *** &#39;ARE after lines clear:&quot;Label
 		subpanelARELine.add(JLabel(getUIText("CreateRoom_ARELine")), BorderLayout.WEST)
 
-		// *** ARE after line clear
+		// *** ARE after lines clear
 		val defaultARELine = propConfig.getProperty("createroom.defaultARELine", 0)
 		spinnerCreateRoomARELine.model = (SpinnerNumberModel(defaultARELine, 0, 99, 1))
 		spinnerCreateRoomARELine.preferredSize = Dimension(200, 20)
@@ -1608,7 +1584,8 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 		subpanelTWISTEnableType.add(JLabel(getUIText("CreateRoom_TwistEnableType")), BorderLayout.WEST)
 
 		// *** Spin bonus
-		comboboxCreateRoomTWISTEnableType.model = DefaultComboBoxModel(COMBOBOX_SPINBONUS_NAMES.map {getUIText(it)}.toTypedArray())
+		comboboxCreateRoomTWISTEnableType.model =
+			DefaultComboBoxModel(COMBOBOX_SPINBONUS_NAMES.map {getUIText(it)}.toTypedArray())
 		comboboxCreateRoomTWISTEnableType.selectedIndex = propConfig.getProperty("createroom.defaultTwistEnableType", 2)
 		comboboxCreateRoomTWISTEnableType.preferredSize = Dimension(200, 20)
 		comboboxCreateRoomTWISTEnableType.toolTipText = getUIText("CreateRoom_TwistEnableType_Tip")
@@ -1680,7 +1657,8 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 		// ** Set garbage type
 		chkboxCreateRoomGarbageChangePerAttack.text = getUIText("CreateRoom_GarbageChangePerAttack")
 		chkboxCreateRoomGarbageChangePerAttack.setMnemonic('G')
-		chkboxCreateRoomGarbageChangePerAttack.isSelected = propConfig.getProperty("createroom.defaultGarbageChangePerAttack", true)
+		chkboxCreateRoomGarbageChangePerAttack.isSelected =
+			propConfig.getProperty("createroom.defaultGarbageChangePerAttack", true)
 		chkboxCreateRoomGarbageChangePerAttack.toolTipText = getUIText("CreateRoom_GarbageChangePerAttack_Tip")
 		containerpanelCreateRoomGarbage.add(chkboxCreateRoomGarbageChangePerAttack)
 
@@ -2044,7 +2022,8 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 
 		pTuningBlockShowOutlineOnly.add(JLabel(getUIText("GameTuning_BlockShowOutlineOnly_Label")))
 
-		comboboxTuningBlockShowOutlineOnly.model = DefaultComboBoxModel(TUNING_COMBOBOX_GENERIC.map {getUIText(it)}.toTypedArray())
+		comboboxTuningBlockShowOutlineOnly.model =
+			DefaultComboBoxModel(TUNING_COMBOBOX_GENERIC.map {getUIText(it)}.toTypedArray())
 		pTuningBlockShowOutlineOnly.add(comboboxTuningBlockShowOutlineOnly)
 
 		// *** Outline Type
@@ -2054,7 +2033,8 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 
 		pTuningOutlineType.add(JLabel(getUIText("GameTuning_OutlineType_Label")))
 
-		comboboxTuningBlockOutlineType.model = DefaultComboBoxModel(TUNING_OUTLINE_TYPE_NAMES.map {getUIText(it)}.toTypedArray())
+		comboboxTuningBlockOutlineType.model =
+			DefaultComboBoxModel(TUNING_OUTLINE_TYPE_NAMES.map {getUIText(it)}.toTypedArray())
 		pTuningOutlineType.add(comboboxTuningBlockOutlineType)
 
 		// *** Skin
@@ -2185,7 +2165,7 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 	 * @param str String
 	 * @return PosttranslationalUIString (If you do not acceptstrReturns)
 	 */
-	fun getUIText(str:String):String = propLang.getProperty(str) ?: propLangDefault.getProperty(str, str) ?: str
+	fun getUIText(str:String):String = propLang.getProperty(str)?:propLangDefault.getProperty(str, str)?:str
 
 	/** Get game mode description
 	 * @param str Mode name
@@ -2193,7 +2173,7 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 	 */
 	private fun getModeDesc(str:String):String {
 		val str2 = str.replace(' ', '_').replace('(', 'l').replace(')', 'r')
-		return propModeDesc.getProperty(str2) ?: propDefaultModeDesc.getProperty(str2, str2) ?: str2
+		return propModeDesc.getProperty(str2)?:propDefaultModeDesc.getProperty(str2, str2)?:str2
 	}
 
 	/** Screen switching
@@ -2262,10 +2242,10 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 		return strName
 	}
 
-	/** Chat logAdd a new line to the(System Messages)
+	/** Chat logAdd a new lines to the(System Messages)
 	 * @param txtpane Chat log
 	 * @param str The string to add
-	 * @param fgcolor Letter cint(nullYes)
+	 * @param fgcolor Letter color(nullYes)
 	 */
 	fun addSystemChatLog(txtpane:JTextPane, str:String?, fgcolor:Color? = null) {
 		val strTime = currentTimeAsString
@@ -2293,7 +2273,7 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 		}
 	}
 
-	/** Chat logAdd a new line to the(System calls from a different thread for
+	/** Chat logAdd a new lines to the(System calls from a different thread for
 	 * message)
 	 * @param txtpane Chat log
 	 * @param str The string to add
@@ -2302,11 +2282,11 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 		SwingUtilities.invokeLater {addSystemChatLog(txtpane, str)}
 	}
 
-	/** Chat logAdd a new line to the(System calls from a different thread for
+	/** Chat logAdd a new lines to the(System calls from a different thread for
 	 * message)
 	 * @param txtpane Chat log
 	 * @param str The string to add
-	 * @param fgcolor Letter cint(nullYes)
+	 * @param fgcolor Letter color(nullYes)
 	 */
 	private fun addSystemChatLogLater(txtpane:JTextPane, str:String?, fgcolor:Color) {
 		SwingUtilities.invokeLater {addSystemChatLog(txtpane, str, fgcolor)}
@@ -2438,7 +2418,7 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 			FileReader(filename).buffered().use {
 				it.forEachLine {str ->
 					if(str.isEmpty()||str.startsWith("#")) {
-						// Empty line or comment line. Ignore it.
+						// Empty lines or comment lines. Ignore it.
 					} else if(str.startsWith(":")) {
 						// Game style tag. Currently unused.
 					} else {
@@ -2467,7 +2447,7 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 			FileReader(filename).buffered().use {
 				it.forEachLine {str ->
 					if(str.isEmpty()||str.startsWith("#")) {
-						// Empty line or comment line. Ignore it.
+						// Empty lines or comment lines. Ignore it.
 					} else if(str.startsWith(":")) {
 						// Game style tag. Currently unused.
 					} else {
@@ -2715,7 +2695,7 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 				}
 
 				// Rating
-				name += " |${pInfo.rating[0]}|"				/* name += " |T:" + pInfo.rating[0] + "|";
+				name += " |${pInfo.rating[0]}|"        /* name += " |T:" + pInfo.rating[0] + "|";
 				 * name += "A:" + pInfo.rating[1] + "|";
 				 * name += "P:" + pInfo.rating[2] + "|";
 				 * name += "S:" + pInfo.rating[3] + "|"; */
@@ -2736,7 +2716,7 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 
 	/** Screen RoomPlayerList update */
 	private fun updateRoomUserList() {
-		val roomInfo = netPlayerClient!!.getRoomInfo(netPlayerClient!!.yourPlayerInfo!!.roomID) ?: return
+		val roomInfo = netPlayerClient!!.getRoomInfo(netPlayerClient!!.yourPlayerInfo!!.roomID)?:return
 
 		val pList = LinkedList(netPlayerClient!!.playerInfoList)
 
@@ -2802,7 +2782,7 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 
 		val prop = CustomProperties()
 		ruleOptPlayer!!.writeProperty(prop, 0)
-		val strRuleTemp = prop.encode("RuleData") ?: ""
+		val strRuleTemp = prop.encode("RuleData")?:""
 		val strRuleData = NetUtil.compressString(strRuleTemp)
 		log.debug("RuleData uncompressed:${strRuleTemp.length} compressed:"+strRuleData.length)
 
@@ -2828,7 +2808,7 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 		propConfig.setProperty("serverselect.txtFldPlayerName.text", txtFldPlayerName.text)
 		propConfig.setProperty("serverselect.txtFldPlayerTeam.text", txtFldPlayerTeam.text)
 
-		propConfig.setProperty("serverselect.listboxServerList.value", listboxServerList.selectedValue ?: "")
+		propConfig.setProperty("serverselect.listboxServerList.value", listboxServerList.selectedValue?:"")
 		tableRoomList.columnModel.let {
 			if(it.columnCount==8) {
 				propConfig.setProperty("tableRoomList.width.id", it.getColumn(0).width)
@@ -2935,7 +2915,8 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 	/** Save global config file */
 	private fun saveGlobalConfig() {
 		try {
-			propGlobal = Json.decodeFromString(FileInputStream("config/setting/global.json").bufferedReader().use {it.readText()})
+			propGlobal =
+				Json.decodeFromString(FileInputStream("config/setting/global.json").bufferedReader().use {it.readText()})
 		} catch(e:Exception) {
 			log.warn("Failed to save global config file", e)
 		}
@@ -3268,11 +3249,12 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 
 		for(i in 0..<GameEngine.MAX_GAMESTYLE) {
 			val subEntries = getSubsetEntries(i)
-			for(j in subEntries.indices) if(subEntries[j].file==strCurrentFileName[i]) listboxRuleChangeRuleList[i].selectedIndex = j
+			for(j in subEntries.indices) if(subEntries[j].file==strCurrentFileName[i]) listboxRuleChangeRuleList[i].selectedIndex =
+				j
 		}
 
 		// Tuning
-		(propGlobal.tuning.firstOrNull() ?: ConfigGlobal.TuneConf()).let {
+		(propGlobal.tuning.firstOrNull()?:ConfigGlobal.TuneConf()).let {
 			comboboxTuningSpinDirection.selectedIndex = it.spinDir+1
 			comboboxTuningMoveDiagonal.selectedIndex = it.moveDiagonal+1
 			comboboxTuningBlockShowOutlineOnly.selectedIndex = it.blockShowOutlineOnly+1
@@ -3307,7 +3289,8 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 			val strMessageBox = String.format(getUIText("MessageBody_UnsetObserver"), strCurrentHost, currentPort)
 
 			val answer =
-				JOptionPane.showConfirmDialog(this, strMessageBox, getUIText("MessageTitle_UnsetObserver"), JOptionPane.YES_NO_OPTION)
+				JOptionPane.showConfirmDialog(this, strMessageBox, getUIText("MessageTitle_UnsetObserver"),
+					JOptionPane.YES_NO_OPTION)
 
 			if(answer==JOptionPane.YES_OPTION) {
 				propObserver.setProperty("observer.enable", false)
@@ -3461,7 +3444,9 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 			backupRoomInfo = r
 
 			val msg =
-				("ratedroomcreate\t${NetUtil.urlEncode(r.strName)}\t"+spinnerCreateRatedMaxPlayers.value+"\t$presetIndex\t"+NetUtil.urlEncode(
+				("ratedroomcreate\t${
+					NetUtil.urlEncode(r.strName)
+				}\t"+spinnerCreateRatedMaxPlayers.value+"\t$presetIndex\t"+NetUtil.urlEncode(
 					"NET-VS-BATTLE"
 				)+"\n")
 
@@ -3632,7 +3617,7 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 				val id = listboxRuleChangeRuleList[i].selectedIndex
 				val subEntries = getSubsetEntries(i)
 				val entry = if(id>=0) subEntries[id] else null
-				propGlobal.rule[0][i] = entry?.let {RuleConf(it.path, it.file, it.name)} ?: RuleConf()
+				propGlobal.rule[0][i] = entry?.let {RuleConf(it.path, it.file, it.name)}?:RuleConf()
 			}
 
 			// Tuning
@@ -3678,7 +3663,8 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 	}
 
 	/* Message reception */
-	@Throws(IOException::class) override fun netOnMessage(client:NetBaseClient, message:List<String>) {
+	@Throws(IOException::class)
+	override fun netOnMessage(client:NetBaseClient, message:List<String>) {
 		//addSystemChatLog(getCurrentChatLogTextPane(), message[0], Color.green);
 
 		// Connection completion
@@ -3748,7 +3734,8 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 			} else if(message.size>1&&message[1]=="DIFFERENT_BUILD") {
 				val strClientBuildType = GameManager.buildTypeString
 				val strServerBuildType = message[2]
-				val strErrorMsg = String.format(getUIText("SysMsg_LoginFailDifferentBuild"), strClientBuildType, strServerBuildType)
+				val strErrorMsg =
+					String.format(getUIText("SysMsg_LoginFailDifferentBuild"), strClientBuildType, strServerBuildType)
 				addSystemChatLogLater(txtpaneLobbyChatLog, strErrorMsg, Color.red)
 			} else {
 				val reason = StringBuilder()
@@ -3763,8 +3750,8 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 			val cStart = GeneralUtil.importCalendarString(message[1])
 			val cExpire = if(message.size>2&&message[2].isNotEmpty()) GeneralUtil.importCalendarString(message[2]) else null
 
-			val strStart = cStart?.strDateTime ?: "???"
-			val strExpire = cExpire?.strDateTime ?: getUIText("SysMsg_Banned_Permanent")
+			val strStart = cStart?.strDateTime?:"???"
+			val strExpire = cExpire?.strDateTime?:getUIText("SysMsg_Banned_Permanent")
 
 			addSystemChatLogLater(txtpaneLobbyChatLog, String.format(getUIText("SysMsg_Banned"), strStart, strExpire), Color.red)
 		}
@@ -3983,7 +3970,8 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 					setRoomJoinButtonVisible(false)
 				}
 
-				if(netPlayerClient!=null&&netPlayerClient!!.getRoomInfo(roomID)!=null) if(netPlayerClient!!.getRoomInfo(roomID)!!.singleplayer) {
+				if(netPlayerClient!=null&&netPlayerClient!!.getRoomInfo(roomID)!=null) if(netPlayerClient!!.getRoomInfo(
+						roomID)!!.singleplayer) {
 					btnRoomButtonsJoin.isVisible = false
 					btnRoomButtonsSitOut.isVisible = false
 					btnRoomButtonsRanking.isVisible = false
@@ -4603,7 +4591,8 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 			isOpaque = true
 		}
 
-		override fun getListCellRendererComponent(list:JList<out Any>?, value:Any?, index:Int, isSelected:Boolean, cellHasFocus:Boolean):Component {
+		override fun getListCellRendererComponent(list:JList<out Any>?, value:Any?, index:Int, isSelected:Boolean,
+			cellHasFocus:Boolean):Component {
 			val data = value as ComboLabel
 			text = data.text
 			icon = data.icon
@@ -4727,7 +4716,8 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 		/** Main function count
 		 * @param args CommandLines Argument count
 		 */
-		@JvmStatic fun main(args:Array<String>) {
+		@JvmStatic
+		fun main(args:Array<String>) {
 			org.apache.logging.log4j.core.config.Configurator.initialize(log.name, "config/etc/log.xml")
 			val frame = NetLobbyFrame()
 			frame.init()

@@ -31,10 +31,7 @@
 
 package mu.nu.nullpo.gui.common
 
-import mu.nu.nullpo.game.event.EventReceiver.COLOR.BLUE
-import mu.nu.nullpo.game.event.EventReceiver.COLOR.GREEN
-import mu.nu.nullpo.game.event.EventReceiver.COLOR.ORANGE
-import mu.nu.nullpo.game.event.EventReceiver.COLOR.WHITE
+import mu.nu.nullpo.game.event.EventReceiver.COLOR.*
 import org.apache.logging.log4j.LogManager
 import java.io.FileInputStream
 import java.io.IOException
@@ -66,7 +63,7 @@ abstract class BaseStaffRoll {
 					LineType.Header -> if(it.isUpperCase()) BLUE else GREEN
 					LineType.Plane -> if(it.isUpperCase()) ORANGE else WHITE
 				}
-				val chr = it.uppercaseChar().code
+				val chr = it.code
 				val sx = BW*((chr-32)%32)
 				val sy = BH*((chr-32)/32+fontColor.ordinal*3)
 				val dx = cx-fw*cmp(it)/2
@@ -87,7 +84,7 @@ abstract class BaseStaffRoll {
 		val ih = width/img.aspectRatio
 		val eY = maxOf(dh/2-ih/2, height+dh/4f-scr)
 		if(eY-fh<dh) {
-			drawFont("FORKED FROM NULLPOMINO", x, LineType.Header, y+eY-fh, dh, alpha)
+			drawFont("Forked From NullpoMino", x, LineType.Header, y+eY-fh, dh, alpha)
 			img.draw(x, y+eY, x+width, y+eY+ih, alpha)
 		}
 
@@ -110,7 +107,7 @@ abstract class BaseStaffRoll {
 					log.debug("load Staffroll list: {}", it)
 				}?.path?.let {t ->
 					FileInputStream(t).bufferedReader().use {it.readLines()}
-				}?.map {s -> s.trim {it<=' '}}?.filterNot {it.startsWith('#')||it.startsWith("//")} // Commment-line. Ignore it.
+				}?.map {s -> s.trim {it<=' '}}?.filterNot {it.startsWith('#')||it.startsWith("//")} // Commment-lines. Ignore it.
 					?.map {(if(it.startsWith(':')) LineType.Header else LineType.Plane) to it} ?: emptyList()
 			} catch(e:IOException) {
 				log.error("Failed to load Staffroll list file", e)

@@ -36,6 +36,8 @@
   <Mode class="SprintScore"/>
   <Mode class="SprintDig"/>
   <Mode class="Practice"/>
+  <Mode class="GrandCleaner"/>
+  <Mode class="GrandPuzzle"/>
   <Mode class="MarathonSquare"/>
  </Folder>
  <Folder id="modepile" name="ModePile Extras">

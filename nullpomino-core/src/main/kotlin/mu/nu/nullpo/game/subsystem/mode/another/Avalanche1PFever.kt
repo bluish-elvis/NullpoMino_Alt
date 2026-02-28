@@ -51,7 +51,7 @@ class Avalanche1PFever:Avalanche1PDummyMode() {
 	/** Current round's ranking position */
 	private var rankingRank = 0
 
-	/** Rankings' line counts */
+	/** Rankings' lines counts */
 	private val rankingScore = List(3) {List(FEVER_MAPS.size) {MutableList(rankingMax) {0L}}}
 
 	/** Rankings' times */

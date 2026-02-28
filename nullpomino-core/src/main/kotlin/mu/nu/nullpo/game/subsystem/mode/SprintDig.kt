@@ -73,7 +73,7 @@ class SprintDig:NetDummyMode() {
 	/** BGM number */
 	private var bgmId:Int by DelegateMenuItem(itemBGM)
 
-	private val itemBig = BooleanMenuItem("big", "BIG", COLOR.BLUE, false)
+	private val itemBig = BooleanMenuItem("big", "BIG", COLOR.ORANGE, false)
 	/** BigMode */
 	private var big:Boolean by DelegateMenuItem(itemBig)
 
@@ -96,13 +96,15 @@ class SprintDig:NetDummyMode() {
 	data class TimeRow(override val st:Statistics = Statistics()):Rankable {
 		override fun compareTo(other:Rankable):Int =
 			if(other is TimeRow)
-				compareValuesBy(this, other, {it.clear}, {-it.ti}, {-it.li}, {-it.st.totalPieceLocked})
+				compareValuesBy(this, other, {it.clear}, {if(it.ti<=0) Int.MIN_VALUE else -it.ti},
+					{-it.st.totalPieceLocked}, {it.st.attacks}, {it.rp})
 			else super.compareTo(other)
 
 	}
 
 	override val ranking = List(GOALTYPE_MAX) {
-		Leaderboard(rankingMax, kotlinx.serialization.serializer<List<TimeRow>>()){TimeRow()}}
+		Leaderboard(rankingMax, kotlinx.serialization.serializer<List<TimeRow>>()) {TimeRow()}
+	}
 	/* Mode name */
 	override val name = "Digging Sprint"
 	override val gameIntensity = 2
@@ -117,7 +119,7 @@ class SprintDig:NetDummyMode() {
 
 		rankingRank = -1
 
-		engine.frameSkin = GameEngine.FRAME_COLOR_GREEN
+		engine.frame = GameEngine.Frame.GREEN
 
 		netPlayerInit(engine)
 
@@ -208,14 +210,11 @@ class SprintDig:NetDummyMode() {
 			// Set connections
 			if(receiver.isStickySkin(engine)&&y!=h-1)
 				for(x:Int in 0..<w)
-					if(x!=hole) {
-						val blk = engine.field.getBlock(x, y)
-						if(blk!=null) {
+					if(x!=hole)
+						engine.field.getBlock(x, y)?.let {blk ->
 							if(!engine.field.getBlockEmpty(x-1, y)) blk.setAttribute(true, ATTRIBUTE.CONNECT_LEFT)
-							if(!engine.field.getBlockEmpty(x+1, y))
-								blk.setAttribute(true, ATTRIBUTE.CONNECT_RIGHT)
+							if(!engine.field.getBlockEmpty(x+1, y)) blk.setAttribute(true, ATTRIBUTE.CONNECT_RIGHT)
 						}
-					}
 		}
 	}
 
@@ -254,7 +253,7 @@ class SprintDig:NetDummyMode() {
 			if(!owner.replayMode&&engine.ai==null&&!netIsWatch) {
 				receiver.drawScore(engine, 3, 3, "TIME   LINE Piece", BASE, COLOR.BLUE)
 
-				ranking[goalType].forEachIndexed { i,it->
+				ranking[goalType].forEachIndexed {i, it ->
 					receiver.drawScore(
 						engine,
 						0,
@@ -300,6 +299,7 @@ class SprintDig:NetDummyMode() {
 
 	/* Calculate score */
 	override fun calcScore(engine:GameEngine, ev:ScoreEvent):Int {
+		calcPower(engine, ev, true)
 		// Update meter
 		val remainLines = getRemainGarbageLines(engine, goalType)
 		engine.meterValue = remainLines*1f/engine.fieldHeight
@@ -327,8 +327,7 @@ class SprintDig:NetDummyMode() {
 
 		if(netIsNetPlay&&netReplaySendStatus==1)
 			receiver.drawMenu(engine, 0, 19, "SENDING...", BASE, COLOR.PINK)
-		else if(netIsNetPlay&&!netIsWatch
-			&&netReplaySendStatus==2)
+		else if(netIsNetPlay&&!netIsWatch&&netReplaySendStatus==2)
 			receiver.drawMenu(engine, 1, 19, "A: RETRY", BASE, COLOR.RED)
 	}
 
@@ -345,13 +344,12 @@ class SprintDig:NetDummyMode() {
 
 		// Update rankings
 		if(!owner.replayMode&&getRemainGarbageLines(engine, goalType)==0&&engine.ending!=0&&engine.ai==null&&!netIsWatch) {
-			rankingRank=ranking[goalType].add(TimeRow(engine.statistics))
+			rankingRank = ranking[goalType].add(TimeRow(engine.statistics))
 			if(rankingRank!=-1) return true
 		}
 
 		return false
 	}
-
 
 	/** NET: Send various in-game stats of [engine] */
 	override fun netSendStats(engine:GameEngine) {

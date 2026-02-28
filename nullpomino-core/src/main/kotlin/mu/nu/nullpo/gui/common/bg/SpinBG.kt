@@ -33,7 +33,7 @@ package mu.nu.nullpo.gui.common.bg
 
 import mu.nu.nullpo.gui.common.AbstractRenderer
 
-open class SpinBG<T:Any?>(bgi:mu.nu.nullpo.gui.common.ResourceImage<T>, addBGFX:AbstractBG<*>? = null)
+open class SpinBG<T>(bgi:mu.nu.nullpo.gui.common.ResourceImage<T>, addBGFX:AbstractBG<*>? = null)
 	:AbstractBG<T>(bgi,addBGFX) {
 //	val sc get() = ((1+sin(res.rotation*RG*2).absoluteValue/3)*640/minOf(res.width, res.height))
 //	val cx get() = res.width/2*sc
@@ -62,6 +62,6 @@ open class SpinBG<T:Any?>(bgi:mu.nu.nullpo.gui.common.ResourceImage<T>, addBGFX:
 	override fun draw(render:AbstractRenderer, bg:Boolean) {
 		render.drawBlackBG()
 		img.draw()
-		addBGFX?.draw(render, true)
+		addBGFX?.draw(render, false)
 	}
 }

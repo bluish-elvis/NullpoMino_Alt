@@ -338,7 +338,7 @@ open class RanksAI:DummyAI(), Runnable {
 	 * @param engine GameEngine
 	 */
 	fun thinkBestPosition(engine:GameEngine) {
-		// Current line of the current piece
+		// Current lines of the current piece
 		val nowY = engine.nowPieceY
 
 		// Currently considered piece

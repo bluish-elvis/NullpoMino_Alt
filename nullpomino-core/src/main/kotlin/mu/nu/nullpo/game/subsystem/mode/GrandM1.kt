@@ -96,11 +96,11 @@ class GrandM1:AbstractGrand() {
 	/** Level at start */
 	private var startLevel:Int by DelegateMenuItem(itemLevel)
 
-	private val item20g = BooleanMenuItem("always20g", "20G MODE", COLOR.BLUE, false)
+	private val item20g = BooleanMenuItem("always20g", "20G MODE", COLOR.RED, false)
 	/** When true, always 20G */
 	private var always20g:Boolean by DelegateMenuItem(item20g)
 
-	private val itemBig = BooleanMenuItem("big", "BIG", COLOR.BLUE, false)
+	private val itemBig = BooleanMenuItem("big", "BIG", COLOR.ORANGE, false)
 	/** BigMode */
 	private var big:Boolean by DelegateMenuItem(itemBig)
 
@@ -111,7 +111,7 @@ class GrandM1:AbstractGrand() {
 	private var rankingRank = 0
 
 	override val ranking = listOf(
-		Leaderboard(rankingMax, kotlinx.serialization.serializer<List<Rankable.GrandRow>>()){Rankable.GrandRow()})
+		Leaderboard(rankingMax, kotlinx.serialization.serializer<List<Rankable.GrandRow>>()) {Rankable.GrandRow()})
 	/* Mode name */
 	override val name = "Grand Marathon"
 	override val gameIntensity = 1
@@ -142,7 +142,7 @@ class GrandM1:AbstractGrand() {
 		bestSectionTime.fill(DEFAULT_SECTION_TIME)
 		bestSectionScore.fill(0)
 
-		engine.twistEnable = false
+		engine.twistEnable = true
 		engine.b2bEnable = true
 		engine.splitB2B = true
 		engine.comboType = GameEngine.COMBO_TYPE_DOUBLE
@@ -276,7 +276,7 @@ class GrandM1:AbstractGrand() {
 		receiver.drawScore(engine, 0, 0, name, BASE, COLOR.CYAN)
 
 		receiver.drawScore(engine, -1, -4*2, "DECORATION", BASE, scale = .5f)
-		receiver.drawScoreBadges(engine, 0, -3, 100, decoration)
+		receiver.drawScoreBadges(engine, 0, -3, 100, owner.stats.decoration)
 		receiver.drawScoreBadges(engine, 5, -4, 100, decTemp)
 		if(engine.stat==GameEngine.Status.SETTING||engine.stat==GameEngine.Status.RESULT&&!owner.replayMode) {
 			if(!owner.replayMode&&startLevel==0&&!big&&!always20g&&engine.ai==null)
@@ -517,7 +517,7 @@ class GrandM1:AbstractGrand() {
 			}
 
 			lastScore = pts
-			sectionScore[sectionsDone] += pts
+			sectionScore[minOf(sectionsDone, sectionMax-1)] += pts
 			engine.statistics.scoreLine += pts
 			return pts
 		}
@@ -572,9 +572,9 @@ class GrandM1:AbstractGrand() {
 			if(time<6000) decTemp -= 3
 			else {
 				decTemp++
-				if(time%3600<=60||time%3600>=3540) decTemp++
+				if(time%3600 !in 61..<3540) decTemp++
 			}
-			decoration += decTemp+secretGrade
+			owner.stats.decoration += decTemp+secretGrade
 		}
 		return false
 	}
@@ -684,7 +684,7 @@ class GrandM1:AbstractGrand() {
 		owner.replayProp.setProperty("result.grade.number", grade)
 		owner.replayProp.setProperty("grademania1.version", version)
 
-		owner.statsProp.setProperty("decoration", decoration)
+		owner.statsProp.setProperty("decoration", owner.stats.decoration)
 		// Update rankings
 		if(!owner.replayMode&&startLevel==0&&!always20g&&!big&&engine.ai==null) {
 			rankingRank = ranking[0].add(

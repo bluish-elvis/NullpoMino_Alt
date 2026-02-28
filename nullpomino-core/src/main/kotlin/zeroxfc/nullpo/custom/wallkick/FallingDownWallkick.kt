@@ -59,7 +59,7 @@ class FallingDownWallkick:Wallkick {
 	 * @return WallkickResult object, or null if you don't want a kick
 	 */
 	override fun executeWallkick(x:Int, y:Int, rtDir:Int, rtOld:Int, rtNew:Int, allowUpward:Boolean, piece:Piece,
-		field:Field, ctrl:Controller?): WallkickResult? {
+		field:Field, ctrl:Controller?):WallkickResult? {
 		val multiplier = if(piece.big) 2 else 1
 		val convRtOld:Int = (rtOld+2)%4
 		val convRtNew:Int = (rtNew+2)%4
@@ -96,35 +96,26 @@ class FallingDownWallkick:Wallkick {
 			testPieceNew.big = false
 			testPieceNew.placeToField(initX, initY, rtNew, testField)
 			for(yOffset in 0..3) {
-				val dodge = booleanArrayOf(false, false, false, false, false, false, false)
+				val dodge = mutableListOf(false, false, false, false, false, false, false)
 
 				// Intersection testing
-				for(xOffset in -3..3) {
+				for(xOffset in -3..3)
 					if(testPieceOld.checkCollision(initX-xOffset, initY-yOffset, rtOld, testField)) dodge[xOffset+3] = true
-				}
 
 				// Blockage testing
-				for(xOffset in -3..3) {
+				for(xOffset in -3..3)
 					if(piece.checkCollision(x+xOffset*multiplier, y+yOffset*multiplier, rtNew, field)) dodge[xOffset+3] = false
-				}
 
 				// Valid kick testing
-				for(i in 0..6) {
-					if(dodge[ORDER[ordNum][i]]) {
-						return WallkickResult(
-							(ORDER[ordNum][i]-3)*multiplier,
-							yOffset*multiplier,
-							rtNew
-						)
-					}
-				}
+				for(i in 0..6) if(dodge[ORDER[ordNum][i]]) return WallkickResult((ORDER[ordNum][i]-3)*multiplier,
+					yOffset*multiplier, rtNew)
 			}
 		}
 
 		// SPECIAL KICK
 		if(checkFlag(flags, FLAG_SPECIAL)) {
 			// Get piece kick table.
-			val masterKickTable:Array<Array<IntArray>> = when(piece.id) {
+			val masterKickTable = when(piece.id) {
 				Piece.PIECE_T -> if(rtDir==1) T_KICK_TABLE_CW else T_KICK_TABLE_CCW
 				Piece.PIECE_J, Piece.PIECE_L -> if(rtDir==1) JL_KICK_TABLE_CW else JL_KICK_TABLE_CCW
 				Piece.PIECE_Z -> if(rtDir==1) Z_KICK_TABLE_CW else Z_KICK_TABLE_CCW
@@ -133,87 +124,64 @@ class FallingDownWallkick:Wallkick {
 			}
 
 			// Get specific rotation kick table.
-			val kicktable:Array<IntArray>
-			val index = if(rtDir==1) convRtOld else 3-convRtNew
-			kicktable = masterKickTable[index]
 
+			val index = if(rtDir==1) convRtOld else 3-convRtNew
+			val kicktable = masterKickTable[index]
 			// Do kick tests
-			for(test in kicktable) {
-				if(!piece.checkCollision(x+test[0]*multiplier, y+test[1]*multiplier, rtNew, field)) return WallkickResult(
-					test[0]*multiplier, test[1]*multiplier, rtNew
-				)
-			}
+			for((tx, ty) in kicktable) if(!piece.checkCollision(x+tx*multiplier, y+ty*multiplier, rtNew, field))
+				return WallkickResult(tx*multiplier, ty*multiplier, rtNew)
 		}
 		return null
 	}
 
 	companion object {
-		private val T_KICK_TABLE_CCW = arrayOf(
-			arrayOf(intArrayOf(-1, 0), intArrayOf(0, 2), intArrayOf(-1, 2)),
-			arrayOf(intArrayOf(1, 0)), arrayOf(intArrayOf(1, 0), intArrayOf(0, 1), intArrayOf(1, 1), intArrayOf(1, 3)),
-			arrayOf(intArrayOf(-1, 0), intArrayOf(-1, 1))
-		)
-		private val T_KICK_TABLE_CW = arrayOf(
-			arrayOf(intArrayOf(1, 0), intArrayOf(0, 2), intArrayOf(1, 2)),
-			arrayOf(intArrayOf(-1, 0)), arrayOf(intArrayOf(-1, 0), intArrayOf(0, 1), intArrayOf(-1, 1), intArrayOf(-1, 3)),
-			arrayOf(intArrayOf(1, 0), intArrayOf(1, 1))
-		)
-		private val JL_KICK_TABLE_CCW = arrayOf(
-			arrayOf(intArrayOf(0, 0), intArrayOf(-1, 0), intArrayOf(0, 2), intArrayOf(-1, 2)),
-			arrayOf(intArrayOf(0, 0), intArrayOf(1, 0)),
-			arrayOf(intArrayOf(0, 0), intArrayOf(1, 0), intArrayOf(0, 1), intArrayOf(1, 1), intArrayOf(0, 3), intArrayOf(1, 3)),
-			arrayOf(intArrayOf(0, 0), intArrayOf(-1, 0), intArrayOf(-1, 1))
-		)
-		private val JL_KICK_TABLE_CW = arrayOf(
-			arrayOf(intArrayOf(0, 0), intArrayOf(1, 0), intArrayOf(0, 2), intArrayOf(1, 2)),
-			arrayOf(intArrayOf(0, 0), intArrayOf(-1, 0)),
-			arrayOf(intArrayOf(0, 0), intArrayOf(-1, 0), intArrayOf(0, 1), intArrayOf(-1, 1), intArrayOf(0, 3), intArrayOf(-1, 3)),
-			arrayOf(intArrayOf(0, 0), intArrayOf(1, 0), intArrayOf(1, 1))
-		)
-		private val Z_KICK_TABLE_CCW = arrayOf(
-			arrayOf(
-				intArrayOf(0, 0), intArrayOf(-1, 0), intArrayOf(0, 1), intArrayOf(-1, 1), intArrayOf(0, 2), intArrayOf(-1, 2),
-				intArrayOf(0, 3), intArrayOf(-1, 3)
-			), arrayOf(intArrayOf(0, 0), intArrayOf(1, 0), intArrayOf(0, 1), intArrayOf(1, 1)),
-			arrayOf(
-				intArrayOf(0, 0), intArrayOf(-1, 0), intArrayOf(0, 1), intArrayOf(-1, 1), intArrayOf(0, 2), intArrayOf(-1, 2),
-				intArrayOf(0, 3), intArrayOf(-1, 3)
-			), arrayOf(intArrayOf(0, 0), intArrayOf(1, 0), intArrayOf(0, 1), intArrayOf(1, 1))
-		)
-		private val Z_KICK_TABLE_CW = arrayOf(
-			arrayOf(
-				intArrayOf(0, 0), intArrayOf(-1, 0), intArrayOf(0, 1), intArrayOf(-1, 1), intArrayOf(0, 2), intArrayOf(-1, 2),
-				intArrayOf(0, 3), intArrayOf(-1, 3)
-			), arrayOf(intArrayOf(0, 0), intArrayOf(1, 0), intArrayOf(0, 1), intArrayOf(1, 1)),
-			arrayOf(
-				intArrayOf(0, 0), intArrayOf(-1, 0), intArrayOf(0, 1), intArrayOf(-1, 1), intArrayOf(0, 2), intArrayOf(-1, 2),
-				intArrayOf(0, 3), intArrayOf(-1, 3)
-			), arrayOf(intArrayOf(0, 0), intArrayOf(1, 0), intArrayOf(0, 1), intArrayOf(1, 1))
-		)
-		private val S_KICK_TABLE_CCW = arrayOf(
-			arrayOf(
-				intArrayOf(0, 0), intArrayOf(1, 0), intArrayOf(0, 1), intArrayOf(1, 1), intArrayOf(0, 2), intArrayOf(1, 2),
-				intArrayOf(0, 3), intArrayOf(1, 3)
-			), arrayOf(intArrayOf(0, 0), intArrayOf(-1, 0), intArrayOf(0, 1), intArrayOf(-1, 1)),
-			arrayOf(
-				intArrayOf(0, 0), intArrayOf(1, 0), intArrayOf(0, 1), intArrayOf(1, 1), intArrayOf(0, 2), intArrayOf(1, 2),
-				intArrayOf(0, 3), intArrayOf(1, 3)
-			), arrayOf(intArrayOf(0, 0), intArrayOf(-1, 0), intArrayOf(0, 1), intArrayOf(-1, 1))
-		)
-		private val S_KICK_TABLE_CW = arrayOf(
-			arrayOf(
-				intArrayOf(0, 0), intArrayOf(1, 0), intArrayOf(0, 1), intArrayOf(1, 1), intArrayOf(0, 2), intArrayOf(1, 2),
-				intArrayOf(0, 3), intArrayOf(1, 3)
-			), arrayOf(intArrayOf(0, 0), intArrayOf(-1, 0), intArrayOf(0, 1), intArrayOf(-1, 1)),
-			arrayOf(
-				intArrayOf(0, 0), intArrayOf(1, 0), intArrayOf(0, 1), intArrayOf(1, 1), intArrayOf(0, 2), intArrayOf(1, 2),
-				intArrayOf(0, 3), intArrayOf(1, 3)
-			), arrayOf(intArrayOf(0, 0), intArrayOf(-1, 0), intArrayOf(0, 1), intArrayOf(-1, 1))
-		)
-		private val ORDER = arrayOf(
-			intArrayOf(3, 2, 1, 0, 4, 5, 6), intArrayOf(3, 4, 5, 6, 2, 1, 0),
-			intArrayOf(3, 2, 4, 1, 5, 0, 6), intArrayOf(3, 4, 2, 5, 1, 6, 0)
-		)
+		private val T_KICK_TABLE_CCW =
+			listOf(
+				listOf(-1 to 0, 0 to 2, -1 to 2),
+				listOf(1 to 0),
+				listOf(1 to 0, 0 to 1, 1 to 1, 1 to 3),
+				listOf(-1 to 0, -1 to 1))
+		private val T_KICK_TABLE_CW =
+			listOf(
+				listOf(1 to 0, 0 to 2, 1 to 2),
+				listOf(-1 to 0),
+				listOf(-1 to 0, 0 to 1, -1 to 1, -1 to 3),
+				listOf(1 to 0, 1 to 1))
+		private val JL_KICK_TABLE_CCW = listOf(
+			listOf(0 to 0, -1 to 0, 0 to 2, -1 to 2),
+			listOf(0 to 0, 1 to 0),
+			listOf(0 to 0, 1 to 0, 0 to 1, 1 to 1, 0 to 3, 1 to 3),
+			listOf(0 to 0, -1 to 0, -1 to 1))
+		private val JL_KICK_TABLE_CW = listOf(
+			listOf(0 to 0, 1 to 0, 0 to 2, 1 to 2),
+			listOf(0 to 0, -1 to 0),
+			listOf(0 to 0, -1 to 0, 0 to 1, -1 to 1, 0 to 3, -1 to 3),
+			listOf(0 to 0, 1 to 0, 1 to 1))
+		private val Z_KICK_TABLE_CCW = listOf(
+			listOf(0 to 0, -1 to 0, 0 to 1, -1 to 1, 0 to 2, -1 to 2, 0 to 3, -1 to 3),
+			listOf(0 to 0, 1 to 0, 0 to 1, 1 to 1),
+			listOf(0 to 0, -1 to 0, 0 to 1, -1 to 1, 0 to 2, -1 to 2, 0 to 3, -1 to 3),
+			listOf(0 to 0, 1 to 0, 0 to 1, 1 to 1))
+		private val Z_KICK_TABLE_CW = listOf(
+			listOf(0 to 0, -1 to 0, 0 to 1, -1 to 1, 0 to 2, -1 to 2, 0 to 3, -1 to 3),
+			listOf(0 to 0, 1 to 0, 0 to 1, 1 to 1),
+			listOf(0 to 0, -1 to 0, 0 to 1, -1 to 1, 0 to 2, -1 to 2, 0 to 3, -1 to 3),
+			listOf(0 to 0, 1 to 0, 0 to 1, 1 to 1))
+		private val S_KICK_TABLE_CCW = listOf(
+			listOf(0 to 0, 1 to 0, 0 to 1, 1 to 1, 0 to 2, 1 to 2, 0 to 3, 1 to 3),
+			listOf(0 to 0, -1 to 0, 0 to 1, -1 to 1),
+			listOf(0 to 0, 1 to 0, 0 to 1, 1 to 1, 0 to 2, 1 to 2, 0 to 3, 1 to 3),
+			listOf(0 to 0, -1 to 0, 0 to 1, -1 to 1))
+		private val S_KICK_TABLE_CW = listOf(
+			listOf(0 to 0, 1 to 0, 0 to 1, 1 to 1, 0 to 2, 1 to 2, 0 to 3, 1 to 3),
+			listOf(0 to 0, -1 to 0, 0 to 1, -1 to 1),
+			listOf(0 to 0, 1 to 0, 0 to 1, 1 to 1, 0 to 2, 1 to 2, 0 to 3, 1 to 3),
+			listOf(0 to 0, -1 to 0, 0 to 1, -1 to 1))
+		private val ORDER = listOf(
+			listOf(3, 2, 1, 0, 4, 5, 6),
+			listOf(3, 4, 5, 6, 2, 1, 0),
+			listOf(3, 2, 4, 1, 5, 0, 6),
+			listOf(3, 4, 2, 5, 1, 6, 0))
 		private const val FLAG_FLEXIBLE = 1
 		private const val FLAG_SPECIAL = 2
 		private fun checkFlag(num:Int, flag:Int):Boolean = num and flag>0

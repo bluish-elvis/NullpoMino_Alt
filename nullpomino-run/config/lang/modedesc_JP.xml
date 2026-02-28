@@ -25,6 +25,7 @@
  <entry key="GrandM2G">灰色のブロックが下からせり上がってくるGrand Marathonモードです。</entry>
  <entry key="GrandPuzzle">配置された宝石ブロックを時間内に消すモードです。ギミックに注意！</entry>
  <entry key="GrandRoads">一定時間内に10ライン消し続けて15～20レベルを突破しましょう。</entry>
+ <entry key="GrandOrders">一定時間内に規定の様々なミッションをクリアしましょう。</entry>
  <entry key="GrandS1">最速落下から更に加速する上級者向けモードです。一定時間内にLv500を目指せ！</entry>
  <entry key="GrandS2">最速落下からの加速以外でも難易度が上がり続けます。LV999を超えた先には…？</entry>
  <entry key="GrandSStealth">高速状態のまま、置いたブロックが見えなくなっていくモードです。</entry>

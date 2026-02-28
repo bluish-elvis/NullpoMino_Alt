@@ -42,6 +42,7 @@ import mu.nu.nullpo.game.component.Controller
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
 import mu.nu.nullpo.game.event.ScoreEvent
 import mu.nu.nullpo.game.play.GameEngine
+import mu.nu.nullpo.game.play.GameEngine.Status
 import mu.nu.nullpo.gui.common.BaseFont.FONT.*
 import mu.nu.nullpo.gui.common.fx.particles.BlockParticle
 import mu.nu.nullpo.util.CustomProperties
@@ -68,7 +69,7 @@ class ScoreTrial:MarathonModeBase() {
 	private var shouldUseTimer = false
 	// Local randomizer
 	private var localRandom:Random = Random.Default
-	// Goal line
+	// Goal lines
 	private var goalLine = 0
 	// Lives started with
 	private var livesStartedWith = 0
@@ -136,7 +137,7 @@ class ScoreTrial:MarathonModeBase() {
 			netPlayerName = engine.owner.replayProp.getProperty("${engine.playerID}.net.netPlayerName", "")
 		}
 		engine.owner.bgMan.bg = startLevel
-		engine.frameSkin = GameEngine.FRAME_COLOR_GRAY
+		engine.frame = GameEngine.Frame.GRAY
 		engine.twistEnable = false
 		engine.comboType = GameEngine.COMBO_TYPE_NORMAL
 		engine.statistics.levelDispAdd = 0
@@ -222,7 +223,7 @@ class ScoreTrial:MarathonModeBase() {
 			if(engine.ctrl.isPush(Controller.BUTTON_E)&&engine.ai==null&&!netIsNetPlay) {
 				engine.playerProp.reset()
 				engine.playSE("decide")
-				engine.stat = GameEngine.Status.CUSTOM
+				engine.stat = Status.CUSTOM
 				engine.resetStatc()
 				return true
 			}
@@ -336,7 +337,7 @@ class ScoreTrial:MarathonModeBase() {
 			loadRankingPlayer(engine.playerProp)
 			loadSetting(engine, engine.playerProp.propProfile)
 		}
-		if(engine.stat===GameEngine.Status.SETTING) engine.isInGame = false
+		if(engine.stat===Status.SETTING) engine.isInGame = false
 		return s
 	}
 	// Render score
@@ -344,7 +345,7 @@ class ScoreTrial:MarathonModeBase() {
 		if(owner.menuOnly) return
 		receiver.drawScore(engine, 0, 0, name, BASE, COLOR.GREEN)
 		receiver.drawScore(engine, 0, 1, "("+DIFFICULTY_NAMES[difficultySelected]+" TIER)", BASE, COLOR.GREEN)
-		if(engine.stat===GameEngine.Status.SETTING||engine.stat===GameEngine.Status.RESULT&&!owner.replayMode) {
+		if(engine.stat===Status.SETTING||engine.stat===Status.RESULT&&!owner.replayMode) {
 			if(!owner.replayMode&&!big&&engine.ai==null&&lifeOffset==0) {
 				val topY = if(receiver.nextDisplayType==2) 6 else 4
 				receiver.drawScore(engine, 3, topY-1, "SCORE  LINE TIME", BASE, COLOR.BLUE)
@@ -394,7 +395,7 @@ class ScoreTrial:MarathonModeBase() {
 					)
 				}
 			}
-		} else if(engine.stat===GameEngine.Status.CUSTOM) {
+		} else if(engine.stat===Status.CUSTOM) {
 			engine.playerProp.loginScreen.renderScreen(receiver, engine)
 		} else {
 			receiver.drawScore(engine, 0, 3, "LINE", BASE, COLOR.BLUE)
@@ -408,7 +409,7 @@ class ScoreTrial:MarathonModeBase() {
 			if(!o) {
 				l = engine.lives+1
 			}
-			if(engine.stat===GameEngine.Status.GAMEOVER&&!o&&engine.lives==0) l = 0
+			if(engine.stat===Status.GAMEOVER&&!o&&engine.lives==0) l = 0
 			receiver.drawScore(engine, 0, 9, "LIVES", BASE, COLOR.BLUE)
 			receiver.drawScore(engine, 0, 10, "$l", BASE, l<=1)
 			receiver.drawScore(engine, 0, 12, "LEVEL", BASE, COLOR.BLUE)
@@ -453,10 +454,11 @@ class ScoreTrial:MarathonModeBase() {
 			/*if(engine.stat===GameEngine.Status.ARE&&difficultySelected==2) {
 				engine.dasCount = engine.speed.das
 			}*/
-			if(shouldUseTimer&&engine.stat!==GameEngine.Status.GAMEOVER) {
+			if(shouldUseTimer&&engine.stat!==Status.GAMEOVER) {
 				mainTimer--
 				if(mainTimer<=600&&mainTimer%60==0) {
 					receiver.playSE("countdown")
+					if(mainTimer<=300) engine.playSE("countdown${mainTimer/60}")
 				}
 			}
 
@@ -471,7 +473,7 @@ class ScoreTrial:MarathonModeBase() {
 			if(mainTimer<=0) {
 				if(engine.statistics.level<199&&difficultySelected==2) {
 					engine.lives = 0
-					engine.stat = GameEngine.Status.GAMEOVER
+					engine.stat = Status.GAMEOVER
 					engine.resetStatc()
 					engine.gameEnded()
 				} else {
@@ -495,7 +497,7 @@ class ScoreTrial:MarathonModeBase() {
 					engine.ending = 1
 					engine.resetStatc()
 					engine.gameEnded()
-					engine.stat = GameEngine.Status.ENDINGSTART
+					engine.stat = Status.ENDINGSTART
 				}
 			}
 		}
@@ -511,9 +513,9 @@ class ScoreTrial:MarathonModeBase() {
 			comboTextNumber?.update()
 			if(comboTextNumber?.shouldPurge()==true) comboTextNumber = null
 		}
-		if(engine.stat===GameEngine.Status.SETTING||engine.stat===GameEngine.Status.RESULT&&!owner.replayMode||engine.stat===GameEngine.Status.CUSTOM) {
+		if(engine.stat===Status.SETTING||engine.stat===Status.RESULT&&!owner.replayMode||engine.stat===Status.CUSTOM) {
 			// Show rank
-			if(engine.ctrl.isPush(Controller.BUTTON_F)&&engine.playerProp.isLoggedIn&&engine.stat!==GameEngine.Status.CUSTOM) {
+			if(engine.ctrl.isPush(Controller.BUTTON_F)&&engine.playerProp.isLoggedIn&&engine.stat!==Status.CUSTOM) {
 				showPlayerStats = !showPlayerStats
 				engine.playSE("change")
 			}
@@ -541,8 +543,8 @@ class ScoreTrial:MarathonModeBase() {
 			pts *= ev.combo
 			pts *= engine.statistics.level+1
 			if(ev.combo>0) {
-				val destinationX:Int = receiver.scoreX(engine)
-				val destinationY:Int = receiver.scoreY(engine, if(engine.displaySize==0) 20 else 40)
+				val destinationX = receiver.scoreX(engine).toInt()
+				val destinationY = receiver.scoreY(engine, if(engine.displaySize==0) 20 else 40).toInt()
 				val colors = when {
 					ev.combo>10 -> arrayOf(COLOR.YELLOW, COLOR.ORANGE, COLOR.RED)
 					ev.combo>=8 -> arrayOf(COLOR.CYAN, COLOR.BLUE, COLOR.COBALT)
@@ -589,8 +591,8 @@ class ScoreTrial:MarathonModeBase() {
 			if(engine.statistics.level==200) {
 				owner.bgMan.bg = 19
 				engine.playSE("endingstart")
-				val destinationX:Int = receiver.scoreX(engine)
-				val destinationY:Int = receiver.scoreY(engine, if(engine.displaySize==0) 18 else 36)
+				val destinationX = receiver.scoreX(engine).toInt()
+				val destinationY = receiver.scoreY(engine, if(engine.displaySize==0) 18 else 36).toInt()
 				congratulationsText = FlyInOutText(
 					"WELL DONE!", destinationX, destinationY, 30, 120, 30,
 					arrayOf(COLOR.YELLOW, COLOR.ORANGE, COLOR.RED), 1.0f,
@@ -620,8 +622,8 @@ class ScoreTrial:MarathonModeBase() {
 					owner.bgMan.bg = 19
 					shouldUseTimer = true
 					engine.playSE("endingstart")
-					val destinationX:Int = receiver.scoreX(engine)
-					val destinationY:Int = receiver.scoreY(engine, if(engine.displaySize==0) 18 else 36)
+					val destinationX = receiver.scoreX(engine).toInt()
+					val destinationY = receiver.scoreY(engine, if(engine.displaySize==0) 18 else 36).toInt()
 					congratulationsText = FlyInOutText(
 						"WELL DONE!", destinationX, destinationY, 30, 120, 30,
 						arrayOf(COLOR.YELLOW, COLOR.ORANGE, COLOR.RED), 1.0f,
@@ -807,7 +809,7 @@ class ScoreTrial:MarathonModeBase() {
 		// - N.B. when timer runs out, simply make the lifecount 0 before triggering game over.
 		private const val STARTING_LIVES = 4
 		// BG changes every 5 levels until 50, then at 200.
-		// Level changes every 8 lines until lv 50, then every line clear increases it by 1 until 200.
+		// Level changes every 8 lines until lv 50, then every lines clear increases it by 1 until 200.
 		// 6f LD for NORMAL/HARD
 		// 4'30" LV50 Time Limit for HARD
 		// 3'00" LV30 Time Limit for NORMAL

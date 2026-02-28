@@ -47,7 +47,7 @@ internal class SoundManager
 
 	/** Load WAVE file
 	 * @param name 登録名
-	 * @param filename Filename (String）
+	 * @param filename Filename (String)
 	 * @return true if successful, false if failed
 	 */
 	fun load(name:String, filename:String):Boolean {

@@ -30,23 +30,17 @@
  */
 package mu.nu.nullpo.gui.slick
 
-import kotlinx.serialization.encodeToString
-import mu.nu.nullpo.util.GeneralUtil.Json
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
 import mu.nu.nullpo.game.net.NetObserverClient
 import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.gui.common.ConfigGlobal
 import mu.nu.nullpo.gui.slick.img.FontNano
 import mu.nu.nullpo.util.CustomProperties
+import mu.nu.nullpo.util.GeneralUtil.Json
 import mu.nu.nullpo.util.ModeManager
 import org.apache.logging.log4j.LogManager
 import org.lwjgl.opengl.Display
-import org.newdawn.slick.AppGameContainer
-import org.newdawn.slick.GameContainer
-import org.newdawn.slick.Graphics
-import org.newdawn.slick.Image
-import org.newdawn.slick.ScalableGame
-import org.newdawn.slick.SlickException
+import org.newdawn.slick.*
 import org.newdawn.slick.state.StateBasedGame
 import org.newdawn.slick.util.Log
 import java.awt.image.BufferedImage
@@ -56,14 +50,13 @@ import java.io.FileOutputStream
 import java.io.IOException
 import java.text.DecimalFormat
 import java.text.SimpleDateFormat
-import java.util.Calendar
-import java.util.Locale
+import java.util.*
 import javax.swing.JOptionPane
 import kotlin.system.exitProcess
 
 /** NullpoMino SlickVersion */
 internal class NullpoMinoSlick:StateBasedGame("NullpoMino (Now Loading...)") {
-	/* ステート (タイトルとかゲームとかのシーンのことね）を追加 */
+	/* ステート (タイトルとかゲームとかのシーンのことね)を追加 */
 	override fun initStatesList(container:GameContainer) {
 		stateLoading = StateLoading()
 		stateTitle = StateTitle()
@@ -231,7 +224,7 @@ internal class NullpoMinoSlick:StateBasedGame("NullpoMino (Now Loading...)") {
 			org.apache.logging.log4j.core.config.Configurator.initialize(log.name, "config/etc/log.xml")
 			Log.setLogSystem(SlickLog4j())
 			log.info("NullpoMinoSlick Start")
-			log.info(NullpoMinoSlick::class.java.getResource("/log4j2.xml")?.path ?: "")
+			log.info(NullpoMinoSlick::class.java.getResource("/log4j2.xml")?.path?:"")
 			// 設定ファイル読み込み
 			loadGlobalConfig()
 			loadSlickConfig()
@@ -322,7 +315,7 @@ internal class NullpoMinoSlick:StateBasedGame("NullpoMino (Now Loading...)") {
 			} catch(_:Exception) {
 			}
 
-			// Command line options
+			// Command lines options
 			useJInputKeyboard = false
 			useBigImageTextureLoad = false
 
@@ -411,7 +404,8 @@ internal class NullpoMinoSlick:StateBasedGame("NullpoMino (Now Loading...)") {
 
 				// Display an error dialog
 				val strErrorTitle = getUIText("InitFailedMessageGeneral_Title")
-				val strErrorMessage = String.format(getUIText("InitFailedMessageGeneral_Body"), strDriverName, strDriverVersion, "$e")
+				val strErrorMessage =
+					String.format(getUIText("InitFailedMessageGeneral_Body"), strDriverName, strDriverVersion, "$e")
 				JOptionPane.showMessageDialog(null, strErrorMessage, strErrorTitle, JOptionPane.ERROR_MESSAGE)
 
 				// Exit
@@ -448,14 +442,16 @@ internal class NullpoMinoSlick:StateBasedGame("NullpoMino (Now Loading...)") {
 		/** (Re-)Load global config file */
 		internal fun loadGlobalConfig() {
 			try {
-				propGlobal = Json.decodeFromString(FileInputStream("config/setting/global.json").bufferedReader().use {it.readText()})
+				propGlobal =
+					Json.decodeFromString(FileInputStream("config/setting/global.json").bufferedReader().use {it.readText()})
 			} catch(_:Exception) {
 			}
 		}
 		/** (Re-)Load slick config file */
 		internal fun loadSlickConfig() {
 			try {
-				propConfig = Json.decodeFromString(FileInputStream("config/setting/slick.json").bufferedReader().use {it.readText()})
+				propConfig =
+					Json.decodeFromString(FileInputStream("config/setting/slick.json").bufferedReader().use {it.readText()})
 			} catch(_:Exception) {
 			}
 		}
@@ -543,10 +539,10 @@ internal class NullpoMinoSlick:StateBasedGame("NullpoMino (Now Loading...)") {
 
 		/** 翻訳後のUIの文字列を取得
 		 * @param str 文字列
-		 * @return 翻訳後のUIの文字列 (無いならそのままstrを返す）
+		 * @return 翻訳後のUIの文字列 (無いならそのままstrを返す)
 		 */
 		fun getUIText(str:String):String =
-			propLang.getProperty(str) ?: propLangDefault.getProperty(str, str) ?: str
+			propLang.getProperty(str)?:propLangDefault.getProperty(str, str)?:str
 
 		/** FPS cap routine
 		 * @param inGame `true` if during the gameplay

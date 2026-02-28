@@ -3,7 +3,7 @@
 <properties>
  <comment>NullpoMino Music List</comment>
 
- <entry key="music.filename.Menu.0">res/bgm/beats/title_technika3.ogg</entry>
+ <entry key="music.filename.Menu.0">res/bgm/beats/flow-title.ogg</entry>
  <entry key="music.filename.Menu.1">res/bgm/beats/sm-ssc_evo.ogg</entry>
  <entry key="music.filename.Menu.2">res/bgm/beats/cbr_menu3.ogg</entry>
  <entry key="music.filename.Menu.3">res/bgm/beats/cbr_prepare1.ogg</entry>
@@ -98,7 +98,7 @@
  <entry key="music.filename.Result.0">res/bgm/beats/cbr_result2.ogg</entry>
  <entry key="music.filename.Result.1">res/bgm/beats/xx_collon1.ogg</entry>
  <entry key="music.filename.Result.2">res/bgm/beats/cbr_result1.ogg</entry>
- <entry key="music.filename.Result.3">res/bgm/beats/cbr_result3.ogg</entry>
+ <entry key="music.filename.Result.3">res/bgm/beats/result_technika3_2.ogg</entry>
 
  <entry key="music.noloop.Ending.0">true</entry>
  <entry key="music.noloop.Ending.1">true</entry>

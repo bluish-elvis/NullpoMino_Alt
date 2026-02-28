@@ -100,7 +100,6 @@ class GrandCleaner:AbstractMode() {
 	//	val rankLists = List(RANKING_TYPE) {Leaderboard(rankingMax, serializer<List<ScoreData>>())}
 //	override val ranking:List<Leaderboard<*>> get() = rankLists[rankingMode]
 	override val ranking = List(RANKING_TYPE) {Leaderboard(rankingMax, serializer<List<ScoreData>>())}
-	private var decoration = 0
 	private var decTemp = 0
 
 	/** Mode nameを取得 */
@@ -125,7 +124,7 @@ class GrandCleaner:AbstractMode() {
 		engine.twistEnable = false
 		engine.b2bEnable = false
 		engine.splitB2B = false
-		engine.frameSkin = GameEngine.FRAME_COLOR_PINK
+		engine.frame = GameEngine.Frame.PINK
 		engine.big = true
 		engine.bigHalf = true
 		engine.bigMove = true
@@ -187,7 +186,7 @@ class GrandCleaner:AbstractMode() {
 	override fun onReady(engine:GameEngine):Boolean {
 		if(engine.statc[0]==0) {
 			owner.musMan.fadeSW = true
-			engine.nextPieceEnable = List(Piece.PIECE_STANDARD_COUNT) {i ->
+			engine.nextPieceEnable = List(Shape.numTetras) {i ->
 				!easyPiece||EASY_PIECES.any {it.ordinal==i}
 			}
 		}
@@ -209,7 +208,7 @@ class GrandCleaner:AbstractMode() {
 		)
 
 		receiver.drawScore(engine, -1, -4*2, "DECORATION", BASE, scale = .5f)
-		receiver.drawScoreBadges(engine, 0, -3, 100, decoration)
+		receiver.drawScoreBadges(engine, 0, -3, 100, owner.stats.decoration)
 		receiver.drawScoreBadges(engine, 5, -4, 100, decTemp)
 		if(engine.stat==GameEngine.Status.SETTING||engine.stat==GameEngine.Status.RESULT&&!owner.replayMode) {
 			if(!always20g&&engine.ai==null) {
@@ -264,9 +263,10 @@ class GrandCleaner:AbstractMode() {
 			engine.meterValue = minOf(1f, timeLimit*1f/TIME_LIMIT_MAX)
 			engine.meterColor = GameEngine.METER_COLOR_LIMIT
 
-			if(timeLimit>0&&timeLimit<=10*60&&timeLimit%60==0)
-			// 10秒前からのカウントダウン
+			if(timeLimit>0&&timeLimit<=10*60&&timeLimit%60==0) {
 				engine.playSE("countdown")
+				if(timeLimit<=300) engine.playSE("countdown${timeLimit/60}")
+			}
 		}
 
 	}
@@ -386,7 +386,7 @@ class GrandCleaner:AbstractMode() {
 	/** This function will be called when the replay data is going to be saved */
 	override fun saveReplay(engine:GameEngine, prop:CustomProperties):Boolean {
 		if(!owner.replayMode&&!always20g&&engine.ai==null) {
-			owner.statsProp.setProperty("decoration", decoration)
+			owner.statsProp.setProperty("decoration", owner.stats.decoration)
 			rankingRank = ranking[rankingMode].add(ScoreData(engine.statistics))
 			if(rankingRank!=-1) return true
 		}

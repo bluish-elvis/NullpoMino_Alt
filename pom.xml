@@ -26,7 +26,7 @@
  <properties>
   <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
   <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-  <kotlin.version>2.3.0-RC3</kotlin.version>
+  <kotlin.version>2.3.10</kotlin.version>
   <java.version>25</java.version>
   <maven.compiler.source>${java.version}</maven.compiler.source>
   <maven.compiler.target>${java.version}</maven.compiler.target>
@@ -43,7 +43,7 @@
     <plugin>
      <groupId>org.apache.maven.plugins</groupId>
      <artifactId>maven-dependency-plugin</artifactId>
-     <version>3.7.1</version>
+     <version>3.10.0</version>
     </plugin>
     <plugin>
      <groupId>org.apache.maven.plugins</groupId>
@@ -53,7 +53,7 @@
     <plugin>
      <groupId>org.apache.maven.plugins</groupId>
      <artifactId>maven-clean-plugin</artifactId>
-     <version>3.2.0</version>
+     <version>3.5.0</version>
     </plugin>
    </plugins>
   </pluginManagement>
@@ -191,6 +191,7 @@
        <includes>**/*</includes>
       </fileset>
      </filesets>
+     <force>true</force>
     </configuration>
    </plugin>
    <!--<plugin>

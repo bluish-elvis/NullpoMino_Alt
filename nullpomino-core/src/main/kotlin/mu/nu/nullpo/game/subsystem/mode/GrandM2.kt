@@ -80,13 +80,13 @@ class GrandM2:AbstractGrand() {
 	/** 段位表示を光らせる残り frame count */
 	private var gradeFlash = 0
 
-	/** Section 内で4-line clearした count */
+	/** Section 内で4-lines clearした count */
 	private var sectionQuads = MutableList(sectionMax) {0}
 
 	/** 消えRoll flag１ (Section Time) */
 	private var mRollSTime = false
 
-	/** 消えRoll flag２ (4-line clear) */
+	/** 消えRoll flag２ (4-lines clear) */
 	private var mRollQuads = false
 
 	/** 消えRoll started flag */
@@ -102,11 +102,11 @@ class GrandM2:AbstractGrand() {
 	/** Level at start */
 	private var startLevel:Int by DelegateMenuItem(itemLevel)
 
-	private val item20g = BooleanMenuItem("always20g", "20G MODE", COLOR.BLUE, false)
+	private val item20g = BooleanMenuItem("always20g", "20G MODE", COLOR.RED, false)
 	/** When true, always 20G */
 	private var always20g:Boolean by DelegateMenuItem(item20g)
 
-	private val itemBig = BooleanMenuItem("big", "BIG", COLOR.BLUE, false)
+	private val itemBig = BooleanMenuItem("big", "BIG", COLOR.ORANGE, false)
 	/** BigMode */
 	private var big:Boolean by DelegateMenuItem(itemBig)
 
@@ -270,7 +270,7 @@ class GrandM2:AbstractGrand() {
 		decTemp = 0
 		nextSecLv = (lv+100).coerceIn(100, 999)
 
-		owner.bgMan.bg = 10+startLevel/100
+		owner.bgMan.bg = 10+startLevel
 
 		engine.big = big
 
@@ -286,7 +286,7 @@ class GrandM2:AbstractGrand() {
 		receiver.drawScore(engine, 0, 0, name, BASE, COLOR.CYAN)
 
 		receiver.drawScore(engine, -1, -4*2, "DECORATION", BASE, scale = .5f)
-		receiver.drawScoreBadges(engine, 0, -3, 100, decoration)
+		receiver.drawScoreBadges(engine, 0, -3, 100, owner.stats.decoration)
 		receiver.drawScoreBadges(engine, 5, -4, 100, decTemp)
 		if(engine.stat==GameEngine.Status.SETTING||engine.stat==GameEngine.Status.RESULT&&!owner.replayMode) {
 			if(!owner.replayMode&&startLevel==0&&!big&&!always20g&&engine.ai==null)
@@ -506,7 +506,7 @@ class GrandM2:AbstractGrand() {
 				}
 			}
 
-			// 4-line clearカウント
+			// 4-lines clearカウント
 			if(li>=4) sectionQuads[engine.statistics.level/100]++
 
 			// Level up
@@ -648,7 +648,7 @@ class GrandM2:AbstractGrand() {
 			engine.blockOutlineType = GameEngine.BLOCK_OUTLINE_NORMAL
 			// 裏段位
 			secretGrade = engine.field.secretGrade
-			decoration += decTemp+secretGrade
+			owner.stats.decoration += decTemp+secretGrade
 		}
 
 		return false
@@ -787,7 +787,7 @@ class GrandM2:AbstractGrand() {
 		owner.replayProp.setProperty("result.grade.name", tableGradeName[grade])
 		owner.replayProp.setProperty("result.grade.number", grade)
 		owner.replayProp.setProperty("grademania2.version", version)
-		owner.statsProp.setProperty("decoration", decoration)
+		owner.statsProp.setProperty("decoration", owner.stats.decoration)
 
 		// Update rankings
 		if(!owner.replayMode&&startLevel==0&&!always20g&&!big&&engine.ai==null) {
@@ -830,7 +830,7 @@ class GrandM2:AbstractGrand() {
 		/** ARE table */
 		private val tableARE = listOf(25, 25, 24, 23, 22, 21, 19, 16, 14, 12)
 
-		/** ARE after line clear table */
+		/** ARE after lines clear table */
 		private val tableARELine = listOf(25, 25, 24, 22, 20, 18, 15, 12, 9, 6)
 
 		/** Line clear times table */

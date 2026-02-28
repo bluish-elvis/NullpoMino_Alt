@@ -35,9 +35,7 @@ import java.io.IOException
 import java.io.UnsupportedEncodingException
 import java.net.Socket
 import java.nio.charset.StandardCharsets
-import java.util.LinkedList
-import java.util.Timer
-import java.util.TimerTask
+import java.util.*
 
 /** Client(Basic part) */
 open class NetBaseClient:Thread {
@@ -52,20 +50,19 @@ open class NetBaseClient:Thread {
 	/** Socket for connection */
 	protected var socket:Socket? = null
 
-	/** Destination host */
-	/** @return Destination host
+	/** Destination host
+	 * @return Destination host
 	 */
 	var host:String? = null
 		protected set
 
-	/** Destination port number */
-	/** @return Destination port number
-	 */
+	/** Destination port number
+	 *  @return Destination port number*/
 	var port = 0
 		protected set
 
-	/** IP address */
-	/** @return Server's IP address
+	/** IP address
+	 *  @return Server's IP address
 	 */
 	var ip = ""
 		protected set

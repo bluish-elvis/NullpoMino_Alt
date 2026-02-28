@@ -37,45 +37,13 @@
 
 package zeroxfc.nullpo.custom.wallkick
 
-import mu.nu.nullpo.game.component.Controller
-import mu.nu.nullpo.game.component.Field
-import mu.nu.nullpo.game.component.Piece
-import mu.nu.nullpo.game.event.WallkickResult
-import mu.nu.nullpo.game.subsystem.wallkick.Wallkick
+import mu.nu.nullpo.game.subsystem.wallkick.DTETWallkick
 
-/**
-DTET Wallkick - An extension of the Classic Wallkick system for DRS by Zircean
-Modified by 0xFC963F18DC21 to add a 1 up floorkick
+/**DTET Wallkick - An extension of the Classic Wallkick system for DRS by Zircean
+ * @author Zircean
+ * @author 0xFC963F18DC21 / Shots243:  add a 1 up floorkick
  */
-class SuperDTETWallkick:Wallkick {
-	/*
-     * Wallkick main method
-     */
-	override fun executeWallkick(x:Int, y:Int, rtDir:Int, rtOld:Int, rtNew:Int, allowUpward:Boolean, piece:Piece, field:Field,
-		ctrl:Controller?): WallkickResult? {
-		var x2:Int
-		var y2:Int
-		for(i in WALLKICK.indices) {
-			x2 = if(rtDir<0||rtDir==2) WALLKICK[i][0] else -WALLKICK[i][0]
-			y2 = WALLKICK[i][1]
-
-			if(piece.big) {
-				x2 *= 2
-				y2 *= 2
-			}
-			if(!piece.checkCollision(x+x2, y+y2, rtNew, field))
-				return WallkickResult(x2, y2, rtNew)
-		}
-		return null
-	}
-
-	companion object {
-		/**
-		 * Wallkick table
-		 */
-		private val WALLKICK = arrayOf(
-			intArrayOf(-1, 0), intArrayOf(1, 0), intArrayOf(0, 1), intArrayOf(-1, 1), intArrayOf(1, 1),
-			intArrayOf(0, -1)
-		)
-	}
+class SuperDTETWallkick:DTETWallkick() {
+	/** Wallkick table*/
+	override val WALLKICK = listOf(-1 to 0, 1 to 0, 0 to 1, -1 to 1, 1 to 1, 0 to -1)
 }

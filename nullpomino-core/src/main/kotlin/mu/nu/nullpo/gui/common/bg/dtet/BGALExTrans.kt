@@ -32,27 +32,40 @@
 package mu.nu.nullpo.gui.common.bg.dtet
 
 import mu.nu.nullpo.gui.common.AbstractRenderer
+import mu.nu.nullpo.gui.common.bg.AbstractBG
+import mu.nu.nullpo.gui.common.bg.tech.Snow
+import mu.nu.nullpo.gui.common.bg.tech.Space
 
-class BGALExTrans<T>(bg:mu.nu.nullpo.gui.common.ResourceImage<T>):mu.nu.nullpo.gui.common.bg.AbstractBG<T>(bg) {
-	companion object {
-		var TTick = 0
-			set(value) {
-				field = value%1200
-			}
-	}
-
+class BGALExTrans<T>(bg:mu.nu.nullpo.gui.common.ResourceImage<T>):
+	AbstractBG<T>(bg) {
+	val frag = Snow()
+	val star = Space()
+	val frags get() = listOf(frag, star)
+	private var y = 0f
+	override var speed:Float
+		get() = super.speed
+		set(value) {
+			super.speed = value
+			frag.speed = value
+			star.speed = value
+			star.vel.set(0f to (1-value)*.5f)
+		}
 	override fun update() {
-		tick = ++TTick
+		super.update()
+		tick++
+		tick %= 8*maxOf(1,speed.toInt())
+		y = (y+(1-spdN)*5).mod(480f)
+		frags.forEach { it.update() }
 	}
 
 	override fun reset() {
 		tick = 0
-		TTick = 0
+		y = 0f
+		frags.forEach { it.reset() }
 	}
 
 	override fun draw(render:AbstractRenderer, bg:Boolean) {
-		val x = minOf(640f, (speed.toInt()*40f*((8-tick*3)%8)).let {it+if(it<0) 640 else 0}%640)
-		val y = minOf(480f, ((1-speed)*tick*5).let {it+if(it<0) 480 else 0}%480)
+		val x = (speed.toInt()*40f*((8-tick*3)%8)).mod(640f)
 		/*With LdG
 .X = TrM * 40 * (8 - ((FAC * 3) Mod 8))
 .Y = (1 - TrM) * FAC * 5: If .Y < 0 Then .Y = .Y + 480
@@ -65,6 +78,7 @@ End With*/
 		img.draw(0f, 560-y, x, 0f, 640f, y)
 		img.draw(640-x, 240-y, 0f, 0f, x, y)
 		img.draw(640-x, 560-y, 0f, 0f, x, y)
+		frags.forEach { it.draw(render, false)}
 	}
 }
 /*Case 13 'レベルMAX

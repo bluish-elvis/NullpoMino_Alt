@@ -39,6 +39,7 @@ import mu.nu.nullpo.game.event.EventReceiver.COLOR
 import mu.nu.nullpo.game.event.ScoreEvent
 import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.game.play.GameEngine.GameStyle
+import mu.nu.nullpo.game.play.GameEngine.Status
 import mu.nu.nullpo.game.play.GameManager
 import mu.nu.nullpo.game.play.LineGravity
 import mu.nu.nullpo.game.play.LineGravity.CASCADE.canCascade
@@ -413,8 +414,8 @@ class PhysicianVS:AbstractMode() {
 			else if(menuTime>=60) menuCursor = 9
 		} else // Start
 			if(owner.engine[0].statc[4]==1&&owner.engine[1].statc[4]==1&&pid==1) {
-				owner.engine[0].stat = GameEngine.Status.READY
-				owner.engine[1].stat = GameEngine.Status.READY
+				owner.engine[0].stat = Status.READY
+				owner.engine[1].stat = Status.READY
 				owner.engine[0].resetStatc()
 				owner.engine[1].resetStatc()
 			} else if(engine.ctrl.isPush(Controller.BUTTON_B)) engine.statc[4] = 0// Cancel
@@ -511,7 +512,7 @@ class PhysicianVS:AbstractMode() {
 		val fldPosX = receiver.fieldX(engine)
 		val fldPosY = receiver.fieldY(engine)
 		val pid = engine.playerID
-		val playerColor = EventReceiver.getPlayerColor(pid)
+		val playerColor = COLOR.fromPlayerID(pid)
 		val tempX:Int
 
 		// Timer
@@ -592,7 +593,7 @@ class PhysicianVS:AbstractMode() {
 			return pts
 		} else if(blkc==0&&!engine.field.canCascade())
 			if(garbageCheck(engine)) {
-				engine.stat = GameEngine.Status.LINECLEAR
+				engine.stat = Status.LINECLEAR
 				engine.statc[0] = engine.lineDelay
 			}
 		return 0
@@ -695,23 +696,23 @@ class PhysicianVS:AbstractMode() {
 
 		// Settlement
 		if(pid==1&&owner.engine[0].gameActive) {
-			val p1Lose = owner.engine[0].stat==GameEngine.Status.GAMEOVER||owner.engine[1].field.howManyGems==0
-			val p2Lose = owner.engine[1].stat==GameEngine.Status.GAMEOVER||owner.engine[0].field.howManyGems==0
+			val p1Lose = owner.engine[0].stat==Status.GAMEOVER||owner.engine[1].field.howManyGems==0
+			val p2Lose = owner.engine[1].stat==Status.GAMEOVER||owner.engine[0].field.howManyGems==0
 			if(p1Lose&&p2Lose) {
 				// Draw
 				winnerID = -1
-				owner.engine[0].stat = GameEngine.Status.GAMEOVER
-				owner.engine[1].stat = GameEngine.Status.GAMEOVER
+				owner.engine[0].stat = Status.GAMEOVER
+				owner.engine[1].stat = Status.GAMEOVER
 			} else if(p2Lose) {
 				// 1P win
 				winnerID = 0
-				owner.engine[0].stat = GameEngine.Status.EXCELLENT
-				owner.engine[1].stat = GameEngine.Status.GAMEOVER
+				owner.engine[0].stat = Status.EXCELLENT
+				owner.engine[1].stat = Status.GAMEOVER
 			} else if(p1Lose) {
 				// 2P win
 				winnerID = 1
-				owner.engine[0].stat = GameEngine.Status.GAMEOVER
-				owner.engine[1].stat = GameEngine.Status.EXCELLENT
+				owner.engine[0].stat = Status.GAMEOVER
+				owner.engine[1].stat = Status.EXCELLENT
 			}
 			if(p1Lose||p2Lose) {
 				owner.engine[0].gameEnded()
@@ -776,7 +777,7 @@ class PhysicianVS:AbstractMode() {
 		/** Colors for speed settings */
 		private val SPEED_COLOR = listOf(COLOR.BLUE, COLOR.YELLOW, COLOR.RED)
 
-		/** Each player's frame cint */
+		/** Each player's frame color-int */
 		private val PLAYER_COLOR_FRAME = listOf(GameEngine.FRAME_COLOR_RED, GameEngine.FRAME_COLOR_BLUE)
 	}
 }

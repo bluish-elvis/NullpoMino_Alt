@@ -31,8 +31,9 @@
 package mu.nu.nullpo.game.play
 
 import mu.nu.nullpo.game.component.*
+import mu.nu.nullpo.game.component.Piece.Shape
 import mu.nu.nullpo.game.component.SpeedParam.Companion.SDS_FIXED
-import mu.nu.nullpo.game.event.EventReceiver
+import mu.nu.nullpo.game.event.EventReceiver.COLOR
 import mu.nu.nullpo.game.event.ReplayData
 import mu.nu.nullpo.game.event.ScoreEvent
 import mu.nu.nullpo.game.event.ScoreEvent.Twister
@@ -43,11 +44,11 @@ import mu.nu.nullpo.gui.common.ConfigGlobal.AIConf
 import mu.nu.nullpo.gui.common.ConfigGlobal.TuneConf
 import mu.nu.nullpo.util.GeneralUtil
 import mu.nu.nullpo.util.GeneralUtil.Json
+import mu.nu.nullpo.util.GeneralUtil.times
 import mu.nu.nullpo.util.GeneralUtil.toInt
 import net.omegaboshi.nullpomino.game.subsystem.randomizer.MemorylessRandomizer
 import net.omegaboshi.nullpomino.game.subsystem.randomizer.Randomizer
 import org.apache.logging.log4j.LogManager
-import zeroxfc.nullpo.custom.libs.MathHelper.pythonModulo
 import zeroxfc.nullpo.custom.libs.ProfileProperties
 import java.util.*
 import kotlin.math.absoluteValue
@@ -61,13 +62,27 @@ class GameEngine(
 	val owner:GameManager,
 	/**Playerの number */
 	val playerID:Int,
+	ruleOpt:RuleOptions = RuleOptions()
+) {
 	/** ルール設定 */
-	var ruleOpt:RuleOptions = RuleOptions(),
+	var ruleOpt:RuleOptions = ruleOpt
+		set(value) {
+			field = value
+			ruleOptBuf = value
+			// NEXT順生成アルゴリズム
+			value.strRandomizer.let {if(it.isNotEmpty()) randomizer = GeneralUtil.loadRandomizer(it)}
+			// Wallkick
+			value.strWallkick.let {if(it.isNotEmpty()) wallkick = GeneralUtil.loadWallkick(it)}
+			Log.info(
+				"GameEngine ruleOpt set: ${value.strRuleName}, randomizer=${value.strRandomizer}, wallkick=${value.strWallkick}")
+		}
+	var ruleOptBuf = ruleOpt; private set
 	/** wallkick判定アルゴリズム */
-	var wallkick:Wallkick? = null,
+	var wallkick:Wallkick? = null
 	/** Blockピースの出現順の生成アルゴリズム */
 	var randomizer:Randomizer = MemorylessRandomizer()
-) {
+
+	val receiver get() = owner.receiver
 	var field = Field(); private set
 	/** Controller: You can get player's input from here */
 	var ctrl = Controller(); private set
@@ -90,7 +105,9 @@ class GameEngine(
 	private var replayData = ReplayData()
 
 	var frameX = 0f
+	fun drawX(x:Number) = receiver.fieldX(this, x)
 	var frameY = 0f
+	fun drawY(y:Number) = receiver.fieldY(this, y)
 
 	/** AIPlayer: AI for autoplaying */
 	var ai:AIPlayer? = null
@@ -175,11 +192,11 @@ class GameEngine(
 	/** Bottommost Y coord of current piece
 	 * (Used for ghost piece and harddrop) */
 	var nowPieceBottomY = 0
-	/** Write anything other than -1 to override whole current piece cint */
+	/** Write anything other than -1 to override whole current piece color */
 	var nowPieceColorOverride:Block.COLOR? = null; private set
 
 	/** Allow/Disallow certain piece */
-	var nextPieceEnable = List(Piece.PIECE_COUNT) {it<Piece.PIECE_STANDARD_COUNT}
+	var nextPieceEnable = List(Shape.num) {it<Shape.numTetras}
 	/** Preferred size of next piece array
 	 * Might be ignored by certain Randomizer. (Default:1400) */
 	var nextPieceArraySize = 0
@@ -282,7 +299,10 @@ class GameEngine(
 	/** Last Erased Line's bottom Y-coordinates*/
 	val lastLineY get() = lastClear?.linesY?.maxOrNull()?:fieldHeight
 
-	/** True if last erased line is Split */
+	var clutchEnable = true
+	var clutch = false; private set
+	var clutchCombo = 0; private set
+	/** True if last erased lines is Split */
 	var split = false; internal set
 	/** Last Twister */
 	var twistType:Twister? = null; private set
@@ -293,7 +313,7 @@ class GameEngine(
 	/** EZ Twister */
 	val twistEZ get() = twistType?.ez==true
 
-	/** True if last erasing line is B2B */
+	/** True if last erasing lines is B2B */
 	val b2b get() = b2bCount>0
 	/** B2B counter */
 	var b2bCount = -1; internal set
@@ -342,7 +362,7 @@ class GameEngine(
 	/** Hebo-hidden Y coord Limit */
 	var heboHiddenYLimit = 0
 
-	/** Set when ARE or line delay is canceled */
+	/** Set when ARE or lines delay is canceled */
 	var delayCancel = false; private set
 	/** Piece must move left after canceled delay */
 	var delayCancelMoveLeft = false; private set
@@ -382,11 +402,16 @@ class GameEngine(
 	/** Update various statistics in Credits phase */
 	var staffrollEnableStatistics = false
 
-	/** Field's Frame color-int */
-	var frameSkin = 0
+	/** Field's Frame updated */
+	var frame = Frame.WHITE
+	@Deprecated("Frame type is enumerized")
+	var frameSkin:Int
+		get() = frame.id
+		set(value) {
+			frame = Frame.valueOf(value)
+		}
 
-	val isRetroSkin get() = frameSkin==FRAME_SKIN_GB||frameSkin==FRAME_SKIN_SG
-
+	val isRetroSkin get() = frame.type==Frame.Type.RETRO
 	/** Duration of Ready->Go */
 	var readyStart = 0
 	var readyEnd = 0
@@ -415,7 +440,7 @@ class GameEngine(
 	/** Color of meter */
 	var meterColor = 0
 
-	/** Amount of meter 0-100 */
+	/** Amount of meter 0.0f-1.0f */
 	var meterValueSub = 0f
 
 	/** Color of meter (under layer) */
@@ -430,6 +455,9 @@ class GameEngine(
 
 	/** Field display size (-1 for mini, 1 for big, 0 for normal) */
 	var displaySize = 0
+		set(value) {
+			field = value.coerceIn(-1, 1)
+		}
 
 	/** @return Width&Height of block image*/
 	val blockSize get() = ReceiverC.getBlockSize(displaySize)
@@ -452,7 +480,7 @@ class GameEngine(
 	var mapEditX = 0; private set
 	/** Field edit screen: Cursor coord */
 	var mapEditY = 0; private set
-	/** Field edit screen: Selected cint */
+	/** Field edit screen: Selected color-int */
 	var mapEditColor = 0; private set
 	/** Field edit screen: Previous game status number */
 	var mapEditPreviousStat = Status.NOTHING; private set
@@ -511,13 +539,13 @@ class GameEngine(
 			if(itemEnable is Item.COLOR) (itemEnable as? Item.COLOR)?.time = value
 		}//; private set
 
-	/** Gameplay-interruptable inum */
+	/** Gameplay-interruptable item */
 	var interruptItem:Item? = null
 
-	/** Post-status of interruptable inum */
+	/** Post-status of interruptable item */
 	private var interruptItemPreviousStat:Status = Status.MOVE//; private set
 
-	/**Overwriting Rule settings(should not change from gamemode)*/
+	/**Overwriting Rule settings(should not change from gameMode)*/
 	var owTune = TuneConf()
 	/** A button direction -1=Auto(Use rule settings) 0=Left 1=Right */
 	var owSpinDir
@@ -592,7 +620,7 @@ class GameEngine(
 
 	/** Clear mode selection */
 	var clearMode:ClearType = Line
-	/** Size needed for a cint-group clear */
+	/** Size needed for a color-group clear */
 	var colorClearSize = 0
 		set(value) {
 			when(clearMode) {
@@ -602,7 +630,7 @@ class GameEngine(
 			}
 			field = value
 		}
-	/** If true, cint clears will also clear adjacent garbage blocks. */
+	/** If true, color clears will also clear adjacent garbage blocks. */
 	var garbageColorClear = false
 		set(value) {
 			when(clearMode) {
@@ -611,7 +639,7 @@ class GameEngine(
 			}
 			field = value
 		}
-	/** If true, each individual block is a random cint. */
+	/** If true, each individual block is a random color. */
 	var randomBlockColor = false
 	/** If true, block in pieces are connected. */
 	var connectBlocks = false
@@ -619,14 +647,14 @@ class GameEngine(
 	var blockColors = BLOCK_COLORS_DEFAULT
 	/** Number of colors in blockColors to use. */
 	var numColors = 0
-	/** If true, line cint clears can be diagonal. */
+	/** If true, lines color clears can be diagonal. */
 	var lineColorDiagonals = false
 		set(value) {
 			if(clearMode is ColorStraight) (clearMode as ColorStraight).lineColorDiagonals = value
 			field = value
 		}
 
-	/** If true, gems count as the same cint as
+	/** If true, gems count as the same color as
 	 * their respectively-colored normal blocks */
 	var gemSameColor = false
 		set(value) {
@@ -639,7 +667,7 @@ class GameEngine(
 	var cascadeDelay = 0
 	/** Delay between landing and checking for clears in cascade */
 	var cascadeClearDelay = 0
-	/** If true, cint clears will ignore hidden rows */
+	/** If true, color clears will ignore hidden rows */
 	var ignoreHidden = false
 		set(value) {
 			when(clearMode) {
@@ -654,8 +682,8 @@ class GameEngine(
 	 * when regular rotation fails twice */
 	var dominoQuickTurn = false
 
-	/** 0 = default, 1 = link by cint,
-	 * 2 = link by cint but ignore links for cascade (Avalanche) */
+	/** 0 = default, 1 = link by color,
+	 * 2 = link by color but ignore links for cascade (Avalanche) */
 	var sticky = 0
 
 	/** Hanabi発生間隔 */
@@ -666,46 +694,46 @@ class GameEngine(
 
 	internal val playerProp = ProfileProperties(
 		when(owner.mode?.gameIntensity) {
-			-1 -> EventReceiver.COLOR.PINK
-			1 -> EventReceiver.COLOR.GREEN
-			2 -> EventReceiver.COLOR.YELLOW
-			3 -> EventReceiver.COLOR.RED
-			else -> EventReceiver.COLOR.BLUE
+			-1 -> COLOR.PINK
+			1 -> COLOR.GREEN
+			2 -> COLOR.YELLOW
+			3 -> COLOR.RED
+			else -> COLOR.BLUE
 		}
 	)
 
 	internal var playerName = ""
 
-	/** Current AREの値を取得 (ルール設定も考慮）*/
+	/** Current AREの値を取得 (ルール設定も考慮)*/
 	val are
 		get() = if(speed.are<ruleOpt.minARE&&ruleOpt.minARE>=0) ruleOpt.minARE
 		else if(speed.are>ruleOpt.maxARE&&ruleOpt.maxARE>=0) ruleOpt.maxARE else speed.are
-	/** Current ARE after line clearの値を取得 (ルール設定も考慮）*/
+	/** Current ARE after lines clearの値を取得 (ルール設定も考慮)*/
 	val areLine
 		get() = if(speed.areLine<ruleOpt.minARELine&&ruleOpt.minARELine>=0) ruleOpt.minARELine
 		else if(speed.areLine>ruleOpt.maxARELine&&ruleOpt.maxARELine>=0) ruleOpt.maxARELine else speed.areLine
-	/** Current Line clear timeの値を取得 (ルール設定も考慮）*/
+	/** Current Line clear timeの値を取得 (ルール設定も考慮)*/
 	val lineDelay
 		get() = if(speed.lineDelay<ruleOpt.minLineDelay&&ruleOpt.minLineDelay>=0) ruleOpt.minLineDelay
 		else if(speed.lineDelay>ruleOpt.maxLineDelay&&ruleOpt.maxLineDelay>=0) ruleOpt.maxLineDelay else speed.lineDelay
-	/** Current 固定 timeの値を取得 (ルール設定も考慮）*/
+	/** Current 固定 timeの値を取得 (ルール設定も考慮)*/
 	val lockDelay
 		get() = if(speed.lockDelay<ruleOpt.minLockDelay&&ruleOpt.minLockDelay>=0) ruleOpt.minLockDelay
 		else if(speed.lockDelay>ruleOpt.maxLockDelay&&ruleOpt.maxLockDelay>=0) ruleOpt.maxLockDelay else speed.lockDelay
 
-	/** Current DASの値を取得 (ルール設定も考慮）*/
+	/** Current DASの値を取得 (ルール設定も考慮)*/
 	val das
 		get() = if(speed.das<owMinDAS&&owMinDAS>=0) owMinDAS
 		else if(speed.das>owMaxDAS&&owMaxDAS>=0) owMaxDAS
 		else if(speed.das<ruleOpt.minDAS&&ruleOpt.minDAS>=0) ruleOpt.minDAS
 		else if(speed.das>ruleOpt.maxDAS&&ruleOpt.maxDAS>=0) ruleOpt.maxDAS else speed.das
 
-	/** Current SoftDropの形式を取得 (ルール設定も考慮）
+	/** Current SoftDropの形式を取得 (ルール設定も考慮)
 	 * @return false:固定値 true:倍率
 	 */
 	val sdMul get() = if(owSDSpd<0) ruleOpt.softdropMultiplyNativeSpeed else owSDSpd>=SDS_FIXED.size
 
-	/** Current SoftDrop速度を取得 (ルール設定も考慮）*/
+	/** Current SoftDrop速度を取得 (ルール設定も考慮)*/
 	val softDropSpd
 		get() = when {
 			owSDSpd<0 -> ruleOpt.softdropSpeed
@@ -774,7 +802,7 @@ class GameEngine(
 
 	/** READY前のInitialization */
 	fun init() {
-		log.debug("GameEngine init playerID:${playerID}")
+		Log.debug("GameEngine init playerID:${playerID}")
 		field.reset()
 		statistics.reset()
 		speed.reset()
@@ -791,7 +819,7 @@ class GameEngine(
 			val tempRand = Random.Default
 			randSeed = tempRand.nextLong()
 			random = Random(randSeed)
-			if(owSkin<=-2) owSkin = tempRand.nextInt(owner.receiver.skinMax)
+			if(owSkin<=-2) owSkin = tempRand.nextInt(receiver.skinMax)
 		} else {
 			versionMajor = owner.replayProp.getProperty("version.core.major", 0f)
 			versionMinor = owner.replayProp.getProperty("version.core.minor", 0f)
@@ -802,7 +830,7 @@ class GameEngine(
 			owTune = try {
 				Json.decodeFromString(owner.replayProp.getProperty("$playerID.tuning", "{}"))
 			} catch(e:Exception) {
-				log.warn(e)
+				Log.warn(e)
 				TuneConf(
 					owner.replayProp.getProperty("$playerID.tuning.owRotateButtonDefaultRight", -1),
 					owner.replayProp.getProperty("$playerID.tuning.owSkin", -1),
@@ -843,7 +871,7 @@ class GameEngine(
 		nowPieceColorOverride = null
 
 		nextPieceArraySize = 1400
-		nextPieceEnable = List(Piece.PIECE_COUNT) {it<Piece.PIECE_STANDARD_COUNT}
+		nextPieceEnable = List(Shape.num) {it<Shape.numTetras}
 		nextPieceArrayID = emptyList()
 		nextPieceArrayObject = emptyList()
 		nextPieceCount = 0
@@ -903,7 +931,7 @@ class GameEngine(
 		twistEnable = false
 		twistEnableEZ = false
 		twistAllowKick = true
-		useAllSpinBonus = false
+		useAllSpinBonus = true
 		b2bEnable = false
 		splitB2B = false
 		comboType = COMBO_TYPE_DISABLE
@@ -941,10 +969,10 @@ class GameEngine(
 		staffrollNoDeath = false
 		staffrollEnableStatistics = false
 
-		frameSkin = FRAME_COLOR_WHITE
+		frame = Frame.WHITE
 
 		readyStart = 0
-		readyEnd = READY_GO_TIME.first-1
+		readyEnd = READY_GO_TIME.first-5
 		goStart = READY_GO_TIME.first
 		goEnd = READY_GO_TIME.second
 
@@ -1000,6 +1028,7 @@ class GameEngine(
 		//  event 発生
 		owner.mode?.let {
 			it.playerInit(this)
+			it.loadSetting(this, if(owner.replayMode) owner.replayProp else owner.modeConfig)
 			if(owner.replayMode) it.loadReplay(this, owner.replayProp)
 			else {
 				it.loadRanking(owner.recordProp)
@@ -1010,7 +1039,7 @@ class GameEngine(
 			}
 		}
 		playerName = if(owner.replayMode) owner.replayProp.getProperty("$playerID.playerName", "") else ""
-		owner.receiver.playerInit(this)
+		receiver.playerInit(this)
 		ai?.shutdown()
 		ai?.init(this, playerID)
 		stopSE("danger")
@@ -1025,18 +1054,18 @@ class GameEngine(
 		for(i in statc.indices) statc[i] = 0
 	}
 
-	/** Sound effect [name]を再生する (enableSEがtrueのときだけ）
+	/** Sound effect [name]を再生する (enableSEがtrueのときだけ)
 	 * @param name Sound effectsのName
 	 */
 	fun playSE(name:String, freq:Float = 1f, vol:Float = 1f) {
-		if(enableSE) owner.receiver.playSE(name, freq, vol)
+		if(enableSE) receiver.playSE(name, freq, vol)
 	}
 
 	fun loopSE(name:String, freq:Float = 1f, vol:Float = 1f) {
-		if(enableSE) owner.receiver.loopSE(name, freq, vol)
+		if(enableSE) receiver.loopSE(name, freq, vol)
 	}
 
-	fun stopSE(name:String) = owner.receiver.stopSE(name)
+	fun stopSE(name:String) = receiver.stopSE(name)
 
 	/** @return NEXTピース[c]番目のID*/
 	fun getNextID(c:Int):Int =
@@ -1105,13 +1134,11 @@ class GameEngine(
 	private fun checkTwisted(x:Int, y:Int, p:Piece?, f:Field?, all:Boolean = true):Twister? {
 		p?:return null
 		f?:return null
-		if(!all&&p.type!=Piece.Shape.T) return null
+		if(!all&&p.shape!=Shape.T) return null
 		if(!twistAllowKick&&kicked) return null
 		val m = if(p.big) 2 else 1
 		var res:Twister? = null
-		if(p.checkCollision(x, y-m, f)&&p.checkCollision(x+m, y, f)
-			&&p.checkCollision(x-m, y, f)
-		) {
+		if(p.checkCollision(x, y-m, f)&&p.checkCollision(x+m, y, f)&&p.checkCollision(x-m, y, f)) {
 			res = Twister.IMMOBILE
 			val copyField = Field().apply {replace(f)}
 			p.placeToField(x, y, copyField)
@@ -1119,48 +1146,30 @@ class GameEngine(
 			if(copyField.checkLine(false)==1&&kicked) res = Twister.IMMOBILE_MINI
 		} else if(twistEnableEZ&&kicked&&p.checkCollision(x, y+m, f))
 			res = Twister.IMMOBILE_EZ
-
-		if(p.type==Piece.Shape.T) {
+		val (offsetX, offsetY) = ruleOpt.pieceOffsets[p.id][p.direction]
+		if(p.shape==Shape.T) {
 			// Setup 4-point coordinates
-			val tx = (if(p.big) listOf(1, 4, 1, 4) else listOf(0, 2, 0, 2)).map {
-				it+ruleOpt.pieceOffsetX[p.id][p.direction]*(if(p.big) 2 else 1)
-			}
-			val ty = (if(p.big) listOf(1, 1, 4, 4) else listOf(0, 0, 2, 2)).map {
-				it+ruleOpt.pieceOffsetY[p.id][p.direction]*(if(p.big) 2 else 1)
-			}
+			val tx = (if(p.big) listOf(1, 4, 1, 4) else listOf(0, 2, 0, 2)).map {it+offsetX*(if(p.big) 2 else 1)}
+			val ty = (if(p.big) listOf(1, 1, 4, 4) else listOf(0, 0, 2, 2)).map {it+offsetY*(if(p.big) 2 else 1)}
 			// Check the corner of the T p
 			if(tx.indices.count {!f.getBlockEmpty(x+tx[it], y+ty[it])}>=3) res = Twister.POINT
-			else if(p.checkCollision(x, y, getSpinDirection(-1), f)
-				&&p.checkCollision(x, y, getSpinDirection(1), f)
-			) res = Twister.POINT_MINI
-		} else {
-			val offsetX = ruleOpt.pieceOffsetX[p.id][p.direction]
-			val offsetY = ruleOpt.pieceOffsetY[p.id][p.direction]
-			if(!p.big)
-				for(i in 0..<Piece.SPINBONUSDATA_HIGH_X[p.id][p.direction].size/2) {
-					val isHighSpot1 = (!f.getBlockEmpty(
-						x+Piece.SPINBONUSDATA_HIGH_X[p.id][p.direction][i*2]+offsetX,
-						y+Piece.SPINBONUSDATA_HIGH_Y[p.id][p.direction][i*2]+offsetY, false
-					))
-					val isHighSpot2 = (!f.getBlockEmpty(
-						x+Piece.SPINBONUSDATA_HIGH_X[p.id][p.direction][i*2+1]+offsetX,
-						y+Piece.SPINBONUSDATA_HIGH_Y[p.id][p.direction][i*2+1]+offsetY, false
-					))
-					val isLowSpot1 = (!f.getBlockEmpty(
-						x+Piece.SPINBONUSDATA_LOW_X[p.id][p.direction][i*2]+offsetX,
-						y+Piece.SPINBONUSDATA_LOW_Y[p.id][p.direction][i*2]+offsetY, false
-					))
-					val isLowSpot2 = (!f.getBlockEmpty(
-						x+Piece.SPINBONUSDATA_LOW_X[p.id][p.direction][i*2+1]+offsetX,
-						y+Piece.SPINBONUSDATA_LOW_Y[p.id][p.direction][i*2+1]+offsetY, false
-					))
+			else if(p.checkCollision(x, y, getSpinDirection(-1), f)&&
+				p.checkCollision(x, y, getSpinDirection(1), f)) res = Twister.POINT_MINI
+		} else if(p.shape.spinBonus.indices.contains(p.direction)) {
+			val (high, low) = p.shape.spinBonus[p.direction]
+			if(!p.big&&high.isNotEmpty()&&low.isNotEmpty())
+				for(i in 0..<minOf(high.size, low.size)/2) {
+					val (hX1, hY1) = high[i*2]; val (hX2, hY2) = high[i*2+1]
+					val (lX1, lY1) = low[i*2]; val (lX2, lY2) = low[i*2+1]
+					val isHighSpot1 = !f.getBlockEmpty(x+hX1+offsetX, y+hY1+offsetY, false)
+					val isHighSpot2 = !f.getBlockEmpty(x+hX2+offsetX, y+hY2+offsetY, false)
+					val isLowSpot1 = !f.getBlockEmpty(lX1+offsetX, lY1+offsetY, false)
+					val isLowSpot2 = !f.getBlockEmpty(x+lX2+offsetX, y+lY2+offsetY, false)
 
 					//log.debug(isHighSpot1 + "," + isHighSpot2 + "," + isLowSpot1 + "," + isLowSpot2);
 
-					if(isHighSpot1&&isHighSpot2&&(isLowSpot1||isLowSpot2))
-						res = Twister.POINT
-					else if(isLowSpot1&&isLowSpot2&&(isHighSpot1||isHighSpot2))
-						res = Twister.POINT_MINI
+					if(isHighSpot1&&isHighSpot2&&(isLowSpot1||isLowSpot2)) res = Twister.POINT
+					else if(isLowSpot1&&isLowSpot2&&(isHighSpot1||isHighSpot2)) res = Twister.POINT_MINI
 				}
 		}
 		return res
@@ -1186,7 +1195,9 @@ class GameEngine(
 		return y-p
 	}
 
-	/** @return [piece]が出現するX-coordinate */
+	fun getSpawnMinPosY(piece:Piece?):Int = getSpawnPosY(piece)-ruleOpt.pieceEnterMaxDistanceY
+
+	/** @return [piece]が出現するY-coordinate */
 	fun getSpawnPosY(piece:Piece?):Int {
 		var y = 0
 		piece?.let {
@@ -1202,22 +1213,18 @@ class GameEngine(
 	}
 
 	/** @return rotation buttonを押したあとのピースのDirection
-	 * @param move rotationDirection (-1:左 1:右 2:180度）
+	 * @param move rotationDirection (-1,3:左 1:右 2:180度)
 	 */
-	fun getSpinDirection(move:Int):Int = ((nowPieceObject?.direction?:0)+move).pythonModulo(4)
+	fun getSpinDirection(move:Int):Int = ((nowPieceObject?.direction?:0)+move).mod(Piece.DIRECTION_COUNT)
 
 	/** @return rotation buttonによる回転方向
 	 */
 	fun getSpinOperation(it:Controller = ctrl):Int =
-		(if(ruleOpt.spinReverseKey) -1 else 1).let {rev ->
-			(if(owSpinDir==1||owSpinDir<0&&ruleOpt.spinToRight) 1 else -1)*if(ruleOpt.spinDoubleKey) {
-				(it.isPress(Controller.BUTTON_E).toInt()*2)+
-					(it.isPressCount(Controller.BUTTON_B, Controller.BUTTON_F)*rev)+
-					it.isPressCount(Controller.BUTTON_A, Controller.BUTTON_C)
-			} else if(it.isPressAny(Controller.BUTTON_A, Controller.BUTTON_C, Controller.BUTTON_E)) 1
-			else if(it.isPressAny(Controller.BUTTON_B, Controller.BUTTON_F)) rev
-			else 0
-		}
+		(if(owSpinDir==1||owSpinDir<0&&ruleOpt.spinToRight) 1 else -1)*
+			((it.isPressCount(Controller.BUTTON_A, Controller.BUTTON_C)+
+				(it.isPress(Controller.BUTTON_E)*(1+ruleOpt.spinDoubleKey.toInt()))+
+				(it.isPressCount(Controller.BUTTON_B, Controller.BUTTON_F)*if(ruleOpt.spinReverseKey) -1 else 1)
+				)%Piece.DIRECTION_COUNT)
 
 	/** 先行rotationと先行ホールドの処理 */
 	private fun initialSpin():Int =
@@ -1225,7 +1232,7 @@ class GameEngine(
 			if(it.isPress(Controller.BUTTON_D)&&ruleOpt.holdInitial&&isHoldOK) {
 				initialHoldFlag = true
 				initialHoldContinuousUse = true
-				if(frameSkin!=FRAME_SKIN_SG) playSE("initialhold")
+				if(frame!=Frame.SG) playSE("initialhold")
 			}
 			if(ruleOpt.spinInitial&&(!ruleOpt.spinInitialLimit||!initialSpinContinuousUse)) {
 				val dir = getSpinOperation(it)
@@ -1379,12 +1386,14 @@ class GameEngine(
 				it.saveRanking()
 				it.ranking.forEach {r -> r.save()}
 				owner.recordProp.save()
+				owner.stats.combine(statistics)
 				if(playerProp.isLoggedIn) {
 					it.saveRankingPlayer(playerProp)
 					playerProp.saveProfileConfig()
 				}
 			}
 		}
+
 	}
 
 	/** fieldエディット画面に入る処理 */
@@ -1399,23 +1408,15 @@ class GameEngine(
 		createFieldIfNeeded()
 	}
 
-	/** fieldをInitialization (まだ存在しない場合） */
+	/** fieldをInitialization (まだ存在しない場合) */
 	fun createFieldIfNeeded():Field {
 		if(fieldWidth<0) fieldWidth = ruleOpt.fieldWidth
 		if(fieldHeight<0) fieldHeight = ruleOpt.fieldHeight
 		if(fieldHiddenHeight<0) fieldHiddenHeight = ruleOpt.fieldHiddenHeight
-		if(field.width==fieldWidth&&field.height==fieldHeight&&field.hiddenHeight==fieldHiddenHeight&&
-			field.ceiling==ruleOpt.fieldCeiling
-		) return field
+		return if(field.width==fieldWidth&&field.height==fieldHeight&&field.hiddenHeight==fieldHiddenHeight&&
+			field.ceiling==ruleOpt.fieldCeiling) field
+		else Field(fieldWidth, fieldHeight, fieldHiddenHeight, ruleOpt.fieldCeiling).also {field = it}
 
-		/*if(!gameActive&&!owner.replayMode) {
-			val tempRand = Random.Default
-			randSeed = tempRand.nextLong()
-			random = Random(randSeed)
-		}*/
-		val new = Field(fieldWidth, fieldHeight, fieldHiddenHeight, ruleOpt.fieldCeiling)
-		field = new
-		return new
 	}
 
 	/** Call this if the game has ended */
@@ -1463,7 +1464,7 @@ class GameEngine(
 		ctrl.updateButtonTime()
 		// 最初の処理
 		owner.mode?.onFirst(this)
-		owner.receiver.onFirst(this)
+		receiver.onFirst(this)
 
 		if(stat!=Status.SETTING&&stat!=Status.PROFILE&&stat!=Status.NOTHING&&
 			(!owner.replayMode||owner.replayRerecord)
@@ -1501,13 +1502,13 @@ class GameEngine(
 		// 最後の処理
 		if(intHanabi>0) intHanabi--
 		owner.mode?.onLast(this)
-		owner.receiver.onLast(this)
+		receiver.onLast(this)
 		ai?.also {if(!owner.replayMode||owner.replayRerecord) it.onLast(this, playerID)}
 
 		// Timer増加
 		if(gameActive&&timerActive) statistics.time++
 		if(tempHanabi>0&&intHanabi<=0) {
-			owner.receiver.shootFireworks(this)
+			receiver.shootFireworks(this)
 			tempHanabi--
 			intHanabi += HANABI_INTERVAL
 		}
@@ -1519,66 +1520,66 @@ class GameEngine(
 	}
 
 	/** Draw the screen
-	 * (各Mode や event 処理クラスの event を呼び出すだけで, それ以外にGameEngine自身は何もしません） */
+	 * (各Mode や event 処理クラスの event を呼び出すだけで, それ以外にGameEngine自身は何もしません) */
 	fun render() {
 		// 最初の処理
-		if(!owner.receiver.doesGraphicsExist) return
-		owner.receiver.renderFirst(this) {owner.mode?.renderFirst(this)}
+		if(!receiver.doesGraphicsExist) return
+		receiver.renderFirst(this) {owner.mode?.renderFirst(this)}
 
 		// 各ステータスの処理
 		when(stat) {
 			Status.NOTHING -> {
 			}
 			Status.SETTING -> {
-				owner.receiver.renderSetting(this)
+				receiver.renderSetting(this)
 				owner.mode?.renderSetting(this)
 			}
 			Status.PROFILE -> {
-				owner.receiver.renderProfile(this)
+				receiver.renderProfile(this)
 				owner.mode?.renderProfile(this)
 			}
 			Status.READY -> {
-				owner.receiver.renderReady(this)
+				receiver.renderReady(this)
 				owner.mode?.renderReady(this)
 			}
 			Status.MOVE -> {
-				owner.receiver.renderMove(this)
+				receiver.renderMove(this)
 				owner.mode?.renderMove(this)
 			}
 			Status.LOCKFLASH -> {
-				owner.receiver.renderLockFlash(this)
+				receiver.renderLockFlash(this)
 				owner.mode?.renderLockFlash(this)
 			}
 			Status.LINECLEAR -> {
-				owner.receiver.renderLineClear(this)
+				receiver.renderLineClear(this)
 				owner.mode?.renderLineClear(this)
 			}
 			Status.ARE -> {
-				owner.receiver.renderARE(this)
+				receiver.renderARE(this)
 				owner.mode?.renderARE(this)
 			}
 			Status.ENDINGSTART -> {
-				owner.receiver.renderEndingStart(this)
+				receiver.renderEndingStart(this)
 				owner.mode?.renderEndingStart(this)
 			}
 			Status.CUSTOM -> {
-				owner.receiver.renderCustom(this)
+				receiver.renderCustom(this)
 				owner.mode?.renderCustom(this)
 			}
 			Status.EXCELLENT -> {
-				owner.receiver.renderExcellent(this)
+				receiver.renderExcellent(this)
 				owner.mode?.renderExcellent(this)
 			}
 			Status.GAMEOVER -> {
-				owner.receiver.renderGameOver(this)
+				receiver.renderGameOver(this)
 				owner.mode?.renderGameOver(this)
 			}
 			Status.RESULT -> {
-				owner.receiver.renderResult(this)
+				receiver.renderResult(this)
 				owner.mode?.renderResult(this)
 			}
 			Status.FIELDEDIT -> {
-				owner.receiver.renderFieldEdit(this)
+				receiver.renderFieldEdit(this)
 				owner.mode?.renderFieldEdit(this)
 			}
 			Status.INTERRUPTITEM -> {
@@ -1586,7 +1587,7 @@ class GameEngine(
 		}
 
 		if(owner.showInput) {
-			owner.receiver.renderInput(this)
+			receiver.renderInput(this)
 			owner.mode?.renderInput(this)
 		}
 		ai?.also {
@@ -1596,16 +1597,18 @@ class GameEngine(
 
 		// 最後の処理
 		owner.mode?.renderLast(this)
-		owner.receiver.renderLast(this)
+		receiver.renderLast(this)
 	}
 
 	/** 開始前の設定画面のときの処理 */
 	private fun statSetting() {
 		//  event 発生
 		owner.musMan.fadeSW = false
+		if(statc[0]==0)
+			owner.mode?.onSettingChanged(this)
 		if(owner.mode?.onSetting(this)==true) return
-		owner.receiver.onSetting(this)
-
+		receiver.onSetting(this)
+		owner.mode?.onSettingChanged(this)
 		// Mode側が何もしない・決定したことでfalseを返した場合はReady画面へ移動
 		stat = Status.READY
 		if(playerProp.isLoggedIn) {
@@ -1622,7 +1625,7 @@ class GameEngine(
 	private fun statProfile() {
 		//  event 発生
 		if(owner.mode?.onProfile(this)==true) return
-		owner.receiver.onProfile(this)
+		receiver.onProfile(this)
 
 		if(playerProp.loginScreen.updateScreen(this)) return
 		// Mode側が何もしない場合は設定画面へ戻る
@@ -1634,7 +1637,7 @@ class GameEngine(
 	private fun statReady() {
 		//  event 発生
 		if(owner.mode?.onReady(this)==true) return
-		owner.receiver.onReady(this)
+		receiver.onReady(this)
 
 		// 横溜め
 		if(ruleOpt.dasInReady&&gameActive) padRepeat()
@@ -1656,7 +1659,7 @@ class GameEngine(
 					nextPieceArrayObject = emptyList()
 				}
 				// 出現可能なピースが1つもない場合は全て出現できるようにする
-				if(nextPieceEnable.all {!it}) nextPieceEnable = List(Piece.PIECE_COUNT) {true}
+				if(nextPieceEnable.all {!it}) nextPieceEnable = List(Shape.num) {true}
 
 				nextPieceCount = 0
 				// NEXTピースの出現順を作成
@@ -1680,7 +1683,7 @@ class GameEngine(
 						p.setAttribute(true, Block.ATTRIBUTE.VISIBLE)
 						p.setAttribute(bone, Block.ATTRIBUTE.BONE)
 						p.placeNum = it
-
+						if(it<=1) p.big = big
 						if(randomBlockColor) {
 							if(blockColors.size<numColors||numColors<1) numColors = blockColors.size
 							val size = p.maxBlock
@@ -1711,13 +1714,22 @@ class GameEngine(
 		// READY音
 		if(statc[0]==readyStart) playSE("start0")
 
-		// GO音
-		if(statc[0]==goStart) playSE("start1")
+		if(statc[0]==(readyStart+goStart)/2&&!isRetroSkin) getNextObject(nextPieceCount)?.let {
+			playSE(
+				"piece_${it.shape.name.lowercase(Locale.getDefault())}", 1f,
+				if((owner.mode?.players?:1)>1) 0.3f else 1f
+			)
+			it.big = big
+		}
 
+		// GO音
+		if(statc[0]==goStart) {
+			playSE("start1")
+		}
 		// NEXTスキップ
 		@Suppress("EmptyRange")
 		if(statc[0] in 1..<goEnd&&holdButtonNextSkip&&isHoldOK&&ctrl.isPush(Controller.BUTTON_D)) {
-			if(frameSkin!=FRAME_SKIN_SG) playSE("initialhold")
+			if(frame!=Frame.SG) playSE("initialhold")
 			holdPieceObject = getNextObjectCopy(nextPieceCount)?.also {
 				it.applyOffsetArray(ruleOpt.pieceOffsetX[it.id], ruleOpt.pieceOffsetY[it.id])
 			}
@@ -1728,7 +1740,7 @@ class GameEngine(
 		// 開始
 		if(statc[0]>=goEnd) {
 			owner.mode?.startGame(this)
-			owner.receiver.startGame(this)
+			receiver.startGame(this)
 			owner.musMan.fadeSW = false
 			initialSpin()
 			stat = Status.MOVE
@@ -1742,13 +1754,13 @@ class GameEngine(
 		statc[0]++
 	}
 
-	/** Blockピースの移動処理 */
+	/** Blockピースの出現・移動処理 */
 	private fun statMove() {
 		dasRepeat = false
 
 		//  event 発生
 		if(owner.mode?.onMove(this)==true) return
-		owner.receiver.onMove(this)
+		receiver.onMove(this)
 //		val field = field ?: return
 		// 横溜めInitialization
 		val moveDirection = moveDirection
@@ -1782,7 +1794,10 @@ class GameEngine(
 						nextPieceCount++
 						if(nextPieceCount<0) nextPieceCount = 0
 
-						getNextObject(nextPieceCount+ruleOpt.nextDisplay-1)?.setAttribute(bone, Block.ATTRIBUTE.BONE)
+						getNextObject(nextPieceCount+ruleOpt.nextDisplay-1)?.let {
+							it.setAttribute(bone, Block.ATTRIBUTE.BONE)
+							it.big = big
+						}
 						nowPieceObject = getNextObjectCopy(nextPieceCount)
 						nextPieceCount++
 						if(nextPieceCount<0) nextPieceCount = 0
@@ -1835,15 +1850,16 @@ class GameEngine(
 			}
 			if(!isRetroSkin) getNextObject(nextPieceCount)?.let {
 				playSE(
-					"piece_${it.type.name.lowercase(Locale.getDefault())}", 1f,
+					"piece_${it.shape.name.lowercase(Locale.getDefault())}", 1f,
 					if((owner.mode?.players?:1)>1) 0.3f else 1f
 				)
+				it.big = big
 			}
 			nowPieceObject?.let {
 				if(!it.offsetApplied)
 					it.applyOffsetArray(ruleOpt.pieceOffsetX[it.id], ruleOpt.pieceOffsetY[it.id])
 				it.big = big
-				// 出現位置 (横）
+				// 出現位置 (横)
 				nowPieceX = getSpawnPosX(it, field)
 				nowPieceY = getSpawnPosY(it)
 				nowPieceBottomY = it.getBottom(nowPieceX, nowPieceY, field)
@@ -1888,10 +1904,9 @@ class GameEngine(
 		checkDropContinuousUse()
 
 		var softDropUsed = false // この frame にSoft dropを使ったらtrue
-		var softDropFallNow = 0 // この frame のSoft dropで落下した段count
+		var softDropFallNow = 0 // この frame のSoft dropで落下した段数
 
-		var updown = false // Up下同時押し flag
-		if(ctrl.isPressAll(up, down)) updown = true
+		val upDown = ctrl.isPressAll(up, down) // Up下同時押し flag
 
 		nowPieceObject?.let {
 			if(!dasInstant) {
@@ -1909,31 +1924,27 @@ class GameEngine(
 
 				// spin
 				val onGroundBeforeSpin = it.checkCollision(nowPieceX, nowPieceY+1, field)
-				var spin = 0
-
-				if(initialSpinDirection!=0) {
-					spin = initialSpinDirection
+				val spin = if(initialSpinDirection!=0) {
 					initialSpinLastDirection = initialSpinDirection
 					initialSpinContinuousUse = true
 					if(nowPieceSpinFailCount>0) nowPieceSpinFailCount--
-					else playSE(if(frameSkin==FRAME_SKIN_GB) "initialrotateold" else "initialrotate")
-				} else if(statc[0]>0||ruleOpt.moveFirstFrame) {
-
-					//  button input
-					spin = getSpinOperation(ctrl)
-					if(itemRollRollEnable&&replayTimer%itemRollRollInterval==0) spin = 1 // Roll Roll
-					if(spin==0) spun = false
-					else {
-						initialSpinLastDirection = spin
+					else playSE(if(frame==Frame.GB) "initialrotateold" else "initialrotate")
+					initialSpinDirection
+				} else if(statc[0]>0||ruleOpt.moveFirstFrame) getSpinOperation(ctrl).let {s ->// button input
+					if(s.mod(4)==0&&itemRollRollEnable&&replayTimer%itemRollRollInterval==0) 1 else s // Roll Roll
+				}.also {s ->
+					if(s==0) spun = false else {
+						initialSpinLastDirection = s
 						initialSpinContinuousUse = true
 					}
-				}
+				} else 0
 
 				if(spin!=0&&!spun) {
 					// Direction after rotationを決める
 					var rt = getSpinDirection(spin)
 
 					// rotationできるか判定
+
 					if(!it.checkCollision(nowPieceX, nowPieceY, rt, field)) {
 						// Wallkickなしでrotationできるとき
 						spun = true
@@ -1963,7 +1974,7 @@ class GameEngine(
 									it.setDarkness(0f)
 								}
 							}
-					} else if(dominoQuickTurn&&it.type==Piece.Shape.I2&&nowPieceSpinFailCount>=1) {
+					} else if(dominoQuickTurn&&it.shape==Shape.I2&&nowPieceSpinFailCount>=1) {
 						// Domino Quick Turn
 						rt = getSpinDirection(2)
 						spun = true
@@ -1989,11 +2000,11 @@ class GameEngine(
 							LastMove.SPIN_GROUND
 						} else LastMove.SPIN_AIR
 
-						if(frameSkin!=FRAME_SKIN_SG) playSE(if(frameSkin==FRAME_SKIN_GB) "rotateold" else "rotate")
+						if(frame!=Frame.SG) playSE(if(frame==Frame.GB) "rotateold" else "rotate")
 						val twisting = checkTwisted(nowPieceX, nowPieceY, it, field)
-						if(!isRetroSkin&&twisting!=null) playSE("twist")
+						if(!isRetroSkin&&twisting!=null) playSE("twist", 1f, if(twistEnable) 1f else .5f)
 						nowPieceSpinCount += spin.absoluteValue
-						if(nowPieceObject?.type!=Piece.Shape.O) nowPieceSteps += spin.absoluteValue
+						if(nowPieceObject?.shape!=Shape.O) nowPieceSteps += spin.absoluteValue
 						if(ending==0||staffrollEnableStatistics) statistics.totalPieceSpin += spin.absoluteValue
 					} else if(ctrl.isPush(Controller.BUTTON_A)||ctrl.isPush(Controller.BUTTON_C)||
 						ctrl.isPush(Controller.BUTTON_B)||ctrl.isPush(Controller.BUTTON_E)) {
@@ -2017,17 +2028,24 @@ class GameEngine(
 					}
 					// Blockの出現位置を上にずらせる場合はそうする
 					var cl = 0
-					while(cl<ruleOpt.pieceEnterMaxDistanceY||combo>=0) {
+					while(cl<ruleOpt.pieceEnterMaxDistanceY||clutchEnable&&combo>=0) {
 						nowPieceY--
 						if(!it.checkCollision(nowPieceX, nowPieceY, field)) {
 							nowPieceBottomY = it.getBottom(nowPieceX, nowPieceY, field)
 							break
 						}
 						cl++
+						if(cl>ruleOpt.pieceEnterMaxDistanceY&&clutchEnable&&combo>=0) {
+							clutch = true
+							clutchCombo++
+						} else {
+							clutch = false
+							clutchCombo = 0
+						}
 					}
 
 					// 死亡
-					if(it.checkCollision(nowPieceX, nowPieceY, field)) {
+					if(it.checkCollision(nowPieceX, nowPieceY, field)&&!clutch) {
 						it.placeToField(nowPieceX, nowPieceY, field)
 						nowPieceObject = null
 						stat = Status.GAMEOVER
@@ -2071,8 +2089,8 @@ class GameEngine(
 									if(dasDelay==0&&dasCount>0&&
 										!it.checkCollision(nowPieceX+move, nowPieceY, field)
 									) {
-										if(!dasInstant&&frameSkin!=FRAME_SKIN_SG)
-											playSE(if(frameSkin==FRAME_SKIN_GB||frameSkin==FRAME_SKIN_HEBO) "moveold" else "move")
+										if(!dasInstant&&frame!=Frame.SG)
+											playSE(if(frame==Frame.GB||frame==Frame.HEBO) "moveold" else "move")
 										dasRepeat = true
 										dasInstant = true
 									}
@@ -2091,12 +2109,12 @@ class GameEngine(
 
 									lastMove = if(onGroundBeforeMove) {
 										//it.updateConnectData(nowPieceX, nowPieceY, field)
-										owner.receiver.pieceFlicked(this, nowPieceX, nowPieceY, it, true)
+										receiver.pieceFlicked(this, nowPieceX, nowPieceY, it, true)
 										extendedMoveCount++
 										LastMove.SLIDE_GROUND
 									} else LastMove.SLIDE_AIR
-									if(!dasInstant&&frameSkin!=FRAME_SKIN_SG)
-										playSE(if(frameSkin==FRAME_SKIN_GB||frameSkin==FRAME_SKIN_HEBO) "moveold" else "move")
+									if(!dasInstant&&frame!=Frame.SG)
+										playSE(if(frame==Frame.GB||frame==Frame.HEBO) "moveold" else "move")
 								} else {
 									if(!dasWall) {
 										if(!isRetroSkin) playSE("movefail")
@@ -2116,7 +2134,7 @@ class GameEngine(
 				if(!dasRepeat) {
 					// Hard drop
 					if(ctrl.isPress(up)&&!harddropContinuousUse&&ruleOpt.harddropEnable&&
-						(isDiagonalMoveEnabled||!sideMoved)&&(ruleOpt.moveUpAndDown||!updown)&&nowPieceY<nowPieceBottomY
+						(isDiagonalMoveEnabled||!sideMoved)&&(ruleOpt.moveUpAndDown||!upDown)&&nowPieceY<nowPieceBottomY
 					) {
 						harddropFall += nowPieceBottomY-nowPieceY
 						fpf = nowPieceBottomY-nowPieceY
@@ -2124,7 +2142,8 @@ class GameEngine(
 						if(!isRetroSkin) playSE("harddrop", 1f, (fpf*2f/field.height).coerceIn(.75f, 1f))
 						harddropContinuousUse = !ruleOpt.harddropLock
 						owner.mode?.afterHardDropFall(this, harddropFall)
-						owner.receiver.afterHardDropFall(this, harddropFall)
+						receiver.afterHardDropFall(this, harddropFall)
+						statistics.totalPieceHardDrop += harddropFall
 						frameY += (3+fpf/4).let {i -> minOf((frameY+i), 8f)-frameY}
 
 						lastMove = LastMove.FALL_SELF
@@ -2138,7 +2157,7 @@ class GameEngine(
 					// Soft drop
 					if(ruleOpt.softdropEnable&&ctrl.isPress(down)&&
 						!softdropContinuousUse&&(isDiagonalMoveEnabled||!sideMoved)&&
-						(ruleOpt.moveUpAndDown||!updown)&&
+						(ruleOpt.moveUpAndDown||!upDown)&&
 						(!onGroundBeforeMove&&!harddropContinuousUse)
 					) {
 						gCount += softDropSpd.toInt()
@@ -2173,19 +2192,20 @@ class GameEngine(
 					softDropFallNow++
 				} else lastMove = LastMove.FALL_AUTO
 			}
-			if(fpf>0) owner.receiver.afterPieceFall(this, fpf)
+			if(fpf>0) receiver.afterPieceFall(this, fpf)
 			if(softDropFallNow>0) {
 				if(!isRetroSkin) playSE("softdrop")
 				owner.mode?.afterSoftDropFall(this, softDropFallNow)
-				owner.receiver.afterSoftDropFall(this, softDropFallNow)
+				receiver.afterSoftDropFall(this, softDropFallNow)
+				statistics.totalPieceSoftDrop += softDropFallNow
 			}
 
 			// 接地と固定
 			if(it.checkCollision(nowPieceX, nowPieceY+1, field)&&(statc[0]>0||ruleOpt.moveFirstFrame)) {
 				if(lockDelayNow==0&&lockDelay>0&&lastMove!=LastMove.SLIDE_GROUND&&lastMove!=LastMove.SPIN_GROUND) {
 					//it.updateConnectData(nowPieceX, nowPieceY, field)
-					owner.receiver.pieceFlicked(this, nowPieceX, nowPieceY, it, false)
-					playSE(if(frameSkin==FRAME_SKIN_GB) "stepold" else "step")
+					receiver.pieceFlicked(this, nowPieceX, nowPieceY, it, false)
+					playSE(if(frame==Frame.GB) "stepold" else "step")
 					if(!ruleOpt.softdropLock&&ruleOpt.softdropSurfaceLock&&softDropUsed) softdropContinuousUse = true
 				}
 				if(lockDelayNow<lockDelay) lockDelayNow++
@@ -2202,7 +2222,7 @@ class GameEngine(
 				// Hard drop固定
 				if(ruleOpt.harddropEnable&&!harddropContinuousUse&&
 					ctrl.isPress(up)&&ruleOpt.harddropLock&&
-					(isDiagonalMoveEnabled||!sideMoved)&&(ruleOpt.moveUpAndDown||!updown)
+					(isDiagonalMoveEnabled||!sideMoved)&&(ruleOpt.moveUpAndDown||!upDown)
 				) {
 					harddropContinuousUse = true
 					manualLock = true
@@ -2213,7 +2233,7 @@ class GameEngine(
 				if(ruleOpt.softdropEnable&&
 					(ruleOpt.softdropLock&&ctrl.isPress(down)||ctrl.isPush(down)&&
 						(ruleOpt.softdropSurfaceLock||speed.gravity<0)&&!softDropUsed)
-					&&!softdropContinuousUse&&(isDiagonalMoveEnabled||!sideMoved)&&(ruleOpt.moveUpAndDown||!updown)
+					&&!softdropContinuousUse&&(isDiagonalMoveEnabled||!sideMoved)&&(ruleOpt.moveUpAndDown||!upDown)
 				) {
 					softdropContinuousUse = true
 					manualLock = true
@@ -2287,17 +2307,17 @@ class GameEngine(
 							if(ending==0||staffrollEnableStatistics)
 								if(twistMini) statistics.totalTwistZeroMini++
 								else statistics.totalTwistZero++
-							owner.receiver.calcScore(this, lastEvent)
+							receiver.calcScore(this, lastEvent)
 						} else combo = -1
 
 						owner.mode?.calcScore(this, ev)?.let {sc ->
 							if(sc>0)
-								owner.receiver.addScore(this, nowPieceX, nowPieceBottomY, sc, ReceiverC.getPlayerColor(playerID))
+								receiver.addScore(this, nowPieceX, nowPieceBottomY, sc, COLOR.fromPlayerID(playerID))
 						}
 					}
 
 					owner.mode?.pieceLocked(this, lineClearing, finesse)
-					owner.receiver.pieceLocked(this, nowPieceX, nowPieceY, it, lineClearing, finesse)
+					receiver.pieceLocked(this, nowPieceX, nowPieceY, it, lineClearing, finesse)
 
 					dasRepeat = false
 					dasInstant = false
@@ -2327,21 +2347,20 @@ class GameEngine(
 							(are>0||lagARE||ruleOpt.lockFlashBeforeLineClear)&&
 								ruleOpt.lockFlash>1||(ruleOpt.lockFlash==1&&ruleOpt.lockFlashOnlyFrame)
 								-> {
-								// AREあり (光あり）
+								// AREあり (光あり)
 								stat = Status.LOCKFLASH
 								statc[0] = if(ruleOpt.lockFlashOnlyFrame) 0 else 1
 							}
 							are>0||lagARE -> {
-								// AREあり (光なし）
+								// AREあり (光なし)
 								statc[1] = are
 								stat = Status.ARE
 							}
 							interruptItem!=null -> {
 								// 中断効果のあるアイテム処理
 								nowPieceObject?.let {b ->
-									owner.receiver.blockBreak(this,
-										b.map.mapValues {(_, col) -> col.mapKeys {(x, _) -> x+nowPieceX}}
-											.mapKeys {(row, _) -> row+nowPieceY})
+									receiver.blockBreak(this, nowPieceX, nowPieceY,
+										b.data[b.direction].filter {(_, _, blk) -> blk.type==Block.TYPE.ITEM})
 								}
 								nowPieceObject = null
 								interruptItemPreviousStat = Status.MOVE
@@ -2370,7 +2389,7 @@ class GameEngine(
 	private fun statLockFlash() {
 		//  event 発生
 		if(owner.mode?.onLockFlash(this)==true) return
-		owner.receiver.onLockFlash(this)
+		receiver.onLockFlash(this)
 		statc[0]++
 		checkDropContinuousUse()
 
@@ -2400,7 +2419,7 @@ class GameEngine(
 	private fun statLineClear() {
 		//  event 発生
 		if(owner.mode?.onLineClear(this)==true) return
-		owner.receiver.onLineClear(this)
+		receiver.onLineClear(this)
 		checkDropContinuousUse()
 		// 横溜め
 		if(ruleOpt.dasInLineClear) padRepeat()
@@ -2418,26 +2437,28 @@ class GameEngine(
 			// All clear
 			if(li>=1&&field.isEmpty) {
 				statistics.bravos++
-				owner.receiver.bravo(this)
+				receiver.bravo(this)
 				tempHanabi += 6
 			}
 			// Calculate score
 			owner.mode?.calcScore(this, ev)?.let {
-				if(it>0) owner.receiver.addScore(this,
-					nowPieceX, check.linesYfolded.maxBy {i -> i.size}.average().toInt(), it)
+				if(it>0) {
+					receiver.addScore(this,
+						nowPieceX, check.linesYfolded.maxBy {i -> i.size}.average().toInt(), it)
+				}
 			}
-			if(li>0) owner.receiver.calcScore(this, ev)
+			receiver.calcScore(this, ev)
 
 			if(b2bCount<-1) b2bCount = -1
 
-			// Blockを消す演出を出す (まだ実際には消えていない）
+			// Blockを消す演出を出す (まだ実際には消えていない)
 			if(clearMode===Line) (0..<field.height).filter {field.getLineFlag(it)}.let {
 				owner.mode?.lineClear(this, it)
-				owner.receiver.lineClear(this, it)
+				receiver.lineClear(this, it)
 			}
 			field.filterAttributeMap(Block.ATTRIBUTE.ERASE).let {
 				if(owner.mode?.blockBreak(this, it)!=true)
-					owner.receiver.blockBreak(this, it)
+					receiver.blockBreak(this, it)
 			}
 			// Blockを消す
 			clearMode.clear(field)
@@ -2482,7 +2503,7 @@ class GameEngine(
 				}
 
 			val skip = owner.mode?.lineClearEnd(this)?:false
-			owner.receiver.lineClearEnd(this)
+			receiver.lineClearEnd(this)
 			if(sticky>0) field.setBlockLinkByColor()
 			if(sticky==2) field.setAllAttribute(true, Block.ATTRIBUTE.IGNORE_LINK)
 
@@ -2491,6 +2512,7 @@ class GameEngine(
 				lastLinesY.filter {it.max()>=field.highestBlockY}.distinctBy {it.size>=3}.forEach {
 					playSE(
 						when {
+							frame==Frame.GB -> "linefallold"
 							it.size>=4 -> "linefall1"
 							it.size<=1 -> "linefall"
 							else -> "linefall0"
@@ -2546,7 +2568,7 @@ class GameEngine(
 		//  event 発生
 		if(owner.mode?.onARE(this)==true) return
 
-		owner.receiver.onARE(this)
+		receiver.onARE(this)
 		if(statc[0]==0)
 			if(field.danger) {
 				loopSE("danger")
@@ -2597,7 +2619,7 @@ class GameEngine(
 		val animInt = 6
 		statc[3] = field.height*6
 		if(owner.mode?.onEndingStart(this)==true) return
-		owner.receiver.onEndingStart(this)
+		receiver.onEndingStart(this)
 
 		checkDropContinuousUse()
 		// 横溜め
@@ -2616,10 +2638,10 @@ class GameEngine(
 				if(statc[1]%animInt==0) {
 					val y = field.height-statc[1]/animInt
 					field.getRow(y).mapIndexedNotNull {my, b ->
-						b?.let {if(it.getAttribute(Block.ATTRIBUTE.ERASE)) my to it else null}
+						b?.let {my to it}
 					}.associate {it}.let {
 						field.delBlocks(mapOf(y to it)).let {b ->
-							if(owner.mode?.blockBreak(this, b)!=true) owner.receiver.blockBreak(this, b)
+							if(owner.mode?.blockBreak(this, b)!=true) receiver.blockBreak(this, b)
 						}
 					}
 				}
@@ -2643,14 +2665,14 @@ class GameEngine(
 	private fun statCustom() {
 		//  event 発生
 		if(owner.mode?.onCustom(this)==true) return
-		owner.receiver.onCustom(this)
+		receiver.onCustom(this)
 	}
 
 	/** Ending画面 */
 	private fun statExcellent() {
 		//  event 発生
 		if(owner.mode?.onExcellent(this)==true) return
-		owner.receiver.onExcellent(this)
+		receiver.onExcellent(this)
 
 		if(statc[0]==0) {
 			stopSE("danger")
@@ -2672,7 +2694,7 @@ class GameEngine(
 	private fun statGameOver() {
 		//  event 発生
 		if(owner.mode?.onGameOver(this)==true) return
-		owner.receiver.onGameOver(this)
+		receiver.onGameOver(this)
 		if(statc[0]==0) {
 			//死亡時はgameActive中にStatus.GAMEOVERになる
 			statc[2] = if(gameActive&&!staffrollNoDeath) 0 else 1
@@ -2685,7 +2707,10 @@ class GameEngine(
 				val animInt = 6
 				statc[1] = animInt*(field.height+1)
 				if(statc[0]==0) {
-					if(topOut) playSE("dead_last")
+					if(topOut) {
+						playSE("dead_last")
+						lives = -1
+					}
 					gameEnded()
 					blockShowOutlineOnly = false
 					if(!owner.isGameActive) owner.musMan.fadeSW = true
@@ -2693,7 +2718,7 @@ class GameEngine(
 					if(field.isEmpty) statc[0] = statc[1]
 					else {
 						resetFieldVisible()
-						if(ending==2&&!topOut) playSE("gamewon")
+						if(ending==2&&lives>=0) playSE("gamewon")
 						else playSE("shutter")
 					}
 				}
@@ -2721,7 +2746,16 @@ class GameEngine(
 						statc[0]++
 					}
 					statc[0]==statc[1] -> {
-						if(ending==2) playSE("gamewon") else playSE("gamelost")
+						if(ending==2&&!topOut) {
+							playSE("applause${
+								when(owner.mode?.gameIntensity) {
+									0, 1 -> 4
+									3 -> 5
+									else -> 3
+								}
+							}")
+//							playJingle(if(owner.mode?.gameIntensity==2)"gamewin" else "gm")
+						} else playSE("gamelost")
 						statc[0]++
 					}
 					statc[0]<statc[1]+180 -> {
@@ -2756,7 +2790,7 @@ class GameEngine(
 							b?.let {if(it.getAttribute(Block.ATTRIBUTE.ERASE)) my to it else null}
 						}.associate {it}.let {
 							field.delBlocks(mapOf(y to it)).let {b ->
-								if(owner.mode?.blockBreak(this, b)!=true) owner.receiver.blockBreak(this, b)
+								if(owner.mode?.blockBreak(this, b)!=true) receiver.blockBreak(this, b)
 							}
 						}
 					}
@@ -2783,7 +2817,7 @@ class GameEngine(
 		)
 
 		if(owner.mode?.onResult(this)==true) return
-		owner.receiver.onResult(this)
+		receiver.onResult(this)
 
 		// Turn-off in-game flags
 		gameActive = false
@@ -2809,7 +2843,7 @@ class GameEngine(
 	private fun statFieldEdit() {
 		//  event 発生
 		if(owner.mode?.onFieldEdit(this)==true) return
-		owner.receiver.onFieldEdit(this)
+		receiver.onFieldEdit(this)
 
 		mapEditFrames++
 
@@ -2873,7 +2907,7 @@ class GameEngine(
 		if(ctrl.isPush(Controller.BUTTON_B)&&mapEditFrames>10) {
 			stat = mapEditPreviousStat
 			owner.mode?.fieldEditExit(this)
-			owner.receiver.fieldEditExit(this)
+			receiver.fieldEditExit(this)
 		}
 	}
 
@@ -2917,8 +2951,19 @@ class GameEngine(
 
 	/** Constants of main game status */
 	enum class Status {
-		NOTHING, SETTING, PROFILE, READY, MOVE, LOCKFLASH, LINECLEAR, ARE, ENDINGSTART, CUSTOM, EXCELLENT, GAMEOVER, RESULT,
-		FIELDEDIT, INTERRUPTITEM
+		NOTHING, SETTING, PROFILE, READY,
+		/**  Piece Spawned and while controlling */
+		MOVE,
+		/** Piece locked */
+		LOCKFLASH,
+		/** Line detected and clear, */
+		LINECLEAR,
+		/** End Piece's Turn and wait for next Piece*/
+		ARE,
+		/** */
+		ENDINGSTART, CUSTOM, EXCELLENT,
+		GAMEOVER,
+		RESULT, FIELDEDIT, INTERRUPTITEM
 	}
 	/** Constants of last successful movements */
 	enum class LastMove {
@@ -2935,9 +2980,51 @@ class GameEngine(
 		CYAN(0x00FFFF), DARKBLUE(0x0000FF), BLUE(0x0080FF), PURPLE(0x8000FF), PINK(0xff0080)
 	}
 
+	enum class Frame(val id:Int, val type:Type = Type.COLOR) {
+		WHITE(0), GREEN(1), SILVER(2), RED(3),
+		PINK(4), CYAN(5), BRONZE(6), PURPLE(7),
+		BLUE(8), GRAY(9), SPGREEN(10), YELLOW(11),
+		SNOW(12), PLUM(13), RUSTY(14),
+		GB(FRAME_SKIN_GB, Type.RETRO), SG(FRAME_SKIN_SG, Type.RETRO), HEBO(FRAME_SKIN_HEBO, Type.UNIQUE),
+		GRADE(FRAME_SKIN_GRADE, Type.UNIQUE), METAL(FRAME_SKIN_METAL, Type.UNIQUE);
+
+		operator fun plus(i:Int) = all[(ordinal+i).mod(all.size)]
+		operator fun minus(i:Int) = all[(ordinal-i).mod(all.size)]
+		operator fun inc() = this.plus(1)
+		operator fun dec() = this.minus(1)
+
+		enum class Type { COLOR, RETRO, UNIQUE }
+		companion object {
+
+			val all:List<Frame> = entries.toList()
+			val allColor:List<Frame> = entries.filter {it.type==Type.COLOR}
+			fun COLOR(value:Int):Frame = allColor[value.mod(allColor.size)]
+			fun valueOf(value:Int):Frame = when(value) {
+				FRAME_COLOR_WHITE -> WHITE
+				FRAME_COLOR_GREEN -> GREEN
+				FRAME_COLOR_SILVER -> SILVER
+				FRAME_COLOR_RED -> RED
+				FRAME_COLOR_PINK -> PINK
+				FRAME_COLOR_CYAN -> CYAN
+				FRAME_COLOR_BRONZE -> BRONZE
+				FRAME_COLOR_PURPLE -> PURPLE
+				FRAME_COLOR_BLUE -> BLUE
+				FRAME_COLOR_GRAY -> GRAY
+				FRAME_COLOR_YELLOW -> YELLOW
+				FRAME_SKIN_GB -> GB
+				FRAME_SKIN_SG -> SG
+				FRAME_SKIN_HEBO -> HEBO
+				FRAME_SKIN_GRADE -> GRADE
+				FRAME_SKIN_METAL -> METAL
+				else -> throw IllegalArgumentException("Invalid frame color: $value")
+			}
+
+		}
+	}
+
 	companion object {
-		/** Log (Apache log4j) */
-		private var log = LogManager.getLogger()
+		/** Log (Apache Log4j) */
+		private val Log = LogManager.getLogger()
 
 		/** Max number of game style */
 		val MAX_GAMESTYLE get() = GameStyle.entries.size
@@ -2967,7 +3054,7 @@ class GameEngine(
 		const val FRAME_COLOR_BLUE = 8
 		const val FRAME_COLOR_GRAY = 9
 		const val FRAME_COLOR_YELLOW = 11
-		const val FRAME_COLOR_ALL = 15
+		val FRAME_COLOR_ALL = Frame.all.size
 		const val FRAME_SKIN_GB = -1
 		const val FRAME_SKIN_SG = -2
 		const val FRAME_SKIN_HEBO = -3
@@ -2993,26 +3080,22 @@ class GameEngine(
 		const val COMBO_TYPE_NORMAL = 1
 		const val COMBO_TYPE_DOUBLE = 2
 
-		/** Table for cint-block inum */
+		/** Table for color-block item */
 		val ITEM_COLOR_BRIGHT_TABLE =
-			listOf(
+			intArrayOf(
 				10, 10, 9, 9, 8, 8, 8, 7, 7, 7, 6, 6, 6, 5, 5, 5, 4, 4, 4, 4, 3, 3, 3, 3, 2, 2, 2, 2, 1, 1, 1, 1, 0, 0, 0,
 				0, 0, 0, 0, 0
 			)
 
 		/** Default list of block colors to use for random block colors. */
-		val BLOCK_COLORS_DEFAULT =
-			listOf(
-				Block.COLOR.RED, Block.COLOR.ORANGE, Block.COLOR.YELLOW, Block.COLOR.GREEN,
-				Block.COLOR.CYAN, Block.COLOR.BLUE, Block.COLOR.PURPLE
-			)
+		val BLOCK_COLORS_DEFAULT = Block.COLOR.colors()
 
 		const val HANABI_INTERVAL = 10
 
 		val EXPLOD_SIZE_DEFAULT =
-			listOf(
-				listOf(4, 3), listOf(3, 0), listOf(3, 1), listOf(3, 2), listOf(3, 3), listOf(4, 4),
-				listOf(5, 5), listOf(5, 5), listOf(6, 6), listOf(6, 6), listOf(7, 7)
+			arrayOf(
+				4 to 3, 3 to 0, 3 to 1, 3 to 2, 3 to 3, 4 to 4,
+				5 to 5, 5 to 5, 6 to 6, 6 to 6, 7 to 7
 			)
 	}
 }

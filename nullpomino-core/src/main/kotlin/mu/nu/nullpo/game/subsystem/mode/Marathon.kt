@@ -60,7 +60,7 @@ class Marathon:NetDummyMode() {
 	/** Game type  */
 	private var goalType:Int by DelegateMenuItem(itemMode)
 
-	private val itemBig = BooleanMenuItem("big", "BIG", COLOR.BLUE, false)
+	private val itemBig = BooleanMenuItem("big", "BIG", COLOR.ORANGE, false)
 	/** BigMode */
 	private var big:Boolean by DelegateMenuItem(itemBig)
 
@@ -97,7 +97,7 @@ class Marathon:NetDummyMode() {
 		engine.statistics.level = startLevel
 		owner.bgMan.bg = startLevel
 		setSpeed(engine)
-		engine.frameSkin = GameEngine.FRAME_COLOR_GREEN
+		engine.frame = GameEngine.Frame.GREEN
 	}
 
 	/** Set the gravity rate
@@ -164,7 +164,7 @@ class Marathon:NetDummyMode() {
 		setSpeed(engine)
 
 		owner.musMan.bgm = if(netIsWatch) BGM.Silent else bgmLv(0)
-		engine.frameSkin = (1+startLevel)%GameEngine.FRAME_COLOR_ALL
+		engine.frame = GameEngine.Frame.valueOf((1+startLevel)%GameEngine.FRAME_COLOR_ALL)
 	}
 
 	/* Render score */

@@ -39,7 +39,6 @@ import mu.nu.nullpo.game.event.ScoreEvent
 import mu.nu.nullpo.game.net.NetUtil
 import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.game.subsystem.mode.menu.*
-import mu.nu.nullpo.gui.common.BaseFont
 import mu.nu.nullpo.gui.common.BaseFont.FONT.*
 import mu.nu.nullpo.util.CustomProperties
 import mu.nu.nullpo.util.GeneralUtil.toTimeStr
@@ -98,7 +97,7 @@ class MarathonDrill:NetDummyMode() {
 	/** Rankings' scores */
 	private val rankingScore = List(GOALTYPE_MAX) {MutableList(rankingMax) {0L}}
 
-	/** Rankings' line counts */
+	/** Rankings' lines counts */
 	private val rankingLines = List(GOALTYPE_MAX) {MutableList(rankingMax) {0}}
 
 	/** Rankings' depth */
@@ -134,7 +133,7 @@ class MarathonDrill:NetDummyMode() {
 
 		rankingRank = -1
 
-		engine.frameSkin = GameEngine.FRAME_COLOR_GREEN
+		engine.frame = GameEngine.Frame.GREEN
 		engine.statistics.levelDispAdd = 1
 
 		netPlayerInit(engine)
@@ -368,11 +367,11 @@ class MarathonDrill:NetDummyMode() {
 	 * @return Garbage time limit
 	 */
 	private fun getGarbageMaxTime(lv:Int):Int =
-		GARBAGE_TIMER_TABLE[goalType][minOf(lv, GARBAGE_TIMER_TABLE[goalType].size-1)]
+		GARBAGE_TIMER_TABLE[goalType][lv.coerceIn(GARBAGE_TIMER_TABLE[goalType].indices)]
 
 	private fun getGarbageMessRate(lv:Int):Float =
-		GARBAGE_MESSINESS_TABLE[goalType][minOf(lv, GARBAGE_MESSINESS_TABLE[goalType].size-1)]/100f
-	/** Add garbage line(s)
+		GARBAGE_MESSINESS_TABLE[goalType][lv.coerceIn(GARBAGE_MESSINESS_TABLE[goalType].indices)]/100f
+	/** Add garbage lines(s)
 	 * @param engine GameEngine
 	 * @param lines Number of garbage lines to add
 	 */

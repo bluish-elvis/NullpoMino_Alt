@@ -30,7 +30,6 @@
  */
 package mu.nu.nullpo.util
 
-import kotlinx.serialization.encodeToString
 import mu.nu.nullpo.game.event.Rankable
 import mu.nu.nullpo.util.GeneralUtil.Json
 import org.apache.logging.log4j.LogManager
@@ -130,7 +129,7 @@ class CustomProperties(name:String = ""):Properties() {
 	inline fun <reified T> setProperty(key:String, value:T):T? = setProperty(key,
 		if(value is Rankable) Json.encodeToString<Rankable>(value) else "$value") as? T
 	/** プロパティを設定
-	 * @return 指定された[key]に対応する値 (見つからなかったら[def]）
+	 * @return 指定された[key]に対応する値 (見つからなかったら[def])
 	 */
 	@Suppress("IMPLICIT_CAST_TO_ANY")
 	inline fun <reified T> getProperty(key:String, def:T):T = try {
@@ -145,13 +144,13 @@ class CustomProperties(name:String = ""):Properties() {
 			is Rankable -> Json.decodeFromString<T>(getProperty(key))
 			is List<*> -> if(def is MutableList<*>) getPropertiesMutable(key, def) else getProperties(key, def)
 			else -> getProperty(key, "$def")
-		} as? T ?: def
+		} as? T?:def
 	} catch(e:Exception) {
 		def
 	}
 
 	/** byte型のプロパティを取得
-	 * @return 指定された[key]に対応する値 (見つからなかったら[defaultValue]）
+	 * @return 指定された[key]に対応する値 (見つからなかったら[defaultValue])
 	 */
 	fun getProperty(key:String, defaultValue:Byte):Byte = try {
 		getProperty(key, "$defaultValue").toByte()
@@ -160,7 +159,7 @@ class CustomProperties(name:String = ""):Properties() {
 	}
 
 	/** short型のプロパティを取得
-	 * @return 指定された[key]に対応する値 (見つからなかったら[defaultValue]）
+	 * @return 指定された[key]に対応する値 (見つからなかったら[defaultValue])
 	 */
 	fun getProperty(key:String, defaultValue:Short):Short = try {
 		getProperty(key, "$defaultValue").toShort()
@@ -169,7 +168,7 @@ class CustomProperties(name:String = ""):Properties() {
 	}
 
 	/** int型のプロパティを取得
-	 * @return 指定された[key]に対応する値 (見つからなかったら[defaultValue]）
+	 * @return 指定された[key]に対応する値 (見つからなかったら[defaultValue])
 	 */
 	fun getProperty(key:String, defaultValue:Int):Int = try {
 		getProperty(key, "$defaultValue").toInt()
@@ -178,7 +177,7 @@ class CustomProperties(name:String = ""):Properties() {
 	}
 
 	/** List型のプロパティを取得
-	 * @return 指定された[key]に対応するListの値 空Listであってはならない (見つからなかったら[defaultValues]）
+	 * @return 指定された[key]に対応するListの値 空Listであってはならない (見つからなかったら[defaultValues])
 	 */
 	inline fun <reified T> getProperties(key:String, defaultValues:List<T>) = try {
 		getProperty(key, "${defaultValues.joinToString(",")}}").split(',')
@@ -192,7 +191,7 @@ class CustomProperties(name:String = ""):Properties() {
 					Char::class -> it[0]
 					Boolean::class -> it.toBoolean()
 					else -> it
-				} as? T ?: defaultValues.getOrNull(minOf(i, defaultValues.size-1))
+				} as? T?:defaultValues.getOrNull(minOf(i, defaultValues.size-1))
 			}
 	} catch(e:Exception) {
 		defaultValues
@@ -202,7 +201,7 @@ class CustomProperties(name:String = ""):Properties() {
 		getProperties(key, defaultValues).toMutableList()
 
 	inline fun <reified T> getProperties(key:String, defaultValues:T) = try {
-		getProperty(key, "$defaultValues").split(',').map {it as? T ?: defaultValues}
+		getProperty(key, "$defaultValues").split(',').map {it as? T?:defaultValues}
 	} catch(e:Exception) {
 		listOf(defaultValues)
 	}
@@ -214,10 +213,10 @@ class CustomProperties(name:String = ""):Properties() {
 		setProperty(key, value.joinToString(","))?.let {
 			if(it is String) it.split(',').filterIsInstance<T>()
 			else null
-		} ?: emptyList()
+		}?:emptyList()
 
 	/** intArray型のプロパティを取得
-	 * @return 指定された[key]に対応する値 (見つからなかったら[defaultValue]）
+	 * @return 指定された[key]に対応する値 (見つからなかったら[defaultValue])
 	 */
 	fun getProperties(key:String, defaultValue:IntArray):IntArray = try {
 		getProperty(key, "$defaultValue").split(',').map {it.toInt()}.toIntArray()
@@ -232,7 +231,7 @@ class CustomProperties(name:String = ""):Properties() {
 		}
 
 	/** long型のプロパティを取得
-	 * @return 指定された[key]に対応する値 (見つからなかったら[defaultValue]）
+	 * @return 指定された[key]に対応する値 (見つからなかったら[defaultValue])
 	 */
 	fun getProperty(key:String, defaultValue:Long):Long = try {
 		getProperty(key, "$defaultValue").toLong()
@@ -241,7 +240,7 @@ class CustomProperties(name:String = ""):Properties() {
 	}
 
 	/** float型のプロパティを取得
-	 * @return 指定された[key]に対応する値 (見つからなかったら[defaultValue]）
+	 * @return 指定された[key]に対応する値 (見つからなかったら[defaultValue])
 	 */
 	fun getProperty(key:String, defaultValue:Float):Float = try {
 		getProperty(key, "$defaultValue").toFloat()
@@ -250,7 +249,7 @@ class CustomProperties(name:String = ""):Properties() {
 	}
 
 	/** double型のプロパティを取得
-	 * @return 指定された[key]に対応する値 (見つからなかったら[defaultValue]）
+	 * @return 指定された[key]に対応する値 (見つからなかったら[defaultValue])
 	 */
 	fun getProperty(key:String, defaultValue:Double):Double = try {
 		getProperty(key, "$defaultValue").toDouble()
@@ -259,7 +258,7 @@ class CustomProperties(name:String = ""):Properties() {
 	}
 
 	/** char型のプロパティを取得
-	 * @return 指定された[key]に対応する値 (見つからなかったら[defaultValue]）
+	 * @return 指定された[key]に対応する値 (見つからなかったら[defaultValue])
 	 */
 	fun getProperty(key:String, defaultValue:Char):Char = try {
 		getProperty(key, "$defaultValue")[0]
@@ -268,7 +267,7 @@ class CustomProperties(name:String = ""):Properties() {
 	}
 
 	/** boolean型のプロパティを取得
-	 * @return 指定された[key]に対応する値 (見つからなかったら[defaultValue]）
+	 * @return 指定された[key]に対応する値 (見つからなかったら[defaultValue])
 	 */
 	fun getProperty(key:String, defaultValue:Boolean):Boolean =
 		getProperty(key, "$defaultValue").toBoolean()

@@ -33,7 +33,6 @@ package mu.nu.nullpo.game.subsystem.mode.another
 import mu.nu.nullpo.game.component.BGM
 import mu.nu.nullpo.game.component.Block
 import mu.nu.nullpo.game.component.Controller
-import mu.nu.nullpo.game.event.EventReceiver
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
 import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.game.play.GameManager
@@ -500,7 +499,7 @@ class AvalancheVSSPF:AvalancheVSDummyMode() {
 		val fldPosX = receiver.fieldX(engine)
 		val fldPosY = receiver.fieldY(engine)
 		val pid = engine.playerID
-		val playerColor = EventReceiver.getPlayerColor(pid)
+		val playerColor = COLOR.fromPlayerID(pid)
 
 		// Timer
 		if(pid==0) receiver.drawFont(224, 8, engine.statistics.time.toTimeStr, BASE)

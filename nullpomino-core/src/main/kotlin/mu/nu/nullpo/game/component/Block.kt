@@ -32,6 +32,7 @@ package mu.nu.nullpo.game.component
 
 import mu.nu.nullpo.util.GeneralUtil.aNum
 import mu.nu.nullpo.util.GeneralUtil.toAlphaNum
+import mu.nu.nullpo.game.event.EventReceiver.COLOR as RColor
 
 /** Block */
 @kotlinx.serialization.Serializable
@@ -220,6 +221,14 @@ class Block @JvmOverloads constructor(
 	 */
 	fun toChar():Char = cint.toAlphaNum
 
+	fun toERColor():RColor = when {
+		getAttribute(ATTRIBUTE.BONE) -> RColor.WHITE
+		getAttribute(ATTRIBUTE.SQUARE_SILVER) -> RColor.WHITE
+		getAttribute(ATTRIBUTE.SQUARE_GOLD) -> RColor.YELLOW
+//			b.color==Block.COLOR.RAINBOW ->
+		else -> RColor.fromBlock(color, type)
+	}
+
 	override fun toString():String = "${toChar()}"
 	override fun hashCode():Int = (color?.hashCode()?:0)
 		.let {31*it+type.hashCode()}
@@ -336,7 +345,7 @@ class Block @JvmOverloads constructor(
 			} else {
 				val ci:Int = (color?.ordinal?:0)
 				when(type) {
-					TYPE.BLOCK -> if(color?.color!=true && isBone) COLOR_WHITE else ci
+					TYPE.BLOCK -> if(color?.color!=true&&isBone) COLOR_WHITE else ci
 					TYPE.GEM -> if(color?.color!=true) COLOR_GEM_RAINBOW
 					else ci+COLOR_GEM_RED-COLOR_RED
 					TYPE.ITEM -> item?.color?.ordinal?:0

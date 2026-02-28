@@ -38,7 +38,7 @@ import kotlin.random.Random
 
 class BGAHBeams<T>(res:mu.nu.nullpo.gui.common.ResourceImage<T>):
 	mu.nu.nullpo.gui.common.bg.AbstractBG<T>(res) {
-	/*（レーザー）
+	/*(レーザー)
 LsrSY = Rnd * 240
 For I = 0 To 59
 If (I Mod 3) = 0 Then
@@ -49,7 +49,7 @@ Else
 Lsr(I) = Lsr(Int(I / 3) * 3)
 End If
 Next I*/
-	private class Beam(val id:Int, var speed:Float) {
+	private class Beam(val id:Int) {
 
 		var x = Random.nextFloat()*704-32; private set
 		var y = Random.nextFloat()*544-32; private set
@@ -60,32 +60,30 @@ Next I*/
 
 		data class Stat(var x:Float, var y:Float, var r:Float) {
 			fun replace(v:Stat) {
-				x = v.x;y = v.y;r = v.r
+				x = v.x; y = v.y; r = v.r
 			}
 		}
 
 		var t = List(2) {Stat(x, y, r)}
-		fun update() {
+		fun update(speed:Float) {
 			t[1].replace(t[0])
-			t[0].let {it.x = x;it.y = y;it.r = r}
+			t[0].let {it.x = x; it.y = y; it.r = r}
 			val vel = 10+4*speed
 			x += sin(r*3*RG)*vel
 			y -= cos(r*3*RG)*vel
-			r += vr*speed*minOf(1+speed/10, speed)
-			while(r<0) r += 360
-			while(r>=360) r -= 360
+			r = (r+vr*speed*minOf(1+speed/10, speed)).mod(360f)
 			fun refl() {
-				vr = -vr;c = 1-c
+				vr = -vr; c = 1-c
 			}
 			while(x<-32) {
-				x += 672;refl()
-			};while(x>=640) {
-				x -= 672;refl()
+				x += 672; refl()
+			}; while(x>=640) {
+				x -= 672; refl()
 			}
 			while(y<-32) {
-				y += 512;refl()
-			};while(y>=480) {
-				y -= 512;refl()
+				y += 512; refl()
+			}; while(y>=480) {
+				y -= 512; refl()
 			}
 			/*With Lsr(I)
 	If TrM = 2 Then .r = .r + .RR
@@ -105,16 +103,10 @@ Next I*/
 			r = id*2+1f
 			c = id/2%2
 			vr = (id%5-2)/5f
-			t.forEach {it.x = x;it.y = y;it.r = r}
+			t.forEach {it.x = x; it.y = y; it.r = r}
 		}
 	}
-
-	override var speed:Float = 1f
-		set(value) {
-			field = value
-			children.forEach {it.speed = value}
-		}
-	private val children = List(20) {Beam(it, speed)}
+	private val children = List(20) {Beam(it)}
 	private var by = Random.nextFloat()*240
 	override var tick
 		get() = (240-by).toInt()
@@ -123,9 +115,9 @@ Next I*/
 		}
 
 	override fun update() {
-		by -= 4+speed*3
-		if(by<0) by += 240
-		children.forEach {it.update()}
+		super.update()
+		by = (by-4-spdN*3).mod(240f)
+		children.forEach {it.update(spdN)}
 	}
 
 	override fun reset() {
@@ -135,10 +127,7 @@ Next I*/
 
 	override fun draw(render:AbstractRenderer, bg:Boolean) {
 		if(bg) drawLite()
-		else {
-			render.drawBlackBG(0.3f)
-			render.drawBlendAdd {drawLite()}
-		}
+		else render.drawBlendAdd {drawBG(.25f)}
 		/*LsrSY = LsrSY - 4 - TrM * 3: If LsrSY < 0 Then LsrSY = LsrSY + 240
 		With Src
 			.Left = 0: .Top = 480 - LsrSY: .Right = 640: .Bottom = 480
@@ -158,12 +147,12 @@ Next I*/
 				val x = it.x
 				val y = it.y
 				val r = it.r.toInt()
-				val sx = (r%20)*32f
-				val sy = it.c*96f+(r/20%3)*32
+				val sx = (r.mod(20))*32f
+				val sy = it.c*96f+((r/20).mod(3))*32
 				it.t.reversed().forEach {(x1, y1, r1) ->
 					val tr = r1.toInt()
-					val tsx = (tr%20)*32f
-					val tsy = it.c*96f+(tr/20%3)*32
+					val tsx = (tr.mod(20))*32f
+					val tsy = it.c*96f+((tr/20).mod(3))*32
 					img.draw(x1, y1, tsx, tsy, tsx+32, tsy+32)
 				}
 				img.draw(x, y, sx, sy, sx+32, sy+32)
@@ -171,13 +160,16 @@ Next I*/
 		}
 	}
 
-	override fun drawLite() {
-		img.draw(0f, 0f, 0f, 480-by, 640f, 480f)
-		img.draw(0f, by, 0f, 240f, 640f, 480f)
-		img.draw(0f, 240+by, 0f, 240f, 640f, 480-by)
+	fun drawBG(alpha:Float = 1f) {
+		img.draw(0f, 0f, 640f, by, 0f, 480-by, 640f, 480f, alpha)
+		img.draw(0f, by, 640f, 240+by, 0f, 240f, 640f, 480f, alpha)
+		img.draw(0f, 240+by, 640f, 480f, 0f, 240f, 640f, 480-by, alpha)
 	}
+
+	override fun drawLite() = drawBG()
+
 }
-/*Case 7 '（レーザー）
+/*Case 7 '(レーザー)
 
 For I = 0 To 59
 	If (I Mod 3) < 2 Then

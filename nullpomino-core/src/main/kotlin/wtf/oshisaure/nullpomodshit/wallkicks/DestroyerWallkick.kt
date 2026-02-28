@@ -51,16 +51,14 @@ import mu.nu.nullpo.game.subsystem.wallkick.Wallkick
 class DestroyerWallkick:Wallkick {
 	override fun executeWallkick(
 		x:Int, y:Int, rtDir:Int, rtOld:Int, rtNew:Int, allowUpward:Boolean, piece:Piece, field:Field, ctrl:Controller?
-	): WallkickResult {
+	):WallkickResult {
 		val kick = movePieceInBounds(piece, x, y, rtNew, field)
 		destroyBlocksKick(piece, x, y, rtNew, field)
 		return kick
 	}
 
 	private fun destroyBlocksKick(piece:Piece, x:Int, y:Int, rt:Int, fld:Field) {
-		if(piece.big) {
-			destroyBlocksKickBig(piece, x, y, rt, fld)
-		} else {
+		if(piece.big) destroyBlocksKickBig(piece, x, y, rt, fld) else {
 			for(i in 0..<piece.maxBlock) {
 				val x2 = x+piece.dataX[rt][i]
 				val y2 = y+piece.dataY[rt][i]
@@ -73,7 +71,7 @@ class DestroyerWallkick:Wallkick {
 		for(i in 0..<piece.maxBlock) {
 			val x2 = x+piece.dataX[rt][i]*2
 			val y2 = y+piece.dataY[rt][i]*2
-			for(k in 0..1) {
+			for(k in 0..1)
 				for(l in 0..1) {
 					val x3 = x2+k
 					val y3 = y2+l
@@ -82,11 +80,10 @@ class DestroyerWallkick:Wallkick {
 						fld.setBlock(x3, y3, Block())
 					}
 				}
-			}
 		}
 	}
 
-	private fun movePieceInBounds(piece:Piece, x:Int, y:Int, rt:Int, fld:Field): WallkickResult {
+	private fun movePieceInBounds(piece:Piece, x:Int, y:Int, rt:Int, fld:Field):WallkickResult {
 		return if(piece.big) {
 			movePieceInBoundsBig(piece, x, y, rt, fld)
 		} else {
@@ -106,7 +103,7 @@ class DestroyerWallkick:Wallkick {
 		}
 	}
 
-	private fun movePieceInBoundsBig(piece:Piece, x:Int, y:Int, rt:Int, fld:Field): WallkickResult {
+	private fun movePieceInBoundsBig(piece:Piece, x:Int, y:Int, rt:Int, fld:Field):WallkickResult {
 		var kickX = 0
 		var kickY = 0
 		var kickDir = checkInBoundsKickBig(piece, x, y, rt, fld)
@@ -142,7 +139,7 @@ class DestroyerWallkick:Wallkick {
 		for(i in 0..<piece.maxBlock) {
 			val x2 = x+piece.dataX[rt][i]*2
 			val y2 = y+piece.dataY[rt][i]*2
-			for(k in 0..1) {
+			for(k in 0..1)
 				for(l in 0..1) {
 					val x3 = x2+k
 					val y3 = y2+l
@@ -153,7 +150,6 @@ class DestroyerWallkick:Wallkick {
 						y3<0&&fld.ceiling -> return 3
 					}
 				}
-			}
 		}
 		return -1
 	}

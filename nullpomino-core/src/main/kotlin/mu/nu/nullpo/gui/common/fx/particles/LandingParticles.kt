@@ -86,12 +86,12 @@ class LandingParticles(
 			ured*2/3, ugreen*2/3, ublue*2/3, 64
 		)
 	}
+	val set get()= particles+this
 	val width = maxX-minX
 	/** X-coordinate */
 	override var x:Float = lerp(minX, maxX, .5f)
 	/** Y-coordinate */
-	override var y:Float  = startY
-
+	override var y:Float = startY
 
 	private var ticks = 0
 	/** @return true if it's expired */

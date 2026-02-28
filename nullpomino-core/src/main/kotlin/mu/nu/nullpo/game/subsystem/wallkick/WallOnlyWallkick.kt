@@ -34,26 +34,22 @@ import mu.nu.nullpo.game.component.Controller
 import mu.nu.nullpo.game.component.Field
 import mu.nu.nullpo.game.component.Piece
 import mu.nu.nullpo.game.event.WallkickResult
+import mu.nu.nullpo.util.GeneralUtil.toInt
 
 /** WallOnlyWallkick - fieldの壁しか蹴らないWallkick(すでに置かれているBlockは蹴りません) */
 class WallOnlyWallkick:Wallkick {
 	/* Wallkick */
 	override fun executeWallkick(x:Int, y:Int, rtDir:Int, rtOld:Int, rtNew:Int, allowUpward:Boolean, piece:Piece,
-		field:Field, ctrl:Controller?): WallkickResult? {
-		var check = 0
-		if(piece.big) check = 1
-
-		// 通常のWallkick (I以外）
+		field:Field, ctrl:Controller?):WallkickResult? {
+		// 通常のWallkick (I以外)
 		if(piece.id!=Piece.PIECE_I)
 			if(checkCollisionKick(piece, x, y, rtNew, field)) {
-				var temp = 0
-
-				if(!piece.checkCollision(x-1-check, y, rtNew, field)) temp = -1-check
-				if(!piece.checkCollision(x+1+check, y, rtNew, field)) temp = 1+check
-
+				val check = piece.big.toInt()
+				val temp = if(!piece.checkCollision(x-1-check, y, rtNew, field)) -1-check
+				else if(!piece.checkCollision(x+1+check, y, rtNew, field)) 1+check
+				else 0
 				if(temp!=0) return WallkickResult(temp, 0, rtNew)
 			}
-
 		return null
 	}
 
@@ -68,18 +64,16 @@ class WallOnlyWallkick:Wallkick {
 	private fun checkCollisionKick(piece:Piece, x:Int, y:Int, rt:Int, fld:Field):Boolean {
 		// Bigでは専用処理
 		if(piece.big) return checkCollisionKickBig(piece, x, y, rt, fld)
-
 		for(i in 0..<piece.maxBlock) {
 			val x2 = x+piece.dataX[rt][i]
 			val y2 = y+piece.dataY[rt][i]
 
-			if(fld.getCoordAttribute(x2, y2)==Field.COORD_WALL) return true
+			if(fld.getCoordAttribute(x2, y2)==Field.Coord.WALL) return true
 		}
-
 		return false
 	}
 
-	/** Wallkick可能かどうか調べる (Big用）
+	/** Wallkick可能かどうか調べる (Big用)
 	 * @param piece Blockピース
 	 * @param x X-coordinate
 	 * @param y Y-coordinate
@@ -91,17 +85,15 @@ class WallOnlyWallkick:Wallkick {
 		for(i in 0..<piece.maxBlock) {
 			val x2 = x+piece.dataX[rt][i]*2
 			val y2 = y+piece.dataY[rt][i]*2
-
 			// 4Block分調べる
 			for(k in 0..1)
 				for(l in 0..1) {
 					val x3 = x2+k
 					val y3 = y2+l
 
-					if(fld.getCoordAttribute(x3, y3)==Field.COORD_WALL) return true
+					if(fld.getCoordAttribute(x3, y3)==Field.Coord.WALL) return true
 				}
 		}
-
 		return false
 	}
 }

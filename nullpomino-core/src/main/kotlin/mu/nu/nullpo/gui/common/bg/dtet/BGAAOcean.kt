@@ -32,11 +32,13 @@
 package mu.nu.nullpo.gui.common.bg.dtet
 
 import mu.nu.nullpo.gui.common.AbstractRenderer
+import mu.nu.nullpo.gui.common.bg.tech.Space
 import kotlin.math.pow
 import kotlin.math.sin
 import kotlin.random.Random
 
 class BGAAOcean<T>(bg:mu.nu.nullpo.gui.common.ResourceImage<T>):mu.nu.nullpo.gui.common.bg.AbstractBG<T>(bg) {
+	private val star = Space()
 	/*SeaA = 0
 For I = 0 To 29: Sea(I) = Rnd * 640: Next I*/
 	private val rasterX = MutableList(31) {Random.nextFloat()*640}
@@ -44,12 +46,14 @@ For I = 0 To 29: Sea(I) = Rnd * 640: Next I*/
 
 	private var waveH = 0f; private set
 	private fun waveMag(i:Int) = maxOf(0.1f, (1.15f.pow(i)-spdN/2)*(1.4f-spdN*.2f))
+
 	override fun update() {
 		tick++
-		if(tick>=180) tick -= 180
+		tick %= 180
 		rasterX.forEachIndexed {i, _ ->
 			if(i==0) {
-				rasterX[i] += spdN
+				rasterX[i] += spdN*.5f
+				star.vel.set(spdN*-.1f to 0f)
 				if(waveX[i]!=0f) waveX[i] = 0f
 			} else {
 				waveX[i] = sin((tick*2+(1.28f+spdN*0.01f).pow(32-i))*RG)*waveMag(i)
@@ -57,10 +61,10 @@ For I = 0 To 29: Sea(I) = Rnd * 640: Next I*/
 				rasterX[i] += (i-2.5f)*(spdN*.09f-.05f)
 //				Sea(I) = Sea(I) + (I - 2.5) * (0.03 - (TrM > 0) * 0.08)
 			}
-			if(rasterX[i]>640) rasterX[i] -= 640f
-			if(rasterX[i]<0) rasterX[i] += 640f
+			rasterX[i] = rasterX[i].mod(640f)
 		}
 		super.update()
+		star.update()
 	}
 
 	override fun reset() {
@@ -68,14 +72,16 @@ For I = 0 To 29: Sea(I) = Rnd * 640: Next I*/
 		rasterX.forEachIndexed {i, _ -> rasterX[i] = Random.nextFloat()*640}
 		waveX.fill(0f)
 		waveH = 0f
+		star.reset()
 	}
 
 	override fun draw(render:AbstractRenderer, bg:Boolean) {
 		rasterX.zip(waveX).forEachIndexed {i, (x, s) ->
 			if(i==0) {
 				//sky
-				img.draw(0f, 0f, x, 0f, 640f, 240f)
-				img.draw(640-x, 0f, 0f, 0f, x, 240f)
+				img.draw(0f, 0f, x, 0f, 640f, 240f,if(bg)1f else 0.25f)
+				img.draw(640-x, 0f, 0f, 0f, x, 240f,if(bg)1f else 0.25f)
+				star.draw(render, false)
 			} else {
 				//ocean
 				val j = i-1
@@ -98,7 +104,7 @@ For I = 0 To 29: Sea(I) = Rnd * 640: Next I*/
 	}
 
 }
-/*Case 0 '（海）
+/*Case 0 '(海)
 R = Sea(0)
 If R > 640 Then R = R - 640 Else If R < 0 Then R = R + 640
 With Src

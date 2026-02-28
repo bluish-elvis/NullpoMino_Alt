@@ -42,6 +42,7 @@ import mu.nu.nullpo.game.component.Block
 import mu.nu.nullpo.game.component.Controller
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
 import mu.nu.nullpo.game.play.GameEngine
+import mu.nu.nullpo.game.play.GameEngine.Status
 import mu.nu.nullpo.game.subsystem.mode.AbstractMode
 import mu.nu.nullpo.gui.common.BaseFont
 import mu.nu.nullpo.gui.common.BaseFont.FONT.*
@@ -89,7 +90,7 @@ class Minesweeper:AbstractMode() {
 		timeLimit = 0
 		currentLimit = 0
 		numberOfCover = 0
-		engine.frameSkin = GameEngine.FRAME_COLOR_BLUE
+		engine.frame = GameEngine.Frame.BLUE
 		engine.blockOutlineType = GameEngine.BLOCK_OUTLINE_SAMECOLOR
 		mainGrid = GameGrid()
 		blockGrid = emptyArray()
@@ -165,7 +166,7 @@ class Minesweeper:AbstractMode() {
 			// New acc
 			if(engine.ctrl.isPush(Controller.BUTTON_E)&&engine.ai==null) {
 				engine.playSE("decide")
-				engine.stat = GameEngine.Status.CUSTOM
+				engine.stat = Status.CUSTOM
 				engine.resetStatc()
 				return true
 			}
@@ -246,7 +247,7 @@ class Minesweeper:AbstractMode() {
 			if(!engine.readyDone) engine.owner.musMan.bgm = BGM.values[bgm]
 			engine.owner.mode?.startGame(engine)
 			engine.owner.receiver.startGame(engine)
-			engine.stat = GameEngine.Status.CUSTOM
+			engine.stat = Status.CUSTOM
 			engine.resetStatc()
 			if(!engine.readyDone) {
 				engine.startTime = System.nanoTime()
@@ -302,7 +303,7 @@ class Minesweeper:AbstractMode() {
 						if(i==engine.playerID||engine.dieAll) {
 							owner.engine[i].field.reset()
 							owner.engine[i].resetStatc()
-							owner.engine[i].stat = GameEngine.Status.RESULT
+							owner.engine[i].stat = Status.RESULT
 						}
 					}
 				}
@@ -325,7 +326,7 @@ class Minesweeper:AbstractMode() {
 			} else {
 				engine.lives--
 				engine.resetStatc()
-				engine.stat = GameEngine.Status.CUSTOM
+				engine.stat = Status.CUSTOM
 			}
 		}
 		return true
@@ -347,7 +348,7 @@ class Minesweeper:AbstractMode() {
 						}*/
 		engine.gameEnded()
 		engine.resetStatc()
-		engine.stat = GameEngine.Status.GAMEOVER
+		engine.stat = Status.GAMEOVER
 	}
 
 	override fun onCustom(engine:GameEngine):Boolean {
@@ -515,9 +516,11 @@ class Minesweeper:AbstractMode() {
 			numberOfCover = mainGrid.coveredSquares
 			if(currentLimit>0&&timeLimit>0) {
 				currentLimit--
-				if(currentLimit%15==0&&currentLimit<=600) engine.playSE(
-					"countdown"
-				) else if(currentLimit%60==0&&currentLimit<=1800) engine.playSE("countdown")
+				if(currentLimit%15==0&&currentLimit<=600) {
+					engine.playSE("countdown")
+					if(currentLimit%60==0&&currentLimit<=300)
+						engine.playSE("countdown${currentLimit/60}")
+				} else if(currentLimit%60==0&&currentLimit<=1800) engine.playSE("countdown")
 			} else if(timeLimit>0) {
 				engine.lives = 0
 				caughtMine(engine)
@@ -535,7 +538,7 @@ class Minesweeper:AbstractMode() {
 								}
 							}*/
 				engine.gameEnded()
-				engine.stat = GameEngine.Status.EXCELLENT
+				engine.stat = Status.EXCELLENT
 				engine.ending = 1
 				engine.resetStatc()
 				return true
@@ -548,7 +551,7 @@ class Minesweeper:AbstractMode() {
 			if(engine.playerProp.isLoggedIn) {
 				loadSetting(engine, engine.playerProp.propProfile)
 			}
-			if(engine.stat===GameEngine.Status.SETTING) engine.isInGame = false
+			if(engine.stat===Status.SETTING) engine.isInGame = false
 		}
 		return true
 	}
@@ -597,7 +600,7 @@ class Minesweeper:AbstractMode() {
 		receiver.drawScore(
 			engine, ix, 1, "("+(width*height*(minePercentage/100f)).toInt()+" MINES)", BASE, COLOR.BLUE
 		)
-		if(engine.stat===GameEngine.Status.SETTING||engine.stat===GameEngine.Status.RESULT&&!owner.replayMode) {
+		if(engine.stat===Status.SETTING||engine.stat===Status.RESULT&&!owner.replayMode) {
 			if(engine.playerProp.isLoggedIn) {
 				receiver.drawScore(engine, ix, 3, "PLAYER", BASE, COLOR.BLUE)
 				receiver.drawScore(engine, ix, 4, engine.playerProp.nameDisplay, BASE, COLOR.WHITE, 2f)
@@ -605,7 +608,7 @@ class Minesweeper:AbstractMode() {
 				receiver.drawScore(engine, ix, 3, "LOGIN STATUS", BASE, COLOR.BLUE)
 				if(!engine.playerProp.isLoggedIn) receiver.drawScore(engine, ix, 4, "(NOT LOGGED IN)\n(E:LOG IN)", BASE)
 			}
-		} else if(engine.stat===GameEngine.Status.CUSTOM&&!engine.gameActive) {
+		} else if(engine.stat===Status.CUSTOM&&!engine.gameActive) {
 			engine.playerProp.loginScreen.renderScreen(receiver, engine)
 		} else {
 			receiver.drawScore(engine, ix, 3, "TIME", BASE, COLOR.BLUE)
@@ -631,7 +634,7 @@ class Minesweeper:AbstractMode() {
 			// Block covered = new Block(Block.COLOR.BLUE, engine.getSkin(), Block.ATTRIBUTE.VISIBLE | Block.ATTRIBUTE.OUTLINE);
 			// Block open = new Block(Block.COLOR.WHITE, engine.getSkin(), Block.ATTRIBUTE.VISIBLE);
 			// Block mine = new Block(Block.COLOR.GEM_RED, engine.getSkin(), Block.ATTRIBUTE.VISIBLE);
-			if(engine.stat===GameEngine.Status.CUSTOM) {
+			if(engine.stat===Status.CUSTOM) {
 				if(height<=MAX_DIM&&width<=MAX_DIM) {
 					for(y in 0..<height) {
 						for(x in 0..<width) {

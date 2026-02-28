@@ -30,13 +30,13 @@
  */
 package mu.nu.nullpo.tool.ruleeditor
 
-import kotlinx.serialization.encodeToString
-import mu.nu.nullpo.util.GeneralUtil.Json
 import mu.nu.nullpo.game.component.Block
 import mu.nu.nullpo.game.component.Piece
+import mu.nu.nullpo.game.component.Piece.Shape
 import mu.nu.nullpo.game.component.RuleOptions
 import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.util.CustomProperties
+import mu.nu.nullpo.util.GeneralUtil.Json
 import org.apache.logging.log4j.LogManager
 import java.awt.BorderLayout
 import java.awt.Color
@@ -47,15 +47,10 @@ import java.awt.event.ActionListener
 import java.awt.event.InputEvent
 import java.awt.event.KeyEvent
 import java.awt.image.BufferedImage
-import java.io.File
-import java.io.FileInputStream
-import java.io.FileOutputStream
-import java.io.FileReader
-import java.io.IOException
+import java.io.*
 import java.net.MalformedURLException
 import java.net.URL
-import java.util.Locale
-import java.util.Vector
+import java.util.*
 import java.util.zip.GZIPInputStream
 import java.util.zip.GZIPOutputStream
 import javax.imageio.ImageIO
@@ -269,10 +264,10 @@ class RuleEditor:JFrame, ActionListener {
 	/** 最高ARE */
 	private val txtFldAREMax = JTextField("", 5)
 
-	/** 最低ARE after line clear */
+	/** 最低ARE after lines clear */
 	private val txtFldARELineMin = JTextField("", 5)
 
-	/** 最高ARE after line clear */
+	/** 最高ARE after lines clear */
 	private val txtFldARELineMax = JTextField("", 5)
 
 	/** 固定した瞬間に光る frame count */
@@ -432,7 +427,7 @@ class RuleEditor:JFrame, ActionListener {
 	}
 
 	/** 特定のファイルを読み込むConstructor
-	 * @param filename Filename (空文字列かnullにするとパラメータなしConstructorと同じ動作）
+	 * @param filename Filename (空文字列かnullにするとパラメータなしConstructorと同じ動作)
 	 */
 	constructor(filename:String?):super() {
 		init()
@@ -702,7 +697,7 @@ class RuleEditor:JFrame, ActionListener {
 
 		// Hard drop連続使用不可
 		txtFldDropHardDropLimit.columns = 3
-		panelDrop.add(JPanel().apply{
+		panelDrop.add(JPanel().apply {
 			add(JLabel(getUIText("Drop_HardDropLimit")))
 			add(txtFldDropHardDropLimit)
 		})
@@ -717,7 +712,7 @@ class RuleEditor:JFrame, ActionListener {
 
 		// Soft drop連続使用不可
 		txtFldDropSoftDropLimit.columns = 3
-		panelDrop.add(JPanel().apply{
+		panelDrop.add(JPanel().apply {
 			add(JLabel(getUIText("Drop_SoftDropLimit")))
 			add(txtFldDropSoftDropLimit)
 		})
@@ -736,11 +731,10 @@ class RuleEditor:JFrame, ActionListener {
 
 		// Soft drop速度
 		txtFldDropSoftDropSpeed.columns = 5
-		panelDrop.add(JPanel().apply{
+		panelDrop.add(JPanel().apply {
 			add(JLabel(getUIText("Drop_SoftDropSpeed")))
 			add(txtFldDropSoftDropSpeed)
 		})
-
 
 		// rotationタブ --------------------------------------------------
 		val panelSpin = JPanel()
@@ -834,7 +828,7 @@ class RuleEditor:JFrame, ActionListener {
 		chkBoxLockDelayLockResetWallkick.text = (getUIText("LockDelay_LockResetWallkick"))
 		panelLockDelay.add(chkBoxLockDelayLockResetWallkick)
 
-		// 横移動 counterとrotation counterを共有 (横移動 counterだけ使う）
+		// 横移動 counterとrotation counterを共有 (横移動 counterだけ使う)
 		chkBoxLockDelayLockResetLimitShareCount.text = (getUIText("LockDelay_LockDelayLockResetLimitShareCount"))
 		panelLockDelay.add(chkBoxLockDelayLockResetLimitShareCount)
 
@@ -892,7 +886,7 @@ class RuleEditor:JFrame, ActionListener {
 		txtFldAREMax.columns = 5
 		pAREMinMax.add(txtFldAREMax)
 
-		// 最低ARE after line clearと最高ARE after line clear
+		// 最低ARE after lines clearと最高ARE after lines clear
 		panelARE.add(JLabel(getUIText("ARE_LineMinMax")))
 
 		val pARELineMinMax = JPanel()
@@ -1065,14 +1059,14 @@ class RuleEditor:JFrame, ActionListener {
 		panelPieceOffsetX.layout = BoxLayout(panelPieceOffsetX, BoxLayout.Y_AXIS)
 		tabPieceOffset.addTab(getUIText("TabName_PieceOffsetX"), panelPieceOffsetX)
 
-		val pPieceOffsetX = List(Piece.PIECE_COUNT) {
+		val pPieceOffsetX = List(Shape.num) {
 			JPanel().apply {
 				panelPieceOffsetX.add(this)
 				add(JLabel(getUIText("PieceName$it")))
 			}
 		}
 
-		txtFldPieceOffsetX = List(Piece.PIECE_COUNT) {i ->
+		txtFldPieceOffsetX = List(Shape.num) {i ->
 			List(Piece.DIRECTION_COUNT) {
 				JTextField("", 5).also {pPieceOffsetX[i].add(it)}
 			}
@@ -1083,14 +1077,14 @@ class RuleEditor:JFrame, ActionListener {
 			tabPieceOffset.addTab(getUIText("TabName_PieceOffsetY"), this)
 		}
 
-		val pPieceOffsetY = List(Piece.PIECE_COUNT) {
+		val pPieceOffsetY = List(Shape.num) {
 			JPanel().apply {
 				panelPieceOffsetY.add(this)
 				add(JLabel(getUIText("PieceName$it")))
 			}
 		}
 
-		txtFldPieceOffsetY = List(Piece.PIECE_COUNT) {i ->
+		txtFldPieceOffsetY = List(Shape.num) {i ->
 			List(Piece.DIRECTION_COUNT) {
 				JTextField("", 5).also {pPieceOffsetY[i].add(it)}
 			}
@@ -1125,13 +1119,13 @@ class RuleEditor:JFrame, ActionListener {
 		panelPieceSpawnX.layout = BoxLayout(panelPieceSpawnX, BoxLayout.Y_AXIS)
 		tabPieceSpawn.addTab(getUIText("TabName_PieceSpawnX"), panelPieceSpawnX)
 
-		val pPieceSpawnX = List(Piece.PIECE_COUNT) {
+		val pPieceSpawnX = List(Shape.num) {
 			JPanel().apply {
 				add(JLabel(getUIText("PieceName$it")))
 			}
 		}
 
-		txtFldPieceSpawnX = List(Piece.PIECE_COUNT) {i ->
+		txtFldPieceSpawnX = List(Shape.num) {i ->
 			panelPieceSpawnX.add(pPieceSpawnX[i])
 			List(Piece.DIRECTION_COUNT) {
 				JTextField("", 5).apply {
@@ -1146,14 +1140,14 @@ class RuleEditor:JFrame, ActionListener {
 			tabPieceSpawn.addTab(getUIText("TabName_PieceSpawnY"), this)
 		}
 
-		val pPieceSpawnY = List(Piece.PIECE_COUNT) {
+		val pPieceSpawnY = List(Shape.num) {
 			JPanel().apply {
 				panelPieceSpawnY.add(this)
 				add(JLabel(getUIText("PieceName$it")))
 			}
 		}
 
-		txtFldPieceSpawnY = List(Piece.PIECE_COUNT) {i ->
+		txtFldPieceSpawnY = List(Shape.num) {i ->
 			List(Piece.DIRECTION_COUNT) {
 				JTextField("", 5).apply {
 					pPieceSpawnY[i].add(this)
@@ -1167,14 +1161,14 @@ class RuleEditor:JFrame, ActionListener {
 			tabPieceSpawn.addTab(getUIText("TabName_PieceSpawnBigX"), this)
 		}
 
-		val pPieceSpawnBigX = List(Piece.PIECE_COUNT) {
+		val pPieceSpawnBigX = List(Shape.num) {
 			JPanel().apply {
 				panelPieceSpawnBigX.add(this)
 				add(JLabel(getUIText("PieceName$it")))
 			}
 		}
 
-		txtFldPieceSpawnBigX = List(Piece.PIECE_COUNT) {i ->
+		txtFldPieceSpawnBigX = List(Shape.num) {i ->
 			List(Piece.DIRECTION_COUNT) {
 				JTextField("", 5).apply {pPieceSpawnBigX[i].add(this)}
 			}
@@ -1185,14 +1179,14 @@ class RuleEditor:JFrame, ActionListener {
 			tabPieceSpawn.addTab(getUIText("TabName_PieceSpawnBigY"), this)
 		}
 
-		val pPieceSpawnBigY = List(Piece.PIECE_COUNT) {
+		val pPieceSpawnBigY = List(Shape.num) {
 			JPanel().apply {
 				panelPieceSpawnBigY.add(this)
 				add(JLabel(getUIText("PieceName$it")))
 			}
 		}
 
-		txtFldPieceSpawnBigY = List(Piece.PIECE_COUNT) {i ->
+		txtFldPieceSpawnBigY = List(Shape.num) {i ->
 			List(Piece.DIRECTION_COUNT) {
 				JTextField("", 5).apply {pPieceSpawnBigY[i].add(this)}
 			}
@@ -1223,13 +1217,13 @@ class RuleEditor:JFrame, ActionListener {
 		}
 
 		val strColorNames = Array(Block.COLOR.COUNT-2) {getUIText("ColorName$it")}
-		val pPieceColor = List(Piece.PIECE_COUNT) {
+		val pPieceColor = List(Shape.num) {
 			JPanel().apply {
 				pColorRow[0].add(this)
 				add(JLabel(getUIText("PieceName$it")))
 			}
 		}
-		comboBoxPieceColor = List(Piece.PIECE_COUNT) {i ->
+		comboBoxPieceColor = List(Shape.num) {i ->
 			JComboBox(strColorNames).apply {
 				preferredSize = Dimension(100, 30)
 				maximumRowCount = strColorNames.size
@@ -1260,7 +1254,7 @@ class RuleEditor:JFrame, ActionListener {
 			pDirectRow[1].add(it)
 		}
 
-		val pPieceDirection = List(Piece.PIECE_COUNT) {
+		val pPieceDirection = List(Shape.num) {
 			JPanel().apply {
 				pDirectRow[0].add(this)
 				add(JLabel(getUIText("PieceName$it")))
@@ -1271,7 +1265,7 @@ class RuleEditor:JFrame, ActionListener {
 			getUIText("DirectionName$it")
 		}
 
-		comboBoxPieceDirection = List(Piece.PIECE_COUNT) {
+		comboBoxPieceDirection = List(Shape.num) {
 			JComboBox(strDirectionNames).apply {
 				preferredSize = Dimension(150, 30)
 				maximumRowCount = strDirectionNames.size
@@ -1303,7 +1297,7 @@ class RuleEditor:JFrame, ActionListener {
 
 	/** 画像を読み込み
 	 * @param url 画像ファイルのURL
-	 * @return 画像ファイル (失敗するとnull）
+	 * @return 画像ファイル (失敗するとnull)
 	 */
 	private fun loadImage(url:URL?):BufferedImage? {
 		var img:BufferedImage? = null
@@ -1461,7 +1455,7 @@ class RuleEditor:JFrame, ActionListener {
 		chkBoxMoveLeftAndRightAllow.isSelected = r.moveLeftAndRightAllow
 		chkBoxMoveLeftAndRightUsePreviousInput.isSelected = r.moveLeftAndRightUsePreviousInput
 		chkBoxMoveShiftLockEnable.isSelected = r.shiftLockEnable
-		comboBoxPieceOffset.selectedIndex = r.pieceOffset
+//		comboBoxPieceOffset.selectedIndex = r.pieceOffset
 		r.pieceOffsetX.forEachIndexed {x, i -> i.forEachIndexed {y, j -> txtFldPieceOffsetX[x][y].text = "$j"}}
 		r.pieceOffsetY.forEachIndexed {x, i -> i.forEachIndexed {y, j -> txtFldPieceOffsetY[x][y].text = "$j"}}
 		r.pieceSpawnX.forEachIndexed {x, i -> i.forEachIndexed {y, j -> txtFldPieceSpawnX[x][y].text = "$j"}}
@@ -1574,10 +1568,11 @@ class RuleEditor:JFrame, ActionListener {
 		r.moveLeftAndRightAllow = chkBoxMoveLeftAndRightAllow.isSelected
 		r.moveLeftAndRightUsePreviousInput = chkBoxMoveLeftAndRightUsePreviousInput.isSelected
 		r.shiftLockEnable = chkBoxMoveShiftLockEnable.isSelected
-		r.pieceOffset = comboBoxPieceOffset.selectedIndex
-		offsetApply()
-		r.pieceOffsetX = txtFldPieceOffsetX.map {x -> x.map {j -> getIntTextField(j)}}
-		r.pieceOffsetY = txtFldPieceOffsetY.map {x -> x.map {j -> getIntTextField(j)}}
+		if(comboBoxPieceOffset.selectedIndex==RuleOptions.PIECEOFFSET_ASSIGN) offsetApply()
+		else {
+			r.pieceOffsetX = txtFldPieceOffsetX.map {x -> x.map {j -> getIntTextField(j)}}
+			r.pieceOffsetY = txtFldPieceOffsetY.map {x -> x.map {j -> getIntTextField(j)}}
+		}
 		r.pieceSpawnX = txtFldPieceSpawnX.map {x -> x.map {j -> getIntTextField(j)}.toMutableList()}
 		r.pieceSpawnY = txtFldPieceSpawnY.map {x -> x.map {j -> getIntTextField(j)}.toMutableList()}
 		r.pieceSpawnXBig = txtFldPieceSpawnBigX.map {x -> x.map {j -> getIntTextField(j)}.toMutableList()}
@@ -1653,7 +1648,7 @@ class RuleEditor:JFrame, ActionListener {
 
 	/** 翻訳後のUIの文字列を取得
 	 * @param str 文字列
-	 * @return 翻訳後のUIの文字列 (無いならそのまま[str]を返す）
+	 * @return 翻訳後のUIの文字列 (無いならそのまま[str]を返す)
 	 */
 	fun getUIText(str:String):String = propLang.getProperty(str, propLangDefault.getProperty(str, str))
 
