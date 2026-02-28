@@ -43,7 +43,8 @@ abstract class GameKeyDummy(
 	val buttonmap get() = map.buttonmap
 	var joyBorder:Int = 0
 	/** Button input flag and length */
-	@Transient protected val inputState = MutableList(MAX_BUTTON) {0}
+	@Transient
+	protected val inputState = MutableList(MAX_BUTTON) {0}
 
 	/** Button input flag */
 	protected val pressState get() = inputState.map {it>0}
@@ -74,7 +75,7 @@ abstract class GameKeyDummy(
 
 	/** buttonを押している timeを取得
 	 * @param key Button number
-	 * @return buttonを押している time (0なら押してない）
+	 * @return buttonを押している time (0なら押してない)
 	 */
 	fun getInputState(key:Int):Int = inputState[key]
 
@@ -113,7 +114,7 @@ abstract class GameKeyDummy(
 	 * @param ctrl input 状況を伝えるControllerのインスタンス
 	 */
 	fun inputStatusUpdate(ctrl:Controller?) {
-		val c = ctrl ?: return
+		val c = ctrl?:return
 		c.setButtonBit(inputState.mapIndexed {i, b -> if(b>0) (1 shl i) else 0}.sum())
 		inputState.forEachIndexed {i, v ->
 			if(i<Controller.BUTTON_COUNT) {

@@ -59,7 +59,7 @@ internal object ControllerManager {
 	/** Joystick state */
 	var controllers = emptyList<Controller>()
 	var config = GamePadConf(
-		mutableListOf(-1), mutableListOf(), mutableListOf(),mutableListOf())
+		mutableListOf(-1), mutableListOf(), mutableListOf(), mutableListOf())
 	/** 各Playerが使用するJoystick の number */
 	val controllerID get() = config.controllerID
 
@@ -98,12 +98,12 @@ internal object ControllerManager {
 
 	/** Joystick の上を押しているとtrue
 	 * @param player Player number
-	 * @param input Inputクラス (container.getInput()で取得可能）
+	 * @param input Inputクラス (container.getInput()で取得可能)
 	 * @return 上を押しているとtrue
 	 */
 	fun isControllerUp(player:Int, input:Input):Boolean {
 		try {
-			val controller = controllerID.getOrElse(player){-1}
+			val controller = controllerID.getOrElse(player) {-1}
 
 			return when {
 				controller<0 -> false
@@ -123,12 +123,12 @@ internal object ControllerManager {
 
 	/** Joystick の下を押しているとtrue
 	 * @param player Player number
-	 * @param input Inputクラス (container.getInput()で取得可能）
+	 * @param input Inputクラス (container.getInput()で取得可能)
 	 * @return 下を押しているとtrue
 	 */
 	fun isControllerDown(player:Int, input:Input):Boolean {
 		try {
-			val controller = controllerID.getOrElse(player){-1}
+			val controller = controllerID.getOrElse(player) {-1}
 
 			return when {
 				controller<0 -> false
@@ -149,12 +149,12 @@ internal object ControllerManager {
 
 	/** Joystick の左を押しているとtrue
 	 * @param player Player number
-	 * @param input Inputクラス (container.getInput()で取得可能）
+	 * @param input Inputクラス (container.getInput()で取得可能)
 	 * @return 左を押しているとtrue
 	 */
 	fun isControllerLeft(player:Int, input:Input):Boolean {
 		try {
-			val controller = controllerID.getOrElse(player){-1}
+			val controller = controllerID.getOrElse(player) {-1}
 			return when {
 				controller<0 -> false
 				method==CONTROLLER_METHOD_SLICK_DEFAULT ->
@@ -175,12 +175,12 @@ internal object ControllerManager {
 
 	/** Joystick の右を押しているとtrue
 	 * @param player Player number
-	 * @param input Inputクラス (container.getInput()で取得可能）
+	 * @param input Inputクラス (container.getInput()で取得可能)
 	 * @return 右を押しているとtrue
 	 */
 	fun isControllerRight(player:Int, input:Input):Boolean {
 		try {
-			val controller = controllerID.getOrElse(player){-1}
+			val controller = controllerID.getOrElse(player) {-1}
 
 			return when {
 				controller<0 -> false
@@ -201,13 +201,13 @@ internal object ControllerManager {
 
 	/** Joystick の特定の buttonが押されているならtrue
 	 * @param player Player number
-	 * @param input Inputクラス (container.getInput()で取得可能）
+	 * @param input Inputクラス (container.getInput()で取得可能)
 	 * @param button Button number
 	 * @return 指定した buttonが押されているとtrue
 	 */
 	fun isControllerButton(player:Int, input:Input, button:Int):Boolean {
 		try {
-			val controller = controllerID.getOrElse(player){-1}
+			val controller = controllerID.getOrElse(player) {-1}
 			return when {
 				player>=controllerID.size||controller<0||button<0 -> false
 				method==CONTROLLER_METHOD_SLICK_DEFAULT||method==CONTROLLER_METHOD_SLICK_ALTERNATE ->

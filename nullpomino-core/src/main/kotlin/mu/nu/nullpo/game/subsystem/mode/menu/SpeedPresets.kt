@@ -65,9 +65,8 @@ open class SpeedPresets(color:COLOR, defaultPreset:Int = 0,
 			receiver.drawMenu(engine, 6, y, BaseFont.CURSOR, BASE, true)
 		receiver.drawMenu(engine, 7, y, valueString, NUM)
 
+		val (g, d, are, areLine, lineDelay, lockDelay, das) = spd
 		if(showG) {
-			val g = spd.gravity
-			val d = spd.denominator
 			receiver.drawMenu(engine, 0, y+1, "SPEED", BASE, color = color)
 			receiver.drawMenuSpeed(engine, 0f, y+2.5f, g, d, 6f)
 			receiver.drawMenu(engine, 6, y+1, "%5d".format(g), NUM, focus==2)
@@ -79,26 +78,26 @@ open class SpeedPresets(color:COLOR, defaultPreset:Int = 0,
 			val y = y+if(showG) 3 else 1
 
 			for(i in 0..1) {
-				val show = if(i==0) "ARE" to spd.are else "LINE" to spd.areLine
+				val (str, it) = if(i==0) "ARE" to are else "LINE" to areLine
 				val pos = 2+showG.toInt()*2+i
 				if(focus==pos)
 					receiver.drawMenu(engine, 3+i*3, y, BaseFont.CURSOR, BASE, true)
 
-				receiver.drawMenu(engine, 4+i*3, y, String.format(if(i==0) "%2d/" else "%2d", show.second), NUM, focus==pos)
-				receiver.drawMenu(engine, 3+i*2.5f, y+.5f, show.first, NANO, color, .5f)
+				receiver.drawMenu(engine, 4+i*3, y, String.format(if(i==0) "%2d/" else "%2d", it), NUM, focus==pos)
+				receiver.drawMenu(engine, 3+i*2.5f, y+.5f, str, NANO, color, .5f)
 			}
 			for(i in 0..2) {
-				val show = when(i) {
-					0 -> "LINE" to spd.lineDelay
-					1 -> "LOCK" to spd.lockDelay
-					else -> "DAS" to spd.das
+				val (str, it) = when(i) {
+					0 -> "LINE" to lineDelay
+					1 -> "LOCK" to lockDelay
+					else -> "DAS" to das
 				}
 				val pos = 4+showG.toInt()*2+i
 				if(focus==pos)
 					receiver.drawMenu(engine, 7-i*3, y+1, BaseFont.CURSOR, BASE, true)
 
-				receiver.drawMenu(engine, 8-i*3, y+1, String.format(if(i==1) "%2d+" else "%2d", show.second), NUM, focus==pos)
-				receiver.drawMenu(engine, 7-i*3, y+1.5f, show.first, NANO, color, .5f)
+				receiver.drawMenu(engine, 8-i*3, y+1, String.format(if(i==1) "%2d+" else "%2d", it), NUM, focus==pos)
+				receiver.drawMenu(engine, 7-i*3, y+1.5f, str, NANO, color, .5f)
 			}
 			receiver.drawMenu(engine, 0, y, "DELAYS", NANO, color, .5f)
 

@@ -62,10 +62,8 @@ abstract class PhysicsObject @JvmOverloads constructor(
 	protected var isStatic:Boolean = vel.magnitude==0f
 	protected var canCollide:Boolean = !isStatic
 	protected var isDestructible:Boolean = collisionsToDestroy>0
-	var bounces = 0
-		private set
-	var ticks = 0
-		private set
+	var bounces = 0; private set
+	var ticks = 0; private set
 	/**
 	 * Gets the object's physics bounding box. (Top-Left and Bottom-Right coordinate).
 	 * Please override this.
@@ -215,7 +213,7 @@ abstract class PhysicsObject @JvmOverloads constructor(
 		 * Conducts a flat-surface reflection.
 		 *
 		 * @param vector   Velocity vector to modify.
-		 * @param vertical `true` if using a vertical mirror line. `false` if using a horizontal mirror line.
+		 * @param vertical `true` if using a vertical mirror lines. `false` if using a horizontal mirror lines.
 		 */
 		fun reflectVelocity(vector:Vector, vertical:Boolean) {
 			if(vertical) vector.y *= -1
@@ -225,7 +223,7 @@ abstract class PhysicsObject @JvmOverloads constructor(
 		 * Conducts a flat-surface reflection.
 		 *
 		 * @param vector      Velocity vector to modify.
-		 * @param vertical    `true` if using a vertical mirror line. `false` if using a horizontal mirror line.
+		 * @param vertical    `true` if using a vertical mirror lines. `false` if using a horizontal mirror lines.
 		 * @param restitution The amount of "bounce". Use a value between 0 and 1.
 		 */
 		fun reflectVelocityWithRestitution(vector:Vector, vertical:Boolean, restitution:Float) {

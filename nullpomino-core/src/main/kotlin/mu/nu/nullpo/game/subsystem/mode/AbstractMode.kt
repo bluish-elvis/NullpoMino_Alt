@@ -32,11 +32,9 @@ package mu.nu.nullpo.game.subsystem.mode
 
 import kotlinx.serialization.serializer
 import mu.nu.nullpo.game.component.*
-import mu.nu.nullpo.game.event.EventReceiver
+import mu.nu.nullpo.game.event.*
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
 import mu.nu.nullpo.game.event.EventReceiver.Companion.getScaleF
-import mu.nu.nullpo.game.event.Leaderboard
-import mu.nu.nullpo.game.event.ScoreEvent
 import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.game.play.GameEngine.GameStyle
 import mu.nu.nullpo.game.play.GameManager
@@ -50,11 +48,9 @@ import mu.nu.nullpo.util.GeneralUtil.getONorOFF
 import mu.nu.nullpo.util.GeneralUtil.getOX
 import mu.nu.nullpo.util.GeneralUtil.toInt
 import mu.nu.nullpo.util.GeneralUtil.toTimeStr
+import org.apache.logging.log4j.LogManager
 import zeroxfc.nullpo.custom.libs.ProfileProperties
-import kotlin.math.absoluteValue
-import kotlin.math.ceil
-import kotlin.math.floor
-import kotlin.math.ln1p
+import kotlin.math.*
 
 /** Dummy implementation of game mode. Used as a base of most game modes. */
 abstract class AbstractMode:GameMode {
@@ -181,12 +177,12 @@ abstract class AbstractMode:GameMode {
 	override fun onFirst(engine:GameEngine) {}
 	/** This function will be called when the game timer updates */
 	override fun onLast(engine:GameEngine) {
-		if(scDisp<engine.statistics.score&&!engine.lagStop) scDisp += ceil(
-			((engine.statistics.score-scDisp)/10f).toDouble()).toInt()
+		if(scDisp<engine.statistics.score&&!engine.lagStop) scDisp += 1+ceil((engine.statistics.score-scDisp)/10f).toInt()
 	}
 
 	override fun onSetting(engine:GameEngine):Boolean {
 		// Menu
+		if(menuTime==0) onSettingChanged(engine)
 		if(!owner.replayMode&&menu.size>0) {
 			// Configuration changes val change = updateCursor(engine, 5)
 			updateMenu(engine)
@@ -209,7 +205,7 @@ abstract class AbstractMode:GameMode {
 		return true
 	}
 
-	protected open fun onSettingChanged(engine:GameEngine) {}
+	override fun onSettingChanged(engine:GameEngine) {}
 	override fun onProfile(engine:GameEngine):Boolean {
 		showPlayerStats = false
 		return false
@@ -243,11 +239,14 @@ abstract class AbstractMode:GameMode {
 	override fun pieceLocked(engine:GameEngine, lines:Int, finesse:Boolean) {}
 	override fun lineClear(gameEngine:GameEngine, i:Collection<Int>) {}
 	override fun blockBreak(engine:GameEngine, blk:Map<Int, Map<Int, Block>>):Boolean = false
+	final override fun blockBreak(engine:GameEngine, blk:Collection<Triple<Int, Int, Block>>):Boolean =
+		blockBreak(engine, blk.groupBy {it.second}.mapValues {(_, it) -> it.associate {(x, _, b) -> x to b}})
+
 	override fun lineClearEnd(engine:GameEngine):Boolean = false
-	/** Calculates line-clear score
+	/** Calculates lines-clear score
 	 * (This function will be called even if no lines are cleared)
 	 * @param engine GameEngine
-	 * @param lines Cleared line
+	 * @param lines Cleared lines
 	 */
 	@Deprecated(
 		"use ScoreEvent instead lines", ReplaceWith(
@@ -258,7 +257,7 @@ abstract class AbstractMode:GameMode {
 	fun calcScore(engine:GameEngine, lines:Int):Int =
 		calcScore(engine,
 			ScoreEvent(engine.nowPieceObject, lines, engine.b2bCount, engine.combo, engine.twistType, engine.split))
-	/** Calculates line-clear score
+	/** Calculates lines-clear score
 	 * (This function will be called even if no lines are cleared)
 	 * @param engine GameEngine
 	 * @param ev Cleared Lines Data
@@ -267,17 +266,13 @@ abstract class AbstractMode:GameMode {
 		calcPower(engine, ev, true)
 		val spd = maxOf(0, engine.lockDelay-engine.lockDelayNow)+if(engine.manualLock) 1 else 0
 		val pts = calcScoreBase(engine, ev)
-		val get = calcScoreCombo(
-			pts, ev.combo, engine.statistics.level, spd
-		)
+		val get = calcScoreCombo(pts, ev.combo, engine.statistics.level, spd)
 		if(ev.lines>=1) engine.statistics.scoreLine += get
 		else engine.statistics.scoreBonus += get
 		scDisp += minOf(get, spd)
 		lastScore = get
 		return if(pts>0||gameIntensity==2) get else 0
 	}
-
-	var renSum = 0; private set
 
 	/** Time to display the most recent increase in score */
 	var scDisp = 0L//; private set
@@ -298,10 +293,10 @@ abstract class AbstractMode:GameMode {
 				}
 // Immobile Spin
 				ln==1 -> if(ev.twistMini) (if(ev.b2b>0) 32 else 24)//Mini Twister 1 lines
-				else if(ev.piece?.type==Piece.Shape.T) if(ev.b2b>0) 75 else 50 else if(ev.b2b>0) 50 else 25// Twister 1 line
+				else if(ev.piece?.shape==Piece.Shape.T) if(ev.b2b>0) 75 else 50 else if(ev.b2b>0) 50 else 25// Twister 1 lines
 				ln==2 -> if(ev.twistMini) (if(ev.b2b>0) 100 else 75)//Mini Twister 2 lines
-				else if(ev.piece?.type==Piece.Shape.T) if(ev.b2b>0) 160 else 128 else if(ev.b2b>0) 125 else 100// Twister 2 lines
-				ln==3 -> if(ev.piece?.type==Piece.Shape.T) if(ev.b2b>0) 205 else 172 else if(ev.b2b>0) 175 else 150// Twister 3 lines
+				else if(ev.piece?.shape==Piece.Shape.T) if(ev.b2b>0) 160 else 128 else if(ev.b2b>0) 125 else 100// Twister 2 lines
+				ln==3 -> if(ev.piece?.shape==Piece.Shape.T) if(ev.b2b>0) 205 else 172 else if(ev.b2b>0) 175 else 150// Twister 3 lines
 				else -> if(ev.b2b>0) 256 else 192// 180Twister Quads
 			}
 			ln==1 -> 16 // Single
@@ -314,30 +309,46 @@ abstract class AbstractMode:GameMode {
 		val btb = 100+maxOf(0, engine.b2bCount)
 		return if(ln>=1&&engine.field.isEmpty) pts*(1000+btb*7)/70+2048 else pts*btb/10
 	}
+	/** Base Score pool for combo, for final combo score calculation.
+	 * resets when first clear on combo after no lines are cleared. */
+	var renSum = 0; private set
+	/** Score Delta for current combo.
+	 * resets when first clear on combo after no lines are cleared. */
+	var renDel = 0; private set
+	/** Score Sum in current combo.
+	 * resets when first clear on combo after no lines are cleared. */
+	var renPool = 0; private set
+
 	/** npmAlt style Scoring: level&combo bonus at Marathon*/
 	fun calcScoreCombo(pts:Int, cmb:Int, lv:Int, spd:Int):Int =
 		// Add to score
-		if(pts+cmb>0) {
+		if(pts>0&&cmb>=0) {
 			val mul = if(lv>40) 55+lv/10 else 10+lv
 			val get = pts*mul/10+spd
+//			val bp = if(cmb>0) renPool else 0
 			if(cmb>0) {
-				val b = renSum*(4+cmb)/5
 				renSum += get
-				renSum = renSum*(5+cmb)/5-b
-			} else renSum = get
-			renSum
+				val a = renSum*(4+cmb)/4
+				renDel = a-renPool
+				renPool += renDel
+			} else {
+				renDel = get
+				renPool = get
+				renSum = get
+			}
+			renDel
 		} else 0
 
 	/**Tetris World Style Goal*/
 	fun calcPoint(engine:GameEngine, ev:ScoreEvent):Int = ev.lines.let {li ->
 		when {
 			ev.twist -> when {
-				li<=0&&!ev.twistEZ -> 1 // Twister 0 lines
-				ev.twistEZ&&li>0 -> li*2+(ev.b2b>0).toInt() // Immobile EZ Spin
+				li<=0 -> 1 // Twister 0 lines
+				ev.twistEZ -> minOf(1, li*2+(ev.b2b>0).toInt()) // Immobile EZ Spin
 				li==1 -> if(ev.twistMini) if(ev.b2b>0) 3 else 2
-				else if(ev.piece?.type==Piece.Shape.T) if(ev.b2b>0) 5 else 3 else if(ev.b2b>0) 4 else 3  // Twister 1 line
+				else if(ev.piece?.shape==Piece.Shape.T) if(ev.b2b>0) 5 else 3 else if(ev.b2b>0) 4 else 3  // Twister 1 lines
 				li==2 -> if(ev.twistMini) (if(ev.b2b>0) 6 else 4)
-				else if(ev.piece?.type==Piece.Shape.T) if(ev.b2b>0) 9 else 7 else if(ev.b2b>0) 8 else 6 // Twister 2 lines
+				else if(ev.piece?.shape==Piece.Shape.T) if(ev.b2b>0) 10 else 7 else if(ev.b2b>0) 8 else 6 // Twister 2 lines
 				else -> if(ev.b2b>0) 12 else 8 // Twister 3 lines
 			}
 			li==1 -> 1 // Single
@@ -350,17 +361,17 @@ abstract class AbstractMode:GameMode {
 			in 2..4 -> 1
 			in 5..8 -> 2
 			else -> 3
-		}+if(li>=1&&engine.field.isEmpty) 18 else 0 // All clear
+		}+(li>=1&&engine.field.isEmpty).toInt()*18 // All clear
 	}
 
-	/**VS Attack lines based tetr.io garbage by osk, g3ner1c, emmachase
+	/**VS Attack line bonuss based tetr.io garbage by osk, g3ner1c, emmachase
 	 * @param statC if true increase to statistics attacks
-	 * @return total,line/twist,bonus*/
-	fun calcPower(engine:GameEngine, ev:ScoreEvent, statC:Boolean = false):Int = calcPower(engine, ev).also {
+	 * @return total,lines/twist,bonus*/
+	fun calcPower(engine:GameEngine, ev:ScoreEvent, statC:Boolean = false):Int = calcPower(engine, ev).also {(base, bonus) ->
 		if(statC) {
-			if(ev.twist) engine.statistics.attacksTwist += it.base
-			else engine.statistics.attacksLine += it.base
-			engine.statistics.attacksBonus += it.bonus
+			if(ev.twist) engine.statistics.attacksTwist += base
+			else engine.statistics.attacksLine += base
+			engine.statistics.attacksBonus += bonus
 		}
 	}.total*(1+(engine.itemEnable is Item.DOUBLE_RISE).toInt())
 
@@ -368,7 +379,7 @@ abstract class AbstractMode:GameMode {
 		val lines = ev.lines
 		if(lines<=0) return PowData()
 		val base = when {
-			ev.twist -> (if(ev.piece?.type==Piece.Shape.T) lines*2 else lines+1)
+			ev.twist -> (if(ev.piece?.shape==Piece.Shape.T) lines*2 else lines+1)
 			lines<=3 -> maxOf(0, lines-1)
 			else -> lines
 		}
@@ -387,7 +398,6 @@ abstract class AbstractMode:GameMode {
 		menuTime = 0
 		lastScore = 0
 		scDisp = 0
-		loadSetting(engine, if(owner.replayMode) owner.replayProp else owner.modeConfig)
 	}
 
 	override fun startGame(engine:GameEngine) {}
@@ -472,7 +482,6 @@ abstract class AbstractMode:GameMode {
 				}
 			}
 		}
-		sw
 	}
 
 	protected fun initMenu(y:Int = 0, color:COLOR = menuColor, statc:Int = statcMenu) {
@@ -677,24 +686,33 @@ abstract class AbstractMode:GameMode {
 
 	protected fun drawResultScale(engine:GameEngine, receiver:EventReceiver, y:Int, color:COLOR = COLOR.WHITE, scale:Float,
 		vararg str:String) {
-		for(i in str.indices) receiver.drawMenu(engine, 0, y+i, str[i], BASE, if(i and 1==0) color else COLOR.WHITE, scale)
+		for(i in str.indices) receiver.drawMenu(engine, 0, y+i, str[i],
+			if(str[i].all {it.isDigit()||it.isWhitespace()}) NUM else BASE,
+			if(i and 1==0) color else COLOR.WHITE, scale)
 	}
 
 	protected fun drawResultRank(engine:GameEngine, receiver:EventReceiver, y:Int, color:COLOR, scale:Float, rank:Int,
 		str:String) {
+		(scale*5f/str.length).let {
+			receiver.drawMenu(engine, 5, y+(1-it)/2, "%5s".format(str), BASE, color, minOf(1f, it))
+		}
+		val col = when(rank) {
+			0 -> COLOR.RAINBOW
+			1 -> COLOR.WHITE
+			2 -> COLOR.ORANGE
+			else -> color
+		}
 		if(rank!=-1) {
-			val postfix = when {
+			receiver.drawMenu(engine, 0, y, "%3d".format(rank+1), NUM, col, scale*2)
+			receiver.drawMenu(engine, 5, y+1, when {
 				rank%10==0&&rank%100!=10 -> "st"
 				rank%10==1&&rank%100!=11 -> "nd"
 				rank%10==2&&rank%100!=12 -> "rd"
 				else -> "th"
-			}
-			receiver.drawMenu(engine, 5, y, postfix, BASE, color, scale)
-			receiver.drawMenu(engine, 5, y+1, str, BASE, color, scale*.8f)
-			receiver.drawMenu(engine, 0, y, "%3d".format(rank+1), NUM, scale = scale*2)
+			}, BASE, col, scale)
 		} else {
-			receiver.drawMenu(engine, 0, y, "OUT OF THE", BASE, color, scale)
-			receiver.drawMenu(engine, 0, y+1, "%12s".format(str), BASE, color, scale*.8f)
+			receiver.drawMenu(engine, .1f, y+.2f, "OUT", BASE, color, scale*1.6f)
+			receiver.drawMenu(engine, 5.1f, y+1.1f, "ofRANK", BASE, color, scale*.8f)
 		}
 	}
 
@@ -703,7 +721,7 @@ abstract class AbstractMode:GameMode {
 	}
 
 	protected fun drawResultRankScale(engine:GameEngine, receiver:EventReceiver, y:Int, color:COLOR, scale:Float, rank:Int) {
-		drawResultRank(engine, receiver, y, color, scale, rank, "RANK")
+		drawResultRank(engine, receiver, y, color, scale, rank, "LOCAL")
 	}
 
 	protected fun drawResultNetRank(engine:GameEngine, receiver:EventReceiver, y:Int, color:COLOR, rank:Int) {
@@ -721,7 +739,7 @@ abstract class AbstractMode:GameMode {
 
 	protected fun drawResultNetRankDailyScale(engine:GameEngine, receiver:EventReceiver, y:Int, color:COLOR, scale:Float,
 		rank:Int) {
-		drawResultRank(engine, receiver, y, color, scale, rank, "OF DAILY")
+		drawResultRank(engine, receiver, y, color, scale, rank, "DAILY")
 	}
 
 	protected fun drawResultStats(engine:GameEngine, receiver:EventReceiver, y:Int, color:COLOR, vararg stats:Statistic) {
@@ -754,11 +772,9 @@ abstract class AbstractMode:GameMode {
 					receiver.drawMenu(engine, 5, y, "%03d".format(engine.statistics.level+1), NUM, scale*2)
 				}
 				Statistic.LEVEL_ADD_DISP -> {
-					receiver.drawMenu(engine, 0, y, "Level", BASE, color, scale)
-					receiver.drawMenu(
-						engine, 0, y+1, "%10d".format(engine.statistics.level+engine.statistics.levelDispAdd),
-						NUM, scale
-					)
+					receiver.drawMenu(engine, 0, y+1, "Level", BASE, color, scale)
+					receiver.drawMenu(engine, 5, y, "%03d".format(engine.statistics.level+engine.statistics.levelDispAdd),
+						NUM, scale*2)
 				}
 				Statistic.LEVEL_MANIA -> {
 					receiver.drawMenu(engine, 0, y+1, "Level", BASE, color, scale)
@@ -768,6 +784,11 @@ abstract class AbstractMode:GameMode {
 					receiver.drawMenu(engine, 6, y, "Lines", BASE, color, scale*.8f)
 					receiver.drawMenu(engine, 6, y+1, "clear", BASE, color, scale*.8f)
 					receiver.drawMenu(engine, 0, y, "%4d".format(engine.statistics.lines), NUM, scale*2)
+				}
+				Statistic.BRAVOS -> {
+					receiver.drawMenu(engine, 5, y, "Fields", BASE, color, scale*.8f)
+					receiver.drawMenu(engine, 5, y+1, "Cleaned", BASE, color, scale*.8f)
+					receiver.drawMenu(engine, 0, y, "%3d".format(engine.statistics.bravos), NUM, scale*2)
 				}
 				Statistic.PIECE -> {
 					receiver.drawMenu(
@@ -842,7 +863,7 @@ abstract class AbstractMode:GameMode {
 				Statistic.APL -> {
 					receiver.drawMenu(engine, 4, y, "Spikes", BASE, color, scale*.8f)
 					receiver.drawMenu(engine, 0, y, "%4d".format(engine.statistics.attacks), NUM_T)
-					receiver.drawMenu(engine, 8, y+1, "/line", NANO, color, scale*.5f)
+					receiver.drawMenu(engine, 8, y+1, "/lines", NANO, color, scale*.5f)
 					receiver.drawMenuNum(engine, 5, y+1, (engine.statistics.apl), 9 to 6, scale = scale)
 				}
 				Statistic.APP -> {
@@ -883,14 +904,16 @@ abstract class AbstractMode:GameMode {
 	}
 	/** Total score */
 	enum class Statistic {
-		SCORE, ATTACKS, LINES, TIME, VS, LEVEL, LEVEL_MANIA, PIECE, MAXCOMBO, MAXB2B, SPL, SPM, SPS, SPP, LPM, LPS, PPM, PPS, APL,
-		APM, APP, MAXCHAIN, LEVEL_ADD_DISP
+		SCORE, ATTACKS, LINES, TIME, VS, LEVEL, LEVEL_MANIA, PIECE, MAXCOMBO, MAXB2B, BRAVOS,
+		SPL, SPM, SPS, SPP, LPM, LPS, PPM, PPS, APL, APM, APP, MAXCHAIN, LEVEL_ADD_DISP
 	}
 
 	companion object {
 		data class PowData(val base:Int = 0, val bonus:Int = 0) {
 			val total = base+bonus
 		}
+
+		val log = LogManager.getLogger()
 	}
 
 }

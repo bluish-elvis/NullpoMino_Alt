@@ -29,30 +29,12 @@ POSSIBILITY OF SUCH DAMAGE.
 
 package edu.cuhk.cse.fyp.tetrisai.lspi
 
-import java.awt.BasicStroke
-import java.awt.Color
-import java.awt.Container
-import java.awt.Font
-import java.awt.Graphics2D
-import java.awt.Image
-import java.awt.RenderingHints
-import java.awt.Toolkit
-import java.awt.event.KeyListener
-import java.awt.event.MouseListener
-import java.awt.event.MouseMotionListener
-import java.awt.event.MouseWheelListener
-import java.awt.geom.Arc2D
-import java.awt.geom.Ellipse2D
-import java.awt.geom.GeneralPath
-import java.awt.geom.Line2D
-import java.awt.geom.Rectangle2D
+import java.awt.*
+import java.awt.event.*
+import java.awt.geom.*
 import java.awt.image.BufferedImage
-import javax.swing.ImageIcon
-import javax.swing.JFrame
-import javax.swing.JLabel
-import kotlin.math.abs
-import kotlin.math.roundToLong
-import kotlin.math.sqrt
+import javax.swing.*
+import kotlin.math.*
 
 class TLabel(w:Int, h:Int) {
 	var draw:JLabel
@@ -231,9 +213,9 @@ class TLabel(w:Int, h:Int) {
 	fun remMWL(frame:MouseWheelListener?) {
 		draw.removeMouseWheelListener(frame)
 	}
-	// draw a line from (x0, y0) to (x1, y1)
+	// draw a lines from (x0, y0) to (x1, y1)
 	fun line(x0:Double, y0:Double, x1:Double, y1:Double) {
-//		System.out.println("drawing a line from " + new Point(x0, y0).toString()+ " to " + new Point(x1,y1).toString());
+//		System.out.println("drawing a lines from " + new Point(x0, y0).toString()+ " to " + new Point(x1,y1).toString());
 		offscreen.draw(Line2D.Double(scaleX(x0), scaleY(y0), scaleX(x1), scaleY(y1)))
 	}
 	// draw one pixel at (x, y)
@@ -265,7 +247,8 @@ class TLabel(w:Int, h:Int) {
 		val ys = scaleY(y)
 		val ws = factorX(2*r)
 		val hs = factorY(2*r)
-		if(ws<=1&&hs<=1) pixel(x, y) else offscreen.draw(Arc2D.Double(xs-ws/2, ys-hs/2, ws, hs, startAngle, arcRange, Arc2D.OPEN))
+		if(ws<=1&&hs<=1) pixel(x, y) else offscreen.draw(
+			Arc2D.Double(xs-ws/2, ys-hs/2, ws, hs, startAngle, arcRange, Arc2D.OPEN))
 	}
 	// draw circle of radius r, centered on (x, y); degenerate to pixel if small
 	fun circle(x:Double, y:Double, r:Double) {

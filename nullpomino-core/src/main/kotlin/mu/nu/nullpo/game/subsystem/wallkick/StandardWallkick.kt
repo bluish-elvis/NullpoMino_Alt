@@ -33,123 +33,109 @@ package mu.nu.nullpo.game.subsystem.wallkick
 import mu.nu.nullpo.game.component.Controller
 import mu.nu.nullpo.game.component.Field
 import mu.nu.nullpo.game.component.Piece
+import mu.nu.nullpo.game.component.Piece.Shape
 
-/** SRS */
-class StandardWallkick:BaseStandardWallkick() {
+/** SRS without restriction */
+open class StandardWallkick:BaseStandardWallkick() {
 	/* Get kick table */
-	override fun getKickTable(x:Int, y:Int, rtDir:Int, rtOld:Int, rtNew:Int, allowUpward:Boolean,
-		piece:Piece, field:Field, ctrl:Controller?) = when(rtDir) {
+	override fun getKickTable(x:Int, y:Int, rtDir:Int, rtOld:Int, rtNew:Int, allowUpward:Boolean, piece:Piece, field:Field,
+		ctrl:Controller?):List<List<Pair<Int, Int>>>? = when(rtDir) {
 		// 180-degree rotation
-		2 -> when(piece.id) {
-			Piece.PIECE_I -> WALLKICK_I_180
+		-2, 2 -> when(piece.shape) {
+			Shape.I -> WALLKICK_I_180
 			else -> WALLKICK_NORMAL_180
 		}
 		// Left rotation
-		-1 -> when(piece.id) {
-			Piece.PIECE_I -> WALLKICK_I_L
-			Piece.PIECE_I2 -> WALLKICK_I2_L
-			Piece.PIECE_I3 -> WALLKICK_I3_L
-			Piece.PIECE_L3 -> WALLKICK_L3_L
+		-1, 3 -> when(piece.shape) {
+			Shape.I -> WALLKICK_I_L
+			Shape.I2 -> WALLKICK_I2_L
+			Shape.I3 -> WALLKICK_I3_L
+			Shape.L3 -> WALLKICK_L3_L
 			else -> WALLKICK_NORMAL_L
 		}
 		// Right rotation
-		1 -> when(piece.id) {
-			Piece.PIECE_I -> WALLKICK_I_R
-			Piece.PIECE_I2 -> WALLKICK_I2_R
-			Piece.PIECE_I3 -> WALLKICK_I3_R
-			Piece.PIECE_L3 -> WALLKICK_L3_R
+		1 -> when(piece.shape) {
+			Shape.I -> WALLKICK_I_R
+			Shape.I2 -> WALLKICK_I2_R
+			Shape.I3 -> WALLKICK_I3_R
+			Shape.L3 -> WALLKICK_L3_R
 			else -> WALLKICK_NORMAL_R
 		}
 		else -> null
 	}
 
-	companion object {
-		// Wallkick data
-		private val WALLKICK_NORMAL_L = listOf(
-			listOf(listOf(1, 0), listOf(1, -1), listOf(0, 2), listOf(1, 2), listOf(0, -1)), // 0>>3
-			listOf(listOf(1, 0), listOf(1, 1), listOf(0, -2), listOf(1, -2), listOf(0, -1)), // 1>>0
-			listOf(listOf(-1, 0), listOf(-1, -1), listOf(0, 2), listOf(-1, 2), listOf(0, -1)), // 2>>1
-			listOf(listOf(-1, 0), listOf(-1, 1), listOf(0, -2), listOf(-1, -2), listOf(0, -1))
-		)// 3>>2
-		private val WALLKICK_NORMAL_R = listOf(
-			listOf(listOf(-1, 0), listOf(-1, -1), listOf(0, 2), listOf(-1, 2), listOf(0, -1)), // 0>>1
-			listOf(listOf(1, 0), listOf(1, 1), listOf(0, -2), listOf(1, -2), listOf(0, -1)), // 1>>2
-			listOf(listOf(1, 0), listOf(1, -1), listOf(0, 2), listOf(1, 2), listOf(0, -1)), // 2>>3
-			listOf(listOf(-1, 0), listOf(-1, 1), listOf(0, -2), listOf(-1, -2), listOf(0, -1))
-		)// 3>>0
-		private val WALLKICK_I_L = listOf(
-			listOf(listOf(-1, 0), listOf(2, 0), listOf(-1, -2), listOf(2, 1)), // 0>>3
-			listOf(listOf(2, 0), listOf(-1, 0), listOf(2, -1), listOf(-1, 2)), // 1>>0
-			listOf(listOf(1, 0), listOf(-2, 0), listOf(1, 2), listOf(-2, -1)), // 2>>1
-			listOf(listOf(-2, 0), listOf(1, 0), listOf(-2, 1), listOf(1, -2))
-		)// 3>>2
-		private val WALLKICK_I_R = listOf(
-			listOf(listOf(-2, 0), listOf(1, 0), listOf(-2, 1), listOf(1, -2)), // 0>>1
-			listOf(listOf(-1, 0), listOf(2, 0), listOf(-1, -2), listOf(2, 1)), // 1>>2
-			listOf(listOf(2, 0), listOf(-1, 0), listOf(2, -1), listOf(-1, 2)), // 2>>3
-			listOf(listOf(1, 0), listOf(-2, 0), listOf(1, 2), listOf(-2, -1))
-		)// 3>>0
-		private val WALLKICK_I2_L = listOf(
-			listOf(listOf(1, 0), listOf(0, -1), listOf(1, -2)), // 0>>3
-			listOf(listOf(0, 1), listOf(1, 0), listOf(1, 1)), // 1>>0
-			listOf(listOf(-1, 0), listOf(0, 1), listOf(-1, 0)), // 2>>1
-			listOf(listOf(0, -1), listOf(-1, 0), listOf(-1, 1))
-		)// 3>>2
-		private val WALLKICK_I2_R = listOf(
-			listOf(listOf(0, -1), listOf(-1, 0), listOf(-1, -1)), // 0>>1
-			listOf(listOf(1, 0), listOf(0, -1), listOf(1, 0)), // 1>>2
-			listOf(listOf(0, 1), listOf(1, 0), listOf(1, -1)), // 2>>3
-			listOf(listOf(-1, 0), listOf(0, 1), listOf(-1, 2))
-		)// 3>>0
-		private val WALLKICK_I3_L = listOf(
-			listOf(listOf(1, 0), listOf(-1, 0), listOf(0, 0), listOf(0, 0)), // 0>>3
-			listOf(listOf(-1, 0), listOf(1, 0), listOf(0, -1), listOf(0, 1)), // 1>>0
-			listOf(listOf(-1, 0), listOf(1, 0), listOf(0, 2), listOf(0, -2)), // 2>>1
-			listOf(listOf(1, 0), listOf(-1, 0), listOf(0, -1), listOf(0, 1))
-		)// 3>>2
-		private val WALLKICK_I3_R = listOf(
-			listOf(listOf(1, 0), listOf(-1, 0), listOf(0, 1), listOf(0, -1)), // 0>>1
-			listOf(listOf(1, 0), listOf(-1, 0), listOf(0, -2), listOf(0, 2)), // 1>>2
-			listOf(listOf(-1, 0), listOf(1, 0), listOf(0, 1), listOf(0, -1)), // 2>>3
-			listOf(listOf(-1, 0), listOf(1, 0), listOf(0, 0), listOf(0, 0))
-		)// 3>>0
-		private val WALLKICK_L3_L = listOf(
-			listOf(listOf(0, -1), listOf(0, 1)), // 0>>3
-			listOf(listOf(1, 0), listOf(-1, 0)), // 1>>0
-			listOf(listOf(0, 1), listOf(0, -1)), // 2>>1
-			listOf(listOf(-1, 0), listOf(1, 0))
-		)// 3>>2
-		private val WALLKICK_L3_R = listOf(
-			listOf(listOf(-1, 0), listOf(1, 0)), // 0>>1
-			listOf(listOf(0, -1), listOf(0, 1)), // 1>>2
-			listOf(listOf(1, 0), listOf(-1, 0)), // 2>>3
-			listOf(listOf(0, 1), listOf(0, -1))
-		)// 3>>0
+	protected open val WALLKICK_NORMAL_L = listOf(
+		listOf(1 to 0, 1 to -1, 0 to 2, 1 to 2, 0 to -1), // 0>>3
+		listOf(1 to 0, 1 to 1, 0 to -2, 1 to -2, 0 to -1), // 1>>0
+		listOf(-1 to 0, -1 to -1, 0 to 2, -1 to 2, 0 to -1), // 2>>1
+		listOf(-1 to 0, -1 to 1, 0 to -2, -1 to -2, 0 to -1) // 3>>2
+	)
+	protected open val WALLKICK_NORMAL_R = listOf(
+		listOf(-1 to 0, -1 to -1, 0 to 2, -1 to 2, 0 to -1), // 0>>1
+		listOf(1 to 0, 1 to 1, 0 to -2, 1 to -2, 0 to -1), // 1>>2
+		listOf(1 to 0, 1 to -1, 0 to 2, 1 to 2, 0 to -1), // 2>>3
+		listOf(-1 to 0, -1 to 1, 0 to -2, -1 to -2, 0 to -1) // 3>>0
+	)
+	protected open val WALLKICK_I_L = listOf(
+		listOf(-1 to 0, 2 to 0, -1 to -2, 2 to 1), // 0>>3
+		listOf(2 to 0, -1 to 0, 2 to -1, -1 to 2), // 1>>0
+		listOf(1 to 0, -2 to 0, 1 to 2, -2 to -1), // 2>>1
+		listOf(-2 to 0, 1 to 0, -2 to 1, 1 to -2) // 3>>2
+	)
+	protected open val WALLKICK_I_R = listOf(
+		listOf(-2 to 0, 1 to 0, -2 to 1, 1 to -2), // 0>>1
+		listOf(-1 to 0, 2 to 0, -1 to -2, 2 to 1), // 1>>2
+		listOf(2 to 0, -1 to 0, 2 to -1, -1 to 2), // 2>>3
+		listOf(1 to 0, -2 to 0, 1 to 2, -2 to -1) // 3>>0
+	)
+	protected open val WALLKICK_I2_L = listOf(
+		listOf(1 to 0, 0 to -1, 1 to -2), // 0>>3
+		listOf(0 to 1, 1 to 0, 1 to 1), // 1>>0
+		listOf(-1 to 0, 0 to 1, -1 to 0), // 2>>1
+		listOf(0 to -1, -1 to 0, -1 to 1) // 3>>2
+	)
+	protected open val WALLKICK_I2_R = listOf(
+		listOf(0 to -1, -1 to 0, -1 to -1), // 0>>1
+		listOf(1 to 0, 0 to -1, 1 to 0), // 1>>2
+		listOf(0 to 1, 1 to 0, 1 to -1), // 2>>3
+		listOf(-1 to 0, 0 to 1, -1 to 2) // 3>>0
+	)
+	protected open val WALLKICK_I3_L = listOf(
+		listOf(1 to 0, -1 to 0, 0 to 0, 0 to 0), // 0>>3
+		listOf(-1 to 0, 1 to 0, 0 to -1, 0 to 1), // 1>>0
+		listOf(-1 to 0, 1 to 0, 0 to 2, 0 to -2), // 2>>1
+		listOf(1 to 0, -1 to 0, 0 to -1, 0 to 1) // 3>>2
+	)
+	protected open val WALLKICK_I3_R = listOf(
+		listOf(1 to 0, -1 to 0, 0 to 1, 0 to -1), // 0>>1
+		listOf(1 to 0, -1 to 0, 0 to -2, 0 to 2), // 1>>2
+		listOf(-1 to 0, 1 to 0, 0 to 1, 0 to -1), // 2>>3
+		listOf(-1 to 0, 1 to 0, 0 to 0, 0 to 0) // 3>>0
+	)
+	protected open val WALLKICK_L3_L = listOf(
+		listOf(0 to -1, 0 to 1), // 0>>3
+		listOf(1 to 0, -1 to 0), // 1>>0
+		listOf(0 to 1, 0 to -1), // 2>>1
+		listOf(-1 to 0, 1 to 0) // 3>>2
+	)
+	protected open val WALLKICK_L3_R = listOf(
+		listOf(-1 to 0, 1 to 0), // 0>>1
+		listOf(0 to -1, 0 to 1), // 1>>2
+		listOf(1 to 0, -1 to 0), // 2>>3
+		listOf(0 to 1, 0 to -1) // 3>>0
+	)
 
-		// 180-degree rotation wallkick data
-		private val WALLKICK_NORMAL_180 = listOf(
-			listOf(
-				listOf(1, 0), listOf(2, 0), listOf(1, 1), listOf(2, 1), listOf(-1, 0), listOf(-2, 0),
-				listOf(-1, 1), listOf(-2, 1), listOf(0, -1), listOf(3, 0), listOf(-3, 0)
-			), // 0>>2─┐
-			listOf(
-				listOf(0, 1), listOf(0, 2), listOf(-1, 1), listOf(-1, 2), listOf(0, -1), listOf(0, -2),
-				listOf(-1, -1), listOf(-1, -2), listOf(1, 0), listOf(0, 3), listOf(0, -3)
-			), // 1>>3─┼┐
-			listOf(
-				listOf(-1, 0), listOf(-2, 0), listOf(-1, -1), listOf(-2, -1), listOf(1, 0), listOf(2, 0),
-				listOf(1, -1), listOf(2, -1), listOf(0, 1), listOf(-3, 0), listOf(3, 0)
-			), // 2>>0─┘│
-			listOf(
-				listOf(0, 1), listOf(0, 2), listOf(1, 1), listOf(1, 2), listOf(0, -1), listOf(0, -2),
-				listOf(1, -1), listOf(1, -2), listOf(-1, 0), listOf(0, 3), listOf(0, -3)
-			)
-		)// 3>>1──┘
-		private val WALLKICK_I_180 = listOf(
-			listOf(listOf(-1, 0), listOf(-2, 0), listOf(1, 0), listOf(2, 0), listOf(0, 1)), // 0>>2─┐
-			listOf(listOf(0, 1), listOf(0, 2), listOf(0, -1), listOf(0, -2), listOf(-1, 0)), // 1>>3─┼┐
-			listOf(listOf(1, 0), listOf(2, 0), listOf(-1, 0), listOf(-2, 0), listOf(0, -1)), // 2>>0─┘│
-			listOf(listOf(0, 1), listOf(0, 2), listOf(0, -1), listOf(0, -2), listOf(1, 0))
-		)// 3>>1──┘
-	}
+	// 180-degree rotation wallkick data
+	protected open val WALLKICK_NORMAL_180 = listOf(
+		listOf(1 to 0, 2 to 0, 1 to 1, 2 to 1, -1 to 0, -2 to 0, -1 to 1, -2 to 1, 0 to -1, 3 to 0, -3 to 0), // 0>>2─┐
+		listOf(0 to 1, 0 to 2, -1 to 1, -1 to 2, 0 to -1, 0 to -2, -1 to -1, -1 to -2, 1 to 0, 0 to 3, 0 to -3), // 1>>3─┼┐
+		listOf(-1 to 0, -2 to 0, -1 to -1, -2 to -1, 1 to 0, 2 to 0, 1 to -1, 2 to -1, 0 to 1, -3 to 0, 3 to 0), // 2>>0─┘│
+		listOf(0 to 1, 0 to 2, 1 to 1, 1 to 2, 0 to -1, 0 to -2, 1 to -1, 1 to -2, -1 to 0, 0 to 3, 0 to -3), // 3>>1──┘
+	)
+	protected open val WALLKICK_I_180 = listOf(
+		listOf(-1 to 0, -2 to 0, 1 to 0, 2 to 0, 0 to -1, 0 to 1), // 0>>2─┐
+		listOf(0 to 1, 0 to 2, 0 to -1, 0 to -2, 1 to 0, -1 to 0), // 1>>3─┼┐
+		listOf(1 to 0, 2 to 0, -1 to 0, -2 to 0, 0 to 1, 0 to -1), // 2>>0─┘│
+		listOf(0 to 1, 0 to 2, 0 to -1, 0 to -2, -1 to 0, 1 to 0) // 3>>1──┘
+	)
 }

@@ -105,9 +105,9 @@ class Battler(mode:GameMode, rules:RuleOptions, _ai:DummyAI, _ai2:DummyAI) {
 		return -1;
 	}*/
 	/**
-	 * Get the current line cleared.
+	 * Get the current lines cleared.
 	 *
-	 * @return The line cleared
+	 * @return The lines cleared
 	 */
 	fun getLineCleared(gameEngine:GameEngine):Int {
 		val aitm:VSBattle = gameEngine.owner.mode as VSBattle
@@ -227,7 +227,7 @@ class Battler(mode:GameMode, rules:RuleOptions, _ai:DummyAI, _ai2:DummyAI) {
 				totalLines[j] += thisLines
 				log.info("Line cleared:\t$thisLines")
 				log.info("-------- stat till now --------")
-				log.info("Total line cleared:\t"+totalLines[j])
+				log.info("Total lines cleared:\t"+totalLines[j])
 				log.info("Line per game:\t"+totalLines[j].toDouble()/(i+1))
 			}
 			/*			if (i % step == 0) {
@@ -238,7 +238,7 @@ class Battler(mode:GameMode, rules:RuleOptions, _ai:DummyAI, _ai2:DummyAI) {
 		}
 		log.info("-------- COMPLETE --------")
 		log.info("Total:\t$count")
-		log.info("Total line cleared:\t$totalLines")
+		log.info("Total lines cleared:\t$totalLines")
 		//log.info("Line per game:\t" + String.valueOf(totalLines / count));
 
 		//double prop = (double) totalLines / (double) count;

@@ -58,7 +58,8 @@ interface ClearType {
 		val garbageCleared =
 			blocksCleared.asSequence().sumOf {(_, r) -> r.count {(_, b) -> b?.getAttribute(ATTRIBUTE.GARBAGE)?:false}}
 		val colorContains =
-			blocksCleared.asSequence().flatMap {(_, r) -> r.values.mapNotNull {it?.color}}.distinct().sortedBy {it.ordinal}.toSet()
+			blocksCleared.asSequence().flatMap {(_, r) -> r.values.mapNotNull {it?.color}}.distinct().sortedBy {it.ordinal}
+				.toSet()
 		val linesYfolded = linesY.sorted().fold(mutableListOf<Set<Int>>()) {a, t ->
 			if(a.isEmpty()||a.last().maxOrNull()!=t-1) a += setOf(t)
 			else a[a.lastIndex] = a[a.lastIndex]+t

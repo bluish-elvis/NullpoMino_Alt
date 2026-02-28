@@ -47,9 +47,8 @@ class SuperRandomWallkick:BaseStandardWallkick() {
      * Wallkick
      */
 	override fun executeWallkick(x:Int, y:Int, rtDir:Int, rtOld:Int, rtNew:Int, allowUpward:Boolean, piece:Piece,
-		field:mu.nu.nullpo.game.component.Field, ctrl:mu.nu.nullpo.game.component.Controller?): WallkickResult? {
-		val kicktable = getKickTable(x, y, rtDir, rtOld, rtNew, allowUpward, piece, field, ctrl)
-			?: return null
+		field:mu.nu.nullpo.game.component.Field, ctrl:mu.nu.nullpo.game.component.Controller?):WallkickResult? {
+		val kicktable = getKickTable(x, y, rtDir, rtOld, rtNew, allowUpward, piece, field, ctrl)?:return null
 		var arr = List(kicktable[rtOld].size) {it}
 		var v = 0
 		for(i in ctrl!!.buttonTime) {
@@ -57,15 +56,13 @@ class SuperRandomWallkick:BaseStandardWallkick() {
 		}
 		arr = arr.shuffled(Random((rtOld+rtNew+piece.id+field.highestBlockY+v).toLong()))
 		for(i in arr) {
-			var x2 = kicktable[rtOld][i][0]
-			var y2 = kicktable[rtOld][i][1]
+			var (x2, y2) = kicktable[rtOld][i]
 			if(piece.big) {
 				x2 *= 2
 				y2 *= 2
 			}
-			if(y2>=0||allowUpward)
-				if(!piece.checkCollision(x+x2, y+y2, rtNew, field))
-					return WallkickResult(x2, y2, rtNew)
+			if(y2>=0||allowUpward) if(!piece.checkCollision(x+x2, y+y2, rtNew, field))
+				return WallkickResult(x2, y2, rtNew)
 		}
 		return null
 	}

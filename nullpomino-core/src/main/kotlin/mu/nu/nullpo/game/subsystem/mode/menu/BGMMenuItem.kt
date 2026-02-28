@@ -35,7 +35,8 @@ import mu.nu.nullpo.game.component.BGM
 import mu.nu.nullpo.game.event.EventReceiver
 import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.gui.common.BaseFont
-import mu.nu.nullpo.gui.common.BaseFont.FONT.*
+import mu.nu.nullpo.gui.common.BaseFont.FONT.BASE
+import mu.nu.nullpo.gui.common.BaseFont.FONT.NUM
 
 class BGMMenuItem(name:String, color:EventReceiver.COLOR, defaultValue:Int = 0):
 	StringsMenuItem(name, "BGM", color, defaultValue, BGM.values.map {it.drawName}, false, false) {

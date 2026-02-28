@@ -62,7 +62,8 @@ class BackgroundVerticalBars<T>(img:ResourceImage<T>, pulseFrames:Int, sliceSize
 		if(baseScale==null||scaleVariance==null||sliceSize==null) {
 			chunks = List(AMT) {i ->
 				ImageChunk(
-					AnchorPoint.TM, listOf(640/AMT*i+640/AMT/2, 0), listOf(640/AMT*i, 0), listOf(640/AMT, 480), listOf(BASE_SCALE, 1f)
+					AnchorPoint.TM, listOf(640/AMT*i+640/AMT/2, 0), listOf(640/AMT*i, 0), listOf(640/AMT, 480),
+					listOf(BASE_SCALE, 1f)
 				)
 			}
 			reverse = _reverse
@@ -73,7 +74,8 @@ class BackgroundVerticalBars<T>(img:ResourceImage<T>, pulseFrames:Int, sliceSize
 			pulseScaleVariance = scaleVariance
 			chunks = List(sliceSize) {i ->
 				ImageChunk(
-					AnchorPoint.TM, listOf(640/sliceSize*i+640/sliceSize/2, 0), listOf(640/sliceSize*i, 0), listOf(640/sliceSize, 480),
+					AnchorPoint.TM, listOf(640/sliceSize*i+640/sliceSize/2, 0), listOf(640/sliceSize*i, 0),
+					listOf(640/sliceSize, 480),
 					listOf(baseScale, 1f)
 				)
 			}
@@ -101,8 +103,8 @@ class BackgroundVerticalBars<T>(img:ResourceImage<T>, pulseFrames:Int, sliceSize
 		for(i in chunks.indices) {
 			val j = if(reverse) chunks.size-i-1 else i
 			val ppu = (currentPulsePhase+i)%pulsePhaseMax
-			val baseScale = pulseBaseScale ?: BASE_SCALE
-			val scaleVariance = pulseScaleVariance ?: SCALE_VARIANCE
+			val baseScale = pulseBaseScale?:BASE_SCALE
+			val scaleVariance = pulseScaleVariance?:SCALE_VARIANCE
 			val newScale = minOf(1.0, baseScale+sin(TWO_PI*(ppu.toDouble()/pulsePhaseMax))*scaleVariance)
 			chunks[j].scale = listOf(newScale.toFloat(), 1f)
 		}
@@ -119,7 +121,7 @@ class BackgroundVerticalBars<T>(img:ResourceImage<T>, pulseFrames:Int, sliceSize
 		priorityList.sortWith {c1:ImageChunk, c2:ImageChunk ->
 			c1.scale[0].compareTo(c2.scale[0])
 		}
-		val baseScale = pulseBaseScale ?: BASE_SCALE
+		val baseScale = pulseBaseScale?:BASE_SCALE
 		if(baseScale.toDouble().almostEqual(1.0, 0.005)) {
 			img.draw()
 			priorityList.removeAll {it.scale[0].toDouble().almostEqual(1.0, 0.005)}

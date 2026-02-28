@@ -32,7 +32,6 @@ package mu.nu.nullpo.game.subsystem.mode
 
 import mu.nu.nullpo.game.component.BGM
 import mu.nu.nullpo.game.component.Controller
-import mu.nu.nullpo.game.component.LevelData
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
 import mu.nu.nullpo.game.event.Leaderboard
 import mu.nu.nullpo.game.event.Rankable
@@ -60,7 +59,7 @@ class Marathon:NetDummyMode() {
 	/** Game type  */
 	private var goalType:Int by DelegateMenuItem(itemMode)
 
-	private val itemBig = BooleanMenuItem("big", "BIG", COLOR.BLUE, false)
+	private val itemBig = BooleanMenuItem("big", "BIG", COLOR.ORANGE, false)
 	/** BigMode */
 	private var big:Boolean by DelegateMenuItem(itemBig)
 
@@ -72,7 +71,7 @@ class Marathon:NetDummyMode() {
 	private var rankingRank = -1
 
 	override val ranking = List(RANKING_TYPE) {
-		Leaderboard(rankingMax, kotlinx.serialization.serializer<List<Rankable.ScoreRow>>()){Rankable.ScoreRow()}
+		Leaderboard(rankingMax, kotlinx.serialization.serializer<List<Rankable.ScoreRow>>()) {Rankable.ScoreRow()}
 	}
 
 	// Mode name
@@ -97,7 +96,7 @@ class Marathon:NetDummyMode() {
 		engine.statistics.level = startLevel
 		owner.bgMan.bg = startLevel
 		setSpeed(engine)
-		engine.frameSkin = GameEngine.FRAME_COLOR_GREEN
+		engine.frame = GameEngine.Frame.GREEN
 	}
 
 	/** Set the gravity rate
@@ -109,10 +108,10 @@ class Marathon:NetDummyMode() {
 		val lv = engine.statistics.lines.coerceIn(starts, goal.let {
 			if(it>starts) it else maxOf(engine.statistics.lines, starts)
 		})
-		val data = if(goal in 0..200) tableSpeeds.first else tableSpeeds.second
-		val sLv = (lv/(if(goal<=500) 10 else 20).coerceIn(0, data.size-1))
-
-		engine.speed.replace(data[sLv])
+		val (g, d) = if(goal in 0..200) tableSpeeds.first else tableSpeeds.second
+		val sLv = lv/(if(goal<=500) 10 else 20)
+		engine.speed.gravity = g[sLv.coerceIn(g.indices)]
+		engine.speed.denominator = d[sLv.coerceIn(d.indices)]
 
 		val ln = lv/when {
 			goal<0 -> 3
@@ -142,7 +141,12 @@ class Marathon:NetDummyMode() {
 
 		owner.bgMan.bg = startLevel
 		engine.statistics.level = startLevel
-		engine.frameSkin = (1+startLevel)%GameEngine.FRAME_COLOR_ALL
+		engine.statistics.levelDispAdd = 1
+		engine.b2bEnable = true
+		engine.splitB2B = true
+		engine.comboType = GameEngine.COMBO_TYPE_NORMAL
+		engine.big = big
+		engine.frame = GameEngine.Frame.valueOf((1+startLevel)%GameEngine.FRAME_COLOR_ALL)
 		setSpeed(engine)
 
 		return super.onSettingChanged(engine)
@@ -150,12 +154,6 @@ class Marathon:NetDummyMode() {
 
 	/* Called for initialization during "Ready" screen */
 	override fun startGame(engine:GameEngine) {
-		engine.statistics.level = startLevel
-		engine.statistics.levelDispAdd = 1
-		engine.b2bEnable = true
-		engine.splitB2B = true
-		engine.comboType = GameEngine.COMBO_TYPE_NORMAL
-		engine.big = big
 
 		engine.twistAllowKick = true
 		engine.twistEnable = true
@@ -164,7 +162,7 @@ class Marathon:NetDummyMode() {
 		setSpeed(engine)
 
 		owner.musMan.bgm = if(netIsWatch) BGM.Silent else bgmLv(0)
-		engine.frameSkin = (1+startLevel)%GameEngine.FRAME_COLOR_ALL
+		engine.frame = GameEngine.Frame.valueOf((1+startLevel)%GameEngine.FRAME_COLOR_ALL)
 	}
 
 	/* Render score */
@@ -178,13 +176,12 @@ class Marathon:NetDummyMode() {
 				val topY = if(receiver.nextDisplayType==2) 6 else 4
 				receiver.drawScore(engine, 2, topY-1, "SCORE LINE TIME", BASE, COLOR.BLUE)
 
-				ranking[goalType].forEachIndexed { i, it ->
-					receiver.drawScore(engine, 0, topY+i, "%2d".format(i+1),
-						GRADE,
+				ranking[goalType].forEachIndexed {i, it ->
+					receiver.drawScore(engine, 0, topY+i, "%2d".format(i+1), GRADE,
 						if(rankingRank==i) COLOR.RAINBOW else if(it.li>tableGameClearLines[goalType]) COLOR.CYAN else
 							COLOR.YELLOW)
-					receiver.drawScore(engine, 2, topY+i, "${it.sc}", NUM, i==rankingRank)
-					receiver.drawScore(engine, 9, topY+i, "${it.li}", NUM, i==rankingRank)
+					receiver.drawScore(engine, 2, topY+i, "%7d".format(it.sc), NUM, i==rankingRank)
+					receiver.drawScore(engine, 8, topY+i, "%4d".format(it.li), NUM, i==rankingRank)
 					receiver.drawScore(engine, 12, topY+i, it.ti.toTimeStr, NUM, i==rankingRank)
 				}
 			}
@@ -317,7 +314,7 @@ class Marathon:NetDummyMode() {
 
 		// Update rankings
 		if(!owner.replayMode&&!big&&engine.ai==null) {
-			rankingRank=ranking[goalType].add(Rankable.ScoreRow(engine.statistics))
+			rankingRank = ranking[goalType].add(Rankable.ScoreRow(engine.statistics))
 			if(rankingRank!=-1) return true
 		}
 		return false
@@ -390,10 +387,10 @@ class Marathon:NetDummyMode() {
 
 		/** Fall velocity table */
 		private val tableSpeeds =
-			LevelData(listOf(1, 2, +1, +3, +3, +7, +3, 12, +30, +26, 26, 3, 1, 3, 2, 3, 5, 15, 10, -1)/*(numerators) */,
-				listOf(60, 95, 37, 85, 64, 110, 34, 97, 169, 100, 67, 5, 1, 2, 1, 1, 1, +2, +1, 1)/*(denominators)*/) to
-				LevelData(listOf(1, 1, 1, +1, +1, +1, +2, +1, +1, +1, +3, +1, 1, 1, 1, 1, 1, 1, 3, 1, 2, 3, 5, 15, 10, -1),
-					listOf(60, 50, 45, 40, 35, 30, 54, 25, 20, 15, 34, 10, 8, 6, 5, 4, 3, 2, 4, 1, 1, 1, 1, +2, +1, 1))
+			(intArrayOf(1, 2, +1, +3, +3, +7, +3, 12, +30, +26, 26, 3, 1, 3, 2, 3, 5, 15, 10, -1)/*(numerators) */ to
+				intArrayOf(60, 95, 37, 85, 64, 110, 34, 97, 169, 100, 67, 5, 1, 2, 1, 1, 1, +2, +1, 1)/*(denominators)*/) to
+				(intArrayOf(1, 1, 1, +1, +1, +1, +2, +1, +1, +1, +3, +1, 1, 1, 1, 1, 1, 1, 3, 1, 2, 3, 5, 15, 10, -1) to
+					intArrayOf(60, 50, 45, 40, 35, 30, 54, 25, 20, 15, 34, 10, 8, 6, 5, 4, 3, 2, 4, 1, 1, 1, 1, +2, +1, 1))
 
 		//1/60 = 0.0166666666666667
 		//2/95 = 0.0210526315789474

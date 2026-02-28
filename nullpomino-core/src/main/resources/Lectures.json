@@ -54,7 +54,7 @@
    {
     "name":"Skimming: Singles into Quad",
     "name_jp":"削り: 1ライン消しからQUADへ",
-    "desc_jp":"縦置きで1ライン消ししつつ地形を均し、QUADを狙う\n\n注意：B2B Chainを切らしてしまい得点効率が悪いため、1手で効率よく地形を均そう",
+    "desc_jp":"縦置きで1ライン消ししつつ地形を均し、QUADを狙う\n\n注意：B2B Chainを切らすと得点効率が悪いため、1手で効率よく地形を均そう",
     "Desc_en":"Clear a single line with a vertical placement while smoothing the terrain, and do QUAD.\n\nNote: This breaks the B2B Chain, the score efficiency is poor, so try to smooth the terrain efficiently in less move.",
     "queue":"LJITI",
     "mission":[
@@ -82,7 +82,7 @@
    },
    {
     "name":"Other Twist",
-    "desc_jp":"Tピース以外でも、回転入れでラインを消したときのボーナスは少し入ることがある\n積みミスのフォローに活用せよ\n\n補足: モードによってはTピース以外のTwistボーナスは無効",
+    "desc_jp":"Tピース以外でも、回転入れでラインを消したときのボーナスが入ることがある\n積みミスのフォローに活用せよ\n\n補足: モードによってはTピース以外のTwistボーナスは無効",
     "queue":"LJISZ",
     "mission":[
      "twist2",
@@ -109,7 +109,7 @@
     ]
    },
    {
-    "name":"Twist Single: Cutting Board Quad",
+    "name":"Twist Single: Cutting Board and Quad",
     "name_jp":"何見てんだよ ぺったんこ",
     "desc_jp":"Twist Doubleにとらわれるな: あえてT-Singleにすることで、その後Quadで下穴を開けられる",
     "queue":"TOLI",

@@ -39,7 +39,8 @@ package zeroxfc.nullpo.custom.modes.objects.minesweeper
 
 import kotlin.random.Random
 
-class GameGrid @JvmOverloads constructor(val length:Int = 10, val height:Int = 10, minePercent:Float = 0.1f, randSeed:Long = 0) {
+class GameGrid @JvmOverloads constructor(val length:Int = 10, val height:Int = 10,
+	minePercent:Float = 0.1f, randSeed:Long = 0) {
 	private val squares:Int get() = length*height
 	val mines:Int = (minePercent/100f*squares).toInt()
 	private val randomizer = Random(randSeed)

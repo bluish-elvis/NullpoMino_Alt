@@ -30,11 +30,8 @@
  */
 package mu.nu.nullpo.game.component
 
-import kotlinx.serialization.Serializable
-
 /** button input状態を管理するクラス */
-@Serializable
-data class Controller(
+@kotlinx.serialization.Serializable data class Controller(
 	/** Buttonを押した状態ならtrue */
 	private val buttonPress:MutableList<Boolean>,
 	/** Buttonを押しっぱなしにしている time */
@@ -89,32 +86,30 @@ data class Controller(
 	 * @param enableCButton C buttonでの高速移動許可
 	 * @return カーソルが動くならtrue
 	 */
-	@JvmOverloads
-	fun isMenuRepeatKey(key:Int, enableCButton:Boolean = true):Boolean {
-		return buttonTime[key]==1||buttonTime[key]>=25&&buttonTime[key]%3==0||
-			buttonTime[key]>=1&&isPress(BUTTON_C)&&enableCButton
-	}
+	@JvmOverloads fun isMenuRepeatKey(key:Int, enableCButton:Boolean = true):Boolean = buttonTime[key]==1||
+		buttonTime[key]>=25&&buttonTime[key]%3==0||
+		buttonTime[key]>=1&&isPress(BUTTON_C)&&enableCButton
 
 	/** buttonを押した状態にする
 	 * @param key Button number
 	 */
 	fun setButtonPressed(key:Int) {
-		if(key in 0..<buttonPress.size) buttonPress[key] = true
+		if(key in buttonPress.indices) buttonPress[key] = true
 	}
 
 	/** buttonを押してない状態にする
 	 * @param key Button number
 	 */
 	fun setButtonUnpressed(key:Int) {
-		if(key in 0..<buttonPress.size) buttonPress[key] = false
+		if(key in buttonPress.indices) buttonPress[key] = false
 	}
 
 	fun setButtonState(key:Int, pressed:Boolean) {
-		if(key in 0..<buttonPress.size) buttonPress[key] = pressed
+		if(key in buttonPress.indices) buttonPress[key] = pressed
 	}
 
 	fun setButtonBit(input:Int) {
-		buttonPress.forEachIndexed {i, _ -> buttonPress[i] = input and (1 shl i)>0}
+		for(i in buttonPress.indices) buttonPress[i] = input and (1 shl i)>0
 	}
 
 	/** button input timeを更新 */
@@ -156,7 +151,7 @@ data class Controller(
 		/** E (180-degree spin) button */
 		const val BUTTON_E = 8
 
-		/** F (Reverse spin, Use inum, staff roll fast-forward, etc.) button */
+		/** F (Reverse spin, Use item, staff roll fast-forward, etc.) button */
 		const val BUTTON_F = 9
 
 		/** Number of buttons */

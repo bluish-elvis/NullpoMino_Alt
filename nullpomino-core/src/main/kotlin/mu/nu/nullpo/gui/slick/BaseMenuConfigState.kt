@@ -46,10 +46,7 @@ import mu.nu.nullpo.gui.slick.BaseMenuScrollState.Companion.SB_TEXT_X
 import mu.nu.nullpo.gui.slick.BaseMenuScrollState.Companion.SB_WIDTH
 import mu.nu.nullpo.gui.slick.img.FontNormal
 import mu.nu.nullpo.gui.slick.img.FontTTF
-import org.newdawn.slick.Color
-import org.newdawn.slick.GameContainer
-import org.newdawn.slick.Graphics
-import org.newdawn.slick.Input
+import org.newdawn.slick.*
 import org.newdawn.slick.state.StateBasedGame
 
 abstract class BaseMenuConfigState:BaseMenuChooseState() {
@@ -92,10 +89,10 @@ abstract class BaseMenuConfigState:BaseMenuChooseState() {
 			//Draw inside
 			val insideHeight = sbHeight-LINE_D
 			val insideWidth = SB_WIDTH-LINE_D
-			val fillHeight = maxOf(LINE_WIDTH,insideHeight*1f*columns[id].second.size/allLine.size)
-			val fillMinY = minOf(insideHeight*cf/allLine.size,insideHeight-fillHeight)
-			val curHeight = maxOf(LINE_WIDTH,insideHeight/allLine.size)
-			val curMinY = minOf(insideHeight*cursor/allLine.size,insideHeight-curHeight)
+			val fillHeight = maxOf(LINE_WIDTH, insideHeight*1f*columns[id].second.size/allLine.size)
+			val fillMinY = minOf(insideHeight*cf/allLine.size, insideHeight-fillHeight)
+			val curHeight = maxOf(LINE_WIDTH, insideHeight/allLine.size)
+			val curMinY = minOf(insideHeight*cursor/allLine.size, insideHeight-curHeight)
 			g.color = SB_BACK_COLOR
 			g.fillRect((SB_MIN_X+LINE_WIDTH), (SB_MIN_Y+LINE_WIDTH), insideWidth, insideHeight)
 			g.color = SB_FILL_COLOR

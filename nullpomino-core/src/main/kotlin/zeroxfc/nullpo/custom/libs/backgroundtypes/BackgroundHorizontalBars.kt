@@ -45,7 +45,8 @@ import kotlin.math.PI
 import kotlin.math.sin
 
 class BackgroundHorizontalBars<T>(img:ResourceImage<T>, pulseFrames:Int, sliceSize:Int? = null,
-	pulseBaseScale:Float? = BASE_SCALE, pulseScaleVariance:Float? = SCALE_VARIANCE, reverse:Boolean = false):AbstractBG<T>(img) {
+	pulseBaseScale:Float? = BASE_SCALE, pulseScaleVariance:Float? = SCALE_VARIANCE, reverse:Boolean = false):
+	AbstractBG<T>(img) {
 	// private ResourceHolderCustomAssetExtension customHolder;
 	private var chunks:Array<ImageChunk> = emptyArray()
 	private var pulsePhaseMax = 0
@@ -102,8 +103,8 @@ class BackgroundHorizontalBars<T>(img:ResourceImage<T>, pulseFrames:Int, sliceSi
 		for(i in chunks.indices) {
 			val j = if(reverse) chunks.size-i-1 else i
 			val ppu = (currentPulsePhase+i)%pulsePhaseMax
-			val baseScale = pulseBaseScale ?: BASE_SCALE
-			val scaleVariance = pulseScaleVariance ?: SCALE_VARIANCE
+			val baseScale = pulseBaseScale?:BASE_SCALE
+			val scaleVariance = pulseScaleVariance?:SCALE_VARIANCE
 			val newScale = (baseScale+sin(TWO_PI*(ppu.toDouble()/pulsePhaseMax))*scaleVariance).coerceAtLeast(1.0)
 			chunks[j].scale = listOf(1f, newScale.toFloat())
 		}
@@ -116,7 +117,7 @@ class BackgroundHorizontalBars<T>(img:ResourceImage<T>, pulseFrames:Int, sliceSi
 
 	override fun draw(render:AbstractRenderer, bg:Boolean) {
 		val priorityList = chunks.sortedBy {it.scale[1]}.toMutableList()
-		val baseScale = pulseBaseScale ?: BASE_SCALE
+		val baseScale = pulseBaseScale?:BASE_SCALE
 		if(baseScale.toDouble().almostEqual(1.0, 0.005)) {
 			img.draw()
 			priorityList.removeAll {it.scale[0].toDouble().almostEqual(1.0, 0.005)}

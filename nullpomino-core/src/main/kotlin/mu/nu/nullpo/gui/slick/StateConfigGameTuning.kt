@@ -43,10 +43,7 @@ import mu.nu.nullpo.gui.slick.img.FontNano
 import mu.nu.nullpo.gui.slick.img.FontNormal
 import mu.nu.nullpo.util.GeneralUtil.getOX
 import org.apache.logging.log4j.LogManager
-import org.newdawn.slick.AppGameContainer
-import org.newdawn.slick.GameContainer
-import org.newdawn.slick.Graphics
-import org.newdawn.slick.SlickException
+import org.newdawn.slick.*
 import org.newdawn.slick.state.StateBasedGame
 import kotlin.random.Random
 import mu.nu.nullpo.gui.slick.NullpoMinoSlick.Companion.propGlobal as pGl
@@ -206,11 +203,10 @@ internal class StateConfigGameTuning:BaseMenuConfigState() {
 				imgBlock.draw(416f, 48f, 464f, 64f, 160f, 288f, 208f, 304f)
 				imgBlock.draw(416f, 64f, 464f, 80f, 208f, 288f, 256f, 304f)
 				//silver
-				imgBlock.draw(464f, 32f, 512f, 48f,  256f, 288f, 304f, 304f)
-				imgBlock.draw(464f, 48f, 512f, 64f,  304f, 288f, 352f, 304f)
-				imgBlock.draw(464f, 64f, 512f, 80f,  352f, 288f, 400f, 304f)
-			}
-			else {
+				imgBlock.draw(464f, 32f, 512f, 48f, 256f, 288f, 304f, 304f)
+				imgBlock.draw(464f, 48f, 512f, 64f, 304f, 288f, 352f, 304f)
+				imgBlock.draw(464f, 64f, 512f, 80f, 352f, 288f, 400f, 304f)
+			} else {
 				imgBlock.draw(160f, 64f, 304f, 80f, 0f, 0f, 144f, 16f)
 				imgBlock.draw(304f, 64f, 416f, 80f, 288f, 0f, 400f, 16f) //gem
 				//gold

@@ -251,7 +251,7 @@ class NetSPRecord:Serializable {
 	 */
 	fun getCustomStat(name:String, strDefault:String):String {
 		val strResult = getCustomStat(name)
-		return strResult ?: strDefault
+		return strResult?:strDefault
 	}
 
 	/** Get a short String of stats of the record (used by NetServer)
@@ -271,7 +271,7 @@ class NetSPRecord:Serializable {
 					RANKINGTYPE_TIMEATTACK -> "${it.lines},${it.time},${it.pps},${it.rollClear}"
 					else -> "${it.score},${it.lines},${it.time}"
 				} else "${it.score},${it.lines},${it.time}"
-			} ?: ""
+			}?:""
 		return strRow
 	}
 
@@ -293,8 +293,8 @@ class NetSPRecord:Serializable {
 		 * @return `true` if r1 is better than r2
 		 */
 		fun compareRecords(type:Int, r1:NetSPRecord, r2:NetSPRecord):Boolean {
-			val s1 = r1.stats ?: return false
-			val s2 = r2.stats ?: return false
+			val s1 = r1.stats?:return false
+			val s2 = r2.stats?:return false
 
 			return when(type) {
 				RANKINGTYPE_GENERIC_SCORE -> (s1.score>s2.score)||
@@ -319,7 +319,7 @@ class NetSPRecord:Serializable {
 					||(s1.score==s2.score&&s1.lines>s2.lines)
 					||s1.score==s2.score&&s1.lines==s2.lines&&s1.time>s2.time
 				RANKINGTYPE_TIMEATTACK -> {
-					// Cap the line count at 150 or 200
+					// Cap the lines count at 150 or 200
 					val maxLines = if(r1.gameType>=5) 200 else 150
 					val l1 = minOf(s1.lines, maxLines)
 					val l2 = minOf(s2.lines, maxLines)

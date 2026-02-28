@@ -34,65 +34,40 @@ import mu.nu.nullpo.game.component.Controller
 import mu.nu.nullpo.game.component.Field
 import mu.nu.nullpo.game.component.Piece
 import mu.nu.nullpo.game.event.WallkickResult
+import mu.nu.nullpo.util.GeneralUtil.toInt
 
 /** DTETPlus Wallkick - An extension of the ClassicPlusWallkick */
 class DTETPlusWallkick:DTETWallkick() {
 	/* Wallkick main method */
 	override fun executeWallkick(x:Int, y:Int, rtDir:Int, rtOld:Int, rtNew:Int, allowUpward:Boolean,
-		piece:Piece, field:Field, ctrl:Controller?): WallkickResult? {
-		var x2:Int
-		var y2:Int
+		piece:Piece, field:Field, ctrl:Controller?):WallkickResult? {
+		val ret = super.executeWallkick(x, y, rtDir, rtOld, rtNew, allowUpward, piece, field, ctrl)
+		if(ret!=null) return ret
 
-		for(aWALLKICK in WALLKICK) {
-			x2 = if(rtDir<0||rtDir==2)
-				aWALLKICK[0]
-			else
-				-aWALLKICK[0]
-			y2 = aWALLKICK[1]
-
-			if(piece.big) {
-				x2 *= 2
-				y2 *= 2
-			}
-
-			if(!piece.checkCollision(x+x2, y+y2, rtNew, field)) return WallkickResult(x2, y2, rtNew)
-		}
-		var check = 0
-		if(piece.big) check = 1
+		val check = piece.big.toInt()
 		// IのWallkick
-		if(piece.type==Piece.Shape.I&&(rtNew==Piece.DIRECTION_UP||rtNew==Piece.DIRECTION_DOWN))
+		if(piece.shape==Piece.Shape.I&&(rtNew==Piece.DIRECTION_UP||rtNew==Piece.DIRECTION_DOWN))
 			for(i in check..check*2) {
-				var temp = 0
-
-				if(!piece.checkCollision(x-1-i, y, rtNew, field))
-					temp = -1-i
-				else if(!piece.checkCollision(x+1+i, y, rtNew, field))
-					temp = 1+i
-				else if(!piece.checkCollision(x+2+i, y, rtNew, field)) temp = 2+i
-
+				val temp = if(!piece.checkCollision(x-1-i, y, rtNew, field)) -1-i
+				else if(!piece.checkCollision(x+1+i, y, rtNew, field)) 1+i
+				else if(!piece.checkCollision(x+2+i, y, rtNew, field)) 2+i
+				else 0
 				if(temp!=0) return WallkickResult(temp, 0, rtNew)
 			}
-		// Iの床蹴り (接地している場合のみ）
-		if(piece.type==Piece.Shape.I&&allowUpward&&(rtNew==Piece.DIRECTION_LEFT||rtNew==Piece.DIRECTION_RIGHT)&&
+		// Iの床蹴り (接地している場合のみ)
+		if(piece.shape==Piece.Shape.I&&allowUpward&&(rtNew==Piece.DIRECTION_LEFT||rtNew==Piece.DIRECTION_RIGHT)&&
 			piece.checkCollision(x, y+1, field))
 
 			for(i in check..check*2) {
-				var temp = 0
-
-				if(!piece.checkCollision(x, y-1-i, rtNew, field))
-					temp = -1-i
-				else if(!piece.checkCollision(x, y-2-i, rtNew, field)) temp = -2-i
+				val temp = if(!piece.checkCollision(x, y-1-i, rtNew, field)) -1-i
+				else if(!piece.checkCollision(x, y-2-i, rtNew, field)) -2-i
+				else 0
 
 				if(temp!=0) return WallkickResult(0, temp, rtNew)
 			}
 		return null
 	}
 
-	companion object {
-		/** Wallkick table */
-		private val WALLKICK = listOf(
-			listOf(-1, 0), listOf(1, 0), listOf(0, 1), listOf(-1, 1), listOf(1, 1),
-			listOf(0, -1), listOf(-1, -1), listOf(1, -1)
-		)
-	}
+	/** Wallkick table */
+	override val WALLKICK = listOf(-1 to 0, 1 to 0, 0 to 1, -1 to 1, 1 to 1, 0 to -1, -1 to -1, 1 to -1)
 }

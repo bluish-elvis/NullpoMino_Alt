@@ -36,21 +36,22 @@ import mu.nu.nullpo.util.GeneralUtil
 import org.apache.logging.log4j.LogManager
 import java.io.*
 import java.nio.charset.StandardCharsets
-import java.util.zip.GZIPInputStream
-import java.util.zip.GZIPOutputStream
-import java.util.zip.ZipException
+import java.util.zip.*
 
-class Leaderboard<T:Comparable<T>> private constructor(val list:MutableList<T>, private val max:Int, private val serializer:KSerializer<List<T>>) {
+class Leaderboard<T:Comparable<T>> private constructor(val list:MutableList<T>, private val max:Int,
+	private val serializer:KSerializer<List<T>>) {
 
 	constructor(max:Int, serializer:KSerializer<List<T>>, init:(Int)->T):this(MutableList<T>(max, init), max, serializer)
 	constructor(max:Int, serializer:KSerializer<List<T>>):this(mutableListOf<T>(), max, serializer)
 
 	val best get() = list.firstOrNull()
 	val size get() = list.size
-	fun add(e:T) = list.sorted().indexOfFirst {e>=it}.let {pos ->
-		if(pos<0&&list.size<max) {
-			list.add(e)
-			list.size-1
+	fun add(e:T) = list.sortedDescending().indexOfFirst {e>=it}.let {pos ->
+		if(pos<0) {
+			if(list.size<max) {
+				list.add(e)
+				list.size-1
+			} else -1
 		} else {
 			list.add(pos, e)
 			while(list.size>max) list.removeLastOrNull()
@@ -63,11 +64,8 @@ class Leaderboard<T:Comparable<T>> private constructor(val list:MutableList<T>, 
 	operator fun set(index:Int, e:T) = list.set(index, e)
 	operator fun iterator() = list.iterator()
 
-	operator fun plusAssign(e:T) {;add(e)
-	}
-
-	operator fun minusAssign(e:T) {;list.remove(e)
-	}
+	operator fun plusAssign(e:T) {; add(e); }
+	operator fun minusAssign(e:T) {; list.remove(e); }
 
 	fun fill(data:T) {
 		while(list.size<max) list.add(data)
@@ -90,7 +88,7 @@ class Leaderboard<T:Comparable<T>> private constructor(val list:MutableList<T>, 
 		fun load(f:InputStream) {
 			list.clear()
 			list.addAll(GeneralUtil.Json.decodeFromString(serializer, f.bufferedReader().use {it.readText()}))
-
+			list.sortDescending()
 		}
 		try {
 			GZIPInputStream(FileInputStream(file)).use {load(it)}
@@ -104,7 +102,7 @@ class Leaderboard<T:Comparable<T>> private constructor(val list:MutableList<T>, 
 			return null
 		}
 
-		return list
+		return list.sortedDescending()
 	}
 
 	/** Save to [file].

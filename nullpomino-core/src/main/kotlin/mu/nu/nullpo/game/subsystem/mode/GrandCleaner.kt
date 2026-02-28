@@ -39,7 +39,6 @@ import mu.nu.nullpo.game.event.Leaderboard
 import mu.nu.nullpo.game.event.ScoreEvent
 import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.game.subsystem.mode.menu.*
-import mu.nu.nullpo.gui.common.BaseFont
 import mu.nu.nullpo.gui.common.BaseFont.FONT.*
 import mu.nu.nullpo.util.CustomProperties
 import mu.nu.nullpo.util.GeneralUtil.plus
@@ -100,7 +99,6 @@ class GrandCleaner:AbstractMode() {
 	//	val rankLists = List(RANKING_TYPE) {Leaderboard(rankingMax, serializer<List<ScoreData>>())}
 //	override val ranking:List<Leaderboard<*>> get() = rankLists[rankingMode]
 	override val ranking = List(RANKING_TYPE) {Leaderboard(rankingMax, serializer<List<ScoreData>>())}
-	private var decoration = 0
 	private var decTemp = 0
 
 	/** Mode nameを取得 */
@@ -125,7 +123,7 @@ class GrandCleaner:AbstractMode() {
 		engine.twistEnable = false
 		engine.b2bEnable = false
 		engine.splitB2B = false
-		engine.frameSkin = GameEngine.FRAME_COLOR_PINK
+		engine.frame = GameEngine.Frame.PINK
 		engine.big = true
 		engine.bigHalf = true
 		engine.bigMove = true
@@ -151,7 +149,7 @@ class GrandCleaner:AbstractMode() {
 	 * @param engine GameEngine
 	 */
 	override fun setSpeed(engine:GameEngine) {
-		engine.speed.gravity = if(always20g) -1 else 4
+		engine.speed.gravity = if(always20g||(!easyPiece&&engine.statistics.level>=200)) -1 else 4
 		engine.speed.denominator = 256
 		engine.speed.are = 23
 		engine.speed.areLine = 23
@@ -180,6 +178,8 @@ class GrandCleaner:AbstractMode() {
 				engine.statistics.level = startLevel*100
 				nextSecLv = startLevel*100+100*/
 
+		engine.nextPieceEnable = if(easyPiece) EASY_PIECES else Shape.Tetras
+
 		setSpeed(engine)
 		super.onSettingChanged(engine)
 	}
@@ -187,9 +187,6 @@ class GrandCleaner:AbstractMode() {
 	override fun onReady(engine:GameEngine):Boolean {
 		if(engine.statc[0]==0) {
 			owner.musMan.fadeSW = true
-			engine.nextPieceEnable = List(Piece.PIECE_STANDARD_COUNT) {i ->
-				!easyPiece||EASY_PIECES.any {it.ordinal==i}
-			}
 		}
 		return super.onReady(engine)
 	}
@@ -199,24 +196,26 @@ class GrandCleaner:AbstractMode() {
 		engine.big = true
 		// BGM切り替え
 		owner.musMan.fadeSW = false
-		owner.musMan.bgm = BGM.Puzzle(0)
+		owner.musMan.bgm = BGM.Puzzle(if(easyPiece) 0 else 1)
 	}
 
 	/* Render score */
 	override fun renderLast(engine:GameEngine) {
+		receiver.drawScore(engine, 0, 0, "GRAND Cleaner", BASE, COLOR.PINK)
+		val type = queueType
 		receiver.drawScore(
-			engine, 0, 0, "GRAND Cleaner", BASE, COLOR.RED
+			engine, 0, 0, "(${itemQueue.valueString} ${itemEasy.valueString})", BASE, COLOR.PINK
 		)
 
+
 		receiver.drawScore(engine, -1, -4*2, "DECORATION", BASE, scale = .5f)
-		receiver.drawScoreBadges(engine, 0, -3, 100, decoration)
+		receiver.drawScoreBadges(engine, 0, -3, 100, owner.stats.decoration)
 		receiver.drawScoreBadges(engine, 5, -4, 100, decTemp)
 		if(engine.stat==GameEngine.Status.SETTING||engine.stat==GameEngine.Status.RESULT&&!owner.replayMode) {
 			if(!always20g&&engine.ai==null) {
 				val topY = if(receiver.nextDisplayType==2) 5 else 3
 
 				receiver.drawScore(engine, 2, topY-1, "CLEAR TIME LEVEL", BASE, COLOR.PINK)
-				val type = queueType
 
 				ranking[rankingMode].forEachIndexed {i, it ->
 					receiver.drawScore(
@@ -228,23 +227,24 @@ class GrandCleaner:AbstractMode() {
 							else -> COLOR.YELLOW
 						}
 					)
-					receiver.drawScore(engine, 3, topY+i, "%3d".format(it.clears), NUM, i==rankingRank)
+					receiver.drawScore(engine, 3, topY+i, "%4d".format(it.clears), NUM, i==rankingRank)
 					receiver.drawScore(engine, 7, topY+i, it.time.toTimeStr, NUM, i==rankingRank)
-					receiver.drawScore(engine, 13, topY+i, "%4d".format(it.level), NUM, i==rankingRank)
+					receiver.drawScore(engine, 14, topY+i, "%3d".format(it.level), NUM, i==rankingRank)
 
 				}
 			}
 		} else {
-			receiver.drawScore(engine, 0, 11, "All Clears", BASE, COLOR.PINK)
-			receiver.drawScore(engine, 1, 12, "%3d".format(engine.statistics.bravos), NUM, scgetdisp>0, 2f)
+			receiver.drawScore(engine, 0, 6, "All Clears", BASE, COLOR.PINK)
+			receiver.drawScore(engine, 1, 7, "%3d".format(engine.statistics.bravos), NUM, scgetdisp>0, 2f)
 
 			//  level
 			receiver.drawScore(engine, 0, 11, "Level", BASE, COLOR.PINK)
-			receiver.drawScore(engine, 1, 12, "%3d".format(maxOf(0, engine.statistics.level)), NUM_T)
+			receiver.drawScore(engine, 1, 12, "%3d".format(maxOf(0, engine.statistics.level)), NUM)
 
 			// Time limit
+			receiver.drawScore(engine, 0, 17, "Time Limit", BASE, COLOR.PINK)
 			receiver.drawScore(
-				engine, 0, 20, timeLimit.toTimeStr, NUM, engine.timerActive&&timeLimit<600&&timeLimit%4==0, 2f
+				engine, 0, 18, timeLimit.toTimeStr, NUM_T, engine.timerActive&&timeLimit<600&&timeLimit%4==0
 			)
 
 		}
@@ -264,9 +264,10 @@ class GrandCleaner:AbstractMode() {
 			engine.meterValue = minOf(1f, timeLimit*1f/TIME_LIMIT_MAX)
 			engine.meterColor = GameEngine.METER_COLOR_LIMIT
 
-			if(timeLimit>0&&timeLimit<=10*60&&timeLimit%60==0)
-			// 10秒前からのカウントダウン
+			if(timeLimit>0&&timeLimit<=10*60&&timeLimit%60==0) {
 				engine.playSE("countdown")
+				if(timeLimit<=300) engine.playSE("countdown${timeLimit/60}")
+			}
 		}
 
 	}
@@ -316,9 +317,10 @@ class GrandCleaner:AbstractMode() {
 					3 -> 660
 					else -> 900
 				} else when(it) {
-					1 -> 1
-					2 -> 2
-					3 -> 5
+					1 -> 10
+					2 -> 20
+					3 -> 45
+					4 -> 60
 					else -> 11
 				}
 			else if(it>=4) 60
@@ -327,15 +329,11 @@ class GrandCleaner:AbstractMode() {
 			timeLimit = minOf(timeLimit+timeRec, TIME_LIMIT_MAX)
 
 			// Level up
-			val levelPlus = when {
-				it==3 -> 6
-				it>=4 -> 12
-				else -> it*2
-			}
+			val levelPlus = it
 			engine.statistics.level += levelPlus
 
 //			setSpeed(engine)
-			if(engine.statistics.lines>=MAX_CLEAR_TOTAL) {
+			if(engine.statistics.lines>=MAX_CLEAR_TOTAL&&easyPiece) {
 				// Ending
 				engine.ending = 1
 				engine.gameEnded()
@@ -372,10 +370,9 @@ class GrandCleaner:AbstractMode() {
 
 	/* Render results screen */
 	override fun renderResult(engine:GameEngine) {
-		receiver.drawMenu(engine, 0, 0, "${BaseFont.UP_S}${BaseFont.DOWN_S} PAGE${engine.statc[1]+1}/3", BASE, COLOR.RED)
+//		receiver.drawMenu(engine, 0, 0, "${BaseFont.UP_S}${BaseFont.DOWN_S} PAGE${engine.statc[1]+1}/3", BASE, COLOR.RED)
 
-		receiver.drawMenu(engine, 5, 2, "ALL\nCLEARs", BASE, COLOR.PINK)
-		receiver.drawMenu(engine, -.25f, 2, "%3d".format(engine.statistics.bravos), BASE, 2f)
+		drawResultStats(engine, receiver, 2, COLOR.PINK, Statistic.BRAVOS)
 
 		drawResultStats(engine, receiver, 6, COLOR.PINK, Statistic.LINES, Statistic.LEVEL_MANIA, Statistic.PIECE,
 			Statistic.TIME)
@@ -386,7 +383,7 @@ class GrandCleaner:AbstractMode() {
 	/** This function will be called when the replay data is going to be saved */
 	override fun saveReplay(engine:GameEngine, prop:CustomProperties):Boolean {
 		if(!owner.replayMode&&!always20g&&engine.ai==null) {
-			owner.statsProp.setProperty("decoration", decoration)
+			owner.statsProp.setProperty("decoration", owner.stats.decoration)
 			rankingRank = ranking[rankingMode].add(ScoreData(engine.statistics))
 			if(rankingRank!=-1) return true
 		}
@@ -409,10 +406,10 @@ class GrandCleaner:AbstractMode() {
 		private const val TIME_LIMIT_START = 3*3600
 		private const val TIME_LIMIT_MAX = 5*3600
 
-		private val EASY_PIECES = listOf(Shape.O, Shape.T, Shape.I, Shape.J, Shape.L)
+		private val EASY_PIECES = setOf(Shape.O, Shape.T, Shape.I, Shape.J, Shape.L)
 
 		/** Number of ranking typesのcount */
-		private const val RANKING_TYPE = 8
+		private const val RANKING_TYPE = 2*2*2
 
 	}
 }

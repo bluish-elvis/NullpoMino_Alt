@@ -36,33 +36,25 @@ import mu.nu.nullpo.game.component.Piece
 import mu.nu.nullpo.game.event.WallkickResult
 
 /** DTET Wallkick - An extension of the Classic Wallkick system
-by Zircean */
+ * @author Zircean */
 open class DTETWallkick:Wallkick {
 	/* Wallkick main method */
 	override fun executeWallkick(x:Int, y:Int, rtDir:Int, rtOld:Int, rtNew:Int, allowUpward:Boolean, piece:Piece,
-		field:Field, ctrl:Controller?): WallkickResult? {
-		var x2:Int
-		var y2:Int
-
-		for(aWALLKICK in WALLKICK) {
-			x2 = if(rtDir<0||rtDir==2)
-				aWALLKICK[0]
-			else
-				-aWALLKICK[0]
-			y2 = aWALLKICK[1]
-
+		field:Field, ctrl:Controller?):WallkickResult? {
+		for((rx, ry) in WALLKICK) {
+			var x2 = rx*(if(rtDir<0||rtDir==2) 1 else -1)
+			var y2 = ry
 			if(piece.big) {
 				x2 *= 2
 				y2 *= 2
 			}
-
-			if(!piece.checkCollision(x+x2, y+y2, rtNew, field)) return WallkickResult(x2, y2, rtNew)
+			if(!piece.checkCollision(x+x2, y+y2, rtNew, field))
+				return WallkickResult(x2, y2, rtNew)
 		}
 		return null
 	}
 
-	companion object {
-		/** Wallkick table */
-		private val WALLKICK = listOf(listOf(-1, 0), listOf(1, 0), listOf(0, 1), listOf(-1, 1), listOf(1, 1))
-	}
+	/** Wallkick table */
+	protected open val WALLKICK = listOf(-1 to 0, 1 to 0, 0 to 1, -1 to 1, 1 to 1)
+
 }

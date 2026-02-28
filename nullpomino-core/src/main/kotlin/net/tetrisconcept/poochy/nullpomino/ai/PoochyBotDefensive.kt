@@ -137,7 +137,8 @@ class PoochyBotDefensive:PoochyBot() {
 
 		// Place the piece
 		if(!piece.placeToField(x, y, rt, fld)) {
-			if(DEBUG_ALL) log.debug("End of thinkMain($x, $y, $rt, $rtOld, fld, piece ${piece.id}, $depth). pts = 0 (Cannot place piece)")
+			if(DEBUG_ALL) log.debug(
+				"End of thinkMain($x, $y, $rt, $rtOld, fld, piece ${piece.id}, $depth). pts = 0 (Cannot place piece)")
 			return Integer.MIN_VALUE
 		}
 
@@ -175,7 +176,7 @@ class PoochyBotDefensive:PoochyBot() {
 		if(valley>0) if(DEBUG_ALL) log.debug("I piece xMax = $xMax, valley depth = $valley, valley bonus = $valleyBonus")
 		pts += valleyBonus
 
-		//Points for line clears
+		//Points for lines clears
 		if(peril) {
 			if(lines==1) pts += 500000
 			if(lines==2) pts += 1000000
@@ -301,7 +302,7 @@ class PoochyBotDefensive:PoochyBot() {
 				if(heightBefore>=2&&depth==0) pts -= 2000000*(heightBefore-heightAfter)
 			}
 		}
-		if(DEBUG_ALL) log.debug("End of thinkMain($x, $y, $rt, $rtOld, fld, piece ${piece.type.name}, $depth). pts = $pts")
+		if(DEBUG_ALL) log.debug("End of thinkMain($x, $y, $rt, $rtOld, fld, piece ${piece.shape.name}, $depth). pts = $pts")
 		return pts
 	}
 }

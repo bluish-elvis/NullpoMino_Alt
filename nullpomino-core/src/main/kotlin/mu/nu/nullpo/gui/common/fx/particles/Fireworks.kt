@@ -42,9 +42,7 @@ import mu.nu.nullpo.gui.common.AbstractRenderer
 import mu.nu.nullpo.gui.common.fx.Effect
 import zeroxfc.nullpo.custom.libs.Interpolation.lerp
 import zeroxfc.nullpo.custom.libs.Vector
-import kotlin.math.PI
-import kotlin.math.cos
-import kotlin.math.sin
+import kotlin.math.*
 import kotlin.random.Random
 
 /**
@@ -57,8 +55,10 @@ min lifetime, max lifetime (both `int`) in that order.
 @param num    Number of particles / particle groups.
  */
 class Fireworks @JvmOverloads constructor(
-	override var x:Float, override var y:Float, red:Int, green:Int, blue:Int, alpha:Int, variance:Int, gravity:Float = GRAVITY,
-	friction:Float = FRICTION, minLifeTime:Int = DEF_MIN_LIFE, maxLifeTime:Int = DEF_MAX_LIFE, val maxVelocity:Float = DEF_MAX_VEL,
+	override var x:Float, override var y:Float, red:Int, green:Int, blue:Int, alpha:Int, variance:Int,
+	gravity:Float = GRAVITY,
+	friction:Float = FRICTION, minLifeTime:Int = DEF_MIN_LIFE, maxLifeTime:Int = DEF_MAX_LIFE,
+	val maxVelocity:Float = DEF_MAX_VEL,
 	/** FireSparks += random *[num]start~end */
 	num:IntRange = 64..128,
 	/**Randomizer*/
@@ -90,6 +90,7 @@ class Fireworks @JvmOverloads constructor(
 		} else listOf(particle)
 	}.flatten()
 
+	val set get() = particles+this
 	private var ticks = 0
 	private val cColor = Triple(
 		lerp(red, 255, .75f)/255f, lerp(green, 255, .75f)/255f, lerp(blue, 255, .75f)/255f

@@ -40,7 +40,7 @@ import org.newdawn.slick.Graphics
 import org.newdawn.slick.state.StateBasedGame
 import java.io.File
 import java.io.FileInputStream
-import java.util.*
+import java.util.LinkedList
 import java.util.zip.GZIPInputStream
 import java.util.zip.ZipException
 
@@ -108,7 +108,7 @@ internal class StateConfigRuleSelect:BaseMenuScrollState() {
 			try {
 				val rf = try {
 					GZIPInputStream(FileInputStream(file))
-				}catch(_:ZipException){
+				} catch(_:ZipException) {
 					FileInputStream(file)
 				}
 				val ret = Json.decodeFromString<RuleOptions>(rf.bufferedReader().use {it.readText()})
@@ -138,7 +138,7 @@ internal class StateConfigRuleSelect:BaseMenuScrollState() {
 	/* Called when entering this state */
 	override fun enter(container:GameContainer?, game:StateBasedGame?) {
 		super.enter(container, game)
-		strFileList = ruleFileList ?: emptyArray()
+		strFileList = ruleFileList?:emptyArray()
 		createRuleEntries(strFileList, style)
 		strRuleNameList = extractRuleNameListFromRuleEntries()
 		strRuleFileList = extractFileNameListFromRuleEntries()

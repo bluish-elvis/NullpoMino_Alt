@@ -39,8 +39,8 @@ package mu.nu.nullpo.gui.common.fx.particles
 
 import mu.nu.nullpo.game.component.Block
 import mu.nu.nullpo.game.play.GameEngine
-import zeroxfc.nullpo.custom.libs.Vector
 import zeroxfc.nullpo.custom.libs.AnchorPoint
+import zeroxfc.nullpo.custom.libs.Vector
 import java.util.Random
 import kotlin.math.PI
 
@@ -51,7 +51,8 @@ Makes a new field explosion.
 @param fieldBlockLocations Block locations.
 @param clearBlocks Clear the blocks in the field?
  */
-class FieldScatter @JvmOverloads constructor(engine:GameEngine, fieldBlockLocations:Iterable<IntArray>? = null, clearBlocks:Boolean) {
+class FieldScatter @JvmOverloads constructor(engine:GameEngine, fieldBlockLocations:Iterable<IntArray>? = null,
+	clearBlocks:Boolean) {
 	/** Blocks to draw*/
 	private val blocks:MutableSet<BlockPhysics> = mutableSetOf()
 
@@ -63,7 +64,7 @@ class FieldScatter @JvmOverloads constructor(engine:GameEngine, fieldBlockLocati
 			if(blk.cint>0) {
 				blocks.add(
 					BlockPhysics(
-						receiver.fieldX(engine,x)+4, receiver.fieldY(engine,y)+52,
+						receiver.fieldX(engine, x)+4, receiver.fieldY(engine, y)+52,
 						Vector(rdm.nextFloat(8f), rdm.nextFloat((PI*2).toFloat()), true),
 						-1, 1, 1, AnchorPoint.TL, blk
 					)
@@ -78,7 +79,7 @@ class FieldScatter @JvmOverloads constructor(engine:GameEngine, fieldBlockLocati
 			it.forEach {p ->
 				engine.field.getBlock(p[0], p[1])?.let {b -> blkAdd(b, p[0], p[1])}
 			}
-		} ?: (-1*engine.field.hiddenHeight..<engine.field.height).forEach {i ->
+		}?:(-1*engine.field.hiddenHeight..<engine.field.height).forEach {i ->
 			for(j in 0..<engine.field.width)
 				engine.field.getBlock(j, i)?.let {b -> blkAdd(b, j, i)}
 		}

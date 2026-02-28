@@ -37,6 +37,7 @@ import mu.nu.nullpo.game.play.GameManager.Companion.buildTypeString
 import mu.nu.nullpo.game.play.GameManager.Companion.versionMajor
 import mu.nu.nullpo.game.play.GameManager.Companion.versionMinor
 import mu.nu.nullpo.gui.common.BaseStaffRoll
+import mu.nu.nullpo.gui.common.bg.tech.Blocks
 import mu.nu.nullpo.gui.net.UpdateChecker
 import mu.nu.nullpo.gui.slick.BaseMenuConfigState.Column
 import mu.nu.nullpo.gui.slick.img.*
@@ -54,6 +55,8 @@ internal class StateTitle:BaseMenuChooseState() {
 	private var isNewVersionChecked = false
 	override val numChoice get() = list.size
 	private var rollY = -480f
+	private val bg = Blocks()
+	private var rend:RendererSlick? = null
 
 	init {
 		minChoiceY = 20-list.size
@@ -63,7 +66,9 @@ internal class StateTitle:BaseMenuChooseState() {
 	override fun getID() = ID
 
 	/* State initialization */
-	override fun init(container:GameContainer, game:StateBasedGame) {}
+	override fun init(container:GameContainer, game:StateBasedGame) {
+		rend = RendererSlick(container.graphics)
+	}
 
 	/* Called when entering this state */
 	override fun enter(container:GameContainer?, game:StateBasedGame?) {
@@ -77,6 +82,7 @@ internal class StateTitle:BaseMenuChooseState() {
 		if(container is AppGameContainer) {
 			container.setTitle("NullpoMino version${GameManager.versionString}")
 			container.setUpdateOnlyWhenVisible(true)
+			rend = RendererSlick(container.graphics)
 		}
 
 		// New Version check
@@ -85,6 +91,7 @@ internal class StateTitle:BaseMenuChooseState() {
 			val strURL = NullpoMinoSlick.propGlobal.updateChecker.url
 			UpdateChecker.startCheckForUpdates(strURL)
 		}
+		bg.reset()
 		if(ResourceHolder.bgmPlaying!=BGM.Menu(0)) ResourceHolder.bgmStart(BGM.Menu(0))
 	}
 
@@ -93,12 +100,14 @@ internal class StateTitle:BaseMenuChooseState() {
 		val mY = BaseStaffRoll.height
 		rollY += delta/15f
 		if(rollY>mY+150) rollY -= mY+480+150
+		bg.update()
 	}
 
 	/* Draw the screen */
 	override fun renderImpl(container:GameContainer, game:StateBasedGame, g:Graphics) {
 		// Background
 		g.drawImage(ResourceHolder.imgTitleBG, 0f, 0f)
+		rend?.let {bg.draw(it, false)}
 		// Menu
 		FontNormal.printFont(4, 4, "NullpoMino", COLOR.RAINBOW)
 		FontMedal.printFont(10, 40, buildTypeString.uppercase(), 2)

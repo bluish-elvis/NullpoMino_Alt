@@ -34,7 +34,7 @@ import kotlinx.serialization.Serializable
 import org.apache.logging.log4j.LogManager
 import java.io.InputStreamReader
 import java.net.URI
-import java.util.*
+import java.util.LinkedList
 import java.util.regex.Pattern
 
 /** 新Versionチェッカー */
@@ -51,8 +51,8 @@ class UpdateChecker:Runnable {
 		// 終了
 		listeners.forEach {it.onUpdateCheckerEnd(status)}
 	}
-	@Serializable
-	data class Config(var enable:Boolean, var url:String) {
+
+	@Serializable data class Config(var enable:Boolean, var url:String) {
 		constructor():this(true, "")
 	}
 
@@ -73,50 +73,28 @@ class UpdateChecker:Runnable {
 		const val STATUS_COMPLETE = 3
 
 		/** Current 状態 */
-		/** Current 状態を取得
-		 * @return Current 状態
-		 */
-		@Volatile
-		var status = 0
-			private set
+		@Volatile var status = 0; private set
 
 		/** event リスナー */
 		private var listeners:LinkedList<UpdateCheckerListener> = LinkedList()
 
 		/** アップデート情報が書かれたXMLのURL */
-		/** XMLのURLを取得
-		 * @return XMLのURL
-		 */
-		var strURLofXML = ""
-			private set
+		var strURLofXML = ""; private set
 
-		/** 最新版のVersion number */
-		/** 最新版のVersion number(未整形)を取得(7_0_0_0など)
-		 * @return 最新版のVersion number(未整形)
-		 */
-		var strLatestVersion = ""
-			private set
+		/** 最新版のVersion number(未整形)を取得(7_0_0_0など)*/
+		var strLatestVersion = ""; private set
 
-		/** リリース日 */
-		/** 最新版がリリースされた日を取得
-		 * @return 最新版がリリースされた日
-		 */
-		var strReleaseDate = ""
-			private set
+		/**  最新版がリリースされた日 */
+		var strReleaseDate = ""; private set
 
 		/** ダウンロードURL */
 		/** 最新版のダウンロード先URLを取得
 		 * @return 最新版のダウンロード先URL
 		 */
-		var strDownloadURL = ""
-			private set
+		var strDownloadURL = ""; private set
 
-		/** Installer for Windows URL */
-		/** Get the URL of Installer (*.exe) for Windows
-		 * @return URL of Installer (*.exe) for Windows
-		 */
-		var strWindowsInstallerURL = ""
-			private set
+		/** Get the URL of Installer (*.exe) for Windows */
+		var strWindowsInstallerURL = ""; private set
 
 		/** 更新 check 用スレッド */
 		private var thread:Thread? = null
@@ -231,7 +209,7 @@ class UpdateChecker:Runnable {
 			val latestMajor = latestMajorVersionAsFloat
 			val latestMinor = latestMinorVersionAsFloat
 
-			return latestMajor>nowMajor.toFloat() || latestMajor==nowMajor.toFloat()&&latestMinor>nowMinor.toFloat()
+			return latestMajor>nowMajor.toFloat()||latestMajor==nowMajor.toFloat()&&latestMinor>nowMinor.toFloat()
 		}
 
 		/** Version check

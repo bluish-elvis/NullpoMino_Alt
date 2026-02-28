@@ -65,8 +65,8 @@ data class SpeedParam(
 	 * @param s Copy source
 	 */
 	constructor(s:SpeedParam?):this(
-		s?.gravity ?: 4, s?.denominator ?: 256, s?.are ?: 24, s?.areLine ?: 24,
-		s?.lineDelay ?: 40, s?.lockDelay ?: 30, s?.das ?: 14
+		s?.gravity?:4, s?.denominator?:256, s?.are?:24, s?.areLine?:24,
+		s?.lineDelay?:40, s?.lockDelay?:30, s?.das?:14
 	)
 
 	constructor(l:LevelData, i:Int):this(l[i])
@@ -92,7 +92,7 @@ data class SpeedParam(
 			lineDelay = lineD
 			lockDelay = lockD
 			das = das1
-		} ?: reset()
+		}?:reset()
 	}
 
 	companion object {

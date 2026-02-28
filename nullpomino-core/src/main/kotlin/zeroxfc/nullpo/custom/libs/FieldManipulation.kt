@@ -64,7 +64,7 @@ fun Field.delColor(color:Block.COLOR, dir:Boolean = true):Int =
 	}
 
 /**
-Erases a mino in every filled line on a field. Displays the blockbreak effect.
+Erases a mino in every filled lines on a field. Displays the blockbreak effect.
 
 @param receiver EventReceiver instance to display blockbreak effect on.
 @param engine   Current GameEngine
@@ -142,7 +142,8 @@ NOTE: If using non-`exact` matching, `Field b` is used as the comparator where t
 @param colorMatch Exact color matching (halves match value of non-color matches)?
 @return A double that denotes the proportion of match between the fields (0 <= value <= 1).
  */
-@JvmOverloads fun Field.compare(b:Field, exact:Boolean = false, colorMatch:Boolean = false):Double {
+@JvmOverloads
+fun Field.compare(b:Field, exact:Boolean = false, colorMatch:Boolean = false):Double {
 	val a = this
 	return if(exact) {
 		/*
@@ -348,11 +349,11 @@ fun lcm(a:Int, b:Int):Int = a*b/gcd(a, b)
 /**
 Gets the number of empty blocks inside the field.
 
-@return Number of empty spaces inside (including in hidden height and clear queued line)
+@return Number of empty spaces inside (including in hidden height and clear queued lines)
  */
 val Field.getNumberOfEmptySpaces:Int
 	get() = (hiddenHeight*-1..<heightWithoutHurryupFloor).sumOf {
-		getRow(it).count {b -> b?.isEmpty ?: true||getLineFlag(it)}
+		getRow(it).count {b -> b?.isEmpty?:true||getLineFlag(it)}
 	}
 /**
 Gets the coordinates of the top-left and the bottom-right of the smallest bounding square that covers all blocks in the field.
@@ -381,7 +382,7 @@ Gets the x coordinate of the left-most filled column a field.
 val Field.getLeftMostColumn:Int
 	get() = (0..<width).firstOrNull {x ->
 		(-1*hiddenHeight..<height).any {y -> !getBlockEmpty(x, y)}
-	} ?: (width-1)
+	}?:(width-1)
 /**
 Gets the x coordinate of the right-most filled column a field.
 
@@ -390,7 +391,7 @@ Gets the x coordinate of the right-most filled column a field.
 val Field.getRightMostColumn:Int
 	get() = (width-1 downTo 0).firstOrNull {x ->
 		(-1*hiddenHeight..<height).any {y -> !getBlockEmpty(x, y)}
-	} ?: 0
+	}?:0
 /**
 Gets the y coordinate of the bottom-most filled row in a field.
 
@@ -399,4 +400,4 @@ Gets the y coordinate of the bottom-most filled row in a field.
 val Field.getBottomMostRow:Int
 	get() = (height-1 downTo -1*hiddenHeight).firstOrNull {y ->
 		(0..<width).any {x -> !getBlockEmpty(x, y)}
-	} ?: (hiddenHeight*-1)
+	}?:(hiddenHeight*-1)

@@ -1,5 +1,5 @@
 <component name="CopyrightManager">
-  <settings>
+  <settings default="nullmod">
     <module2copyright>
       <element module="core" copyright="nullmod" />
       <element module="appends" copyright="modepile" />

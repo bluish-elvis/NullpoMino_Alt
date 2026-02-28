@@ -71,7 +71,7 @@ class SprintScore:NetDummyMode() {
 	/** Flag for enabling combos */
 	private var enableCombo = false
 
-	private val itemBig = BooleanMenuItem("big", "BIG", COLOR.BLUE, false)
+	private val itemBig = BooleanMenuItem("big", "BIG", COLOR.ORANGE, false)
 	/** BigMode */
 	private var big:Boolean by DelegateMenuItem(itemBig)
 
@@ -102,7 +102,7 @@ class SprintScore:NetDummyMode() {
 
 		rankingRank = -1
 
-		engine.frameSkin = GameEngine.FRAME_COLOR_BRONZE
+		engine.frame = GameEngine.Frame.BRONZE
 
 		netPlayerInit(engine)
 
@@ -327,7 +327,7 @@ Ready&Go screen disappears) */
 				val topY = if(receiver.nextDisplayType==2) 6 else 4
 				receiver.drawScore(engine, 2, topY-1, "TIME  LINE SCR/LINE", BASE, COLOR.BLUE)
 
-				ranking[goalType].forEachIndexed { i, it ->
+				ranking[goalType].forEachIndexed {i, it ->
 					receiver.drawScore(engine, 0, topY+i, "%2d".format(i+1), GRADE, COLOR.YELLOW)
 					receiver.drawScore(engine, 2, topY+i, it.ti.toTimeStr, NUM, rankingRank==i)
 					receiver.drawScore(engine, 9, topY+i, "%3d".format(it.li), NUM, rankingRank==i)
@@ -458,7 +458,7 @@ Ready&Go screen disappears) */
 
 		// Update rankings
 		if(!owner.replayMode&&engine.statistics.score>=GOAL_SCORE_TABLE[goalType]&&!big&&engine.ai==null) {
-			rankingRank=ranking[goalType].add(Rankable.TimeRow(engine.statistics))
+			rankingRank = ranking[goalType].add(Rankable.TimeRow(engine.statistics))
 
 			if(rankingRank!=-1) return true
 		}

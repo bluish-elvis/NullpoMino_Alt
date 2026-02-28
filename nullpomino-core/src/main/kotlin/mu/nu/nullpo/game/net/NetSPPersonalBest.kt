@@ -103,7 +103,7 @@ class NetSPPersonalBest:Serializable {
 	 * player, or if the newer record (r1) is better than old one.
 	 */
 	fun isNewRecord(rtype:Int, r1:NetSPRecord):Boolean {
-		val r2 = getRecord(r1.strRuleName, r1.strModeName, r1.gameType) ?: return true
+		val r2 = getRecord(r1.strRuleName, r1.strModeName, r1.gameType)?:return true
 		return r1.compare(rtype, r2)
 	}
 

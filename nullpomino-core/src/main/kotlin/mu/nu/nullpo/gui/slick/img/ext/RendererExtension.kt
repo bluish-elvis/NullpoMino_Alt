@@ -83,7 +83,8 @@ object RendererExtension {
 	 * @param scale     Scale factor at which the piece is drawn in
 	 * @param darkness  Darkness value (0f = None, negative = lighter, positive = darker)
 	 */
-	fun drawAlignedScaledPiece(receiver:EventReceiver?, x:Int, y:Int, alignment:Int, piece:Piece, scale:Float, darkness:Float) {
+	fun drawAlignedScaledPiece(receiver:EventReceiver?, x:Int, y:Int, alignment:Int,
+		piece:Piece, scale:Float, darkness:Float) {
 		val baseSize:Int = 16*max(piece.width, piece.height)
 		var offsetX:Int = when(alignment) {
 			ALIGN_TOP_MIDDLE, ALIGN_MIDDLE_MIDDLE, ALIGN_BOTTOM_MIDDLE -> (baseSize*.5f*scale).toInt()

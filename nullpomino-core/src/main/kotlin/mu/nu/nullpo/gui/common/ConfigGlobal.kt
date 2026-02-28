@@ -37,8 +37,7 @@ import mu.nu.nullpo.game.play.GameEngine.GameStyle
 import mu.nu.nullpo.gui.common.GameKeyDummy.Companion.MAX_PLAYERS
 import mu.nu.nullpo.gui.net.UpdateChecker.Config as UpdaterConf
 
-@Serializable
-data class ConfigGlobal(
+@Serializable data class ConfigGlobal(
 	val tuning:MutableList<TuneConf>,
 	val rule:MutableList<MutableList<RuleConf>>,
 	val ai:MutableList<AIConf>,
@@ -53,8 +52,8 @@ data class ConfigGlobal(
 		MutableList(MAX_PLAYERS) {MutableList(GameStyle.entries.size) {RuleConf()}},
 		MutableList(MAX_PLAYERS) {AIConf()}, UpdaterConf()
 	)
-	@Serializable
-	data class VisualConf(
+
+	@Serializable data class VisualConf(
 		/** Background display */
 		var showBG:Boolean,
 		/** 回転・パーティクルなどの重い演出を使う
@@ -104,8 +103,8 @@ data class ConfigGlobal(
 	) {
 		constructor():this(false, false, false)
 	}
-	@Serializable
-	data class TuneConf(
+
+	@Serializable data class TuneConf(
 		/** A button rotation -1=Auto 0=Always CCW 1=Always CW */
 		var spinDir:Int,
 		/** Block Skin -2=random -1=Auto 0 or above=Fixed */
@@ -137,12 +136,11 @@ data class ConfigGlobal(
 		)
 	}
 
-	@Serializable
-	data class RuleConf(var path:String = "", var file:String = "", var name:String = "",
+	@Serializable data class RuleConf(var path:String = "", var file:String = "", var name:String = "",
 		/** Game style */
 		@Transient var style:Int = 0)
-	@Serializable
-	data class AIConf(
+
+	@Serializable data class AIConf(
 		/** AIPlayer: AI for autoplaying */
 		var name:String,
 		var moveDelay:Int,
@@ -160,8 +158,7 @@ data class ConfigGlobal(
 		constructor():this("", 0, 0, false, false, false, false)
 	}
 
-	@Serializable
-	data class GameKeyMaps(
+	@Serializable data class GameKeyMaps(
 		/** Key code (in game) */
 		val keymap:MutableList<MutableList<Int>>,
 		/** Key code (in menu) */
@@ -177,8 +174,8 @@ data class ConfigGlobal(
 			private val blank get() = MutableList(GameKeyDummy.MAX_BUTTON) {mutableListOf<Int>()}
 		}
 	}
-	@Serializable
-	data class GamePadConf(
+
+	@Serializable data class GamePadConf(
 		/** 各Playerが使用するJoystick の number (-1:none)*/
 		var controllerID:MutableList<Int>,
 		/** Joystick direction key が反応する閾値 (一部検出法では使えない) */
@@ -195,14 +192,13 @@ data class ConfigGlobal(
 			MutableList(MAX_PLAYERS) {false})
 	}
 
-	@Serializable
-	data class CustomConf(
+	@Serializable data class CustomConf(
 		var skinDir:String = "res",
 		var ssDir:String = "ss",
 		var replayDir:String = "replay",
 	)
-	@Serializable
-	data class RenderConf(
+
+	@Serializable data class RenderConf(
 		var screenWidth:Int,
 		var screenHeight:Int,
 		var fullScreen:Boolean = false,
@@ -222,8 +218,8 @@ data class ConfigGlobal(
 		constructor():this(640, 480, false, 60, false, false, true, false, false)
 
 	}
-	@Serializable
-	data class AudioConf(
+
+	@Serializable data class AudioConf(
 		var se:Boolean = true,
 		var bgm:Boolean = false,
 		var seVolume:Int = 64,
@@ -233,8 +229,8 @@ data class ConfigGlobal(
 	) {
 		constructor():this(true, false, 64, 64, false, true)
 	}
-	@Serializable
-	data class CtrlConf(
+
+	@Serializable data class CtrlConf(
 		var keymaps:MutableList<GameKeyMaps>,
 		var joyMethod:Int = 0,
 		val joyPadConf:GamePadConf = GamePadConf(),

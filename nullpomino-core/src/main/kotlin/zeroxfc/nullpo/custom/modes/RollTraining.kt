@@ -43,6 +43,7 @@ import mu.nu.nullpo.game.component.SpeedParam
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
 import mu.nu.nullpo.game.event.ScoreEvent
 import mu.nu.nullpo.game.play.GameEngine
+import mu.nu.nullpo.game.play.GameEngine.Status
 import mu.nu.nullpo.game.subsystem.mode.menu.*
 import mu.nu.nullpo.gui.common.BaseFont.FONT.*
 import mu.nu.nullpo.util.CustomProperties
@@ -217,7 +218,7 @@ class RollTraining:MarathonModeBase() {
 			if(engine.ctrl.isPush(Controller.BUTTON_E)&&engine.ai==null) {
 				engine.playerProp.reset()
 				engine.playSE("decide")
-				engine.stat = GameEngine.Status.CUSTOM
+				engine.stat = Status.CUSTOM
 				engine.resetStatc()
 				return true
 			}
@@ -267,7 +268,7 @@ class RollTraining:MarathonModeBase() {
 			loadSetting(engine, engine.playerProp.propProfile)
 			engine.owner.bgMan.bg = startLevel
 		}
-		if(engine.stat===GameEngine.Status.SETTING) engine.isInGame = false
+		if(engine.stat===Status.SETTING) engine.isInGame = false
 		return s
 	}
 	/*
@@ -282,7 +283,7 @@ class RollTraining:MarathonModeBase() {
 		if(useMRoll) sb.append("M-") else sb.append("FADING ")
 		sb.append("ROLL)")
 		receiver.drawScore(engine, 0, 1, "$sb", BASE, COLOR.RED)
-		if(engine.stat===GameEngine.Status.SETTING||engine.stat===GameEngine.Status.RESULT&&!owner.replayMode) {
+		if(engine.stat===Status.SETTING||engine.stat===Status.RESULT&&!owner.replayMode) {
 			if(!owner.replayMode&&!big&&engine.ai==null) {
 				if(showPlayerStats) {
 					val topY = if(receiver.nextDisplayType==2) 6 else 4
@@ -331,7 +332,7 @@ class RollTraining:MarathonModeBase() {
 					}
 				}
 			}
-		} else if(engine.stat===GameEngine.Status.CUSTOM) {
+		} else if(engine.stat===Status.CUSTOM) {
 			engine.playerProp.loginScreen.renderScreen(receiver, engine)
 		} else {
 			receiver.drawScore(engine, 0, 3, if(usedSpeed==SPEED_TAP) "GRADE" else "BONUS", BASE, COLOR.BLUE)
@@ -389,14 +390,17 @@ class RollTraining:MarathonModeBase() {
 					tapGrade += 1.0
 				}
 				if(!endless) {
-					engine.stat = GameEngine.Status.EXCELLENT
+					engine.stat = Status.EXCELLENT
 					engine.resetStatc()
 					engine.resetFieldVisible()
 					engine.gameEnded()
 				}
 			}
 			if(timer>-1) --timer
-			if(!endless&&timer<=600&&timer>0&&timer%60==0) engine.playSE("countdown")
+			if(!endless&&timer<=600&&timer>0&&timer%60==0) {
+				engine.playSE("countdown")
+				if(timer<=300) engine.playSE("countdown${timer/60}")
+			}
 		}
 		val cg = if(usedSpeed==SPEED_TAP) tapGrade.toInt() else tiGrade.toInt()
 		if(cg>lastGrade) engine.playSE("grade1")
@@ -406,9 +410,9 @@ class RollTraining:MarathonModeBase() {
 		if(lt<0) lt = 0
 		if(!endless) engine.meterValue = lt*1f/TIME_LIMITS[usedSpeed] else 1f
 		engine.meterColor = GameEngine.METER_COLOR_LEVEL
-		if(engine.stat===GameEngine.Status.SETTING||engine.stat===GameEngine.Status.RESULT&&!owner.replayMode||engine.stat===GameEngine.Status.CUSTOM) {
+		if(engine.stat===Status.SETTING||engine.stat===Status.RESULT&&!owner.replayMode||engine.stat===Status.CUSTOM) {
 			// Show rank
-			if(engine.ctrl.isPush(Controller.BUTTON_F)&&engine.playerProp.isLoggedIn&&engine.stat!==GameEngine.Status.CUSTOM) {
+			if(engine.ctrl.isPush(Controller.BUTTON_F)&&engine.playerProp.isLoggedIn&&engine.stat!==Status.CUSTOM) {
 				showPlayerStats = !showPlayerStats
 				engine.playSE("change")
 			}
@@ -421,6 +425,7 @@ class RollTraining:MarathonModeBase() {
 		 * Calculate score
 		 */
 	override fun calcScore(engine:GameEngine, ev:ScoreEvent):Int {
+		calcPower(engine, ev, true)
 		val li = ev.lines
 		if(usedSpeed==SPEED_TI&&li>0) tiGrade += GRADE_INCREASES[useMRoll.toInt()][maxOf(0, li-1)]
 		return 0

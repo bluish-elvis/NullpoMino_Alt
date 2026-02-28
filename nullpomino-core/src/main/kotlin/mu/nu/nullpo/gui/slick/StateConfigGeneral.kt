@@ -351,7 +351,8 @@ internal class StateConfigGeneral:BaseMenuConfigState() {
 				if(maxFps<0) maxFps = 99
 				if(maxFps>99) maxFps = 0
 			}, "ConfigGeneral_MaxFPS"),
-			Column({"Enable Frame Step:"+enableFrameStep.getOX}, {enableFrameStep = !enableFrameStep}, "ConfigGeneral_FrameStep"),
+			Column({"Enable Frame Step:"+enableFrameStep.getOX}, {enableFrameStep = !enableFrameStep},
+				"ConfigGeneral_FrameStep"),
 			Column(
 				{"FPS perfect mode:"+alternateFPSPerfectMode.getOX},
 				{alternateFPSPerfectMode = !alternateFPSPerfectMode},

@@ -37,14 +37,9 @@
 package zeroxfc.nullpo.custom.libs.backgroundtypes
 
 import mu.nu.nullpo.game.component.BGM
-import mu.nu.nullpo.gui.slick.RendererSlick
-import mu.nu.nullpo.gui.slick.ResourceHolder
-import mu.nu.nullpo.gui.slick.ResourceImageSlick
+import mu.nu.nullpo.gui.slick.*
 import org.apache.logging.log4j.LogManager
-import org.newdawn.slick.Color
-import org.newdawn.slick.Graphics
-import org.newdawn.slick.Image
-import org.newdawn.slick.Music
+import org.newdawn.slick.*
 
 /**
 Creates a new custom resource holder.
@@ -81,7 +76,7 @@ class ResourceHolderCustomAssetExtension @JvmOverloads constructor(initialCapaci
 	 * @param name Image name in holder dictionary.
 	 * @return int[] { width, height } (both in pixels).
 	 */
-	fun getImageDimensions(name:String):List<Int> = listOf(slickImages[name]?.width ?: 0, slickImages[name]?.height ?: 0)
+	fun getImageDimensions(name:String):List<Int> = listOf(slickImages[name]?.width?:0, slickImages[name]?.height?:0)
 
 	/**
 	 * Puts image in the holder at name.
@@ -89,7 +84,7 @@ class ResourceHolderCustomAssetExtension @JvmOverloads constructor(initialCapaci
 	 * @param name Image name
 	 */
 	fun putImageAt(image:Image?, name:String) {
-		image ?: return
+		image?:return
 		try {
 			slickImages[name] = image
 		} catch(e:Exception) {
@@ -102,7 +97,7 @@ class ResourceHolderCustomAssetExtension @JvmOverloads constructor(initialCapaci
 	 * @param name Image name
 	 */
 	fun putImageAt(image:ResourceImageSlick?, name:String) {
-		image ?: return
+		image?:return
 		try {
 			putImageAt(image.res, name)
 		} catch(e:Exception) {
@@ -417,7 +412,7 @@ class ResourceHolderCustomAssetExtension @JvmOverloads constructor(initialCapaci
 
 	companion object {
 		private val log = LogManager.getLogger()
-		private var bgmPrevious: BGM = BGM.Silent// Thread-safe code used for when more threads are being used.
+		private var bgmPrevious:BGM = BGM.Silent// Thread-safe code used for when more threads are being used.
 		// Warning: slower.
 		/**
 		 * Gets the current instance's main class name.
@@ -443,8 +438,7 @@ class ResourceHolderCustomAssetExtension @JvmOverloads constructor(initialCapaci
 					if(field.isEmpty()) field = "Unknown"
 				}
 				return field
-			}
-			private set
+			}; private set
 		/**
 		 * Gets the number of currently loaded block-skins inside the game.
 		 *

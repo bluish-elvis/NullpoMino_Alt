@@ -31,7 +31,7 @@
 
 package mu.nu.nullpo.gui.common
 
-import mu.nu.nullpo.game.event.EventReceiver
+import mu.nu.nullpo.game.event.EventReceiver.COLOR
 
 abstract class BaseFontNumTall:BaseFont {
 	companion object {
@@ -40,7 +40,7 @@ abstract class BaseFontNumTall:BaseFont {
 	}
 
 	abstract override val rainbowCount:Int
-	override fun processTxt(x:Float, y:Float, str:String, color:EventReceiver.COLOR, scale:Float, alpha:Float, rainbow:Int,
+	override fun processTxt(x:Float, y:Float, str:String, color:COLOR, scale:Float, alpha:Float, rainbow:Int,
 		draw:(i:Int, dx:Float, dy:Float, scale:Float, sx:Int, sy:Int, sw:Int, sh:Int, a:Float)->Unit) {
 		var dx = x
 		var dy = y
@@ -49,26 +49,25 @@ abstract class BaseFontNumTall:BaseFont {
 			val stringChar = c.code.let {
 				when(it) {
 					0x0A -> {
-						// 改行 (\n）
+						// 改行 (\n)
 						dy += H*scale
 						dx = x
 						0
 					}
-					0x20 -> 0x30//dx += W*scale
-					0x3f -> 0x3b
-					0x2d -> 0x3c
-					0x2b -> 0x3d
-					0x2f -> 0x3e
-					0x2e -> 0x3f
-					0x25 -> 0x40
-					in 0x30..0x40 -> it
+					0x20 -> 0x30//space // 0x3a = :
+					0x3f -> 0x3b//?
+					0x2b -> 0x3c//+
+					in 0x2d..0x2f -> it+0x10// -./
+					0x25 -> 0x40//%
+					//TODO: 0x23 -> 0x41 //#
+					in 0x30..0x3a -> it
 					else -> 0
 				}
 			}
 
 			if(stringChar in 0x30..0x40) { // 文字出力
 				val sx = if(c.code==0x20) 0 else (stringChar-48)%16
-				val sy = (if(color==EventReceiver.COLOR.RAINBOW) EventReceiver.getRainbowColor(rainbow, i) else color).ordinal
+				val sy = (if(color==COLOR.RAINBOW) COLOR.getRainbowColor(rainbow, i) else color).ordinal
 				val a = if(c.code==0x20) alpha*.4f else alpha
 				draw(0, dx, dy, scale, sx*W, sy*H, W, H, a)
 
@@ -77,7 +76,7 @@ abstract class BaseFontNumTall:BaseFont {
 		}
 	}
 
-	override fun printFont(x:Float, y:Float, str:String, color:EventReceiver.COLOR, scale:Float, alpha:Float, rainbow:Int) =
+	override fun printFont(x:Float, y:Float, str:String, color:COLOR, scale:Float, alpha:Float, rainbow:Int) =
 		processTxt(x, y, str, color, scale, alpha, rainbow)
 		{i:Int, dx:Float, dy:Float, s:Float, sx:Int, sy:Int, w:Int, h:Int, a:Float ->
 			getImg(i).draw(dx, dy, dx+w*s, dy+h*s, sx, sy, sx+w, sy+h, alpha = a)

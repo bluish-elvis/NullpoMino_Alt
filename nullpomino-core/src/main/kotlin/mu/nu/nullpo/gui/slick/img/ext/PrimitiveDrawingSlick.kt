@@ -1,4 +1,3 @@
-
 /*
  Copyright (c) 2019-2024,
  This library class was created by 0xFC963F18DC21 / Shots243 / oshisaure
@@ -110,7 +109,8 @@ object PrimitiveDrawingSlick {
 	 * @param alpha          Alpha component of color
 	 * @param fill           Fill oval?
 	 */
-	fun drawOval(graphics:Graphics, x:Int, y:Int, sizeX:Int, sizeY:Int, red:Int, green:Int, blue:Int, alpha:Int, fill:Boolean) {
+	fun drawOval(graphics:Graphics, x:Int, y:Int, sizeX:Int, sizeY:Int,
+		red:Int, green:Int, blue:Int, alpha:Int, fill:Boolean) {
 		graphics.color = org.newdawn.slick.Color(red, green, blue, alpha)
 		if(fill) graphics.fillOval(
 			x.toFloat(), y.toFloat(), sizeX.toFloat(),

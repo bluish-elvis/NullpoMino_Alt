@@ -34,15 +34,12 @@ import java.util.Random
 import java.util.concurrent.ThreadLocalRandom
 
 open class State {
-	var lost = false
-		protected set
+	var lost = false; protected set
 	var doublePlayer = false
 	var label:TLabel? = null
 	/**current turn*/
-	var turnNumber = 0
-		protected set
-	var rowsCleared = 0
-		protected set
+	var turnNumber = 0; protected set
+	var rowsCleared = 0; protected set
 	/**each square in the grid - int means empty - other values mean the turn it was placed*/
 	open val field = Array<IntArray?>(ROWS) {IntArray(COLS)}
 	//top row+1 of each column
@@ -53,18 +50,12 @@ open class State {
 	/** 7-bag generator*/
 	protected var bag = intArrayOf(0, 1, 2, 3, 4, 5, 6)
 	protected var bagIndex = 7
-	var b2b = false
-		protected set
-	var linesSent = 0
-		protected set
-	var lastCleared = false
-		protected set
-	var combo = 0
-		protected set
-	var linesStack = 0
-		protected set
-	var totalLinesSent = 0
-		protected set
+	var b2b = false; protected set
+	var linesSent = 0; protected set
+	var lastCleared = false; protected set
+	var combo = 0; protected set
+	var linesStack = 0; protected set
+	var totalLinesSent = 0; protected set
 	//initialize legalMoves
 	init {
 		//for each piece type

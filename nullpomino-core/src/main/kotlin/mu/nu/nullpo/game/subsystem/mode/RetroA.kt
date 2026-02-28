@@ -32,10 +32,8 @@ package mu.nu.nullpo.game.subsystem.mode
 
 import mu.nu.nullpo.game.component.BGM
 import mu.nu.nullpo.game.component.LevelData
+import mu.nu.nullpo.game.event.*
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
-import mu.nu.nullpo.game.event.Leaderboard
-import mu.nu.nullpo.game.event.Rankable
-import mu.nu.nullpo.game.event.ScoreEvent
 import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.game.subsystem.mode.menu.*
 import mu.nu.nullpo.gui.common.BaseFont.FONT.*
@@ -59,7 +57,7 @@ class RetroA:AbstractMode() {
 	 * engine.statistics.lines); don't ask me why I called it this... */
 	private var loons = 0
 
-	/** Number of line clear actions */
+	/** Number of lines clear actions */
 	private var actions = 0
 
 	/** Efficiency (engine.statistics.lines / actions) */
@@ -79,7 +77,7 @@ class RetroA:AbstractMode() {
 	/** Selected starting level */
 	private var startLevel:Int by DelegateMenuItem(itemLevel)
 
-	private val itemBig = BooleanMenuItem("big", "BIG", COLOR.BLUE, false)
+	private val itemBig = BooleanMenuItem("big", "BIG", COLOR.ORANGE, false)
 	/** BigMode */
 	private var big:Boolean by DelegateMenuItem(itemBig)
 	override val menu = MenuList("retromastery", itemMode, itemLevel, itemBig)
@@ -89,8 +87,8 @@ class RetroA:AbstractMode() {
 	/** Your place on leaderboard (-1: out of rank) */
 	private var rankingRank = 0
 
-	override val ranking=
-		List(RANKING_TYPE) {Leaderboard(rankingMax,kotlinx.serialization.serializer<List<Rankable.ScoreRow>>())}
+	override val ranking =
+		List(RANKING_TYPE) {Leaderboard(rankingMax, kotlinx.serialization.serializer<List<Rankable.ScoreRow>>())}
 
 	/** Returns the name of this mode */
 	override val name = "Retro Marathon.A"
@@ -132,7 +130,7 @@ class RetroA:AbstractMode() {
 			owSDSpd = 1
 
 			owner.bgMan.bg = if(gameType==GAMETYPE.PRESSURE) 0 else minOf(startLevel, 19)
-			frameSkin = GameEngine.FRAME_SKIN_GB
+			frame = GameEngine.Frame.GB
 		}
 	}
 
@@ -187,7 +185,7 @@ class RetroA:AbstractMode() {
 			if(!owner.replayMode&&!big&&engine.ai==null) {
 				receiver.drawScore(engine, 3, 3, "SCORE    LINE LV.", BASE, COLOR.BLUE)
 
-				ranking[gameType.ordinal].forEachIndexed { i, it ->
+				ranking[gameType.ordinal].forEachIndexed {i, it ->
 					receiver.drawScore(
 						engine, 0, 4+i, "%2d".format(i+1), GRADE, if(rankingRank==i) COLOR.RAINBOW else COLOR.YELLOW
 					)
@@ -321,7 +319,7 @@ class RetroA:AbstractMode() {
 		// Checks/Updates the ranking
 		if(!owner.replayMode&&!big&&engine.ai==null) {
 //			updateRanking(engine.statistics.score, loons, engine.statistics.level, gameType)
-			rankingRank=ranking[gameType.ordinal].add(Rankable.ScoreRow(engine.statistics))
+			rankingRank = ranking[gameType.ordinal].add(Rankable.ScoreRow(engine.statistics))
 			if(rankingRank!=-1) return true
 		}
 		return false

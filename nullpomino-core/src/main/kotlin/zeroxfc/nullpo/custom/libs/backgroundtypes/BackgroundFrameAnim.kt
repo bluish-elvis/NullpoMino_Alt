@@ -41,7 +41,8 @@ import mu.nu.nullpo.gui.common.ResourceImage
 import mu.nu.nullpo.gui.common.bg.AbstractBG
 import zeroxfc.nullpo.custom.libs.AnchorPoint
 
-class BackgroundFrameAnim<T>(img:ResourceImage<T>, private val type:Int, frameTime:Int, pingPong:Boolean):AbstractBG<T>(img) {
+class BackgroundFrameAnim<T>(img:ResourceImage<T>, private val type:Int, frameTime:Int, pingPong:Boolean):
+	AbstractBG<T>(img) {
 	private var chunkSequence:Array<ImageChunk> = emptyArray()
 	// private ResourceHolderCustomAssetExtension customHolder;
 	var frameTime:Int = frameTime
@@ -117,7 +118,6 @@ class BackgroundFrameAnim<T>(img:ResourceImage<T>, private val type:Int, frameTi
 			}
 		}
 	}
-
 
 	override fun update() {
 		currentTick++

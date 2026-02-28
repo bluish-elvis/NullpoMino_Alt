@@ -50,7 +50,8 @@ interface ResourceImage<T:Any?> {
 		color:Triple<Float, Float, Float> = Triple(1f, 1f, 1f)) =
 		draw(x, y, x+width, y+height, srcx, srcy, srcx2, srcy2, alpha, color)
 
-	fun draw(x:Float, y:Float, x2:Float, y2:Float, alpha:Float = 1f, color:Triple<Float, Float, Float> = Triple(1f, 1f, 1f)) =
+	fun draw(x:Float, y:Float, x2:Float, y2:Float, alpha:Float = 1f,
+		color:Triple<Float, Float, Float> = Triple(1f, 1f, 1f)) =
 		draw(x, y, x2, y2, 0, 0, width, height, alpha, color)
 
 	fun draw(x:Float, y:Float, x2:Float, y2:Float, srcX:Int, srcY:Int, srcX2:Int, srcY2:Int, alpha:Float = 1f,
@@ -65,10 +66,12 @@ interface ResourceImage<T:Any?> {
 	val width:Int
 	val height:Int
 
-	val aspectRatio get()= width.toFloat()/height.toFloat()
+	val aspectRatio get() = width.toFloat()/height.toFloat()
+
 	class ResourceImageStr(override val name:String):ResourceImage<String> {
 		override var res:String = "graphics/$name.png"
-		override fun draw(x:Float, y:Float, x2:Float, y2:Float, srcX:Float, srcY:Float, srcX2:Float, srcY2:Float, alpha:Float, color:Triple<Float, Float, Float>) {
+		override fun draw(x:Float, y:Float, x2:Float, y2:Float, srcX:Float, srcY:Float, srcX2:Float, srcY2:Float, alpha:Float,
+			color:Triple<Float, Float, Float>) {
 		}
 
 		override fun load() {}
@@ -82,7 +85,8 @@ interface ResourceImage<T:Any?> {
 		/** 画像 Filename */
 		override val name = ""
 
-		override fun draw(x:Float, y:Float, x2:Float, y2:Float, srcX:Float, srcY:Float, srcX2:Float, srcY2:Float, alpha:Float, color:Triple<Float, Float, Float>) {
+		override fun draw(x:Float, y:Float, x2:Float, y2:Float, srcX:Float, srcY:Float, srcX2:Float, srcY2:Float, alpha:Float,
+			color:Triple<Float, Float, Float>) {
 		}
 
 		override fun load() {}

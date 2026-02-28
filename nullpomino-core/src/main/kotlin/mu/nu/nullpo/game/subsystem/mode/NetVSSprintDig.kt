@@ -41,7 +41,7 @@ import mu.nu.nullpo.gui.common.BaseFont.FONT.BASE
 import mu.nu.nullpo.util.GeneralUtil.toTimeStr
 
 /** NET-VS-DIG RACE mode */
-class NetVSSprintDig:NetDummyVSMode() {
+internal class NetVSSprintDig:NetDummyVSMode() {
 	/** Number of garbage lines to clear */
 	private var goalLines:Int = 0 // TODO: Add option to change this
 

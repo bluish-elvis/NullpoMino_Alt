@@ -32,9 +32,10 @@
 package mu.nu.nullpo.gui.common.bg.dtet
 
 import mu.nu.nullpo.gui.common.AbstractRenderer
+import mu.nu.nullpo.gui.common.bg.AbstractBG
 import kotlin.math.sin
 
-class BGAKVWave<T>(bg:mu.nu.nullpo.gui.common.ResourceImage<T>):mu.nu.nullpo.gui.common.bg.AbstractBG<T>(bg) {
+class BGAKVWave<T>(bg:mu.nu.nullpo.gui.common.ResourceImage<T>, addBGFX:AbstractBG<*>? = null):AbstractBG<T>(bg, addBGFX) {
 	//	val sc get() = ((1+sin(this.bg.rotation*PI/180)/3)*1024f/minOf(this.bg.width, this.bg.height)).toFloat()
 //	val cx get() = this.bg.width/2*sc
 //	val cy get() = this.bg.height/2*sc
@@ -46,13 +47,15 @@ class BGAKVWave<T>(bg:mu.nu.nullpo.gui.common.ResourceImage<T>):mu.nu.nullpo.gui
 		}
 
 	override fun update() {
-		t += 1+speed
+		super.update()
+		t += 1+spdN
 //		bg.rotation = t*.04f
 //		bg.setCenterOfRotation(cx, cy)
 		while(t>=360/.04f) t -= 360
 	}
 
 	override fun reset() {
+		super.reset()
 		tick = 0
 	}
 

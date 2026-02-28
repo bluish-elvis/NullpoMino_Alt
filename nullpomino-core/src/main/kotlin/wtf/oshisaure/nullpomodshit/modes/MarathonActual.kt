@@ -64,7 +64,7 @@ class MarathonActual:AbstractMode() {
 	/** Level at start */
 	private var startLevel:Int by DelegateMenuItem(itemLevel)
 
-	private val itemBig = BooleanMenuItem("big", "BIG", COLOR.BLUE, false)
+	private val itemBig = BooleanMenuItem("big", "BIG", COLOR.ORANGE, false)
 	/** BigMode */
 	private var big:Boolean by DelegateMenuItem(itemBig)
 

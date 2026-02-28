@@ -43,10 +43,8 @@ class LevelSpeedMenuItem(color:COLOR, showG:Boolean = false, showD:Boolean = fal
 	override val showHeight = (if(showG) 2 else 0)+(if(showD) 2 else 0)+if(showG||showD) 1 else 0
 
 	override fun draw(engine:GameEngine, playerID:Int, receiver:EventReceiver, y:Int, focus:Int) {
-		val spd = engine.speed
+		val (g, d, are, areLine, lineDelay, lockDelay, das) = engine.speed
 		if(showG) {
-			val g = spd.gravity
-			val d = spd.denominator
 			receiver.drawMenu(engine, 0, y, "SPEED", BASE)
 			receiver.drawScoreSpeed(engine, -13, y+1, g, d, 5)
 			receiver.drawMenu(engine, 6, y, "%5d".format(g), NUM)
@@ -56,25 +54,25 @@ class LevelSpeedMenuItem(color:COLOR, showG:Boolean = false, showD:Boolean = fal
 			val y = y+if(showG) 4 else 2
 
 			for(i in 0..1) {
-				val show = if(i==0) "ARE" to spd.are else "LINE" to spd.areLine
+				val (str, it) = if(i==0) "ARE" to are else "LINE" to areLine
 
-				receiver.drawMenu(engine, 4+i*3, y, String.format(if(i==0) "%2d/" else "%2d", show.second), NUM)
-				receiver.drawMenu(engine, 6+i*5, y*2+1, show.first, NANO, color, .5f)
+				receiver.drawMenu(engine, 4+i*3, y, String.format(if(i==0) "%2d/" else "%2d", it), NUM)
+				receiver.drawMenu(engine, 6+i*5, y*2+1, str, NANO, color, .5f)
 			}
 			for(i in 0..2) {
-				val show = when(i) {
-					0 -> "LINE" to spd.lineDelay
-					1 -> "LOCK" to spd.lockDelay
-					else -> "DAS" to spd.das
+				val (str, it) = when(i) {
+					0 -> "LINE" to lineDelay
+					1 -> "LOCK" to lockDelay
+					else -> "DAS" to das
 				}
-				receiver.drawMenu(engine, 8-i*3, y+1, String.format(if(i==1) "%2d+" else "%2d", show.second), NUM)
-				receiver.drawMenu(engine, 14-i*6, y*2+2, show.first, NANO, color, .5f)
+				receiver.drawMenu(engine, 8-i*3, y+1, String.format(if(i==1) "%2d+" else "%2d", it), NUM)
+				receiver.drawMenu(engine, 14-i*6, y*2+2, str, NANO, color, .5f)
 			}
 			receiver.drawMenu(engine, 0, y*2, "DELAYS", NANO, color, .5f)
 		}
 	}
 
 	override fun change(dir:Int, fast:Int, cur:Int) {}
-	override fun load(prop:CustomProperties, propName:String) {}
+	override fun load(prop:CustomProperties, propName:String):Int = value
 	override fun save(prop:CustomProperties, propName:String) {}
 }

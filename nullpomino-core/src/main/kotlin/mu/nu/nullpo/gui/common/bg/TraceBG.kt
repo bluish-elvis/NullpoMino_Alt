@@ -33,13 +33,14 @@ package mu.nu.nullpo.gui.common.bg
 
 import mu.nu.nullpo.gui.common.AbstractRenderer
 
-class TraceBG():AbstractBG<Nothing?>(mu.nu.nullpo.gui.common.ResourceImage.Blank) {
+class TraceBG(addBGFX:AbstractBG<*>? = null):AbstractBG<Nothing?>(mu.nu.nullpo.gui.common.ResourceImage.Blank, addBGFX) {
 	override var speed:Float = 1f
-	override fun update() {}
+//	override fun update() {super.update()}
 
 	private var bClear = false
 	override fun reset() {
 		bClear = true
+
 	}
 
 	override fun draw(render:AbstractRenderer, bg:Boolean) {

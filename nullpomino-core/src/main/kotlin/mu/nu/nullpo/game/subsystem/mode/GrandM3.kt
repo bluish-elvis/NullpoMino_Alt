@@ -140,11 +140,11 @@ class GrandM3:AbstractGrand() {
 	/** Level at start */
 	private var startLevel:Int by DelegateMenuItem(itemLevel)
 
-	private val item20g = BooleanMenuItem("always20g", "20G MODE", COLOR.BLUE, false)
+	private val item20g = BooleanMenuItem("always20g", "20G MODE", COLOR.RED, false)
 	/** When true, always 20G */
 	private var always20g:Boolean by DelegateMenuItem(item20g)
 
-	private val itemBig = BooleanMenuItem("big", "BIG", COLOR.BLUE, false)
+	private val itemBig = BooleanMenuItem("big", "BIG", COLOR.ORANGE, false)
 	/** BigMode */
 	private var big:Boolean by DelegateMenuItem(itemBig)
 
@@ -265,16 +265,14 @@ class GrandM3:AbstractGrand() {
 
 		rankingRank = -1
 		bestSectionTime.forEachIndexed {x, it ->
-			it.forEachIndexed {i, _ ->
-				bestSectionTime[x][i] = tableTimeRegret[minOf(i, tableTimeRegret.lastIndex)]
-			}
+			for(i in it.indices) bestSectionTime[x][i] = tableTimeRegret[minOf(i, tableTimeRegret.lastIndex)]
 		}
 
 		engine.twistEnable = true
 		engine.twistEnableEZ = true
 		engine.b2bEnable = true
 		engine.splitB2B = true
-		engine.frameSkin = GameEngine.FRAME_COLOR_SILVER
+		engine.frame = GameEngine.Frame.SILVER
 		engine.comboType = GameEngine.COMBO_TYPE_DOUBLE
 		engine.bigHalf = true
 		engine.bigMove = true
@@ -466,7 +464,7 @@ class GrandM3:AbstractGrand() {
 		receiver.drawScore(engine, 0, 0, name, BASE, COLOR.CYAN)
 
 		receiver.drawScore(engine, -1, -4*2, "DECORATION", BASE, scale = .5f)
-		receiver.drawScoreBadges(engine, 0, -3, 100, decoration)
+		receiver.drawScoreBadges(engine, 0, -3, 100, owner.stats.decoration)
 		receiver.drawScoreBadges(engine, 5, -4, 100, decTemp)
 		if(engine.stat==GameEngine.Status.SETTING||engine.stat==GameEngine.Status.RESULT&&!owner.replayMode) {
 			if(startLevel==0&&!big&&!always20g&&!owner.replayMode&&engine.ai==null)
@@ -595,6 +593,11 @@ class GrandM3:AbstractGrand() {
 			if(engine.ending!=2||rollTime/10%2==0)
 				receiver.drawScore(engine, 0, 15, engine.statistics.time.toTimeStr, NUM_T)
 
+			if(engine.gameActive&&engine.ending!=2)
+				tableQualifyTimeMul.firstOrNull {(s, mul) -> engine.statistics.level<s*100}?.second?.let {
+					receiver.drawScore(engine, 0, 16, "QUALIFY", BASE, COLOR.CYAN)
+					receiver.drawScore(engine, 0, 17, (lv500Qualify*it).toTimeStr, NUM_T)
+				}
 			// Roll 残り time
 			if(engine.gameActive&&engine.ending==2) {
 				val time = maxOf(ROLLTIMELIMIT-rollTime, 0)
@@ -673,7 +676,7 @@ class GrandM3:AbstractGrand() {
 					setPromotionalGrade(goalType)
 					log.debug("Promotional Chance Grade:${getGradeName(promotionalExam)} ($promotionalExam)")
 					if(promotionalExam>recordGrade[goalType]) {
-						val rand = Random.Default.nextInt(EXAM_CHANCE)
+						val rand = Random.nextInt(EXAM_CHANCE)
 						log.debug("Promotional Chance RNG:$rand (1 / $EXAM_CHANCE)")
 						if(rand==0) {
 							promotionFlag = true
@@ -686,7 +689,7 @@ class GrandM3:AbstractGrand() {
 			}
 		}
 		if(promotionFlag) {
-			engine.frameSkin = GameEngine.FRAME_SKIN_GRADE
+			engine.frame = GameEngine.Frame.GRADE
 
 			if(readyFrame==100) engine.playSE("item_spawn")
 
@@ -697,7 +700,7 @@ class GrandM3:AbstractGrand() {
 				return true
 			}
 		} else if(demotionFlag) {
-			engine.frameSkin = GameEngine.FRAME_COLOR_WHITE
+			engine.frame = GameEngine.Frame.SNOW
 			engine.playSE("item_trigger")
 		}
 
@@ -852,7 +855,7 @@ class GrandM3:AbstractGrand() {
 					// ST medal/REGRET
 					stMedalCheck(engine, section)
 
-					if(torikan==5||goalType==1&&(torikan==15||nextSecLv==999||nextSecLv==2000)) {
+					if(torikan==5||goalType==1&&(torikan==15||nextSecLv==999||nextSecLv>=2000)) {
 						// level500,1500とりカン
 						engine.statistics.level = nextSecLv
 						engine.gameEnded()
@@ -1061,7 +1064,7 @@ class GrandM3:AbstractGrand() {
 
 				log.debug("*** Exam result log END ***")
 			}
-			decoration += decTemp+secretGrade
+			owner.stats.decoration += decTemp+secretGrade
 		}
 
 		return false
@@ -1272,7 +1275,7 @@ class GrandM3:AbstractGrand() {
 
 		// Update rankings
 		if(!owner.replayMode&&startLevel==0&&!always20g&&!big&&engine.ai==null) {
-			owner.statsProp.setProperty("decoration", decoration)
+			owner.statsProp.setProperty("decoration", owner.stats.decoration)
 			// if(!enableexam || !isAnyExam())
 			rankingRank = ranking[goalType].add(GrandRow(grade, engine.statistics, medals.copy()))
 			// else
@@ -1348,7 +1351,7 @@ class GrandM3:AbstractGrand() {
 				10, +9, +8, +7, +6, +6, +5, +5, +4, 4,
 			)
 		)
-		/** ARE after line clear table */
+		/** ARE after lines clear table */
 		private val tableARELine = listOf(
 			listOf(25, 25, 25, 24, 22, 19, 16, 12, 9, 7, 6, 5, 4),
 			tableARE[1]

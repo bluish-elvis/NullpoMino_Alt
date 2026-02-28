@@ -78,7 +78,7 @@ open class MarathonModeBase:NetDummyMode() {
 	var rankingRank = 0
 	/** Rankings' scores */
 	private val rankingScore = List(RANKING_TYPE) {MutableList(rankingMax) {0L}}
-	/** Rankings' line counts*/
+	/** Rankings' lines counts*/
 	private val rankingLines = List(RANKING_TYPE) {MutableList(rankingMax) {0}}
 	/** Rankings' times */
 	private val rankingTime = List(RANKING_TYPE) {MutableList(rankingMax) {-1}}

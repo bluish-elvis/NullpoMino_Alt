@@ -33,10 +33,8 @@ package mu.nu.nullpo.game.subsystem.mode
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.serializer
 import mu.nu.nullpo.game.component.*
+import mu.nu.nullpo.game.event.*
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
-import mu.nu.nullpo.game.event.Leaderboard
-import mu.nu.nullpo.game.event.Rankable
-import mu.nu.nullpo.game.event.ScoreEvent
 import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.game.subsystem.mode.menu.*
 import mu.nu.nullpo.gui.common.BaseFont
@@ -57,13 +55,13 @@ class RetroN:AbstractMode() {
 	/** Next level lines */
 	private var lvLines = 0
 
-	private val itemGame = StringsMenuItem("gametype", "GAME TYPE", COLOR.BLUE, 0, GAMETYPE_NAME)
+	private val itemGame = EnumMenuItem("gametype", "GAME TYPE", COLOR.BLUE, GameType.A, GameType.entries)
 	/** Selected game type */
-	private var gameType:Int by DelegateMenuItem(itemGame)
+	private var gameType:GameType by DelegateMenuItem(itemGame)
 
-	private val itemSpeed = StringsMenuItem("speedtype", "DIFFICULTY", COLOR.BLUE, 0, SPEED_NAME)
+	private val itemSpeed = EnumMenuItem("speedtype", "DIFFICULTY", COLOR.BLUE, SpeedLevel.NTSC, SpeedLevel.entries)
 	/** Selected Speed Difficulty */
-	private var speedType:Int by DelegateMenuItem(itemSpeed)
+	private var speedType:SpeedLevel by DelegateMenuItem(itemSpeed)
 
 	private val itemLevel = LevelMenuItem("startlevel", "LEVEL", COLOR.BLUE, 0, 0..19, false, true)
 	/** Selected starting level */
@@ -73,7 +71,7 @@ class RetroN:AbstractMode() {
 	/** Selected garbage height */
 	private var startHeight:Int by DelegateMenuItem(itemHeight)
 
-	private val itemBig = BooleanMenuItem("big", "BIG", COLOR.BLUE, false)
+	private val itemBig = BooleanMenuItem("big", "BIG", COLOR.ORANGE, false)
 	/** Big mode on/off */
 	private var big:Boolean by DelegateMenuItem(itemBig)
 
@@ -86,9 +84,8 @@ class RetroN:AbstractMode() {
 	/** Your place on leaderboard (-1: out of rank) */
 	private var rankingRank = 0
 
-	@Serializable
-	data class ScoreRow(override val st:Statistics = Statistics(),
-		val scMaxed:Int=-1):Rankable, Comparable<Rankable> {
+	@Serializable data class ScoreRow(override val st:Statistics = Statistics(), val scMaxed:Int = -1)
+		:Rankable, Comparable<Rankable> {
 		override operator fun compareTo(other:Rankable):Int =
 			if(other is ScoreRow)
 				compareValuesBy(this, other, {it.sc}, {it.li}, {it.lv}, {-it.scMaxed}, {-it.ti})
@@ -97,7 +94,7 @@ class RetroN:AbstractMode() {
 	}
 
 	override val ranking = List(RANKING_TYPE) {
-		Leaderboard(rankingMax, serializer<List<ScoreRow>>()){ScoreRow()}
+		Leaderboard(rankingMax, serializer<List<ScoreRow>>()) {ScoreRow()}
 	}
 
 	/** Time records Reaches Score Max-out 999999 */
@@ -133,17 +130,35 @@ class RetroN:AbstractMode() {
 			owMinDAS = -1
 			owMaxDAS = -1
 			owSDSpd = 1
-			ruleOpt.nextDisplay = 1
-			ruleOpt.harddropEnable = false
-			ruleOpt.strWallkick = ""
-			owSkin = if(speedType==2!=startLevel>=10) 8 else 9
+			randomizer = NintendoRandomizer()
+			ruleOpt.run {
+				replace(ruleOptBuf)
+				pieceOffsetX = RuleOptions.PIECEOFFSET_ARSPRESET[0]
+				pieceOffsetY = RuleOptions.PIECEOFFSET_ARSPRESET[1]
+				nextDisplay = 1
+				harddropEnable = false
+				strWallkick = ""
+				spinInitial = false
+				spinReverseKey = true
+				lockResetMove = false
+				softdropLock = true
+				softdropMultiplyNativeSpeed = false
+				softdropGravitySpeedLimit = false
+				holdEnable = false
+				dasInARE = true
+				dasInReady = false
+				dasChargeOnBlockedMove = true
+				dasStoreChargeOnNeutral = true
+				dasRedirectInDelay = true
+			}
+			owSkin = if(speedType==SpeedLevel.PAL_RAW!=startLevel>=10) 8 else 9
 			owDelayCancel = 0
 		}
 
 		owner.bgMan.bg = startLevel
 		if(owner.bgMan.bg>19) owner.bgMan.bg = 19
 		lvLines = ((startLevel-5)*10).coerceIn(minOf((startLevel+1)*10, 100), 100)
-		engine.frameSkin = GameEngine.FRAME_SKIN_GB
+		engine.frame = GameEngine.Frame.GB
 	}
 
 	/** Set the gravity speed
@@ -151,10 +166,10 @@ class RetroN:AbstractMode() {
 	 */
 	override fun setSpeed(engine:GameEngine) {
 		val lv = engine.statistics.level
-			.coerceIn(0, if(speedType>0) tableDenominatorHard.size-1 else tableDenominator.size-1)
-		engine.owSkin = if(speedType==2!=lv>=10) 8 else 9
-		if(speedType>0) {
-			engine.speed.gravity = if(speedType>1) 60000 else 50007
+			.coerceIn(0, if(speedType!=SpeedLevel.NTSC) tableDenominatorHard.size-1 else tableDenominator.size-1)
+		engine.owSkin = if(speedType==SpeedLevel.PAL_RAW!=lv>=10) 8 else 9
+		if(speedType!=SpeedLevel.NTSC) {
+			engine.speed.gravity = if(speedType==SpeedLevel.PAL_RAW) 60000 else 50007
 			engine.speed.denominator = tableDenominatorHard[lv]*60000
 			engine.speed.das = 12
 			engine.owARR = 4
@@ -207,14 +222,14 @@ class RetroN:AbstractMode() {
 		engine.statistics.levelDispAdd = 1
 		engine.big = big
 
-		owner.musMan.bgm = BGM.RetroN((gameType+startLevel)%3)
+		owner.musMan.bgm = BGM.RetroN(if(startLevel>9) 3 else (gameType.ordinal+startLevel)%3)
 		setSpeed(engine)
 	}
 
 	override fun onMove(engine:GameEngine):Boolean {
 		// 新規ピース出現時
 		if(engine.ending==0&&engine.statc[0]==0&&!engine.holdDisable)
-			if(engine.run {getNextObjectCopy(nextPieceCount)}?.type!=Piece.Shape.I) drought++
+			if(engine.run {getNextObjectCopy(nextPieceCount)}?.shape!=Piece.Shape.I) drought++
 			else {
 				if(drought>7) droughts += drought
 				drought = 0
@@ -226,13 +241,13 @@ class RetroN:AbstractMode() {
 	/** Renders HUD (leaderboard or game statistics) */
 	override fun renderLast(engine:GameEngine) {
 		receiver.drawScore(engine, 0, 0, name, BASE, COLOR.GREEN)
-		receiver.drawScore(engine, 0, 1, "(${SPEED_NAME[speedType]} ${GAMETYPE_NAME[gameType]})", BASE, COLOR.GREEN)
+		receiver.drawScore(engine, 0, 1, "(${speedType} ${gameType})", BASE, COLOR.GREEN)
 
 		if(engine.stat==GameEngine.Status.SETTING||engine.stat==GameEngine.Status.RESULT&&!owner.replayMode) {
 			if(!owner.replayMode&&!big&&engine.ai==null) {
 				receiver.drawScore(engine, 3, 3, "SCORE    LINE LV.", BASE, COLOR.BLUE)
 
-				ranking[gameType].forEachIndexed { i, it ->
+				ranking[gameType.ordinal].forEachIndexed {i, it ->
 					receiver.drawScore(
 						engine, 0, 4+i, "%2d".format(i+1), GRADE, if(rankingRank==i) COLOR.RAINBOW else COLOR.YELLOW
 					)
@@ -255,9 +270,9 @@ class RetroN:AbstractMode() {
 			receiver.drawScore(engine, 0, 6, "LINE", BASE, COLOR.BLUE)
 			receiver.drawScore(
 				engine, 0, 7, when(gameType) {
-					GAMETYPE_TYPE_B -> "-%2d".format(maxOf(25-engine.statistics.lines, 0))
+					GameType.B -> "-%2d".format(maxOf(25-engine.statistics.lines, 0))
 					else -> GeneralUtil.capsNum(engine.statistics.lines, 3)
-				}, if(gameType!=GAMETYPE_TYPE_B&&engine.statistics.lines<999) NUM else BASE, scale = 2f
+				}, if(gameType!=GameType.B&&engine.statistics.lines<999) NUM else BASE, scale = 2f
 			)
 
 			receiver.drawScore(engine, 0, 9, "Level", BASE, COLOR.BLUE)
@@ -274,7 +289,7 @@ class RetroN:AbstractMode() {
 		}
 	}
 
-	/** Calculates line-clear score
+	/** Calculates lines-clear score
 	 * (This function will be called even if no lines are cleared) */
 	override fun calcScore(engine:GameEngine, ev:ScoreEvent):Int {
 		sdScore /= 2
@@ -296,7 +311,7 @@ class RetroN:AbstractMode() {
 		}
 
 		// B-TYPE game completed
-		if(gameType==GAMETYPE_TYPE_B&&engine.statistics.lines>=25) {
+		if(gameType==GameType.B&&engine.statistics.lines>=25) {
 			pts += (engine.statistics.level+startHeight)*1000
 			engine.ending = 1
 			engine.gameEnded()
@@ -308,7 +323,7 @@ class RetroN:AbstractMode() {
 			engine.statistics.scoreLine += pts
 		}
 
-		if(gameType!=GAMETYPE_ARRANGE&&engine.statistics.score>999999&&maxScoredTime==null) {
+		if(gameType!=GameType.C&&engine.statistics.score>999999&&maxScoredTime==null) {
 			maxScoredTime = engine.statistics.time
 			engine.playSE("applause5")
 		}
@@ -316,10 +331,10 @@ class RetroN:AbstractMode() {
 		// Update meter
 		engine.meterColor = GameEngine.METER_COLOR_LEVEL
 		engine.meterValue =
-			if(gameType==GAMETYPE_TYPE_B) minOf(engine.statistics.lines, 25)/25f else
+			if(gameType==GameType.B) minOf(engine.statistics.lines, 25)/25f else
 				engine.statistics.lines%10*1f/9f
 
-		if(gameType!=GAMETYPE_TYPE_B&&engine.statistics.lines>=lvLines) {
+		if(gameType!=GameType.B&&engine.statistics.lines>=lvLines) {
 			// Level up
 			engine.statistics.level++
 
@@ -327,7 +342,7 @@ class RetroN:AbstractMode() {
 
 			//engine.framecolor = engine.statistics.level
 			if(engine.statistics.level>255) engine.statistics.level = 0
-
+			if(engine.statistics.level>=10&&owner.musMan.bgm.idx!=BGM.RetroN(3).idx) owner.musMan.bgm = BGM.RetroN(3)
 			owner.bgMan.nextBg = engine.statistics.level
 
 			setSpeed(engine)
@@ -389,9 +404,9 @@ class RetroN:AbstractMode() {
 			drawResultStats(engine, receiver, 3, COLOR.BLUE, Statistic.TIME, Statistic.LPM)
 			receiver.drawMenu(engine, 0, 7, "I-Droughts", BASE, COLOR.BLUE)
 			receiver.drawMenu(engine, 0, 8, "Longest", BASE, COLOR.BLUE, .8f)
-			receiver.drawMenu(engine, 0, 8, "%3d".format(droughts.maxOrNull()?:0), NUM, 2f)
+			receiver.drawMenu(engine, 6, 8, "%3d".format(droughts.maxOrNull()?:0), NUM, 2f)
 			receiver.drawMenu(engine, 0, 10, "Average", BASE, COLOR.BLUE, .8f)
-			receiver.drawMenuNum(engine, 0, 11, droughts.average(), null to 3, scale = 2f)
+			receiver.drawMenuNum(engine, 2, 11, droughts.average(), null to 3, scale = 2f)
 			drawResult(
 				engine, receiver, 13, COLOR.RED, "Burnouts",
 				"%3d".format(engine.statistics.run {totalSingle+totalDouble+totalSplitDouble+totalTriple+totalSplitTriple})
@@ -430,8 +445,9 @@ class RetroN:AbstractMode() {
 	}
 
 	companion object {
+
 		/** Denominator table (NTSC-U) */
-		private val tableDenominator = listOf(
+		private val tableDenominator = intArrayOf(
 			//	0  1  2  3  4  5  6  7  8  9    +xx
 			48, 43, 38, 33, 28, 23, 18, 13, 8, 6, // 00
 			5, 5, 5, 4, 4, 4, 3, 3, 3, 2, // 10
@@ -439,45 +455,37 @@ class RetroN:AbstractMode() {
 		)
 
 		/** Denominator table (Arrange) */
-		private val tableDenominatorHard = listOf(
+		private val tableDenominatorHard = intArrayOf(
 			//	0  1  2  3  4  5  6  7  8  9    +xx
 			36, 32, 29, 25, 22, 18, 15, 11, 7, 5, // 00
 			4, 4, 4, 3, 3, 3, 2, 2, 2, 1, // 10
 		)
 		/** Garbage height table */
-		private val tableGarbagePeriod = listOf(6, 5)
+		private val tableGarbagePeriod = intArrayOf(6, 5)
 		/** Garbage height table */
-		private val tableGarbageHeight = listOf(0, 3, 5, 8, 10, 12)
+		private val tableGarbageHeight = intArrayOf(0, 3, 5, 8, 10, 12)
 
 		/** Game types */
-		private enum class GameType(val showName:String) { A("A-"), B("B+"), C("C#") }
+		private enum class GameType(val showName:String) {
+			A("A-"), B("B+"), C("C#");
 
+			override fun toString() = showName
+		}
 		/** Number of game types */
 		private val GAMETYPE_MAX = GameType.entries.size
-
-		/** Game type name */
-		private val GAMETYPE_NAME = GameType.entries.map {it.showName}
-
-		private val GAMETYPE_TYPE_A = GameType.A.ordinal
-		private val GAMETYPE_TYPE_B = GameType.B.ordinal
-		private val GAMETYPE_ARRANGE = GameType.C.ordinal
 
 		/** Speed types */
 		private enum class SpeedLevel(title:String? = null) {
 			NTSC, PAL, PAL_RAW("PAL HARD");
 
 			val showName:String = title?:name
+			override fun toString() = showName
 		}
-		/** Number of speed types */
-		private val SPEED_MAX = SpeedLevel.entries.size
-
-		/** Speed type name */
-		private val SPEED_NAME = SpeedLevel.entries.map {it.showName}
 
 		/** Number of ranking types */
 		private val RANKING_TYPE = GAMETYPE_MAX*SpeedLevel.entries.size
 
-		private fun typeSerial(gameType:Int, speedType:Int):Int = gameType+speedType*GAMETYPE_MAX
+		private fun typeSerial(gameType:GameType, speedType:SpeedLevel):Int = gameType.ordinal+speedType.ordinal*GAMETYPE_MAX
 		/** Maximum-Level name table */
 		private val LEVEL_NAME = listOf(
 			//    0    1    2    3    4    5    6    7    8    9      +xx

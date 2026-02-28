@@ -99,27 +99,23 @@ open class Particle @JvmOverloads constructor(
 	/** Alpha component at end 0-255 */
 	val alphaEnd:Int = alphaI):SpriteSheet(x, y, vel) {
 	/** Used colors 0-255*/
-	var ur = red
-		protected set
+	var ur = red; protected set
 	/** Used colors 0-255*/
-	var ug = green
-		protected set
+	var ug = green; protected set
 	/** Used colors 0-255*/
-	var ub = blue
-		protected set
+	var ub = blue; protected set
 	/** Used colors 0-255*/
-	var ua = alphaI
-		protected set
+	var ua = alphaI; protected set
 	/** used scale 0-1*/
-	var us = size.toFloat()
-		protected set
+	var us = size.toFloat(); protected set
 	/** Draw the particle.*/
 	override fun draw(i:Int, r:AbstractRenderer) {
 		fun line(dim:Boolean) = r.drawLineSpecific(
 			x, y, x+vel.x*us, y+vel.y*us,
-			if(dim)(ur*us).toInt()*0x10000+(ug*us).toInt()*0x100+(ub*us).toInt()
-				else ur*0x10000+ug*0x100+ub, if(dim)ua*us/255f else ua/255f, 1f
+			if(dim) (ur*us).toInt()*0x10000+(ug*us).toInt()*0x100+(ub*us).toInt()
+			else ur*0x10000+ug*0x100+ub, if(dim) ua*us/255f else ua/255f, 1f
 		)
+
 		fun rect() = r.drawRect(
 			x-us/2, y-us/2, us, us,
 			ur*0x10000+ug*0x100+ub, ua/255f, 0f
@@ -141,13 +137,17 @@ open class Particle @JvmOverloads constructor(
 			}
 		}
 		when(shape) {
-			Rect -> {rect();line(false)}
-			ARect -> r.drawBlendAdd {line(false);rect()}
-			Oval -> {oval();line(false)}
-			AOval -> r.drawBlendAdd {line(true);oval()}
-			ASprite -> r.drawBlendAdd {line(true);oval();sprite()}
-			ASpark -> r.drawBlendAdd {line(false);oval();sprite()}
-			else -> ticks=maxLifetime
+			Rect -> {
+				rect(); line(false)
+			}
+			ARect -> r.drawBlendAdd {line(false); rect()}
+			Oval -> {
+				oval(); line(false)
+			}
+			AOval -> r.drawBlendAdd {line(true); oval()}
+			ASprite -> r.drawBlendAdd {line(true); oval(); sprite()}
+			ASpark -> r.drawBlendAdd {line(false); oval(); sprite()}
+			else -> ticks = maxLifetime
 		}
 	}
 	/**
@@ -178,6 +178,7 @@ open class Particle @JvmOverloads constructor(
 		Rect, Oval, ARect, AOval,
 		ASprite, ASpark
 	}
+
 	enum class ParticleMovement {
 		Frag
 	}

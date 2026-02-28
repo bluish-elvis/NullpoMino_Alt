@@ -33,16 +33,14 @@ package mu.nu.nullpo.gui.slick
 
 import mu.nu.nullpo.gui.common.ResourceImage
 import mu.nu.nullpo.gui.common.bg.AbstractBG
-import org.newdawn.slick.Color
-import org.newdawn.slick.Image
-import org.newdawn.slick.SlickException
+import org.newdawn.slick.*
 import java.io.IOException
 
 class ResourceImageSlick(override val name:String, private val antiAlias:Boolean = false):ResourceImage<Image> {
 
 	constructor(it:ResourceImage<*>, antiAlias:Boolean = false):this(it.name, antiAlias)
 	constructor(it:AbstractBG<*>, antiAlias:Boolean = false):this(it.img, antiAlias)
-	constructor(i:Image, antiAlias:Boolean = false):this(i.name ?: "", antiAlias) {
+	constructor(i:Image, antiAlias:Boolean = false):this(i.name?:"", antiAlias) {
 		res = i
 	}
 

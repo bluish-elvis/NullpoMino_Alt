@@ -37,15 +37,7 @@ import java.awt.event.ActionListener
 import java.beans.PropertyChangeEvent
 import java.beans.PropertyChangeListener
 import java.util.Collections
-import javax.swing.BorderFactory
-import javax.swing.JButton
-import javax.swing.JDialog
-import javax.swing.JFrame
-import javax.swing.JLabel
-import javax.swing.JPanel
-import javax.swing.ProgressMonitor
-import javax.swing.SwingWorker
-import javax.swing.WindowConstants
+import javax.swing.*
 import kotlin.math.pow
 
 class RanksResult(parent:JFrame, private var ranks:Ranks?, private val bestNRanks:Int, ascendant:Boolean,
@@ -61,8 +53,8 @@ class RanksResult(parent:JFrame, private var ranks:Ranks?, private val bestNRank
 	private var currentSurface = 0
 	private var currentSurfaceMirrored = 0
 	private var indexSurface = 0
-	private val maxJump:Int get() = ranks?.maxJump ?: 0
-	private val stackWidth:Int get() = ranks?.stackWidth ?: 0
+	private val maxJump:Int get() = ranks?.maxJump?:0
+	private val stackWidth:Int get() = ranks?.stackWidth?:0
 
 	private val factorCompare:Int
 	private val task:Task

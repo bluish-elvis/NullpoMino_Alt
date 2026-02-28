@@ -86,7 +86,7 @@ internal class StateSelectRuleFromList:BaseMenuScrollState() {
 					val r = str.trim {it<=' '} // Trim the space
 
 					if(r.startsWith("#")) {
-						// Commment-line. Ignore it.
+						// Commment-lines. Ignore it.
 					} else if(r.startsWith(":")) {// Mode change
 						strMode = r.substring(1)
 						mapRuleEntries.getOrPut(strMode) {mutableListOf()}.clear()

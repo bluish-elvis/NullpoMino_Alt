@@ -32,7 +32,46 @@
 package mu.nu.nullpo.game.subsystem.mode.menu
 
 import mu.nu.nullpo.game.event.EventReceiver
+import mu.nu.nullpo.util.CustomProperties
+import kotlin.enums.EnumEntries
 
-class EnumMenuItem<T:Enum<T>>(name:String, displayName:String, color:EventReceiver.COLOR, default:T, all:Iterable<T>,
-	compact:Boolean = false, perRule:Boolean = false)
-	:StringsMenuItem(name, displayName, color, default.ordinal, all.map {it.name}, compact, perRule)
+class EnumMenuItem<T:Enum<T>>(name:String, displayName:String, color:EventReceiver.COLOR, default:T,
+	val all:EnumEntries<T>, compact:Boolean = false, perRule:Boolean = false)
+	:AbstractMenuItem<T>(name, displayName, color, default, compact, perRule) {
+	var ordinal = defaultValue.ordinal
+		get() = value.ordinal
+		set(value) {
+			field = value
+			this.value = all.getOrElse(value.mod(all.size)+min) {defaultValue}
+		}
+
+	override val valueString:String
+		get() = "$value"
+
+	val min get() = all.indices.first
+	val max get() = all.indices.last
+	/** Change the value.
+	 * @param dir Direction pressed: -1 = left, 1 = right.
+	 * If 0, update without changing any settings.
+	 * @param fast 0 by default, +1 if C(Alt.R.Spin) held, +2 if D(Swap) held.
+	 */
+	override fun change(dir:Int, fast:Int, cur:Int) {
+		ordinal += dir*when(fast) {
+			1 -> minOf(5, max/200)
+			2 -> minOf(10, max/100)
+			else -> 1
+		}
+		if(ordinal<min) ordinal = max
+		else if(ordinal>max) ordinal = min
+	}
+
+	override fun load(prop:CustomProperties, propName:String):T = prop.getProperty(propName, defaultValue.ordinal).let {
+		ordinal = it.coerceIn(min, max)
+		all[it]
+	}
+
+	override fun save(prop:CustomProperties, propName:String) {
+		prop.setProperty(propName, ordinal)
+	}
+
+}

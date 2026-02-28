@@ -37,6 +37,7 @@ import mu.nu.nullpo.game.event.EventReceiver.COLOR
 import mu.nu.nullpo.game.event.ScoreEvent
 import mu.nu.nullpo.game.net.*
 import mu.nu.nullpo.game.play.GameEngine
+import mu.nu.nullpo.game.play.GameEngine.Status
 import mu.nu.nullpo.game.play.GameManager
 import mu.nu.nullpo.gui.common.BaseFont
 import mu.nu.nullpo.gui.common.BaseFont.FONT.*
@@ -145,13 +146,13 @@ abstract class NetDummyMode:AbstractMode(), NetLobbyListener {
 	/** NET: Net Rankings' PPS values (Declared in NetDummyMode) */
 	protected var netRankingPPS:Array<LinkedList<Float>> = emptyArray()
 
-	/** NET: Net Rankings' line counts (Declared in NetDummyMode) */
+	/** NET: Net Rankings' lines counts (Declared in NetDummyMode) */
 	protected var netRankingLines:Array<LinkedList<Int>> = emptyArray()
 
 	/** NET: Net Rankings' digged depth (Declared in NetDummyMode) */
 	protected var netRankingDepth:Array<LinkedList<Int>> = emptyArray()
 
-	/** NET: Net Rankings' score/line (Declared in NetDummyMode) */
+	/** NET: Net Rankings' score/lines (Declared in NetDummyMode) */
 	protected var netRankingSPL:Array<LinkedList<Double>> = emptyArray()
 
 	/** NET: Net Rankings' roll completed flag (Declared in NetDummyMode) */
@@ -220,7 +221,7 @@ abstract class NetDummyMode:AbstractMode(), NetLobbyListener {
 	 * Call netPlayerInit if you want to init NetPlay variables. */
 	override fun playerInit(engine:GameEngine) {
 		super.playerInit(engine)
-		engine.stat = GameEngine.Status.NOTHING
+		engine.stat = Status.NOTHING
 		engine.isVisible = false
 	}
 
@@ -244,7 +245,7 @@ abstract class NetDummyMode:AbstractMode(), NetLobbyListener {
 			engine.isHoldVisible = false
 		}
 
-		engine.stat = GameEngine.Status.SETTING
+		engine.stat = Status.SETTING
 		engine.isVisible = true
 	}
 
@@ -383,7 +384,7 @@ abstract class NetDummyMode:AbstractMode(), NetLobbyListener {
 				return false
 			else {
 				engine.field.reset()
-				engine.stat = GameEngine.Status.RESULT
+				engine.stat = Status.RESULT
 				engine.resetStatc()
 				return true
 			}
@@ -502,7 +503,7 @@ abstract class NetDummyMode:AbstractMode(), NetLobbyListener {
 
 			if(netIsWatch) {
 				owner.reset()
-				owner.engine[0].stat = GameEngine.Status.READY
+				owner.engine[0].stat = Status.READY
 				owner.engine[0].resetStatc()
 			}
 		}
@@ -513,8 +514,8 @@ abstract class NetDummyMode:AbstractMode(), NetLobbyListener {
 			if(netIsWatch) {
 				owner.engine[0].gameEnded()
 
-				if(owner.engine[0].stat!=GameEngine.Status.GAMEOVER&&owner.engine[0].stat!=GameEngine.Status.RESULT) {
-					owner.engine[0].stat = GameEngine.Status.GAMEOVER
+				if(owner.engine[0].stat!=Status.GAMEOVER&&owner.engine[0].stat!=Status.RESULT) {
+					owner.engine[0].stat = Status.GAMEOVER
 					owner.engine[0].resetStatc()
 				}
 			}
@@ -543,7 +544,7 @@ abstract class NetDummyMode:AbstractMode(), NetLobbyListener {
 
 				// Move cursor
 				if(message[3]=="cursor")
-					if(engine.stat==GameEngine.Status.SETTING) {
+					if(engine.stat==Status.SETTING) {
 						menuCursor = message[4].toInt()
 						engine.playSE("cursor")
 					}
@@ -561,26 +562,26 @@ abstract class NetDummyMode:AbstractMode(), NetLobbyListener {
 				if(message[3]=="ending") {
 					engine.ending = 1
 					if(!engine.staffrollEnable) engine.gameEnded()
-					engine.stat = GameEngine.Status.ENDINGSTART
+					engine.stat = Status.ENDINGSTART
 					engine.resetStatc()
 				}
 				// Excellent
 				if(message[3]=="excellent") {
-					engine.stat = GameEngine.Status.EXCELLENT
+					engine.stat = Status.EXCELLENT
 					engine.resetStatc()
 				}
 				// Retry
 				if(message[3]=="retry") {
 					engine.ending = 0
 					engine.gameEnded()
-					engine.stat = GameEngine.Status.SETTING
+					engine.stat = Status.SETTING
 					engine.resetStatc()
 					engine.playSE("decide")
 				}
 				// Display results screen
 				if(message[3]=="resultsscreen") {
 					engine.field.reset()
-					engine.stat = GameEngine.Status.RESULT
+					engine.stat = Status.RESULT
 					engine.resetStatc()
 				}
 			}
@@ -688,7 +689,7 @@ abstract class NetDummyMode:AbstractMode(), NetLobbyListener {
 			receiver.drawScore(engine, x, y, "SPECTATORS", BASE, fontcolor)
 			receiver.drawScore(engine, x, y+1, "$netNumSpectators", BASE, COLOR.WHITE)
 
-			if(engine.stat==GameEngine.Status.SETTING&&!netIsWatch&&netIsNetRankingViewOK(engine)) {
+			if(engine.stat==Status.SETTING&&!netIsWatch&&netIsNetRankingViewOK(engine)) {
 				var y2 = y+2
 				if(y2>24) y2 = 24
 				val strBtnD = owner.receiver.getKeyNameByButtonID(engine, Controller.BUTTON_D)
@@ -774,11 +775,11 @@ abstract class NetDummyMode:AbstractMode(), NetLobbyListener {
 			//engine.nowPieceBottomY = pieceBottomY;
 			engine.nowPieceBottomY = engine.nowPieceObject!!.getBottom(pieceX, pieceY, engine.field)
 
-			if(engine.stat!=GameEngine.Status.EXCELLENT&&engine.stat!=GameEngine.Status.GAMEOVER&&
-				engine.stat!=GameEngine.Status.RESULT) {
+			if(engine.stat!=Status.EXCELLENT&&engine.stat!=Status.GAMEOVER&&
+				engine.stat!=Status.RESULT) {
 				engine.gameActive = true
 				engine.timerActive = true
-				engine.stat = GameEngine.Status.MOVE
+				engine.stat = Status.MOVE
 				engine.statc[0] = 2
 			}
 
@@ -838,7 +839,7 @@ abstract class NetDummyMode:AbstractMode(), NetLobbyListener {
 			if(message.size>4) {
 				engine.nowPieceObject = null
 				engine.holdDisable = false
-				if(engine.stat==GameEngine.Status.SETTING) engine.stat = GameEngine.Status.MOVE
+				if(engine.stat==Status.SETTING) engine.stat = Status.MOVE
 				val skin = message[4].toInt()
 				netPlayerSkin = skin
 				if(message.size>6) {
@@ -852,7 +853,7 @@ abstract class NetDummyMode:AbstractMode(), NetLobbyListener {
 			if(message.size>5) {
 				engine.nowPieceObject = null
 				engine.holdDisable = false
-				if(engine.stat==GameEngine.Status.SETTING) engine.stat = GameEngine.Status.MOVE
+				if(engine.stat==Status.SETTING) engine.stat = Status.MOVE
 				val skin = message[4].toInt()
 				val highestWallY = message[5].toInt()
 				netPlayerSkin = skin

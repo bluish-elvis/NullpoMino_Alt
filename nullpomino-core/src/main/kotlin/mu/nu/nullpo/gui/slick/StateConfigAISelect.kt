@@ -39,9 +39,7 @@ import org.apache.logging.log4j.LogManager
 import org.newdawn.slick.GameContainer
 import org.newdawn.slick.Graphics
 import org.newdawn.slick.state.StateBasedGame
-import java.io.BufferedReader
-import java.io.FileReader
-import java.io.IOException
+import java.io.*
 
 /** AI config screen state */
 internal class StateConfigAISelect:BaseMenuConfigState() {
@@ -126,31 +124,31 @@ internal class StateConfigAISelect:BaseMenuConfigState() {
 		}
 		return@List "(INVALID)"
 	}
-	override val columns:List<Pair<String, List<Column>>>
-		 = listOf(
-			"ai" to listOf(
-				Column({"AI type:"+if(aiID<0) "(disable)" else aiNameList[aiID]}, {
-					aiID += it
-					if(aiID<-1) aiID = aiNameList.size-1
-					if(aiID>aiNameList.size-1) aiID = -1
-					ai.name = if(aiID>=0) aiPathList[aiID] else ""
-				}),
-				Column({"AI move delay:"+ai.moveDelay}, {
-					ai.moveDelay += it
-					if(ai.moveDelay<-1) ai.moveDelay = 99
-					if(ai.moveDelay>99) ai.moveDelay = -1
-				}),
-				Column({"AI think delay:"+ai.thinkDelay}, {
-					ai.thinkDelay += it*10
-					if(ai.thinkDelay<0) ai.thinkDelay = 1000
-					if(ai.thinkDelay>1000) ai.thinkDelay = 0
-				}),
-				Column({"AI use thread:"+ai.useThread.getONorOFF()}, {ai.useThread=!ai.useThread}),
-				Column({"AI show hint:"+ai.showHint.getONorOFF()}, {ai.showHint=!ai.showHint}),
-				Column({"AI pre-think:"+ai.preThink.getONorOFF()}, {ai.preThink=!ai.preThink}),
-				Column({"AI show info:"+ai.showState.getONorOFF()}, {ai.showState=!ai.showState}),
-			)
+
+	override val columns:List<Pair<String, List<Column>>> = listOf(
+		"ai" to listOf(
+			Column({"AI type:"+if(aiID<0) "(disable)" else aiNameList[aiID]}, {
+				aiID += it
+				if(aiID<-1) aiID = aiNameList.size-1
+				if(aiID>aiNameList.size-1) aiID = -1
+				ai.name = if(aiID>=0) aiPathList[aiID] else ""
+			}),
+			Column({"AI move delay:"+ai.moveDelay}, {
+				ai.moveDelay += it
+				if(ai.moveDelay<-1) ai.moveDelay = 99
+				if(ai.moveDelay>99) ai.moveDelay = -1
+			}),
+			Column({"AI think delay:"+ai.thinkDelay}, {
+				ai.thinkDelay += it*10
+				if(ai.thinkDelay<0) ai.thinkDelay = 1000
+				if(ai.thinkDelay>1000) ai.thinkDelay = 0
+			}),
+			Column({"AI use thread:"+ai.useThread.getONorOFF()}, {ai.useThread = !ai.useThread}),
+			Column({"AI show hint:"+ai.showHint.getONorOFF()}, {ai.showHint = !ai.showHint}),
+			Column({"AI pre-think:"+ai.preThink.getONorOFF()}, {ai.preThink = !ai.preThink}),
+			Column({"AI show info:"+ai.showState.getONorOFF()}, {ai.showState = !ai.showState}),
 		)
+	)
 
 	/* Draw the screen */
 	override fun renderImpl(container:GameContainer, game:StateBasedGame, g:Graphics) {
@@ -173,7 +171,6 @@ internal class StateConfigAISelect:BaseMenuConfigState() {
 		game.enterState(StateConfigMainMenu.ID)
 		return true
 	}
-
 
 	companion object {
 		/** This state's ID */

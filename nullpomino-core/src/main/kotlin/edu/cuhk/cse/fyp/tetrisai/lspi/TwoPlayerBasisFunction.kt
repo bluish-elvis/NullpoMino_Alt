@@ -371,7 +371,7 @@ class TwoPlayerBasisFunction {
 		//	final private static int SUM_ADJ_DIFF_SQUARED			= count++;	//(Novel)(sum of the difference between adjacent columns)^2
 		private val CONSECUTIVE_HOLES = count++ //(ESTR FYP) leave a vertical empty column
 		private val DIFF_CONSECUTIVE_HOLES = count++ //(ESTR FYP)
-		private val LINES_STACK = count++ //(ESTR FYP) record line stack
+		private val LINES_STACK = count++ //(ESTR FYP) record lines stack
 		//	final private static int DIFF_LINES_STACK				= count++;	//(ESTR FYP)
 		private val single_player_features = count
 		// opponent
@@ -397,7 +397,7 @@ class TwoPlayerBasisFunction {
 		//	final private static int OPPO_SUM_ADJ_DIFF_SQUARED		= count++;	//(Novel)(sum of the difference between adjacent columns)^2
 		private val OPPO_CONSECUTIVE_HOLES = count++ //(ESTR FYP) leave a vertical empty column
 		//	final private static int OPPO_DIFF_CONSECUTIVE_HOLES	= count++;	//(ESTR FYP)
-		private val OPPO_LINES_STACK = count++ //(ESTR FYP) record line stack
+		private val OPPO_LINES_STACK = count++ //(ESTR FYP) record lines stack
 		//	final private static int OPPO_DIFF_LINES_STACK			= count++;	//(ESTR FYP)
 		private val OPPO_DIE = count++ //(ESTR FYP)
 		val FEATURE_COUNT = count

@@ -116,7 +116,7 @@ class BackgroundSlidingTiles(private val custom:ResourceImage<*>?, directionRand
 			}
 			colors = Array(480/s+2) {y ->
 				Array(640/s+2) {x ->
-					color ?: (COLOR.all[directionRandomizer.nextInt(8)+1])
+					color?:(COLOR.all[directionRandomizer.nextInt(8)+1])
 				}
 			}
 		}

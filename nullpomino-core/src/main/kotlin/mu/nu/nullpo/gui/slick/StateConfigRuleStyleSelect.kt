@@ -40,7 +40,7 @@ import org.newdawn.slick.Graphics
 import org.newdawn.slick.state.StateBasedGame
 
 /** Style select menu */
-internal class StateConfigRuleStyleSelect :BaseMenuChooseState() {
+internal class StateConfigRuleStyleSelect:BaseMenuChooseState() {
 	/** Player number */
 	var player = 0
 
@@ -65,7 +65,7 @@ internal class StateConfigRuleStyleSelect :BaseMenuChooseState() {
 		FontNormal.printFontGrid(1, 1, "SELECT ${player+1}P STYLE", COLOR.ORANGE)
 
 		FontNormal.printFontGrid(1, 3+cursor, BaseFont.CURSOR, COLOR.RAINBOW)
-		renderChoices(2,3,GameEngine.GAMESTYLE_NAMES)
+		renderChoices(2, 3, GameEngine.GAMESTYLE_NAMES)
 	}
 
 	/* Decide */

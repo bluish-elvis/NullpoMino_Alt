@@ -32,6 +32,7 @@ package mu.nu.nullpo.game.component
 
 import kotlinx.serialization.Serializable
 import mu.nu.nullpo.game.component.Piece.Companion.DIRECTION_COUNT
+import mu.nu.nullpo.game.event.EventReceiver
 import mu.nu.nullpo.util.CustomProperties
 
 /** ゲームルールの設定 data */
@@ -47,7 +48,6 @@ data class RuleOptions(
 	/** Game Style */
 	var style:Int = 0,
 
-	var pieceOffset:Int,
 	/** Blockピースの回転パターンのcoordinate補正 (11ピース×4Direction) */
 	var pieceOffsetX:List<List<Int>>,
 	var pieceOffsetY:List<List<Int>>,
@@ -60,7 +60,7 @@ data class RuleOptions(
 	/** BlockピースのBig時の出現Y-coordinate補正 (11ピース×4Direction) */
 	var pieceSpawnYBig:List<MutableList<Int>>,
 
-	/** Blockピース cint */
+	/** Blockピース color */
 	var pieceColor:List<Int>,
 	/** Blockピースの初期Direction */
 	var pieceDefaultDirection:List<Int>,
@@ -179,9 +179,9 @@ data class RuleOptions(
 	/** 最大ARE (-1:指定なし) */
 	var maxARE:Int = -1,
 
-	/** 最小ARE after line clear (-1:指定なし) */
+	/** 最小ARE after lines clear (-1:指定なし) */
 	var minARELine:Int = -1,
-	/** 最大ARE after line clear (-1:指定なし) */
+	/** 最大ARE after lines clear (-1:指定なし) */
 	var maxARELine:Int = -1,
 
 	/** 最小Line clear time (-1:指定なし) */
@@ -249,11 +249,16 @@ data class RuleOptions(
 	/** ghost の有無 (falseならMode 側でghost を is enabledにしていても非表示) */
 	var ghost:Boolean,
 ) {
+	val pieceOffsets:List<List<Pair<Int, Int>>> =
+		pieceOffsetX.zip(pieceOffsetY) {x, y -> x.zip(y)}
+
+	fun shapeBlock(shape:Piece.Shape):Pair<Block.COLOR?, Block.TYPE> = Block.intToColor(pieceColor[shape.ordinal])
+	fun shapeColor(shape:Piece.Shape):EventReceiver.COLOR = EventReceiver.COLOR.fromBlock(shapeBlock(shape))
 
 	/** Constructor */
 	constructor():this(
-		"", "", "", 0, PIECEOFFSET_NONE, emptyDirs, emptyDirs, emptyDirs, emptyDirs, emptyDirs, emptyDirs,
-		PieceColor.ARS.array, List(Piece.PIECE_COUNT) {0},
+		"", "", "", 0, emptyDirs, emptyDirs, emptyDirs, emptyDirs, emptyDirs, emptyDirs,
+		PieceColor.ARS.array, List(Piece.Shape.num) {0},
 		true, 0, Field.DEFAULT_WIDTH, Field.DEFAULT_HEIGHT, Field.DEFAULT_HIDDEN_HEIGHT, false, true, false,
 		3, true, true, false, true, -1,
 		true, true, 0,
@@ -276,7 +281,7 @@ data class RuleOptions(
 	 */
 	constructor(r:RuleOptions):this(
 		r.strRuleName, r.strWallkick, r.strRandomizer, r.style,
-		r.pieceOffset, r.pieceOffsetX, r.pieceOffsetY, r.pieceSpawnX, r.pieceSpawnY, r.pieceSpawnXBig, r.pieceSpawnYBig,
+		r.pieceOffsetX, r.pieceOffsetY, r.pieceSpawnX, r.pieceSpawnY, r.pieceSpawnXBig, r.pieceSpawnYBig,
 		r.pieceColor, r.pieceDefaultDirection,
 		r.pieceEnterAboveField, r.pieceEnterMaxDistanceY, r.fieldWidth, r.fieldHeight, r.fieldHiddenHeight, r.fieldCeiling,
 		r.fieldLockoutDeath, r.fieldPartialLockoutDeath,
@@ -290,7 +295,8 @@ data class RuleOptions(
 		r.lockFlash, r.lockFlashOnlyFrame, r.lockFlashBeforeLineClear,
 		r.areCancelMove, r.areCancelSpin, r.areCancelHold, r.minARE, r.maxARE, r.minARELine, r.maxARELine,
 		r.minLineDelay, r.maxLineDelay, r.minLockDelay, r.maxLockDelay, r.minDAS, r.maxDAS, r.dasARR,
-		r.shiftLockEnable, r.dasInReady, r.dasInMoveFirstFrame, r.dasInLockFlash, r.dasInLineClear, r.dasInARE, r.dasInARELastFrame,
+		r.shiftLockEnable, r.dasInReady, r.dasInMoveFirstFrame, r.dasInLockFlash, r.dasInLineClear, r.dasInARE,
+		r.dasInARELastFrame,
 		r.dasInEndingStart, r.dasChargeOnBlockedMove, r.dasStoreChargeOnNeutral, r.dasRedirectInDelay,
 		r.moveFirstFrame, r.moveDiagonal, r.moveUpAndDown, r.moveLeftAndRightAllow, r.moveLeftAndRightUsePreviousInput,
 		r.lineFallAnim, r.lineCancelMove, r.lineCancelSpin, r.lineCancelHold, r.skin, r.ghost
@@ -305,7 +311,6 @@ data class RuleOptions(
 		strRandomizer = ""
 
 		style = 0
-		pieceOffset = PIECEOFFSET_NONE
 		pieceOffsetX = emptyDirs
 		pieceOffsetY = emptyDirs
 		pieceSpawnX = emptyDirs
@@ -315,7 +320,7 @@ data class RuleOptions(
 
 		pieceColor = PieceColor.ARS.array
 
-		pieceDefaultDirection = List(Piece.PIECE_COUNT) {0}
+		pieceDefaultDirection = List(Piece.Shape.num) {0}
 		pieceEnterAboveField = true
 		pieceEnterMaxDistanceY = 0
 
@@ -414,14 +419,14 @@ data class RuleOptions(
 	}
 
 	/** 設定を[r]からコピー */
-	@Suppress("Destructure") fun replace(r:RuleOptions?) {
+	@Suppress("Destructure")
+	fun replace(r:RuleOptions?) {
 		r?.let {o ->
 			strRuleName = o.strRuleName
 			strWallkick = o.strWallkick
 			strRandomizer = o.strRandomizer
 
 			style = o.style
-			pieceOffset = o.pieceOffset
 			pieceOffsetX = o.pieceOffsetX
 			pieceOffsetY = o.pieceOffsetY
 			pieceSpawnX = o.pieceSpawnX
@@ -527,7 +532,7 @@ data class RuleOptions(
 
 			skin = o.skin
 			ghost = o.ghost
-		} ?: reset()
+		}?:reset()
 	}
 
 	/** 他のルールと比較し, 同じならtrueを返す
@@ -541,17 +546,15 @@ data class RuleOptions(
 		if(strRandomizer!=r.strRandomizer) return false
 
 		if(style!=r.style) return false
-		if(pieceOffset!=r.pieceOffset) return false
-		for(i in 0..<Piece.PIECE_COUNT) {
-			if(pieceOffset==PIECEOFFSET_ASSIGN)
-				for(j in 0..<DIRECTION_COUNT) {
-					if(pieceOffsetX[i][j]!=r.pieceOffsetX[i][j]) return false
-					if(pieceOffsetY[i][j]!=r.pieceOffsetY[i][j]) return false
-					if(pieceSpawnX[i][j]!=r.pieceSpawnX[i][j]) return false
-					if(pieceSpawnY[i][j]!=r.pieceSpawnY[i][j]) return false
-					if(pieceSpawnXBig[i][j]!=r.pieceSpawnXBig[i][j]) return false
-					if(pieceSpawnYBig[i][j]!=r.pieceSpawnYBig[i][j]) return false
-				}
+		for(i in 0..<Piece.Shape.num) {
+			for(j in 0..<DIRECTION_COUNT) {
+				if(pieceOffsetX[i][j]!=r.pieceOffsetX[i][j]) return false
+				if(pieceOffsetY[i][j]!=r.pieceOffsetY[i][j]) return false
+				if(pieceSpawnX[i][j]!=r.pieceSpawnX[i][j]) return false
+				if(pieceSpawnY[i][j]!=r.pieceSpawnY[i][j]) return false
+				if(pieceSpawnXBig[i][j]!=r.pieceSpawnXBig[i][j]) return false
+				if(pieceSpawnYBig[i][j]!=r.pieceSpawnYBig[i][j]) return false
+			}
 			if(!ignoreGraphicsSetting&&pieceColor[i]!=r.pieceColor[i]) return false
 			if(pieceDefaultDirection[i]!=r.pieceDefaultDirection[i]) return false
 		}
@@ -662,9 +665,8 @@ data class RuleOptions(
 		p.setProperty("$id.ruleOpt.strRandomizer", strRandomizer)
 
 		p.setProperty("$id.ruleOpt.style", style)
-		p.setProperty("$id.ruleOpt.pieceOffset", pieceOffset)
 
-		for(i in 0..<Piece.PIECE_COUNT) {
+		for(i in 0..<Piece.Shape.num) {
 			for(j in 0..<DIRECTION_COUNT) {
 				p.setProperty("$id.ruleOpt.pieceOffsetX.$i.$j", pieceOffsetX[i][j])
 				p.setProperty("$id.ruleOpt.pieceOffsetY.$i.$j", pieceOffsetY[i][j])
@@ -784,40 +786,22 @@ data class RuleOptions(
 		strRandomizer = p.getProperty("$id.ruleOpt.strRandomizer", strRandomizer)
 
 		style = p.getProperty("$id.ruleOpt.style", 0)
-		pieceOffset = p.getProperty("$id.ruleOpt.pieceOffset", PIECEOFFSET_ASSIGN)
-		pieceOffsetX = List(Piece.PIECE_COUNT) {x ->
-			MutableList(DIRECTION_COUNT) {y ->
-				p.getProperty(
-					"$id.ruleOpt.pieceOffsetX.$x.$y",
-					if(pieceOffset==PIECEOFFSET_BIASED) PIECEOFFSET_ARSPRESET[0][x][y] else 0
-				)
-			}
+		pieceOffsetX = List(Piece.Shape.num) {x ->
+			MutableList(DIRECTION_COUNT) {y -> p.getProperty("$id.ruleOpt.pieceOffsetX.$x.$y", 0)}
 		}
-		pieceOffsetY = List(Piece.PIECE_COUNT) {x ->
-			MutableList(DIRECTION_COUNT) {y ->
-				p.getProperty(
-					"$id.ruleOpt.pieceOffsetY.$x.$y",
-					if(pieceOffset==PIECEOFFSET_BIASED||pieceOffset==PIECEOFFSET_BOTTOM)
-						PIECEOFFSET_ARSPRESET[1][x][y] else 0
-				)
-			}
+		pieceOffsetY = List(Piece.Shape.num) {x ->
+			MutableList(DIRECTION_COUNT) {y -> p.getProperty("$id.ruleOpt.pieceOffsetY.$x.$y", 0)}
 		}
-		if(pieceOffsetX==emptyDirs&&pieceOffsetY==emptyDirs)
-			pieceOffset = PIECEOFFSET_NONE
-		if(pieceOffsetY==PIECEOFFSET_ARSPRESET[1])
-			pieceOffset = if(pieceOffsetX==PIECEOFFSET_ARSPRESET[0]&&pieceSpawnXBig==PIECESPAWNXBIG_ARSPRESET)
-				PIECEOFFSET_BOTTOM else PIECEOFFSET_BIASED
 
-		pieceColor = List(Piece.PIECE_COUNT) {p.getProperty("$id.ruleOpt.pieceColor.$it", pieceColor[it])}
-		pieceDefaultDirection =
-			List(Piece.PIECE_COUNT) {p.getProperty("$id.ruleOpt.pieceDefaultDirection.$it", pieceDefaultDirection[it])}
-		for(x in 0..<Piece.PIECE_COUNT) {
-			for(y in 0..<DIRECTION_COUNT) {
-				pieceSpawnX[x][y] = p.getProperty("$id.ruleOpt.pieceSpawnX.$x.$y", 0)
-				pieceSpawnY[x][y] = p.getProperty("$id.ruleOpt.pieceSpawnY.$x.$y", 0)
-				pieceSpawnXBig[x][y] = p.getProperty("$id.ruleOpt.pieceSpawnXBig.$x.$y", 0)
-				pieceSpawnYBig[x][y] = p.getProperty("$id.ruleOpt.pieceSpawnYBig.$x.$y", 0)
-			}
+		pieceColor = List(Piece.Shape.num) {p.getProperty("$id.ruleOpt.pieceColor.$it", pieceColor[it])}
+		pieceDefaultDirection = List(Piece.Shape.num) {
+			p.getProperty("$id.ruleOpt.pieceDefaultDirection.$it", pieceDefaultDirection[it])
+		}
+		for(x in 0..<Piece.Shape.num) for(y in 0..<DIRECTION_COUNT) {
+			pieceSpawnX[x][y] = p.getProperty("$id.ruleOpt.pieceSpawnX.$x.$y", 0)
+			pieceSpawnY[x][y] = p.getProperty("$id.ruleOpt.pieceSpawnY.$x.$y", 0)
+			pieceSpawnXBig[x][y] = p.getProperty("$id.ruleOpt.pieceSpawnXBig.$x.$y", 0)
+			pieceSpawnYBig[x][y] = p.getProperty("$id.ruleOpt.pieceSpawnYBig.$x.$y", 0)
 		}
 		pieceEnterAboveField = p.getProperty("$id.ruleOpt.pieceEnterAboveField", pieceEnterAboveField)
 		pieceEnterMaxDistanceY = p.getProperty("$id.ruleOpt.pieceEnterMaxDistanceY", pieceEnterMaxDistanceY)
@@ -983,6 +967,6 @@ data class RuleOptions(
 		)
 
 		val PIECEDIRECTION_ARSPRESET get() = listOf(0, 2, 0, 0, 2, 2, 0, 0, 0, 0, 0)
-		private val emptyDirs get() = List(Piece.PIECE_COUNT) {MutableList(DIRECTION_COUNT) {0}}
+		private val emptyDirs get() = List(Piece.Shape.num) {MutableList(DIRECTION_COUNT) {0}}
 	}
 }

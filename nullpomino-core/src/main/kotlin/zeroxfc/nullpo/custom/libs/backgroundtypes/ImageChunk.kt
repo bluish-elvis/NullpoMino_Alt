@@ -38,10 +38,11 @@ package zeroxfc.nullpo.custom.libs.backgroundtypes
 
 import zeroxfc.nullpo.custom.libs.AnchorPoint
 
-class ImageChunk @JvmOverloads constructor(anchorType:AnchorPoint = AnchorPoint.TL, anchorLocation:List<Int> = listOf(0, 0),
-	val sourceLocation:List<Int> = listOf(0, 0), sourceDimensions:List<Int> = listOf(1, 1), scale:List<Float> = listOf(1f, 1f)) {
-	var drawLocation = emptyList<Int>()
-		private set
+class ImageChunk @JvmOverloads constructor(anchorType:AnchorPoint = AnchorPoint.TL,
+	anchorLocation:List<Int> = listOf(0, 0),
+	val sourceLocation:List<Int> = listOf(0, 0), sourceDimensions:List<Int> = listOf(1, 1),
+	scale:List<Float> = listOf(1f, 1f)) {
+	var drawLocation = emptyList<Int>(); private set
 	private var anchorType:AnchorPoint = anchorType
 		set(value) {
 			field = value

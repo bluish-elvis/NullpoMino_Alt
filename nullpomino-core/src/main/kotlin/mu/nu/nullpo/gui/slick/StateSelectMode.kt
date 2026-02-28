@@ -34,9 +34,7 @@ import mu.nu.nullpo.game.component.BGM
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
 import mu.nu.nullpo.game.subsystem.mode.GameMode
 import mu.nu.nullpo.gui.slick.NullpoMinoSlick.Companion.modeManager
-import mu.nu.nullpo.gui.slick.img.FontNano
-import mu.nu.nullpo.gui.slick.img.FontNormal
-import mu.nu.nullpo.gui.slick.img.FontTTF
+import mu.nu.nullpo.gui.slick.img.*
 import org.apache.logging.log4j.LogManager
 import org.newdawn.slick.GameContainer
 import org.newdawn.slick.Graphics
@@ -112,7 +110,7 @@ internal class StateSelectMode:BaseMenuScrollState() {
 	 */
 	private fun getModeDesc(str:String):String =
 		str.replace(' ', '_').replace('(', 'l').replace(')', 'r').let {str2 ->
-			NullpoMinoSlick.propModeDesc.getProperty(str2) ?: NullpoMinoSlick.propDefaultModeDesc.getProperty(str2, str2) ?: str2
+			NullpoMinoSlick.propModeDesc.getProperty(str2)?:NullpoMinoSlick.propDefaultModeDesc.getProperty(str2, str2)?:str2
 		}
 
 	private fun convModeName(str:String, sw:Boolean):String {
@@ -125,7 +123,7 @@ internal class StateSelectMode:BaseMenuScrollState() {
 	override fun enter(container:GameContainer?, game:StateBasedGame?) {
 		super.enter(container, game)
 		prepareModeList()
-		if(ResourceHolder.bgmPlaying!= BGM.Menu(0)) ResourceHolder.bgmStart(BGM.Menu(0))
+		if(ResourceHolder.bgmPlaying!=BGM.Menu(0)) ResourceHolder.bgmStart(BGM.Menu(0))
 	}
 
 	/* Render screen */

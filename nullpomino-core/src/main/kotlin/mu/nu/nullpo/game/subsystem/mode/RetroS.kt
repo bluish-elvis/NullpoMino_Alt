@@ -33,6 +33,7 @@ package mu.nu.nullpo.game.subsystem.mode
 import kotlinx.serialization.Serializable
 import mu.nu.nullpo.game.component.BGM
 import mu.nu.nullpo.game.component.Piece.Companion.createQueueFromIntStr
+import mu.nu.nullpo.game.component.RuleOptions
 import mu.nu.nullpo.game.component.Statistics
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
 import mu.nu.nullpo.game.event.Leaderboard
@@ -53,15 +54,15 @@ class RetroS:AbstractMode() {
 	/** Amount of lines cleared (It will be reset when the level increases) */
 	private var linesAfterLastLevelUp = 0
 
-	private val itemMode = StringsMenuItem("gameType", "GAME TYPE", COLOR.BLUE, 0, GAMETYPE_NAME)
+	private val itemMode = EnumMenuItem("gameType", "GAME TYPE", COLOR.BLUE, SpeedType.NORMAL, SpeedType.entries)
 	/** Selected game type */
-	private var gameType:Int by DelegateMenuItem(itemMode)
+	private var gameType:SpeedType by DelegateMenuItem(itemMode)
 
 	private val itemLevel = LevelMenuItem("startLevel", "LEVEL", COLOR.BLUE, 0, 0..15)
 	/** Selected starting level */
 	private var startLevel:Int by DelegateMenuItem(itemLevel)
 
-	private val itemBig = BooleanMenuItem("big", "BIG", COLOR.BLUE, false)
+	private val itemBig = BooleanMenuItem("big", "BIG", COLOR.ORANGE, false)
 	/** Big mode on/off */
 	private var big:Boolean by DelegateMenuItem(itemBig)
 
@@ -89,7 +90,7 @@ class RetroS:AbstractMode() {
 	override val gameIntensity:Int = -1
 	@Serializable
 	data class ScoreRow(override val st:Statistics = Statistics(),
-		val scMaxed:Int=-1, val liMaxed:Int=-1, val lvMaxed:Int=-1):Rankable, Comparable<Rankable> {
+		val scMaxed:Int = -1, val liMaxed:Int = -1, val lvMaxed:Int = -1):Rankable, Comparable<Rankable> {
 		override operator fun compareTo(other:Rankable):Int =
 			if(other is ScoreRow)
 				compareValuesBy(this, other, {it.sc}, {it.li}, {it.lv}, {-it.scMaxed}, {-it.liMaxed}, {-it.lvMaxed}, {-it.ti})
@@ -98,7 +99,7 @@ class RetroS:AbstractMode() {
 	}
 
 	override val ranking = List(RANKING_TYPE) {
-		Leaderboard(rankingMax, kotlinx.serialization.serializer<List<ScoreRow>>()){ ScoreRow() }
+		Leaderboard(rankingMax, kotlinx.serialization.serializer<List<ScoreRow>>()) {ScoreRow()}
 	}
 
 	/** This function will be called when
@@ -134,7 +135,15 @@ class RetroS:AbstractMode() {
 			owSDSpd = 2
 			owDelayCancel = 0
 
-			frameSkin = GameEngine.FRAME_SKIN_SG
+			frame = GameEngine.Frame.SG
+			ruleOpt.run {
+				replace(ruleOptBuf)
+				fieldCeiling = true
+				pieceEnterAboveField = false
+				pieceOffsetX = RuleOptions.PIECEOFFSET_ARSPRESET[0]
+				pieceOffsetY = RuleOptions.PIECEOFFSET_ARSPRESET[1]
+				strWallkick = "mu.nu.nullpo.game.subsystem.wallkick.ClassicWallkick"
+			}
 		}
 		if(!owner.replayMode) version = CURRENT_VERSION
 		owner.bgMan.bg = startLevel/2
@@ -145,12 +154,12 @@ class RetroS:AbstractMode() {
 	 * @param engine GameEngine object
 	 */
 	override fun setSpeed(engine:GameEngine) {
-		val lv = engine.statistics.level.coerceIn(0, tableDenominator[gameType].size-1)
-
 		engine.speed.gravity = 1
-		engine.speed.denominator = tableDenominator[gameType][lv]
+		engine.speed.denominator = gameType.tableDenominator.let {
+			it[engine.statistics.level.coerceIn(gameType.tableDenominator.indices)]
+		}
 
-		owner.musMan.bgm = BGM.RetroS((engine.statistics.level/6).coerceIn(0, 5))
+		owner.musMan.bgm = BGM.RetroS((engine.speed.rank*5).toInt().coerceIn(0, 5))
 	}
 
 	/** Main routine for game setup screen */
@@ -198,7 +207,7 @@ class RetroS:AbstractMode() {
 	/** Renders HUD (leaderboard or game statistics) */
 	override fun renderLast(engine:GameEngine) {
 		receiver.drawScore(engine, 0, 0, name, BASE, COLOR.GREEN)
-		receiver.drawScore(engine, 0, 1, "(${GAMETYPE_NAME[gameType]} SPEED)", BASE, COLOR.GREEN)
+		receiver.drawScore(engine, 0, 1, "($gameType SPEED)", BASE, COLOR.GREEN)
 
 		if(engine.stat==GameEngine.Status.SETTING||engine.stat==GameEngine.Status.RESULT&&!owner.replayMode) {
 			// Leaderboard
@@ -206,7 +215,7 @@ class RetroS:AbstractMode() {
 				val topY = if(receiver.nextDisplayType==2) 6 else 4
 				receiver.drawScore(engine, 0, topY-1, "SCORE LINE LV TIME", BASE, COLOR.BLUE)
 
-				ranking[gameType].forEachIndexed {i, it ->
+				ranking[gameType.ordinal].forEachIndexed {i, it ->
 					receiver.drawScore(engine, 0, topY+i, "${i+1}", GRADE, COLOR.YELLOW)
 					receiver.drawScore(engine, 2, topY+i, "%6d".format(it.sc), NUM, i==rankingRank,
 						alpha = if(it.scMaxed>1) 0.5f else 1f)
@@ -237,12 +246,12 @@ class RetroS:AbstractMode() {
 				alpha = if(engine.statistics.level>=MAX_LEVEL) 0.5f else 1f)
 			if(maxLevelTime>0) receiver.drawScore(engine, 1, 11, maxLevelTime.toTimeStr, NUM_T, COLOR.CYAN)
 
-			receiver.drawScore(engine, 0, 13, "Time", BASE, COLOR.BLUE)
-			receiver.drawScore(engine, 0, 14, engine.statistics.time.toTimeStr, BASE, COLOR.BLUE)
+			receiver.drawScore(engine, 0, 15, "Time", BASE, COLOR.BLUE)
+			receiver.drawScore(engine, 0, 16, engine.statistics.time.toTimeStr, NUM_T, COLOR.BLUE)
 
-			receiver.drawScore(engine, 0, 31, "${4-linesAfterLastLevelUp} LINES TO GO", NANO, COLOR.CYAN, .5f)
+			receiver.drawScore(engine, 0, 11, "${4-linesAfterLastLevelUp} LINES TO GO", NANO, COLOR.CYAN, .5f)
 			receiver.drawScore(
-				engine, 0, 32, "OR "+(levelTime[minOf(engine.statistics.level, 15)]-levelTimer).toTimeStr,
+				engine, 0, 12, "OR "+(levelTime[minOf(engine.statistics.level, 15)]-levelTimer).toTimeStr,
 				NANO,
 				COLOR.CYAN, .5f
 			)
@@ -258,10 +267,10 @@ class RetroS:AbstractMode() {
 		engine.meterValue += (1-engine.meterValue)*linesAfterLastLevelUp%4/4
 	}
 
-	/** Calculates line-clear score
+	/** Calculates lines-clear score
 	 * (This function will be called even if no lines are cleared) */
 	override fun calcScore(engine:GameEngine, ev:ScoreEvent):Int {
-		// Determines line-clear bonus
+		// Determines lines-clear bonus
 		val li = ev.lines
 		val pts = minOf(engine.statistics.level/2+1, 5)*when {
 			li==1 -> 100 // Single
@@ -318,8 +327,7 @@ class RetroS:AbstractMode() {
 					maxLevelTime = engine.statistics.time
 					engine.playSE("levelup_section")
 				}
-			}
-			engine.playSE("levelup")
+			} else engine.playSE("levelup")
 		}
 		return pts
 	}
@@ -352,7 +360,7 @@ class RetroS:AbstractMode() {
 
 		// Checks/Updates the ranking
 		if(!owner.replayMode&&!big&&engine.ai==null) {
-			rankingRank = ranking[gameType].add(ScoreRow(engine.statistics, maxScoreTime, maxLinesTime, maxLevelTime))
+			rankingRank = ranking[gameType.ordinal].add(ScoreRow(engine.statistics, maxScoreTime, maxLinesTime, maxLevelTime))
 
 			if(rankingRank!=-1) return true
 		}
@@ -376,27 +384,20 @@ class RetroS:AbstractMode() {
 				"4234334231212152312006153023444306242003331046140330636540231321265610510125435251421621035523001404"+
 				"0335464640401464125332132315552404146634264364245513600336065666305002023203545052006445544450440460"
 
-		/** Gravity table */
-		private val tableDenominator =
-			listOf(
-				listOf(48, 32, 24, 18, 14, 12, 10, 8, 6, 4, 12, 10, 8, 6, 4, 2),
-				listOf(48, 24, 18, 15, 12, 10, 8, 6, 4, 2, 10, 8, 6, 4, 2, 1),
-				listOf(40, 20, 16, 12, 10, 8, 6, 4, 2, 1, 10, 8, 6, 4, 2, 1),
-				listOf(30, 15, 12, 10, 8, 6, 4, 2, 1, 1, 8, 6, 4, 2, 1, 1)
-			)
-
 		/** Time until auto-level up occers */
 		private val levelTime =
-			listOf(3584, 2304, 2304, 2304, 2304, 2304, 2304, 2304, 2304, 3584, 3584, 2304, 2304, 2304, 2304, 3584)
+			intArrayOf(3584, 2304, 2304, 2304, 2304, 2304, 2304, 2304, 2304, 3584, 3584, 2304, 2304, 2304, 2304, 3584)
 
 		/** Name of game types */
-		private val GAMETYPE_NAME = listOf("EASY", "NORMAL", "HARD", "HARDEST")
-
-		/** Number of game type */
-		private val GAMETYPE_MAX = tableDenominator.size
+		private enum class SpeedType(val tableDenominator:IntArray) {
+			EASY(intArrayOf(48, 32, 24, 18, 14, 12, 10, 8, 6, 4, 12, 10, 8, 6, 4, 2)),
+			NORMAL(intArrayOf(48, 24, 18, 15, 12, 10, 8, 6, 4, 2, 10, 8, 6, 4, 2, 1)),
+			HARD(intArrayOf(40, 20, 16, 12, 10, 8, 6, 4, 2, 1, 10, 8, 6, 4, 2, 1)),
+			HARDEST(intArrayOf(30, 15, 12, 10, 8, 6, 4, 2, 1, 1, 8, 6, 4, 2, 1, 1))
+		}
 
 		/** Number of ranking types */
-		private const val RANKING_TYPE = 4
+		private val RANKING_TYPE = SpeedType.entries.size
 
 		/** Max score */
 		private const val MAX_SCORE = 999999

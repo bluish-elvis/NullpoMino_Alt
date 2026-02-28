@@ -43,8 +43,7 @@ class Ranks:java.io.Serializable {
 	val size:Int
 	internal var ranksFrom:Ranks? = null
 	val maxJump:Int
-	var error = 0
-		private set
+	var error = 0; private set
 	private var maxError = 0
 	private var rankMin = 0
 	private var rankMax = 0
@@ -206,12 +205,12 @@ n4++;
 	private fun getRank(surface:List<Int>, surfaceDecodedWork:MutableList<Int>):Int {
 		var sum = 0L
 
-		for(p in 0..<Piece.PIECE_STANDARD_COUNT) {
+		for(p in 0..<Piece.Shape.numTetras) {
 			val rankForPiece = getRankPiece(surface, surfaceDecodedWork, p)
 			//System.out.println("piece :"+p+" rank : "+rankForPiece);
 			sum += rankForPiece.toLong()
 		}
-		val result:Int = (sum/Piece.PIECE_STANDARD_COUNT).toInt().coerceIn(rankMin, rankMax)
+		val result:Int = (sum/Piece.Shape.numTetras).toInt().coerceIn(rankMin, rankMax)
 		if(result<0) {
 			println("ahhhhhh")
 			return 0

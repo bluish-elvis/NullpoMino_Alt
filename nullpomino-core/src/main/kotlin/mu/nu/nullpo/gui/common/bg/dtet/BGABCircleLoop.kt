@@ -32,11 +32,13 @@
 package mu.nu.nullpo.gui.common.bg.dtet
 
 import mu.nu.nullpo.gui.common.AbstractRenderer
+import mu.nu.nullpo.gui.common.bg.AbstractBG
 import kotlin.math.cos
 import kotlin.math.sin
 import kotlin.random.Random
 
-class BGABCircleLoop<T>(bg:mu.nu.nullpo.gui.common.ResourceImage<T>):mu.nu.nullpo.gui.common.bg.AbstractBG<T>(bg) {
+class BGABCircleLoop<T>(bg:mu.nu.nullpo.gui.common.ResourceImage<T>, addBGFX:AbstractBG<*>? = null):
+	AbstractBG<T>(bg, addBGFX) {
 	/* (アルファベット)
 	With ABG
 	.R = Rnd * 360: .R2 = Rnd * 360: .X = Rnd * 640: .Y = Rnd * 480
@@ -46,25 +48,18 @@ class BGABCircleLoop<T>(bg:mu.nu.nullpo.gui.common.ResourceImage<T>):mu.nu.nullp
 	private var x = Random.nextFloat()*640
 	private var y = Random.nextFloat()*480
 	override fun update() {
-		x += sin(r*RG)*(2+speed*2.7f)
-		y -= cos(r*RG)*(2+speed*2.7f)
-		while(x<0) x += 640
-		while(x>=640) x -= 640
-		while(y<0) y += 480
-		while(y>=480) y -= 480
+		super.update()
+		x = (x+sin(r*RG)*(2+speed*2.7f)).mod(640f)
+		y = (y-cos(r*RG)*(2+speed*2.7f)).mod(480f)
 		r += .075f+speed*.007f
 		if(speed>1) {
-			r -= minOf(1f, speed-1)*.5f*(1+sin(r2*RG)*.6f)
-			while(r<0) r += 360
-			while(r>=360) r -= 360
-			r2 += (speed-1)*1.3f
-			while(r2<0) r2 += 360
-			while(r2>=360) r2 -= 360
+			r = (r-minOf(1f, speed-1)*.5f*(1+sin(r2*RG)*.6f)).mod(360f)
+			r2 = (r2+(speed-1)*1.3f).mod(360f)
 		}
-
 	}
 
 	override fun reset() {
+		super.reset()
 		r = Random.nextFloat()*360
 		r2 = Random.nextFloat()*360
 		x = Random.nextFloat()*640
@@ -79,7 +74,7 @@ class BGABCircleLoop<T>(bg:mu.nu.nullpo.gui.common.ResourceImage<T>):mu.nu.nullp
 
 	}
 }
-/*Case 1 '（アルファベット）
+/*Case 1 '(アルファベット)
 With ABG
 .X = .X + Sin(.R * Rg) * (3 + TrM * 5): .Y = .Y - Cos(.R * Rg) * (3 + TrM * 5)
 If .X < 0 Then .X = .X + 640

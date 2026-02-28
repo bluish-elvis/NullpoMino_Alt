@@ -35,40 +35,32 @@ import java.io.IOException
 import java.io.UnsupportedEncodingException
 import java.net.Socket
 import java.nio.charset.StandardCharsets
-import java.util.LinkedList
-import java.util.Timer
-import java.util.TimerTask
+import java.util.*
 
 /** Client(Basic part) */
 open class NetBaseClient:Thread {
 	/** True if Thread moves between */
-	@Volatile
-	var threadRunning = false
+	@Volatile var threadRunning = false
 
 	/** Regular always While you are connected = true */
-	@Volatile
-	var connectedFlag = false
+	@Volatile var connectedFlag = false
 
 	/** Socket for connection */
 	protected var socket:Socket? = null
 
-	/** Destination host */
-	/** @return Destination host
+	/** Destination host
+	 * @return Destination host
 	 */
-	var host:String? = null
-		protected set
+	var host:String? = null; protected set
 
-	/** Destination port number */
-	/** @return Destination port number
-	 */
-	var port = 0
-		protected set
+	/** Destination port number
+	 *  @return Destination port number*/
+	var port = 0; protected set
 
-	/** IP address */
-	/** @return Server's IP address
+	/** IP address
+	 *  @return Server's IP address
 	 */
-	var ip = ""
-		protected set
+	var ip = ""; protected set
 
 	/** Previous incomplete packet */
 	protected var notCompletePacketBuffer:StringBuilder? = null
@@ -88,7 +80,7 @@ open class NetBaseClient:Thread {
 	/** @return Regular always And are connected true
 	 */
 	val isConnected:Boolean
-		get() = connectedFlag&&socket?.isConnected ?: false
+		get() = connectedFlag&&socket?.isConnected?:false
 
 	/** Default constructor */
 	constructor():super() {
@@ -179,8 +171,7 @@ open class NetBaseClient:Thread {
 	 * @param fullMessage Received Messages
 	 * @throws IOException If there are any errors
 	 */
-	@Throws(IOException::class)
-	protected open fun processPacket(fullMessage:String) {
+	@Throws(IOException::class) protected open fun processPacket(fullMessage:String) {
 		val message = fullMessage.split(Regex("\t")).dropLastWhile {it.isEmpty()} // Tab delimited
 
 		// pingReply
@@ -245,8 +236,7 @@ open class NetBaseClient:Thread {
 	/** Start Ping timer task
 	 * @param interval Interval
 	 */
-	@JvmOverloads
-	fun startPingTask(interval:Long = PING_INTERVAL) {
+	@JvmOverloads fun startPingTask(interval:Long = PING_INTERVAL) {
 		log.debug("Ping interval:$interval")
 		timerPing.cancel()
 		if(interval<=0) return

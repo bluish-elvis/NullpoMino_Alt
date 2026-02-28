@@ -69,34 +69,34 @@
 package mu.nu.nullpo.gui.common.fx.particles
 
 import mu.nu.nullpo.gui.common.AbstractRenderer
-import zeroxfc.nullpo.custom.libs.Vector
 import zeroxfc.nullpo.custom.libs.Interpolation
+import zeroxfc.nullpo.custom.libs.Vector
 
 class PolyFrag(
-  /** Lifetime */
+	/** Lifetime */
 	maxLifetime:Int,
-  /** X-coordinate */
+	/** X-coordinate */
 	x:Float,
-  /** Y-coordinate */
+	/** Y-coordinate */
 	y:Float,
-  /** Velocity vector */
-	vel: Vector = Vector.zero(),
-  /** Acceleration vector */
-	acc: Vector = Vector.zero(),
-  /** Velocity decrease float */
+	/** Velocity vector */
+	vel:Vector = Vector.zero(),
+	/** Acceleration vector */
+	acc:Vector = Vector.zero(),
+	/** Velocity decrease float */
 	friction:Float = 1f,
-  /** X size */
+	/** X size */
 	size:Int,
-  sizeEase:Float = 6f,
-  /** Red color component 0-255 */
+	sizeEase:Float = 6f,
+	/** Red color component 0-255 */
 	red:Int = DEFAULT_COLOR,
-  /*** Green color component 0-255 */
+	/*** Green color component 0-255 */
 	green:Int = DEFAULT_COLOR,
-  /** Blue color component 0-255 */
+	/** Blue color component 0-255 */
 	blue:Int = DEFAULT_COLOR,
-  /** brightness anim variance -50~+50*/
+	/** brightness anim variance -50~+50*/
 	val vv:Int = 0,
-  /** Alpha component 0-255 */
+	/** Alpha component 0-255 */
 	alphaI:Int = DEFAULT_COLOR,
 ):Particle(null, maxLifetime, x, y, vel, acc, friction, size, sizeEase, red, green, blue, alphaI) {
 

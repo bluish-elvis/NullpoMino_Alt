@@ -32,11 +32,13 @@
 package mu.nu.nullpo.gui.common.bg.dtet
 
 import mu.nu.nullpo.gui.common.AbstractRenderer
+import mu.nu.nullpo.gui.common.bg.AbstractBG
 import kotlin.math.sin
 import kotlin.random.Random
 
-class BGAEDeep<T>(bg:mu.nu.nullpo.gui.common.ResourceImage<T>):mu.nu.nullpo.gui.common.bg.AbstractBG<T>(bg) {
-	/*'（オーロラ）
+class BGAEDeep<T>(bg:mu.nu.nullpo.gui.common.ResourceImage<T>, addBGFX:AbstractBG<*>? = null):
+	mu.nu.nullpo.gui.common.bg.AbstractBG<T>(bg, addBGFX) {
+	/*'(オーロラ)
 Crs = Rnd * 360
 CrsF = Rnd * 640
 CrsFF = Rnd * 360*/
@@ -45,16 +47,13 @@ CrsFF = Rnd * 360*/
 	override var tick = Random.nextInt(7200)
 
 	override fun update() {
-		a += 2.1f+spdN
-		while(a<0) a += 360
-		while(a>=360) a -= 360
+		super.update()
+		a = (a+2.1f+spdN).mod(360f)
 
 		val c = tick*.2f
-		b += sin(c*RG)*maxOf(-1f, spdN-1.1f)
-		while(b<0) b += 640
-		while(b>=640) b -= 640
+		b = (b+sin(c*RG)*maxOf(-1f, spdN-1.1f)).mod(640f)
 		tick++
-		while(tick>=7200) tick -= 7200
+		tick %= 7200
 		/*
 Crs = Crs + 3.5: If Crs >= 360 Then Crs = Crs - 360
 If TrM >= 2 Then
@@ -63,7 +62,6 @@ If TrM >= 2 Then
 	If CrsF >= 640 Then CrsF = CrsF - 640
 	CrsFF = CrsFF + 0.2: If CrsFF >= 360 Then CrsFF = CrsFF - 360
 End If*/
-		super.update()
 	}
 
 	override fun reset() {
@@ -87,7 +85,7 @@ End If*/
 	}
 }
 /*
-Case 4 '（オーロラ）
+Case 4 '(オーロラ)
 For I = 0 To 79
 R = CrsF + Sin((Crs + I * 17) * Rg) * 7 * (TrM + 1)
 If R > 640 Then R = R - 640 Else If R < 0 Then R = R + 640

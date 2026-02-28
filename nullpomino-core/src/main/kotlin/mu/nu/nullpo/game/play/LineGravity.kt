@@ -34,7 +34,6 @@ package mu.nu.nullpo.game.play
 import mu.nu.nullpo.game.component.Block
 import mu.nu.nullpo.game.component.Block.ATTRIBUTE
 import mu.nu.nullpo.game.component.Field
-import mu.nu.nullpo.game.component.Field.Companion.COORD_WALL
 import mu.nu.nullpo.game.play.LineGravity.CASCADE.cascadeTime
 import mu.nu.nullpo.util.GeneralUtil.filterNotNullIndexed
 import org.apache.logging.log4j.LogManager
@@ -48,7 +47,7 @@ interface LineGravity {
 	 * @return Number of lines that were cleared
 	 */
 	fun fallInstant(field:Field):Int
-	/** Fall one line
+	/** Fall one lines
 	 * @return Number of lines remaining to fall
 	 */
 	fun fallSingle(field:Field):Int
@@ -164,7 +163,7 @@ interface LineGravity {
 			for(y in if(dir>=0) hiddenHeight*-1..<heightWithoutHurryupFloor
 			else heightWithoutHurryupFloor-1 downTo -hiddenHeight) for(x in 0..<width)
 				getBlock(x, y)?.let {bTemp ->
-					if(!bTemp.isEmpty&&isHoleBelow(x, y)&&getCoordAttribute(x, y+1)!=COORD_WALL&&
+					if(!bTemp.isEmpty&&isHoleBelow(x, y)&&getCoordAttribute(x, y+1)!=Field.Coord.WALL&&
 						bTemp.getAttribute(ATTRIBUTE.ANTIGRAVITY)
 //						&&bTemp.getAttribute(ATTRIBUTE.TEMP_MARK)||bTemp.getAttribute(ATTRIBUTE.CASCADE_FALL)
 					) {

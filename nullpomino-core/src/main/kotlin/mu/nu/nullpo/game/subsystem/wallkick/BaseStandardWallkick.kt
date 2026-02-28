@@ -37,7 +37,7 @@ import mu.nu.nullpo.game.component.Piece
 import mu.nu.nullpo.game.event.WallkickResult
 
 /** Base class for all Standard (SRS) wallkicks */
-open class BaseStandardWallkick:Wallkick {
+abstract class BaseStandardWallkick:Wallkick {
 	/** Get wallkick table. Used from executeWallkick.
 	 * @param x X-coordinate
 	 * @param y Y-coordinate
@@ -54,27 +54,26 @@ open class BaseStandardWallkick:Wallkick {
 	 * a kick.
 	 */
 	protected open fun getKickTable(x:Int, y:Int, rtDir:Int, rtOld:Int, rtNew:Int, allowUpward:Boolean, piece:Piece,
-		field:Field, ctrl:Controller?):List<List<List<Int>>>? = null
+		field:Field, ctrl:Controller?):List<List<Pair<Int, Int>>>? = null
 
 	/* Wallkick */
 	override fun executeWallkick(x:Int, y:Int, rtDir:Int, rtOld:Int, rtNew:Int, allowUpward:Boolean,
-		piece:Piece,
-		field:Field, ctrl:Controller?): WallkickResult? {
+		piece:Piece, field:Field, ctrl:Controller?):WallkickResult? {
+//		log.debug("Wallkick: ($x, $y) $rtOld->$rtNew (dir: $rtDir, allowUpward: $allowUpward)")
 		getKickTable(x, y, rtDir, rtOld, rtNew, allowUpward, piece, field, ctrl)?.let {
 			for(i in it[rtOld].indices) {
-				var x2 = it[rtOld][i][0]
-				var y2 = it[rtOld][i][1]
-
+				var (x2, y2) = it[rtOld][i]
 				if(piece.big) {
 					x2 *= 2
 					y2 *= 2
 				}
-
-				if(y2>=0||allowUpward)
-					if(!piece.checkCollision(x+x2, y+y2, rtNew, field))
-						return@executeWallkick WallkickResult(x2, y2, rtNew)
+				if((y2>=0||allowUpward)&&!piece.checkCollision(x+x2, y+y2, rtNew, field))
+					return@executeWallkick WallkickResult(x2, y2, rtNew)
 			}
 		}
 		return null
 	}
+	/*companion object {
+		val log:Logger = LogManager.getLogger()
+	}*/
 }

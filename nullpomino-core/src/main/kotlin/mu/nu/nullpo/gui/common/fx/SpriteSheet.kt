@@ -41,8 +41,7 @@ abstract class SpriteSheet(override var x:Float, override var y:Float,
 	open var alpha:Float = 1f):Effect {
 
 	/** アニメーション counter */
-	var ticks = 0
-		protected set
+	var ticks = 0; protected set
 
 	/** その他パラメータ
 	 * 0: Color

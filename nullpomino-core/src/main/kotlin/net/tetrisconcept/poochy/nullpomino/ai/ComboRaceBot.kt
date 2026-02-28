@@ -34,7 +34,7 @@ package net.tetrisconcept.poochy.nullpomino.ai
 import mu.nu.nullpo.game.component.Controller
 import mu.nu.nullpo.game.component.Field
 import mu.nu.nullpo.game.component.Piece
-import mu.nu.nullpo.game.event.EventReceiver
+import mu.nu.nullpo.game.event.EventReceiver.COLOR
 import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.game.subsystem.ai.DummyAI
 import mu.nu.nullpo.gui.common.BaseFont.FONT.BASE
@@ -114,7 +114,8 @@ class ComboRaceBot:DummyAI(), Runnable {
 			var nextPiece = engine.getNextObject(engine.nextPieceCount)
 			if(bestHold&&thinkComplete) {
 				input = input or Controller.BUTTON_BIT_D
-				nextPiece = if(engine.holdPieceObject==null) engine.getNextObject(engine.nextPieceCount+1) else engine.holdPieceObject
+				nextPiece =
+					if(engine.holdPieceObject==null) engine.getNextObject(engine.nextPieceCount+1) else engine.holdPieceObject
 			}
 			if(nextPiece==null) return
 			nextPiece = checkOffset(nextPiece, engine)
@@ -622,26 +623,26 @@ class ComboRaceBot:DummyAI(), Runnable {
 	override fun renderState(engine:GameEngine, playerID:Int) {
 		super.renderState(engine, playerID)
 		engine.owner.receiver.run {
-			drawMenu(engine, 0, 7, "THINK REQUEST:", BASE, EventReceiver.COLOR.BLUE, .5f)
+			drawMenu(engine, 0, 7, "THINK REQUEST:", BASE, COLOR.BLUE, .5f)
 			drawMenu(engine, 14, 7, (thinkRequest?.active?:false).getOX, BASE, .5f)
 			drawMenu(engine, 0, 8, "THINK SUCCESS:", BASE,
-				if(thinkSuccess) EventReceiver.COLOR.BLUE else EventReceiver.COLOR.RED,
+				if(thinkSuccess) COLOR.BLUE else COLOR.RED,
 				.5f
 			)
 			drawMenu(engine, 14, 8, thinkSuccess.getOX, BASE, !thinkSuccess, .5f)
-			drawMenu(engine, 0, 9, "THINK COMPLETE:", BASE, EventReceiver.COLOR.BLUE, .5f)
+			drawMenu(engine, 0, 9, "THINK COMPLETE:", BASE, COLOR.BLUE, .5f)
 			drawMenu(engine, 15, 9, thinkComplete.getOX, BASE, .5f)
-			drawMenu(engine, 0, 10, "IN ARE:", BASE, EventReceiver.COLOR.BLUE, .5f)
+			drawMenu(engine, 0, 10, "IN ARE:", BASE, COLOR.BLUE, .5f)
 			drawMenu(engine, 7, 10, inARE.getOX, BASE, .5f)
-			drawMenu(engine, 0, 11, "QUEUE:", BASE, EventReceiver.COLOR.BLUE, .5f)
-			var color = EventReceiver.COLOR.GREEN
+			drawMenu(engine, 0, 11, "QUEUE:", BASE, COLOR.BLUE, .5f)
+			var color = COLOR.GREEN
 			for(i in nextQueueIDs.indices) {
-				if(i>=bestPts/1000&&color!=EventReceiver.COLOR.RED) color =
-					if(i<nextQueueIDs.size-1&&thinkComplete) EventReceiver.COLOR.RED else EventReceiver.COLOR.YELLOW
+				if(i>=bestPts/1000&&color!=COLOR.RED) color =
+					if(i<nextQueueIDs.size-1&&thinkComplete) COLOR.RED else COLOR.YELLOW
 				drawMenu(engine, 6+i, 11, Piece.Shape.names[nextQueueIDs[i]], BASE, color, .5f)
 			}
 			val code = fieldToCode(engine.field)
-			drawMenu(engine, 0, 12, "STATE:", BASE, EventReceiver.COLOR.BLUE, .5f)
+			drawMenu(engine, 0, 12, "STATE:", BASE, COLOR.BLUE, .5f)
 			drawMenu(engine, 6, 12, if(code.toInt()==-1) "---" else
 				"#${fieldToIndex(engine.field)}:${Integer.toHexString(code.toInt()).uppercase()}", BASE, .5f
 			)
@@ -650,7 +651,7 @@ class ComboRaceBot:DummyAI(), Runnable {
 
 	override fun renderHint(engine:GameEngine, playerID:Int) {
 		val r = engine.owner.receiver
-		r.drawScore(engine, 10, 3, "AI HINT MOVE:", BASE, EventReceiver.COLOR.GREEN)
+		r.drawScore(engine, 10, 3, "AI HINT MOVE:", BASE, COLOR.GREEN)
 		if(bestPts>0&&(thinkComplete||(((thinkCurrentPieceNo>0)
 				&&(thinkCurrentPieceNo<=thinkLastPieceNo))))
 		) {
@@ -749,12 +750,14 @@ class ComboRaceBot:DummyAI(), Runnable {
 	class ThinkRequestMutex:Object() {
 		var active = false
 		var createTablesRequest = false
-		@Synchronized fun newRequest() {
+		@Synchronized
+		fun newRequest() {
 			active = true
 			notifyAll()
 		}
 
-		@Synchronized fun newCreateTablesRequest() {
+		@Synchronized
+		fun newCreateTablesRequest() {
 			createTablesRequest = true
 			notifyAll()
 		}
@@ -791,7 +794,8 @@ class ComboRaceBot:DummyAI(), Runnable {
 		 * @param valleyX Leftmost x-coordinate of 4-block-wide valley to combo in
 		 * @return Field state int code.
 		 */
-		@JvmOverloads fun fieldToCode(field:Field, valleyX:Int = maxOf(field.width-4, 0)/2):Short {
+		@JvmOverloads
+		fun fieldToCode(field:Field, valleyX:Int = maxOf(field.width-4, 0)/2):Short {
 			val height = field.height
 			var result:Short = 0
 			for(y in height-3..<height) for(x in 0..3) {
@@ -825,7 +829,8 @@ class ComboRaceBot:DummyAI(), Runnable {
 
 		fun fieldToIndex(field:Field):Int = fieldToIndex(fieldToCode(field))
 
-		private var stateScores = intArrayOf(6, 7, 7, 6, 8, 3, 2, 9, 3, 4, 3, 1, 8, 4, 1, 3, 1, 1, 4, 3, 9, 2, 3, 8, 4, 8, 3, 3)
+		private var stateScores =
+			intArrayOf(6, 7, 7, 6, 8, 3, 2, 9, 3, 4, 3, 1, 8, 4, 1, 3, 1, 1, 4, 3, 9, 2, 3, 8, 4, 8, 3, 3)
 		private var pieceScores = intArrayOf(28, 18, 10, 9, 18, 18, 9)
 	}
 }

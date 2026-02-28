@@ -37,6 +37,6 @@ class BooleanStrMenuItem(name:String, label:String, color:COLOR, defaultValue:Bo
 	val choiceNames:Pair<String, String>, compact:Boolean = label.length<8, perRule:Boolean = false):
 	BooleanMenuItem(name, label, color, defaultValue, compact, perRule) {
 	override val valueString:String
-		get() = if(value)choiceNames.first else choiceNames.second
+		get() = if(value) choiceNames.first else choiceNames.second
 
-	}
+}

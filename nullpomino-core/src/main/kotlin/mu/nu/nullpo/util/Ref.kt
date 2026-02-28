@@ -30,6 +30,7 @@
  */
 
 package mu.nu.nullpo.util
+
 /**
  * 擬似的に読み取り専用の参照渡しを行うためのクラス。
  *
@@ -37,9 +38,9 @@ package mu.nu.nullpo.util
  */
 interface ReadonlyRef<T> {
 	/** 参照先の値を取得するプロパティ。 */
-	val value: T
+	val value:T
 	/** 参照先の値を取得する関数。 */
-	operator fun invoke(): T
+	operator fun invoke():T
 }
 
 /**
@@ -48,11 +49,11 @@ interface ReadonlyRef<T> {
  * @param get 参照先の値を取得する関数。
  * @param set 参照先の値を設定する関数。
  */
-interface Ref<T> : ReadonlyRef<T> {
+interface Ref<T>:ReadonlyRef<T> {
 	/** 参照先の値を取得・設定するプロパティ。 */
-	override var value: T
+	override var value:T
 	/** 参照先の値を設定する関数。 */
-	operator fun invoke(value: T): Unit
+	operator fun invoke(value:T):Unit
 }
 
 /**
@@ -61,12 +62,12 @@ interface Ref<T> : ReadonlyRef<T> {
  * @param get 参照先の値を取得する関数。
  */
 fun <T> ReadonlyRef(
-	get: () -> T
-): ReadonlyRef<T> = object : ReadonlyRef<T> {
-	override val value: T
+	get:()->T
+):ReadonlyRef<T> = object:ReadonlyRef<T> {
+	override val value:T
 		get() = get()
 
-	override fun invoke(): T = get()
+	override fun invoke():T = get()
 }
 
 /**
@@ -76,17 +77,17 @@ fun <T> ReadonlyRef(
  * @param set 参照先の値を設定する関数。
  */
 fun <T> Ref(
-	get: () -> T,
-	set: (value: T) -> Unit
-): Ref<T> = object : Ref<T> {
-	override var value: T
+	get:()->T,
+	set:(value:T)->Unit
+):Ref<T> = object:Ref<T> {
+	override var value:T
 		get() = get()
 		set(value) {
 			set(value)
 		}
 
-	override fun invoke(): T = get()
-	override fun invoke(value: T) {
+	override fun invoke():T = get()
+	override fun invoke(value:T) {
 		set(value)
 	}
 }

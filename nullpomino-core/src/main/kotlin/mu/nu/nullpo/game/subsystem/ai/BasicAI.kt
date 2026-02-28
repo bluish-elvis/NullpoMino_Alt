@@ -140,10 +140,12 @@ open class BasicAI:DummyAI(), Runnable {
 						if(bestRtSub==-1&&bestX==bestXSub) {
 							if(engine.ruleOpt.harddropEnable&&!ctrl.isPress(Controller.BUTTON_UP))
 								input = input or Controller.BUTTON_BIT_UP
-							else if(engine.ruleOpt.softdropEnable||engine.ruleOpt.softdropLock) input = input or Controller.BUTTON_BIT_DOWN
+							else if(engine.ruleOpt.softdropEnable||engine.ruleOpt.softdropLock) input =
+								input or Controller.BUTTON_BIT_DOWN
 						} else if(engine.ruleOpt.harddropEnable&&!engine.ruleOpt.harddropLock&&!ctrl.isPress(Controller.BUTTON_UP))
 							input = input or Controller.BUTTON_BIT_UP
-						else if(engine.ruleOpt.softdropEnable&&!engine.ruleOpt.softdropLock) input = input or Controller.BUTTON_BIT_DOWN
+						else if(engine.ruleOpt.softdropEnable&&!engine.ruleOpt.softdropLock) input =
+							input or Controller.BUTTON_BIT_DOWN
 				}//thinkCurrentPieceNo++;
 				//System.out.println("rethink c:" + thinkCurrentPieceNo + " l:" + thinkLastPieceNo);
 			}
@@ -206,7 +208,7 @@ open class BasicAI:DummyAI(), Runnable {
 							bestPts = pts
 						}
 
-						if(depth>0||bestPts<=10||pieceNow.type==Piece.Shape.T) {
+						if(depth>0||bestPts<=10||pieceNow.shape==Piece.Shape.T) {
 							// Left shift
 							fld.replace(engine.field)
 							if(!pieceNow.checkCollision(x-1, y, rt, fld)&&pieceNow.checkCollision(x-1, y-1, rt, fld)) {
@@ -417,7 +419,7 @@ open class BasicAI:DummyAI(), Runnable {
 		val heightBefore = fld.highestBlockY
 		// Twister flag
 		var twist = false
-		if(piece.type==Piece.Shape.T&&rtOld!=-1&&fld.isTwistSpot(x, y, piece.big)) twist = true
+		if(piece.shape==Piece.Shape.T&&rtOld!=-1&&fld.isTwistSpot(x, y, piece.big)) twist = true
 
 		// Place the piece
 		if(!piece.placeToField(x, y, rt, fld)) return 0

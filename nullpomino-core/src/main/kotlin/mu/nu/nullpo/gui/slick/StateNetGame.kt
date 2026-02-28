@@ -39,9 +39,7 @@ import mu.nu.nullpo.gui.common.GameKeyDummy
 import mu.nu.nullpo.gui.net.NetLobbyFrame
 import mu.nu.nullpo.gui.net.NetLobbyListener
 import org.apache.logging.log4j.LogManager
-import org.newdawn.slick.AppGameContainer
-import org.newdawn.slick.GameContainer
-import org.newdawn.slick.Graphics
+import org.newdawn.slick.*
 import org.newdawn.slick.state.BasicGameState
 import org.newdawn.slick.state.StateBasedGame
 import mu.nu.nullpo.gui.slick.NullpoMinoSlick.Companion.propConfig as pCo
@@ -250,7 +248,7 @@ internal class StateNetGame:BasicGameState(), NetLobbyListener {
 	 */
 	private fun enterNewMode(newModeName:String?) {
 		NullpoMinoSlick.loadGlobalConfig() // Reload global config file
-		val gm = gameManager ?: return
+		val gm = gameManager?:return
 		val previousMode = gm.mode
 
 		when(val newModeTemp = NullpoMinoSlick.modeManager[newModeName]) {

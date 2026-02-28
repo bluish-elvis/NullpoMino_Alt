@@ -46,8 +46,7 @@ interface Rankable:Comparable<Rankable> {
 	override operator fun compareTo(other:Rankable):Int =
 		rp.compareTo(other.rp)
 
-	@Serializable
-	data class ScoreRow(override val st:Statistics = Statistics()):Rankable {
+	@Serializable data class ScoreRow(override val st:Statistics = Statistics()):Rankable {
 		override fun compareTo(other:Rankable):Int =
 			if(other is ScoreRow)
 				compareValuesBy(this, other, {it.clear}, {it.sc}, {it.lives}, {it.lv}, {it.li}, {-it.ti}, {it.rp})

@@ -42,6 +42,7 @@ import mu.nu.nullpo.game.component.Controller
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
 import mu.nu.nullpo.game.event.ScoreEvent
 import mu.nu.nullpo.game.play.GameEngine
+import mu.nu.nullpo.game.play.GameEngine.Status
 import mu.nu.nullpo.game.subsystem.mode.menu.DelegateMenuItem
 import mu.nu.nullpo.game.subsystem.mode.menu.MenuList
 import mu.nu.nullpo.game.subsystem.mode.menu.StringsMenuItem
@@ -79,7 +80,7 @@ class Deltatris:MarathonModeBase() {
 	 */
 	private var pCoordList:MutableList<IntArray> = mutableListOf()
 	/**
-	 * Deltatris - How fast can you go in this ΔMAX-inspired gamemode?
+	 * Deltatris - How fast can you go in this ΔMAX-inspired gameMode?
 	 *
 	 * @return Mode name
 	 */
@@ -125,7 +126,7 @@ class Deltatris:MarathonModeBase() {
 			netPlayerName = engine.owner.replayProp.getProperty("${engine.playerID}.net.netPlayerName", "")
 		}
 		engine.owner.bgMan.bg = 0
-		engine.frameSkin = GameEngine.FRAME_COLOR_GRAY
+		engine.frame = GameEngine.Frame.GRAY
 	}
 	/**
 	 * Set the overall game speed
@@ -202,7 +203,7 @@ class Deltatris:MarathonModeBase() {
 			if(engine.ctrl.isPush(Controller.BUTTON_E)&&engine.ai==null&&!netIsNetPlay) {
 				engine.playerProp.reset()
 				engine.playSE("decide")
-				engine.stat = GameEngine.Status.CUSTOM
+				engine.stat = Status.CUSTOM
 				engine.resetStatc()
 				return true
 			}
@@ -228,7 +229,7 @@ class Deltatris:MarathonModeBase() {
 			loadRankingPlayer(engine.playerProp)
 			loadSetting(engine, engine.playerProp.propProfile)
 		}
-		if(engine.stat===GameEngine.Status.SETTING) engine.isInGame = false
+		if(engine.stat===Status.SETTING) engine.isInGame = false
 		return s
 	}
 
@@ -274,7 +275,7 @@ class Deltatris:MarathonModeBase() {
 			engine, 0, 1, "(${difficultyName[difficulty]} DIFFICULTY)", BASE, COLOR.RED
 		)
 		val pid = engine.playerID
-		if(engine.stat===GameEngine.Status.SETTING||engine.stat===GameEngine.Status.RESULT&&!owner.replayMode) {
+		if(engine.stat===Status.SETTING||engine.stat===Status.RESULT&&!owner.replayMode) {
 			if(!owner.replayMode&&!big&&engine.ai==null) {
 				val topY = if(receiver.nextDisplayType==2) 6 else 4
 				receiver.drawScore(engine, 3, topY-1, "SCORE  LINE TIME", BASE, COLOR.BLUE)
@@ -302,7 +303,7 @@ class Deltatris:MarathonModeBase() {
 						receiver.drawScore(engine, 0, topY+rankingMax+5, "F:SWITCH RANK SCREEN", BASE, COLOR.GREEN)
 				}
 			}
-		} else if(engine.stat===GameEngine.Status.CUSTOM) {
+		} else if(engine.stat===Status.CUSTOM) {
 			engine.playerProp.loginScreen.renderScreen(receiver, engine)
 		} else {
 			val baseX = receiver.fieldX(engine)+4
@@ -322,7 +323,7 @@ class Deltatris:MarathonModeBase() {
 			val riy = receiver.scoreY(engine, 13)
 			GameTextUtilities.drawDirectTextAlign(
 				receiver, rix, riy, GameTextUtilities.ALIGN_TOP_LEFT, "%.2f".format(multiplier)+"X",
-				if(engine.stat===GameEngine.Status.MOVE&&engine.statc[0]>engine.speed.lockDelay*3) COLOR.RED else if(mScale>1) COLOR.ORANGE else COLOR.WHITE,
+				if(engine.stat===Status.MOVE&&engine.statc[0]>engine.speed.lockDelay*3) COLOR.RED else if(mScale>1) COLOR.ORANGE else COLOR.WHITE,
 				mScale
 			)
 			receiver.drawScore(engine, 0, 6, "LINE", BASE, COLOR.BLUE)
@@ -376,9 +377,9 @@ class Deltatris:MarathonModeBase() {
 		// Meter
 		engine.meterValue = (multiplier/20f)
 		engine.meterColor = GameEngine.METER_COLOR_LIMIT
-		if(engine.stat===GameEngine.Status.SETTING||engine.stat===GameEngine.Status.RESULT&&!owner.replayMode||engine.stat===GameEngine.Status.CUSTOM) {
+		if(engine.stat===Status.SETTING||engine.stat===Status.RESULT&&!owner.replayMode||engine.stat===Status.CUSTOM) {
 			// Show rank
-			if(engine.ctrl.isPush(Controller.BUTTON_F)&&engine.playerProp.isLoggedIn&&engine.stat!==GameEngine.Status.CUSTOM) {
+			if(engine.ctrl.isPush(Controller.BUTTON_F)&&engine.playerProp.isLoggedIn&&engine.stat!==Status.CUSTOM) {
 				showPlayerStats = !showPlayerStats
 				engine.playSE("change")
 			}

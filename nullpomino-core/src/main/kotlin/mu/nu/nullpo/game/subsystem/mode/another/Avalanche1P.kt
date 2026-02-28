@@ -50,7 +50,7 @@ class Avalanche1P:Avalanche1PDummyMode() {
 	/** Current round's ranking position */
 	private var rankingRank = 0
 
-	/** Rankings' line counts */
+	/** Rankings' lines counts */
 	private val rankingScore = List(SCORETYPE_MAX) {List(3) {List(RANKING_TYPE) {MutableList(rankingMax) {0L}}}}
 
 	/** Rankings' times */

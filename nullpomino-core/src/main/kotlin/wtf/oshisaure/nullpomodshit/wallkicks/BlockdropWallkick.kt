@@ -48,7 +48,7 @@ import mu.nu.nullpo.game.subsystem.wallkick.BaseStandardWallkick
 
 class BlockdropWallkick:BaseStandardWallkick() {
 	override fun getKickTable(x:Int, y:Int, rtDir:Int, rtOld:Int, rtNew:Int, allowUpward:Boolean, piece:Piece, field:Field,
-		ctrl:Controller?) = when(rtDir) {
+		ctrl:Controller?):List<List<Pair<Int, Int>>>? = when(rtDir) {
 		-1 -> kicktableL
 		0 -> null
 		1 -> kicktableR
@@ -57,16 +57,16 @@ class BlockdropWallkick:BaseStandardWallkick() {
 
 	companion object {
 		private val kicktableL = listOf(
-			listOf(listOf(-1, 0), listOf(1, 0), listOf(0, 1), listOf(-1, 1), listOf(1, 1), listOf(0, -1)),
-			listOf(listOf(-1, 0), listOf(1, 0), listOf(0, 1), listOf(-1, 1), listOf(1, 1), listOf(0, -1)),
-			listOf(listOf(-1, 0), listOf(1, 0), listOf(0, 1), listOf(-1, 1), listOf(1, 1), listOf(0, -1)),
-			listOf(listOf(-1, 0), listOf(1, 0), listOf(0, 1), listOf(-1, 1), listOf(1, 1), listOf(0, -1))
+			listOf(-1 to 0, 1 to 0, 0 to 1, -1 to 1, 1 to 1, 0 to -1),
+			listOf(-1 to 0, 1 to 0, 0 to 1, -1 to 1, 1 to 1, 0 to -1),
+			listOf(-1 to 0, 1 to 0, 0 to 1, -1 to 1, 1 to 1, 0 to -1),
+			listOf(-1 to 0, 1 to 0, 0 to 1, -1 to 1, 1 to 1, 0 to -1)
 		)
 		private val kicktableR = listOf(
-			listOf(listOf(1, 0), listOf(-1, 0), listOf(0, 1), listOf(1, 1), listOf(-1, 1), listOf(0, -1)),
-			listOf(listOf(1, 0), listOf(-1, 0), listOf(0, 1), listOf(1, 1), listOf(-1, 1), listOf(0, -1)),
-			listOf(listOf(1, 0), listOf(-1, 0), listOf(0, 1), listOf(1, 1), listOf(-1, 1), listOf(0, -1)),
-			listOf(listOf(1, 0), listOf(-1, 0), listOf(0, 1), listOf(1, 1), listOf(-1, 1), listOf(0, -1))
+			listOf(1 to 0, -1 to 0, 0 to 1, 1 to 1, -1 to 1, 0 to -1),
+			listOf(1 to 0, -1 to 0, 0 to 1, 1 to 1, -1 to 1, 0 to -1),
+			listOf(1 to 0, -1 to 0, 0 to 1, 1 to 1, -1 to 1, 0 to -1),
+			listOf(1 to 0, -1 to 0, 0 to 1, 1 to 1, -1 to 1, 0 to -1)
 		)
 	}
 }

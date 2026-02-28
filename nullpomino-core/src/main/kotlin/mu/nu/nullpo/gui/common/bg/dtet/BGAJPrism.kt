@@ -32,10 +32,11 @@
 package mu.nu.nullpo.gui.common.bg.dtet
 
 import mu.nu.nullpo.gui.common.AbstractRenderer
+import mu.nu.nullpo.gui.common.bg.AbstractBG
 import kotlin.math.sign
 import kotlin.random.Random
 
-class BGAJPrism<T>(bg:mu.nu.nullpo.gui.common.ResourceImage<T>):mu.nu.nullpo.gui.common.bg.AbstractBG<T>(bg) {
+class BGAJPrism<T>(bg:mu.nu.nullpo.gui.common.ResourceImage<T>, addBGFX:AbstractBG<*>? = null):AbstractBG<T>(bg, addBGFX) {
 	override var speed:Float = 1f
 		set(value) {
 			field = value
@@ -50,12 +51,14 @@ class BGAJPrism<T>(bg:mu.nu.nullpo.gui.common.ResourceImage<T>):mu.nu.nullpo.gui
 		}
 
 	override fun update() {
+		super.update()
 		by--
 		if(by<0) by += 240
 		children.forEach {it.update()}
 	}
 
 	override fun reset() {
+		super.reset()
 		by = Random.nextFloat()*240
 		children.forEach {it.init()}
 	}
@@ -106,10 +109,8 @@ If Not FS Then BBSf.BltFast 0, 240 + CrysSY, BGSf, Src, DDBLTFAST_WAIT*/
 		}
 
 		fun update() {
-			tick += vt
+			tick = (tick+vt).mod(20)
 			y += vy
-			if(tick>=20) tick -= 20
-			if(tick<=0) tick += 20
 			if(y<-80||y>=560) init()
 
 		}
@@ -117,7 +118,7 @@ If Not FS Then BBSf.BltFast 0, 240 + CrysSY, BGSf, Src, DDBLTFAST_WAIT*/
 }
 
 /*
-'（水晶）
+'(水晶)
 CrysSY = Rnd * 240
 For I = 0 To 15
 With Crys(I)
@@ -129,7 +130,7 @@ With Crys(I)
 End With
 Next I
 
-Case 9 '（水晶）
+Case 9 '(水晶)
 CrysSY = CrysSY - 1: If CrysSY < 0 Then CrysSY = CrysSY + 240
 With Src
 	.Left = 0: .Top = 240 - CrysSY: .Right = 640: .Bottom = 240

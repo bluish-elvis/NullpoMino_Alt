@@ -30,17 +30,12 @@
  */
 package mu.nu.nullpo.gui.slick
 
-import kotlinx.serialization.encodeToString
-import mu.nu.nullpo.util.GeneralUtil.Json
 import mu.nu.nullpo.game.play.GameManager
 import mu.nu.nullpo.gui.common.ConfigGlobal
 import mu.nu.nullpo.gui.common.GameKeyDummy.Companion.MAX_PLAYERS
+import mu.nu.nullpo.util.GeneralUtil.Json
 import org.apache.logging.log4j.LogManager
-import org.newdawn.slick.AppGameContainer
-import org.newdawn.slick.GameContainer
-import org.newdawn.slick.Graphics
-import org.newdawn.slick.Image
-import org.newdawn.slick.Sound
+import org.newdawn.slick.*
 import org.newdawn.slick.state.BasicGameState
 import org.newdawn.slick.state.StateBasedGame
 import mu.nu.nullpo.gui.slick.NullpoMinoSlick.Companion.propConfig as pCo

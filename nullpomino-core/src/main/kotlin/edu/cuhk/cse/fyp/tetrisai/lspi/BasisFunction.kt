@@ -275,7 +275,7 @@ class BasisFunction {
 		//	final private static int SUM_ADJ_DIFF_SQUARED			= count++;	//(Novel)(sum of the difference between adjacent columns)^2
 		private val CONSECUTIVE_HOLES = count++ //(ESTR FYP) leave a vertical empty column
 		private val DIFF_CONSECUTIVE_HOLES = count++ //(ESTR FYP)
-		private val LINES_STACK = count++ //(ESTR FYP) record line stack
+		private val LINES_STACK = count++ //(ESTR FYP) record lines stack
 		//	final private static int DIFF_LINES_STACK				= count++;	//(ESTR FYP)
 		val FUTURE_COUNT = count
 	}

@@ -93,8 +93,8 @@ Generates a text shaker object with an auto-generated randomizer.
 	fun drawScoreText(receiver:EventReceiver, engine:GameEngine, x:Int, y:Int, maxDevianceX:Int, maxDevianceY:Int,
 		text:String,
 		color:EventReceiver.COLOR, scale:Float) {
-		val nx = receiver.scoreX(engine)+x*if(scale<=0.5f) 8 else 16
-		val ny = receiver.scoreY(engine)+y*if(scale<=0.5f) 8 else 16
+		val nx = receiver.scoreX(engine, x).toInt()
+		val ny = receiver.scoreY(engine, y).toInt()
 		drawDirectText(receiver, nx, ny, maxDevianceX, maxDevianceY, text, color, scale)
 	}
 	/**
@@ -113,8 +113,8 @@ Generates a text shaker object with an auto-generated randomizer.
 	fun drawMenuText(receiver:EventReceiver, engine:GameEngine, x:Int, y:Int, maxDevianceX:Int, maxDevianceY:Int,
 		text:String,
 		color:EventReceiver.COLOR, scale:Float) {
-		val nx = receiver.fieldX(engine).toInt()+x*if(scale<=0.5f) 8 else 16+4
-		val ny = receiver.fieldY(engine).toInt()+y*if(scale<=0.5f) 8 else 16+52
+		val nx = receiver.fieldX(engine, x).toInt()+4
+		val ny = receiver.fieldY(engine, y).toInt()+52
 		drawDirectText(receiver, nx, ny, maxDevianceX, maxDevianceY, text, color, scale)
 	}
 }

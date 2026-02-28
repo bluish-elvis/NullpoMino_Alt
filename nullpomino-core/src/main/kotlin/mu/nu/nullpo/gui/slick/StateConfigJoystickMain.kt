@@ -32,14 +32,12 @@ package mu.nu.nullpo.gui.slick
 
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
 import mu.nu.nullpo.gui.common.BaseFont
-import mu.nu.nullpo.gui.common.GameKeyDummy
 import mu.nu.nullpo.gui.common.ConfigGlobal.CtrlConf
+import mu.nu.nullpo.gui.common.GameKeyDummy
 import mu.nu.nullpo.gui.slick.img.FontNormal
 import mu.nu.nullpo.gui.slick.img.FontTTF
 import mu.nu.nullpo.util.GeneralUtil.getONorOFF
-import org.newdawn.slick.GameContainer
-import org.newdawn.slick.Graphics
-import org.newdawn.slick.SlickException
+import org.newdawn.slick.*
 import org.newdawn.slick.state.StateBasedGame
 
 /** Joystick 設定メインMenu のステート */

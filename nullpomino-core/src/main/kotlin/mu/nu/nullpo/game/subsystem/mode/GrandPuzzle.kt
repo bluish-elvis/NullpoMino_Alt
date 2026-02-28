@@ -35,6 +35,7 @@ import mu.nu.nullpo.game.component.Piece.Companion.createQueueFromIntStr
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
 import mu.nu.nullpo.game.event.ScoreEvent
 import mu.nu.nullpo.game.play.GameEngine
+import mu.nu.nullpo.game.play.GameEngine.Status
 import mu.nu.nullpo.game.play.GameManager
 import mu.nu.nullpo.game.subsystem.mode.menu.*
 import mu.nu.nullpo.gui.common.BaseFont
@@ -119,7 +120,7 @@ class GrandPuzzle:AbstractMode() {
 	/** Skip buttonを押している time */
 	private var skipbuttonPressTime = 0
 
-	/** Blockピースを置いた count (NEXTピースの計算用）のバックアップ (コンティニュー時に戻す) */
+	/** Blockピースを置いた count (NEXTピースの計算用)のバックアップ (コンティニュー時に戻す) */
 	private var continueNextPieceCount = 0
 
 	/** Set to true when NO is picked at continue screen */
@@ -166,7 +167,7 @@ class GrandPuzzle:AbstractMode() {
 	/** When true, always ghost ON */
 	private var alwaysGhost:Boolean by DelegateMenuItem(itemGhost)
 
-	private val item20g = BooleanMenuItem("always20g", "20G MODE", COLOR.BLUE, false)
+	private val item20g = BooleanMenuItem("always20g", "20G MODE", COLOR.RED, false)
 	/** When true, always 20G */
 	private var always20g:Boolean by DelegateMenuItem(item20g)
 
@@ -217,7 +218,6 @@ class GrandPuzzle:AbstractMode() {
 				rankingAllClear.mapIndexed {a, x -> "$a.clear" to x}+
 				rankingTime.mapIndexed {a, x -> "$a.time" to x})
 
-	private var decoration = 0
 	private var decTemp = 0
 
 	/** Mode nameを取得 */
@@ -288,7 +288,7 @@ class GrandPuzzle:AbstractMode() {
 		engine.twistEnable = false
 		engine.b2bEnable = false
 		engine.splitB2B = false
-		engine.frameSkin = GameEngine.FRAME_COLOR_PINK
+		engine.frame = GameEngine.Frame.PINK
 		engine.comboType = GameEngine.COMBO_TYPE_DISABLE
 		engine.bigHalf = true
 		engine.bigMove = false
@@ -466,12 +466,12 @@ class GrandPuzzle:AbstractMode() {
 			skipFlag = false
 			engine.nowPieceObject = null
 			engine.timerActive = false
-			engine.stat = GameEngine.Status.CUSTOM
+			engine.stat = Status.CUSTOM
 			engine.resetStatc()
 			true
 		} else if(limittimeNow<=0&&engine.timerActive) {
 			engine.nowPieceObject = null
-			engine.stat = GameEngine.Status.GAMEOVER
+			engine.stat = Status.GAMEOVER
 			engine.resetStatc()
 			true
 		} else false
@@ -723,9 +723,9 @@ class GrandPuzzle:AbstractMode() {
 		)
 
 		receiver.drawScore(engine, -1, -4*2, "DECORATION", BASE, scale = .5f)
-		receiver.drawScoreBadges(engine, 0, -3, 100, decoration)
+		receiver.drawScoreBadges(engine, 0, -3, 100, owner.stats.decoration)
 		receiver.drawScoreBadges(engine, 5, -4, 100, decTemp)
-		if(engine.stat==GameEngine.Status.SETTING||engine.stat==GameEngine.Status.RESULT&&!owner.replayMode) {
+		if(engine.stat==Status.SETTING||engine.stat==Status.RESULT&&!owner.replayMode) {
 			if(startStage==0&&!always20g&&trainingType==0&&startNextc==0&&mapSet<0&&engine.ai==null) {
 				val topY = if(receiver.nextDisplayType==2) 5 else 3
 
@@ -844,7 +844,7 @@ class GrandPuzzle:AbstractMode() {
 				skipFlag = true
 				engine.nowPieceObject = null
 				engine.timerActive = false
-				engine.stat = GameEngine.Status.CUSTOM
+				engine.stat = Status.CUSTOM
 				engine.resetStatc()
 			}
 		} else
@@ -864,9 +864,10 @@ class GrandPuzzle:AbstractMode() {
 			engine.meterValue = minOf(1f, limittimeNow*1f/limittimeStart)
 			engine.meterColor = GameEngine.METER_COLOR_LIMIT
 
-			if(limittimeNow>0&&limittimeNow<=10*60&&limittimeNow%60==0)
-			// 10秒前からのカウントダウン
+			if(limittimeNow>0&&limittimeNow<=10*60&&limittimeNow%60==0) {
 				engine.playSE("countdown")
+				if(limittimeNow<=300) engine.playSE("countdown${limittimeNow/60}")
+			}
 		}
 
 		//  stage Time
@@ -1054,15 +1055,10 @@ class GrandPuzzle:AbstractMode() {
 
 		// Time limitが増える演出
 		if(engine.statc[1]<timeextendStageClearSeconds*60) {
-			engine.statc[1] += if(timeextendStageClearSeconds<30)
-				4
-			else if(timeextendStageClearSeconds<60)
-				10 else 30
+			engine.statc[1] += if(timeextendStageClearSeconds<30) 4 else if(timeextendStageClearSeconds<60) 10 else 30
 
 			// Time meter
-			var limittimeTemp = limittimeNow+engine.statc[1]
-			if(skipFlag) limittimeTemp = limittimeNow-engine.statc[1]
-
+			val limittimeTemp = if(skipFlag) limittimeNow-engine.statc[1] else limittimeNow+engine.statc[1]
 			engine.meterValue = minOf(1f, limittimeTemp*1f/limittimeStart)
 
 			engine.meterColor = GameEngine.METER_COLOR_LIMIT
@@ -1075,19 +1071,19 @@ class GrandPuzzle:AbstractMode() {
 				if(clearFlag) limittimeNow += timeextendStageClearSeconds*60
 				if(skipFlag) limittimeNow -= timeextendStageClearSeconds*60
 				if(trainingType==2) engine.nextPieceCount = continueNextPieceCount
-				engine.stat = GameEngine.Status.READY
+				engine.stat = Status.READY
 				engine.resetStatc()
 			} else if(stage>=laststage) {
 				allClear = if(stage>=MAX_STAGE_TOTAL-1) 2 else 1
 				engine.ending = 1
 				engine.gameEnded()
-				engine.stat = GameEngine.Status.ENDINGSTART
+				engine.stat = Status.ENDINGSTART
 				engine.resetStatc()
 			} else {
 				stage++
 				if(clearFlag) limittimeNow += timeextendStageClearSeconds*60
 				if(skipFlag) limittimeNow -= timeextendStageClearSeconds*60
-				engine.stat = GameEngine.Status.READY
+				engine.stat = Status.READY
 				engine.resetStatc()
 			}// Next  stage
 			// Ending
@@ -1223,7 +1219,7 @@ class GrandPuzzle:AbstractMode() {
 						engine.nextPieceCount = continueNextPieceCount
 						if(trainingType==0) engine.statistics.time += 60*60*2
 						engine.allowTextRenderByReceiver = true
-						engine.stat = GameEngine.Status.READY
+						engine.stat = Status.READY
 						engine.resetStatc()
 						engine.playSE("decide")
 					} else
@@ -1236,7 +1232,7 @@ class GrandPuzzle:AbstractMode() {
 				noContinue = true
 				engine.allowTextRenderByReceiver = true // GAMEOVER表示抑制解除
 				engine.resetStatc()
-				decoration += decTemp-3
+				owner.stats.decoration += decTemp-3
 			}
 
 			return true
@@ -1327,7 +1323,7 @@ class GrandPuzzle:AbstractMode() {
 		engine.statistics.scoreBonus = clearRate
 		engine.statistics.writeProperty(prop, engine.playerID)
 		if(!owner.replayMode) {
-			owner.statsProp.setProperty("decoration", decoration)
+			owner.statsProp.setProperty("decoration", owner.stats.decoration)
 			owner.statsProp.save(owner.statsFile)
 		}
 		// Update rankings

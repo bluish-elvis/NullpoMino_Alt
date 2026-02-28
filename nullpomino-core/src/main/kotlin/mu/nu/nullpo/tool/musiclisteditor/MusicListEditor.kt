@@ -41,7 +41,7 @@ import java.awt.event.ActionListener
 import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
-import java.util.Locale
+import java.util.*
 import javax.swing.*
 
 /** MusicListEditor (音楽リスト編集ツール) */
@@ -132,8 +132,8 @@ class MusicListEditor:JFrame(), ActionListener {
 		txtFldMusicFileNames = Array(num) {JTextField(45)}
 		chkboxNoLoop = Array(num) {JCheckBox()}
 		//TODO:Tab : BGM. : Category
-		BGM.values.forEachIndexed { i, tr ->
-			if(tr!= BGM.Silent) {
+		BGM.values.forEachIndexed {i, tr ->
+			if(tr!=BGM.Silent) {
 				val i = i-1
 				val name = "${tr.name}.${tr.idx}"
 				val id = tr.id
@@ -216,9 +216,9 @@ class MusicListEditor:JFrame(), ActionListener {
 
 	/** 翻訳後のUIの文字列を取得
 	 * @param str 文字列
-	 * @return 翻訳後のUIの文字列 (無いならそのままstrを返す）
+	 * @return 翻訳後のUIの文字列 (無いならそのままstrを返す)
 	 */
-	private fun getUIText(str:String):String = propLang.getProperty(str) ?: propLangDefault.getProperty(str, str)
+	private fun getUIText(str:String):String = propLang.getProperty(str)?:propLangDefault.getProperty(str, str)
 
 	/** 音楽リスト読み込み */
 	private fun loadMusicList() {

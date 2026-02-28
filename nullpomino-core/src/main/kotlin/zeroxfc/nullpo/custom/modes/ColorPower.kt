@@ -46,6 +46,7 @@ import mu.nu.nullpo.game.component.*
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
 import mu.nu.nullpo.game.event.ScoreEvent
 import mu.nu.nullpo.game.play.GameEngine
+import mu.nu.nullpo.game.play.GameEngine.Status
 import mu.nu.nullpo.game.subsystem.mode.menu.BooleanMenuItem
 import mu.nu.nullpo.game.subsystem.mode.menu.DelegateMenuItem
 import mu.nu.nullpo.game.subsystem.mode.menu.MenuList
@@ -78,12 +79,12 @@ class ColorPower:MarathonModeBase() {
 	// Color history
 	private val colorHistory = MutableList(4) {-1}
 	// engine dif
-	private val defaultColors = MutableList(Piece.PIECE_COUNT) {0}
+	private val defaultColors = MutableList(Piece.Shape.num) {0}
 	// Hm
 	private var preset = false
 	/** Rankings' scores */
 	private val rankingScore = List(2) {List(RANKING_TYPE) {MutableList(rankingMax) {0L}}}
-	/** Rankings' line counts */
+	/** Rankings' lines counts */
 	private val rankingLines = List(2) {List(RANKING_TYPE) {MutableList(rankingMax) {0}}}
 	/** Rankings' times */
 	private val rankingTime = List(2) {List(RANKING_TYPE) {MutableList(rankingMax) {-1}}}
@@ -91,7 +92,7 @@ class ColorPower:MarathonModeBase() {
 	private var rankingRankPlayer = 0
 	/** Rankings' scores */
 	private val rankingScorePlayer = List(2) {List(RANKING_TYPE) {MutableList(rankingMax) {0L}}}
-	/** Rankings' line counts */
+	/** Rankings' lines counts */
 	private val rankingLinesPlayer = List(2) {List(RANKING_TYPE) {MutableList(rankingMax) {0}}}
 	/** Rankings' times */
 	private val rankingTimePlayer = List(2) {List(RANKING_TYPE) {MutableList(rankingMax) {-1}}}
@@ -149,7 +150,7 @@ class ColorPower:MarathonModeBase() {
 			netPlayerName = engine.owner.replayProp.getProperty("${engine.playerID}.net.netPlayerName", "")
 		}
 		engine.owner.bgMan.bg = startLevel
-		engine.frameSkin = GameEngine.FRAME_COLOR_GREEN
+		engine.frame = GameEngine.Frame.GREEN
 	}
 	/*
 		 * Called at settings screen
@@ -214,7 +215,7 @@ class ColorPower:MarathonModeBase() {
 			if(engine.ctrl.isPush(Controller.BUTTON_E)&&engine.ai==null&&!netIsNetPlay) {
 				engine.playerProp.reset()
 				engine.playSE("decide")
-				engine.stat = GameEngine.Status.CUSTOM
+				engine.stat = Status.CUSTOM
 				engine.resetStatc()
 				return true
 			}
@@ -361,9 +362,9 @@ class ColorPower:MarathonModeBase() {
 
 	override fun onLast(engine:GameEngine) {
 		super.onLast(engine)
-		if(engine.stat===GameEngine.Status.SETTING||engine.stat===GameEngine.Status.RESULT&&!owner.replayMode||engine.stat===GameEngine.Status.CUSTOM) {
+		if(engine.stat===Status.SETTING||engine.stat===Status.RESULT&&!owner.replayMode||engine.stat===Status.CUSTOM) {
 			// Show rank
-			if(engine.ctrl.isPush(Controller.BUTTON_F)&&engine.playerProp.isLoggedIn&&engine.stat!==GameEngine.Status.CUSTOM) {
+			if(engine.ctrl.isPush(Controller.BUTTON_F)&&engine.playerProp.isLoggedIn&&engine.stat!==Status.CUSTOM) {
 				showPlayerStats = !showPlayerStats
 				engine.playSE("change")
 			}
@@ -384,7 +385,7 @@ class ColorPower:MarathonModeBase() {
 			BASE,
 			COLOR.GREEN
 		)
-		if(engine.stat===GameEngine.Status.SETTING||engine.stat===GameEngine.Status.RESULT&&!owner.replayMode) {
+		if(engine.stat===Status.SETTING||engine.stat===Status.RESULT&&!owner.replayMode) {
 			if(!owner.replayMode&&!big&&engine.ai==null) {
 				val topY = if(receiver.nextDisplayType==2) 6 else 4
 				receiver.drawScore(engine, 3, topY-1, "SCORE  LINE TIME", BASE, COLOR.BLUE)
@@ -436,7 +437,7 @@ class ColorPower:MarathonModeBase() {
 						receiver.drawScore(engine, 0, topY+rankingMax+5, "F:SWITCH RANK SCREEN", BASE, COLOR.GREEN)
 				}
 			}
-		} else if(engine.stat===GameEngine.Status.CUSTOM&&!engine.gameActive)
+		} else if(engine.stat===Status.CUSTOM&&!engine.gameActive)
 			engine.playerProp.loginScreen.renderScreen(receiver, engine) else {
 			receiver.drawScore(engine, 0, 3, "LINE", BASE, COLOR.BLUE)
 			receiver.drawScore(engine, 5, 2, engine.statistics.lines.toString(), NUM, 2f)
@@ -512,7 +513,7 @@ class ColorPower:MarathonModeBase() {
 			receiver.drawScore(engine, 0, 16, "$scoreMultiplier"+"X", BASE)
 			receiver.drawScore(engine, 0, 18, "LIVES", BASE, COLOR.GREEN)
 			receiver.drawScore(
-				engine, 0, 19, if(engine.stat!==GameEngine.Status.GAMEOVER) "${(engine.lives+1)}/5" else "$l/5",
+				engine, 0, 19, if(engine.stat!==Status.GAMEOVER) "${(engine.lives+1)}/5" else "$l/5",
 				BASE)
 			if(engine.playerProp.isLoggedIn||engine.playerName.isNotEmpty()) {
 				receiver.drawScore(engine, 0, 21, "PLAYER", BASE, COLOR.BLUE)
@@ -535,14 +536,14 @@ class ColorPower:MarathonModeBase() {
 				}
 			}
 			engine.field.let {
-				if(engine.stat===GameEngine.Status.CUSTOM&&customTimer<120&&!(currentActivePower==0&&engine.lives>=4)) {
+				if(engine.stat===Status.CUSTOM&&customTimer<120&&!(currentActivePower==0&&engine.lives>=4)) {
 					val offset = (10-POWERUP_NAMES[currentActivePower].length)/2
 					receiver.drawMenu(
 						engine, offset, it.height/2, POWERUP_NAMES[currentActivePower], BASE,
 						POWERUP_TEXT_COLORS[currentActivePower]
 					)
 					receiver.drawMenu(engine, 0, it.height/2+1, "ACTIVATED!", BASE)
-				} else if(currentActivePower==0&&customTimer<120&&engine.stat===GameEngine.Status.CUSTOM&&engine.lives>=4) {
+				} else if(currentActivePower==0&&customTimer<120&&engine.stat===Status.CUSTOM&&engine.lives>=4) {
 					val offset = (10-"SMALL SCORE BONUS".length)/2
 					receiver.drawMenu(engine, 0, it.height/2-1, "LIVES FULL!", BASE, COLOR.PINK)
 					receiver.drawMenu(
@@ -593,7 +594,7 @@ class ColorPower:MarathonModeBase() {
 		if(currentModified!=-1) {
 			currentActivePower = currentModified
 			engine.resetStatc()
-			engine.stat = GameEngine.Status.CUSTOM
+			engine.stat = Status.CUSTOM
 			customTimer = 0
 			return true
 		}
@@ -646,7 +647,7 @@ class ColorPower:MarathonModeBase() {
 					break;
 				} */
 				engine.resetStatc()
-				engine.stat = GameEngine.Status.MOVE
+				engine.stat = Status.MOVE
 				currentModified = -1
 				currentActivePower = 1
 				return true
@@ -705,7 +706,7 @@ class ColorPower:MarathonModeBase() {
 				loadRankingPlayer(engine.playerProp)
 				loadSetting(engine, engine.playerProp.propProfile)
 			}
-			if(engine.stat===GameEngine.Status.SETTING) engine.isInGame = false
+			if(engine.stat===Status.SETTING) engine.isInGame = false
 		}
 		return false
 	}

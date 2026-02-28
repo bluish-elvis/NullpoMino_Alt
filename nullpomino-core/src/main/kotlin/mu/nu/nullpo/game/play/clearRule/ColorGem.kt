@@ -69,7 +69,7 @@ data class ColorGem(var colorClearSize:Int = 2, var garbageColorClear:Boolean = 
 			return setBlkToRes(total)
 		}
 
-		/** Performs all cint clears of sufficient size containing at least one gem
+		/** Performs all color clears of sufficient size containing at least one gem
 		 * block.
 		 * @param size Minimum size of cluster for a clear
 		 * @param garbageClear `true` to clear garbage blocks adjacent to cleared

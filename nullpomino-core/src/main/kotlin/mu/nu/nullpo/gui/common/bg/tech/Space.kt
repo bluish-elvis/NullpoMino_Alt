@@ -1,5 +1,5 @@
 /*
- Copyright (c) 2025, NullNoname
+ Copyright (c) 2026, NullNoname
  All rights reserved.
 
  Converted to Kotlin and modified by Venom_Nhelv as bluish-elvis
@@ -31,48 +31,85 @@
 
 package mu.nu.nullpo.gui.common.bg.tech
 
-import zeroxfc.nullpo.custom.libs.Vector
+import mu.nu.nullpo.gui.common.bg.AbstractBG
+import kotlin.math.cos
+import kotlin.math.pow
+import kotlin.math.sin
 import kotlin.random.Random
 
-class Space():mu.nu.nullpo.gui.common.bg.AbstractBG<Nothing?>(mu.nu.nullpo.gui.common.ResourceImage.Blank) {
-	private class Star() {
-		var pos = Vector()
-		var vel = Vector()
-		val x get() = pos.x
-		val y get() = pos.y
-		var sc = 0f
+class Space(addBGFX:AbstractBG<*>? = null):AbstractBG<Nothing?>(mu.nu.nullpo.gui.common.ResourceImage.Blank, addBGFX) {
+	private sealed class Chunks {
+		operator fun component1() = x
+		operator fun component2() = y
+		operator fun component3() = sc*size
+
+		var vr = 0f
+		var d = 0f
+		var vel = 0f
+		var ang = 0f
+		val x get() = 320+d*cos(ang)
+		val y get() = 240+d*sin(ang)
+		val sc get() = (d/rad).pow(1.6f)
+		abstract val size:Int
 		fun update(spd:Float) {
-			pos += vel*spd
-			pos.x %= 640+sc
-			pos.y %= 480+sc
+			d += vel*spd
+			//ang+=vr
+			if(d>rad*1.05f&&(x !in 0f..640f||y !in 0f..480f)) reset() else {
+				vel *= 1+d/rad*.05f
+			}
+		}
+
+		open fun reset(pos:Boolean = false) {
+			d = if(pos) Random.nextFloat()*rad else 0f
+			ang = Random.nextFloat()*tau
+			vel = (Random.nextFloat()+.2f)
+			vr = (Random.nextFloat()-.5f)*.1f
+		}
+
+		init {
+			reset(true)
+		}
+
+		class Star:Chunks() {
+			override val size = 40
+		}
+
+		class Block(var skin:Int = 0, var color:Int = 0):Chunks() {
+			override val size = 8
+			override fun reset(pos:Boolean) {
+				super.reset(pos)
+				color = Random.nextInt(mu.nu.nullpo.game.component.Block.COLOR.ALL_COLOR_NUM)
+				skin = Random.nextInt()
+			}
 		}
 	}
 
-	private val children = List(256) {Star()}
+	var vr = 0f
+	private val children = List(256) {if(it%2==0) Chunks.Star() else Chunks.Block(0, 0)}
 	/** Performs an update tick on the background. Advisably used in onLast.*/
 	override fun update() {
-		children.forEach {it.update(spdN)}
 		super.update()
+		children.forEach {it.ang += vr; it.update(spdN)}
 	}
 
 	/** Resets the background to its base state.*/
 	override fun reset() {
+		super.reset()
 		tick = 0
 		children.forEach {
-			val s = Random.nextInt(26, 41)*.1f
-			it.sc = s*2.5f
-			it.pos.set(Random.nextFloat()*640 to Random.nextFloat()*480)
-			it.vel.set((Random.nextFloat()-.5f)*.01f*s to (Random.nextFloat()-.5f)*.01f*s)
+			it.reset(true)
 		}
 	}
 
 	/** Draws the background to the game screen.*/
 	override fun draw(render:mu.nu.nullpo.gui.common.AbstractRenderer, bg:Boolean) {
 		if(bg) render.drawBlackBG()
-		render.resources.imgFrags.let {img ->
-			render.drawBlendAdd {
-				children.forEach {
-					img[0].draw(it.x-it.sc/2, it.y-it.sc/2, it.x+it.sc/2, it.y+it.sc/2, .6f)
+		children.forEach {
+			val (x, y, sc) = it
+			if(it is Chunks.Block) render.drawBlock(x, y, it.color, it.skin, false, 0f, 1f, sc)
+			else render.resources.imgFrags.let {img ->
+				render.drawBlendAdd {
+					img[0].draw(x-sc/2, y-sc/2, x+sc/2, y+sc/2, .6f)
 				}
 			}
 		}
@@ -80,5 +117,7 @@ class Space():mu.nu.nullpo.gui.common.bg.AbstractBG<Nothing?>(mu.nu.nullpo.gui.c
 
 	companion object {
 		private const val tau = (Math.PI*2).toFloat()
+		private val rad = (640f.pow(2)+480f.pow(2)).pow(.5f)
+
 	}
 }

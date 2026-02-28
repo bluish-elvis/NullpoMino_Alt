@@ -46,24 +46,21 @@ import mu.nu.nullpo.game.component.Field
 import mu.nu.nullpo.game.component.Piece
 import mu.nu.nullpo.game.event.WallkickResult
 import mu.nu.nullpo.game.subsystem.wallkick.Wallkick
+import mu.nu.nullpo.util.GeneralUtil.toInt
 
 class LineAutoplacementWallkick:Wallkick {
 	override fun executeWallkick(
 		x:Int, y:Int, rtDir:Int, rtOld:Int, rtNew:Int, allowUpward:Boolean, piece:Piece, field:Field, ctrl:Controller?
-	): WallkickResult? {
-		var check = 0
-		if(piece.big) {
-			check = 1
-		}
+	):WallkickResult? {
+		val check = piece.big.toInt()
 		if(checkCollisionKick(piece, x, y, rtNew, field)) {
 			val oldPiece = Piece(piece)
 			piece.direction = 1
 			for(curY in field.height*2 downTo 0) {
 				var curX = -field.width
 				while(curX<field.width) {
-					if(!piece.checkCollision(curX, curY, piece.direction, field)) {
+					if(!piece.checkCollision(curX, curY, piece.direction, field))
 						return WallkickResult(curX-x, curY-y, piece.direction)
-					}
 					curX += 1+check
 				}
 			}

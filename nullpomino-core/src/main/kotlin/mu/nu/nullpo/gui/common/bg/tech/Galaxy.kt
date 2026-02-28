@@ -31,13 +31,15 @@
 
 package mu.nu.nullpo.gui.common.bg.tech
 
+import mu.nu.nullpo.gui.common.bg.AbstractBG
 import mu.nu.nullpo.util.GeneralUtil.HSBtoRGB
 import kotlin.math.cos
 import kotlin.math.sin
 import kotlin.random.Random
 
-class Galaxy():mu.nu.nullpo.gui.common.bg.AbstractBG<Nothing?>(mu.nu.nullpo.gui.common.ResourceImage.Blank, Space()) {
-	private class Star() {
+class Galaxy(addBGFX:AbstractBG<*>? = null):
+	AbstractBG<Nothing?>(mu.nu.nullpo.gui.common.ResourceImage.Blank, Stars(addBGFX)) {
+	private class Star {
 		var dist:Float = 0f
 		var rev:Float = 0f
 		fun update(tick:Float) {
@@ -49,13 +51,13 @@ class Galaxy():mu.nu.nullpo.gui.common.bg.AbstractBG<Nothing?>(mu.nu.nullpo.gui.
 	private val children = List(20) {List(16*(it+1)) {Star()}}
 	/** Performs an update tick on the background. Advisably used in onLast.*/
 	override fun update() {
-		children.flatten().forEach {i -> i.update(spdN*.02f)}
 		super.update()
+		children.flatten().forEach {i -> i.update(spdN*.02f)}
 	}
 
 	/** Resets the background to its base state.*/
 	override fun reset() {
-		addBGFX?.reset()
+		super.reset()
 		tick = 0
 		children.forEachIndexed {i, t ->
 			t.forEachIndexed {j, it ->

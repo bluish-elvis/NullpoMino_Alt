@@ -43,9 +43,9 @@ import zeroxfc.nullpo.custom.libs.Interpolation
 import zeroxfc.nullpo.custom.libs.MathHelper.almostEqual
 import kotlin.random.Random
 
-open class BackgroundTGM3StyleNoRotation<T>(img:ResourceImage<T>):AbstractBG<T>(img){
-	private val sizeX=img.width
-	private val sizeY=img.width
+open class BackgroundTGM3StyleNoRotation<T>(img:ResourceImage<T>):AbstractBG<T>(img) {
+	private val sizeX = img.width
+	private val sizeY = img.width
 
 	/**
 	 * Inside each instance:
@@ -60,7 +60,8 @@ open class BackgroundTGM3StyleNoRotation<T>(img:ResourceImage<T>):AbstractBG<T>(
 			scale = it.scale
 			frame = it.frame
 		}
-		fun reset(){
+
+		fun reset() {
 			angle = 0f
 			scale = 1f
 			frame = 0
@@ -70,17 +71,18 @@ open class BackgroundTGM3StyleNoRotation<T>(img:ResourceImage<T>):AbstractBG<T>(
 	private val lastValues = ValueWrapper()
 	private val currentValues = ValueWrapper()
 	private val targetValues = ValueWrapper()
-	private var valueRandomizer:Random=Random.Default
+	private var valueRandomizer:Random = Random.Default
 	/** Panning amount variables.*/
-	private val lastPan=MutableList(2){0f}
-	private val currentPan=MutableList(2){0f}
-	private val targetPan=MutableList(2){0f}
+	private val lastPan = MutableList(2) {0f}
+	private val currentPan = MutableList(2) {0f}
+	private val targetPan = MutableList(2) {0f}
 	private var hasUpdated = false
 
 	init {
 		hasUpdated = true
 		reset()
 	}
+
 	final override fun reset() {
 		if(hasUpdated) {
 			lastValues.reset()
@@ -173,15 +175,14 @@ open class BackgroundTGM3StyleNoRotation<T>(img:ResourceImage<T>):AbstractBG<T>(
 //		if(dimTimer>0) changeImage()
 	}
 
-
 	override fun draw(render:AbstractRenderer, bg:Boolean) {
 		//customHolder.drawImage("blackBG", 0, 0)
-		val imgDim = listOf(sizeX,sizeY).map {it*currentValues.scale}
+		val imgDim = listOf(sizeX, sizeY).map {it*currentValues.scale}
 
 		// Calculate the new "size" where it is basically the size of the smallest non-spined rectangle that can inscribe the new image
 
 		img.draw(
-			 currentPan[0]+320-imgDim[0]/2, currentPan[1]+240-imgDim[1]/2, imgDim[0],
+			currentPan[0]+320-imgDim[0]/2, currentPan[1]+240-imgDim[1]/2, imgDim[0],
 			imgDim[1], 0, 0, sizeX, sizeY
 		)
 	}

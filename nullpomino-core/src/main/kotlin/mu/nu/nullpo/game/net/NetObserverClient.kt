@@ -38,18 +38,15 @@ import java.io.IOException
 class NetObserverClient:NetBaseClient {
 	/** サーバーVersion */
 	@Volatile
-	var serverVersion = 0f
-		private set
+	var serverVersion = 0f; private set
 
 	/** Number of players */
 	@Volatile
-	var playerCount = 0
-		private set
+	var playerCount = 0; private set
 
 	/** Observer count */
 	@Volatile
-	var observerCount = 0
-		private set
+	var observerCount = 0; private set
 
 	/** Default constructor */
 	constructor():super()

@@ -37,23 +37,9 @@ import java.awt.event.ActionEvent
 import java.awt.event.ActionListener
 import java.beans.PropertyChangeEvent
 import java.beans.PropertyChangeListener
-import java.io.File
-import java.io.FileInputStream
-import java.io.FileNotFoundException
-import java.io.FileOutputStream
-import java.io.IOException
-import java.io.ObjectInputStream
-import java.io.ObjectOutputStream
+import java.io.*
 import java.util.concurrent.ExecutionException
-import javax.swing.BorderFactory
-import javax.swing.JButton
-import javax.swing.JDialog
-import javax.swing.JFrame
-import javax.swing.JLabel
-import javax.swing.JPanel
-import javax.swing.JProgressBar
-import javax.swing.SwingWorker
-import javax.swing.WindowConstants
+import javax.swing.*
 
 class RanksIterator(parent:JFrame, inputFile:String, private val outputFile:String, private val numIterations:Int,
 	private val getUIText:(String)->String):
@@ -241,7 +227,8 @@ class RanksIterator(parent:JFrame, inputFile:String, private val outputFile:Stri
 			progressBar.value = totalCompletion
 
 			val message =
-				String.format(getUIText("Progress_Note"), iteration+1, ranks!!.completionPercentage, numIterations, totalCompletion)
+				String.format(getUIText("Progress_Note"), iteration+1, ranks!!.completionPercentage, numIterations,
+					totalCompletion)
 			progressLabel.text = message
 		}
 	}

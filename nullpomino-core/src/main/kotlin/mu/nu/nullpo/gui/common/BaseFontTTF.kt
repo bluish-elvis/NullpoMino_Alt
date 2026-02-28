@@ -41,8 +41,11 @@ interface BaseFontTTF {
 	 * @param color Letter color
 	 * @param size unsupported: Font size
 	 */
-	fun print(x:Float, y:Float, str:String, color:EventReceiver.COLOR = EventReceiver.COLOR.WHITE, alpha:Float = 1f, size:Float = FONT_SIZE.toFloat())
-	fun print(x:Int, y:Int, str:String, color:EventReceiver.COLOR = EventReceiver.COLOR.WHITE, alpha:Float = 1f, size:Int = FONT_SIZE) =
+	fun print(x:Float, y:Float, str:String, color:EventReceiver.COLOR = EventReceiver.COLOR.WHITE, alpha:Float = 1f,
+		size:Float = FONT_SIZE.toFloat())
+
+	fun print(x:Int, y:Int, str:String, color:EventReceiver.COLOR = EventReceiver.COLOR.WHITE, alpha:Float = 1f,
+		size:Int = FONT_SIZE) =
 		print(x.toFloat(), y.toFloat(), str, color, alpha, size.toFloat())
 
 	companion object {

@@ -36,16 +36,8 @@ import mu.nu.nullpo.util.CustomProperties
 import org.apache.logging.log4j.LogManager
 import org.jdesktop.layout.GroupLayout
 import java.awt.BorderLayout
-import java.awt.event.ActionEvent
-import java.awt.event.ActionListener
-import java.awt.event.WindowAdapter
-import java.awt.event.WindowEvent
-import java.io.File
-import java.io.FileInputStream
-import java.io.FileNotFoundException
-import java.io.FileOutputStream
-import java.io.IOException
-import java.io.ObjectInputStream
+import java.awt.event.*
+import java.io.*
 import java.util.Locale
 import javax.swing.*
 
@@ -62,7 +54,7 @@ class AIRanksTool:JFrame(), ActionListener {
 	 * @param str Text
 	 * @return Translated text (If translated text is NOT available, it will return str itself)
 	 */
-	private fun getUIText(str:String):String = propLang.getProperty(str, propLangDefault.getProperty(str, str)) ?: ""
+	private fun getUIText(str:String):String = propLang.getProperty(str, propLangDefault.getProperty(str, str))?:""
 
 	/** UI */
 
@@ -227,7 +219,7 @@ class AIRanksTool:JFrame(), ActionListener {
 		outputFileLabel = JLabel(getUIText("Main_Output_Label"))
 		outputFileField = JTextField(AIRanksConstants.DEFAULT_RANKS_FILE).apply {
 			columns = 20
-			if((inputFileComboBox?.selectedIndex ?: 0)>0) {
+			if((inputFileComboBox?.selectedIndex?:0)>0) {
 				text = inputFileComboBox!!.selectedItem as String
 			}
 			toolTipText = getUIText("Main_Output_Tip")
@@ -271,7 +263,7 @@ class AIRanksTool:JFrame(), ActionListener {
 		ranksFileUsedLabel = JLabel(getUIText("Main_Ranks_File_Used_Label"))
 
 
-		ranksFileUsedComboBox = JComboBox(children ?: arrayOf(" ")).also {
+		ranksFileUsedComboBox = JComboBox(children?:arrayOf(" ")).also {
 			it.selectedIndex = maxOf(0, fileIndex)
 			it.toolTipText = getUIText("Main_Ranks_File_Used_Tooltip")
 			it.actionCommand = "input2"
@@ -499,8 +491,7 @@ class AIRanksTool:JFrame(), ActionListener {
 		/** Log */
 		internal val log = LogManager.getLogger()
 
-		@JvmStatic
-		fun main(args:Array<String>) {
+		@JvmStatic fun main(args:Array<String>) {
 			// Start
 			AIRanksTool()
 		}

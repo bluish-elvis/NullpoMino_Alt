@@ -82,7 +82,8 @@ abstract class BaseFontMedal:BaseFont {
 			)
 		}
 
-	fun printFont(x:Int, y:Int, str:String, tier:Int, scale:Float = 1f, alpha:Float = if(tier==0) 0.5f else 1f, darkness:Float = 0f) =
+	fun printFont(x:Int, y:Int, str:String, tier:Int, scale:Float = 1f, alpha:Float = if(tier==0) 0.5f else 1f,
+		darkness:Float = 0f) =
 		printFont(x.toFloat(), y.toFloat(), str, tier, scale, alpha, darkness)
 	/** 文字列を描画
 	 * @param x X-coordinate
@@ -107,7 +108,7 @@ abstract class BaseFontMedal:BaseFont {
 	 * @param x X-coordinate
 	 * @param y Y-coordinate
 	 * @param str String
-	 * @param color Letter cint
+	 * @param color Letter color
 	 * @param scale Enlargement factor
 	 */
 	override fun printFont(x:Float, y:Float, str:String, color:COLOR, scale:Float, alpha:Float, rainbow:Int) =

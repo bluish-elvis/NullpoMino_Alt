@@ -59,7 +59,7 @@ class FixedSequenceRandomizer:Randomizer() {
 
 	private fun pieceCharToId(c:Char):Int {
 		var i = 0
-		while(i<Piece.PIECE_STANDARD_COUNT) {
+		while(i<Piece.Shape.numTetras) {
 			if(c==Piece.Shape.names[i][0]) break
 			i++
 		}

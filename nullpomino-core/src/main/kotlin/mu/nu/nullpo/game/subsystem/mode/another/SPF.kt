@@ -30,11 +30,7 @@
  */
 package mu.nu.nullpo.game.subsystem.mode.another
 
-import mu.nu.nullpo.game.component.BGM
-import mu.nu.nullpo.game.component.Block
-import mu.nu.nullpo.game.component.Controller
-import mu.nu.nullpo.game.component.Field
-import mu.nu.nullpo.game.event.EventReceiver
+import mu.nu.nullpo.game.component.*
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
 import mu.nu.nullpo.game.event.ScoreEvent
 import mu.nu.nullpo.game.play.GameEngine
@@ -332,7 +328,7 @@ class SPF:AbstractMode() {
 		engine.ignoreHidden = false
 		engine.garbageColorClear = true
 		engine.lineGravityType = LineGravity.CASCADE
-		engine.nextPieceEnable = PIECE_ENABLE.map {it==1}
+		engine.nextPieceEnable = PIECE_ENABLE
 		engine.blockColors = BLOCK_COLORS
 		engine.gemRate = 0.2f
 		engine.randomBlockColor = true
@@ -657,7 +653,7 @@ class SPF:AbstractMode() {
 		val fldPosX = receiver.fieldX(engine)
 		val fldPosY = receiver.fieldY(engine)
 		val pid = engine.playerID
-		val playerColor = EventReceiver.getPlayerColor(pid)
+		val playerColor = COLOR.fromPlayerID(pid)
 
 		// Timer
 		if(pid==0) receiver.drawFont(224, 0, engine.statistics.time.toTimeStr, BASE)
@@ -1195,7 +1191,7 @@ class SPF:AbstractMode() {
 		private const val CURRENT_VERSION = 0
 
 		/** Enabled piece types */
-		private val PIECE_ENABLE = listOf(0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0)
+		private val PIECE_ENABLE:Set<Piece.Shape> = setOf(Piece.Shape.I2)
 
 		/** Block colors */
 		private val BLOCK_COLORS = listOf(Block.COLOR.RED, Block.COLOR.GREEN, Block.COLOR.BLUE, Block.COLOR.YELLOW)
@@ -1485,7 +1481,7 @@ class SPF:AbstractMode() {
 		/** Names of rainbow power settings */
 		private val RAINBOW_POWER_NAMES = listOf("NONE", "50%", "80%", "100%", "50/100%")
 
-		/** Each player's frame cint */
+		/** Each player's frame color-int */
 		private val PLAYER_COLOR_FRAME = listOf(GameEngine.FRAME_COLOR_RED, GameEngine.FRAME_COLOR_BLUE)
 
 		fun getAttackMultiplier(set:Int, map:Int):Double {

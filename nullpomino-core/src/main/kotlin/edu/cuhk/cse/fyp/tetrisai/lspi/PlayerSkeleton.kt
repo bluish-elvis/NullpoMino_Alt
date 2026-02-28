@@ -38,10 +38,8 @@ open class PlayerSkeleton {
 	protected val formatter = DecimalFormat("#00")
 	protected var future:DoubleArray = DoubleArray(BasisFunction.FUTURE_COUNT)
 	protected var past = DoubleArray(BasisFunction.FUTURE_COUNT)
-	open var basisFunctions = BasisFunction()
-		protected set
-	open var twoPlayerBasisFunctions = TwoPlayerBasisFunction()
-		protected set
+	open var basisFunctions = BasisFunction(); protected set
+	open var twoPlayerBasisFunctions = TwoPlayerBasisFunction(); protected set
 	var learns = false
 	var count = 0
 
@@ -125,8 +123,8 @@ open class PlayerSkeleton {
 	open fun pickMove(s1:State, s2:State, legalMoves:Array<IntArray>, oppLegalMoves:Array<IntArray>):Int {
 		fs.resetToCurrentState(s1) //set the state to the current to prepare to simulate next move.
 		fs2.resetToCurrentState(s2)
-		val maxMove =
-			pickBestMove(s1, s2, legalMoves, oppLegalMoves, future) //pick best move returns the highest scoring weighted features
+		val maxMove =  //pick best move returns the highest scoring weighted features
+			pickBestMove(s1, s2, legalMoves, oppLegalMoves, future)
 		fs.makeMove(maxMove) //simulate next step
 		//updates the matrices - adds the current "instance" into its training data
 		if(learns) twoPlayerBasisFunctions.updateMatrices(s1, past, future)

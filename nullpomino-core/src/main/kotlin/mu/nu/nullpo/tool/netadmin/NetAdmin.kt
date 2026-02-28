@@ -32,12 +32,7 @@
 package mu.nu.nullpo.tool.netadmin
 
 import biz.source_code.base64Coder.Base64Coder
-import mu.nu.nullpo.game.net.NetBaseClient
-import mu.nu.nullpo.game.net.NetMessageListener
-import mu.nu.nullpo.game.net.NetPlayerInfo
-import mu.nu.nullpo.game.net.NetRoomInfo
-import mu.nu.nullpo.game.net.NetServerBan
-import mu.nu.nullpo.game.net.NetUtil
+import mu.nu.nullpo.game.net.*
 import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.game.play.GameManager
 import mu.nu.nullpo.util.CustomProperties
@@ -45,27 +40,14 @@ import mu.nu.nullpo.util.GeneralUtil
 import mu.nu.nullpo.util.GeneralUtil.strDateTime
 import net.clarenceho.crypto.RC4
 import org.apache.logging.log4j.LogManager
-import java.awt.BorderLayout
-import java.awt.CardLayout
-import java.awt.Color
-import java.awt.Component
-import java.awt.Dimension
-import java.awt.Toolkit
+import java.awt.*
 import java.awt.datatransfer.StringSelection
-import java.awt.event.ActionEvent
-import java.awt.event.ActionListener
-import java.awt.event.KeyAdapter
-import java.awt.event.KeyEvent
-import java.awt.event.MouseAdapter
-import java.awt.event.MouseEvent
-import java.awt.event.WindowAdapter
-import java.awt.event.WindowEvent
+import java.awt.event.*
 import java.io.FileInputStream
 import java.io.FileOutputStream
 import java.io.IOException
 import java.io.InputStreamReader
-import java.util.Locale
-import java.util.Vector
+import java.util.*
 import javax.swing.*
 import javax.swing.table.DefaultTableModel
 import javax.swing.text.JTextComponent
@@ -74,7 +56,7 @@ import javax.swing.text.StyleConstants
 import kotlin.system.exitProcess
 
 /** NetAdmin - NetServer admin tool */
-class NetAdmin:JFrame(), ActionListener, NetMessageListener {
+internal class NetAdmin:JFrame(), ActionListener, NetMessageListener {
 	//***** Main GUI elements *****
 	/** Layout manager for main screen */
 	private val contentPaneCardLayout:CardLayout = CardLayout()
@@ -371,7 +353,7 @@ class NetAdmin:JFrame(), ActionListener, NetMessageListener {
 			componentPopupMenu = UserPopupMenu(this)
 			addMouseListener(object:MouseAdapter() {
 				override fun mouseClicked(e:MouseEvent?) {
-					e ?: return
+					e?:return
 					if(e.clickCount>=2) {
 						val rowNumber = this@apply.selectedRow
 						if(rowNumber!=-1) {
@@ -557,7 +539,7 @@ class NetAdmin:JFrame(), ActionListener, NetMessageListener {
 
 	/** Add message to console
 	 * @param str Message
-	 * @param fgcolor Text cint (can be null)
+	 * @param fgcolor Text color (can be null)
 	 */
 	private fun addConsoleLog(str:String?, fgcolor:Color? = null) {
 		var sas:SimpleAttributeSet? = null
@@ -574,8 +556,8 @@ class NetAdmin:JFrame(), ActionListener, NetMessageListener {
 	}
 
 	/** Execute a console command
-	 * @param commands Command line (split by every single space)
-	 * @param fullCommandLine Command line (raw String)
+	 * @param commands Command lines (split by every single space)
+	 * @param fullCommandLine Command lines (raw String)
 	 */
 	private fun executeConsoleCommand(commands:List<String>, fullCommandLine:String) {
 		if(commands.isEmpty()||fullCommandLine.isEmpty()) return
@@ -590,7 +572,7 @@ class NetAdmin:JFrame(), ActionListener, NetMessageListener {
 					InputStreamReader(FileInputStream("config/lang/netadmin_help_${Locale.getDefault().country}.txt"), "UTF-8")
 				} catch(e2:IOException) {
 					InputStreamReader(FileInputStream("config/lang/netadmin_help_default.txt"), "UTF-8")
-				}.buffered().use {b->b.forEachLine {addConsoleLog(it)}}
+				}.buffered().use {b -> b.forEachLine {addConsoleLog(it)}}
 
 			} catch(e:IOException) {
 				log.error("Failed to load help file", e)
@@ -893,8 +875,8 @@ class NetAdmin:JFrame(), ActionListener, NetMessageListener {
 			val cStart = GeneralUtil.importCalendarString(message[1])
 			val cExpire = if(message.size>2&&message[2].isNotEmpty()) GeneralUtil.importCalendarString(message[2]) else null
 
-			val strStart = cStart?.strDateTime ?: "???"
-			val strExpire = cExpire?.strDateTime ?: getUIText("Login_Message_Banned_Permanent")
+			val strStart = cStart?.strDateTime?:"???"
+			val strExpire = cExpire?.strDateTime?:getUIText("Login_Message_Banned_Permanent")
 
 			labelLoginMessage.text = String.format(getUIText("Login_Message_Banned"), strStart, strExpire)
 			return
@@ -1058,7 +1040,7 @@ class NetAdmin:JFrame(), ActionListener, NetMessageListener {
 				strTableData[0] = strIP
 				strTableData[1] = strHost
 				strTableData[2] = strType
-				strTableData[3] = pInfo?.strName ?: ""
+				strTableData[3] = pInfo?.strName?:""
 
 				// Add the row data
 				val rowNumber = i-1
@@ -1093,7 +1075,8 @@ class NetAdmin:JFrame(), ActionListener, NetMessageListener {
 		if(message[0]=="ban")
 			if(message.size>3) {
 				val strBanLength = getUIText("BanType"+message[2])
-				addConsoleLog(String.format(getUIText("Console_Ban_Result"), message[1], strBanLength, message[3]), Color(0, 64, 64))
+				addConsoleLog(String.format(getUIText("Console_Ban_Result"), message[1], strBanLength, message[3]),
+					Color(0, 64, 64))
 			}
 		// Ban List
 		if(message[0]=="banlist")
@@ -1107,7 +1090,8 @@ class NetAdmin:JFrame(), ActionListener, NetMessageListener {
 					val strBanLength = getUIText("BanType"+ban.banLength)
 					val strDate = ban.startDate.strDateTime
 
-					addConsoleLog(String.format(getUIText("Console_BanList_Result"), ban.addr, strBanLength, strDate), Color(0, 64, 64))
+					addConsoleLog(String.format(getUIText("Console_BanList_Result"), ban.addr, strBanLength, strDate),
+						Color(0, 64, 64))
 				}
 		// Un-Ban
 		if(message[0]=="unban")
@@ -1416,7 +1400,7 @@ class NetAdmin:JFrame(), ActionListener, NetMessageListener {
 		 * @param str String
 		 * @return Translated GUI text
 		 */
-		private fun getUIText(str:String):String = propLang.getProperty(str) ?: propLangDefault.getProperty(str, str) ?: str
+		private fun getUIText(str:String):String = propLang.getProperty(str)?:propLangDefault.getProperty(str, str)?:str
 
 		/** Copy the selected row to clipboard
 		 * @param table JTable
@@ -1441,7 +1425,7 @@ class NetAdmin:JFrame(), ActionListener, NetMessageListener {
 		}
 
 		/** Program entry point
-		 * @param args Command line options
+		 * @param args Command lines options
 		 */
 		@JvmStatic
 		fun main(args:Array<String>) {

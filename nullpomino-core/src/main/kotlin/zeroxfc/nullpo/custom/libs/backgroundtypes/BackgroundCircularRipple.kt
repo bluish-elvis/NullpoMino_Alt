@@ -50,7 +50,7 @@ class BackgroundCircularRipple<T>(img:ResourceImage<T>, cellWidth:Int? = DEF_GRI
 	var centerX:Int = DEF_PULSE_CENTER_X, var centerY:Int = DEF_PULSE_CENTER_Y,
 	var wavelength:Float = DEF_WAVELENGTH, var waveSpeed:Int = DEF_WAVESPEED,
 	var pulseTimerMax:Int = 200, var pulseBaseScale:Float = BASE_SCALE,
-	var pulseScaleVariance:Float = SCALE_VARIANCE):AbstractBG<T>(img) {
+	var pulseScaleVariance:Float = SCALE_VARIANCE):AbstractBG<T>(img, null) {
 	private var chunkGrid:List<List<ImageChunk>> = emptyList()
 	private var currentPulseTimer = 0
 	private var pulseRadii:ArrayList<Int> = ArrayList(0)

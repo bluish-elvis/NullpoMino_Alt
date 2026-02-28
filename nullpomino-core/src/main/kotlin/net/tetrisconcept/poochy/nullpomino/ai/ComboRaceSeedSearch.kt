@@ -74,7 +74,8 @@ open class ComboRaceSeedSearch:DummyAI() {
 		private var bestPts = 0
 		private var bestNext = 0
 
-		@JvmStatic fun main() {
+		@JvmStatic
+		fun main() {
 			//long start = System.currentTimeMillis();
 			createTables()
 			var bestSeed = 0L
@@ -84,7 +85,7 @@ open class ComboRaceSeedSearch:DummyAI() {
 			var fld:Int
 			var holdID:Int
 			nextQueueIDs = IntArray(MAX_THINK_DEPTH)
-			val nextPieceEnable = List(Piece.PIECE_COUNT) {it<Piece.PIECE_STANDARD_COUNT}
+			val nextPieceEnable = List(Piece.Shape.num) {it<Piece.Shape.numTetras}
 			var rand = BagNoSZORandomizer()
 			rand.setState(nextPieceEnable)
 
@@ -317,7 +318,7 @@ open class ComboRaceSeedSearch:DummyAI() {
 							}
 						}
 
-						if(piece.type==Piece.Shape.O) break
+						if(piece.shape==Piece.Shape.O) break
 					}
 				}
 			}

@@ -31,10 +31,11 @@
 
 package mu.nu.nullpo.gui.common.bg.tech
 
+import mu.nu.nullpo.gui.common.bg.AbstractBG
 import zeroxfc.nullpo.custom.libs.Vector
 import kotlin.random.Random
 
-class Snow():mu.nu.nullpo.gui.common.bg.AbstractBG<Nothing?>(mu.nu.nullpo.gui.common.ResourceImage.Blank) {
+class Snow(addBGFX:AbstractBG<*>? = null):AbstractBG<Nothing?>(mu.nu.nullpo.gui.common.ResourceImage.Blank, addBGFX) {
 	private class Flake(x:Float, vx:Float, vy:Float, var rx:Float, var ry:Float) {
 		var pos = Vector(x, 0f)
 		var vel = Vector(vx, vy)
@@ -54,16 +55,17 @@ class Snow():mu.nu.nullpo.gui.common.bg.AbstractBG<Nothing?>(mu.nu.nullpo.gui.co
 	private val children = mutableListOf<Flake>()
 
 	override fun update() {
+		super.update()
 		tick++
 		if(tick%(if(tick%626>260) 3 else 6)==0)
 			children.add(Flake(Random.nextFloat()*640, Random.nextFloat()*2-1, 1+Random.nextFloat()*.6f,
 				2+Random.nextFloat()*2, 2+Random.nextFloat()*2))
 		children.removeIf {it.update(spdN)}
 		tick %= 1878
-		super.update()
 	}
 	/** Resets the background to its base state.*/
 	override fun reset() {
+		super.reset()
 		children.clear()
 		tick = 0
 	}

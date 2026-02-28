@@ -65,7 +65,7 @@ class GrandSStealth:AbstractGrand() {
 	/** Current BGM */
 	private var bgmLv = 0
 
-	/** Section 内で4-line clearした count */
+	/** Section 内で4-lines clearした count */
 	private var sectionQuads = MutableList(sectionMax) {0}
 	/** Set to true by default, set to false when sectionQuads is below 2 */
 	private var gmQuads = false
@@ -77,7 +77,7 @@ class GrandSStealth:AbstractGrand() {
 	/** Selected start level */
 	private var startLevel = 0
 
-	private val itemBig = BooleanMenuItem("big", "BIG", COLOR.BLUE, false)
+	private val itemBig = BooleanMenuItem("big", "BIG", COLOR.ORANGE, false)
 	/** BigMode */
 	private var big:Boolean by DelegateMenuItem(itemBig)
 
@@ -129,7 +129,7 @@ class GrandSStealth:AbstractGrand() {
 		engine.b2bEnable = true
 		engine.splitB2B = true
 		engine.comboType = GameEngine.COMBO_TYPE_DOUBLE
-		engine.frameSkin = GameEngine.FRAME_COLOR_CYAN
+		engine.frame = GameEngine.Frame.CYAN
 		engine.bigHalf = true
 		engine.bigMove = true
 		engine.staffrollEnable = true
@@ -410,7 +410,7 @@ class GrandSStealth:AbstractGrand() {
 		if(lu>0&&tableBGMFadeout[bgmLv]!=-1&&engine.statistics.level>=tableBGMFadeout[bgmLv]) owner.musMan.fadeSW = true
 	}
 
-	/** Calculates line-clear score
+	/** Calculates lines-clear score
 	 * (This function will be called even if no lines are cleared) */
 	override fun calcScore(engine:GameEngine, ev:ScoreEvent):Int {
 		val pts = super.calcScore(engine, ev)

@@ -32,11 +32,8 @@ package mu.nu.nullpo.game.subsystem.mode
 
 import kotlinx.serialization.serializer
 import mu.nu.nullpo.game.component.*
-import mu.nu.nullpo.game.event.EventReceiver
+import mu.nu.nullpo.game.event.*
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
-import mu.nu.nullpo.game.event.Leaderboard
-import mu.nu.nullpo.game.event.Rankable
-import mu.nu.nullpo.game.event.ScoreEvent
 import mu.nu.nullpo.game.net.NetPlayerClient
 import mu.nu.nullpo.game.net.NetUtil
 import mu.nu.nullpo.game.play.GameEngine
@@ -55,7 +52,7 @@ class MarathonPlus:NetDummyMode() {
 	/** Current BGM */
 	private var bgmLv = 0
 
-	/** Bonus level line count */
+	/** Bonus level lines count */
 	private var bonusLines = 0
 
 	/** Bonus level piece count */
@@ -99,7 +96,7 @@ class MarathonPlus:NetDummyMode() {
 	/** Level at start time */
 	private var startLevel:Boolean by DelegateMenuItem(itemTT)
 
-	private val itemBig = BooleanMenuItem("big", "BIG", COLOR.BLUE, false, true)
+	private val itemBig = BooleanMenuItem("big", "BIG", COLOR.ORANGE, false, true)
 	/** BigMode */
 	private var big:Boolean by DelegateMenuItem(itemBig)
 
@@ -149,7 +146,7 @@ class MarathonPlus:NetDummyMode() {
 		engine.staffrollNoDeath = false
 		engine.staffrollEnableStatistics = true
 		owner.bgMan.bg = if(startLevel) 36 else -1
-		engine.frameSkin = GameEngine.FRAME_COLOR_WHITE
+		engine.frame = GameEngine.Frame.WHITE
 	}
 
 	/** Set the gravity rate
@@ -375,14 +372,15 @@ class MarathonPlus:NetDummyMode() {
 			} else if(!startLevel&&goalType==3&&engine.timerActive) {
 				if(bonusTime>0) {
 					bonusTime--
-					if(bonusTime<=600&&bonusTime%60==0) engine.playSE("countdown")
+					if(bonusTime<=600&&bonusTime%60==0) {
+						engine.playSE("countdown")
+						if(bonusTime<=300) engine.playSE("countdown${bonusTime/60}")
+					}
 					engine.meterValue = bonusTime/2f/18000
 					if(engine.statistics.level<50) {
 						if(norm>0) engine.meterValue += ((1-engine.meterValue)*norm*
 							bonusTime/lastlinetime/tableNorma[goalType][engine.statistics.level/10])
-					} else {
-						engine.meterValue += ((1-engine.meterValue)*(engine.statistics.level-50)*bonusTime)/lastlinetime/150
-					}
+					} else engine.meterValue += ((1-engine.meterValue)*(engine.statistics.level-50)*bonusTime)/lastlinetime/150
 					engine.meterColor = GameEngine.METER_COLOR_LIMIT
 				} else if(!netIsWatch) {
 					engine.lives = 0
@@ -644,7 +642,7 @@ class MarathonPlus:NetDummyMode() {
 		// Update rankings
 		if(!owner.replayMode&&!big&&engine.ai==null) {
 			val type = typeSerial(goalType, turbo, startLevel)
-			ranking[type].add(
+			rankingRank = ranking[type].add(
 				if(goalType>0&&startLevel/*type%2==1 && type>TURBO_MAX*2*/) Rankable.TimeRow(engine.statistics)
 				else Rankable.ScoreRow(engine.statistics)
 			)
@@ -771,14 +769,14 @@ class MarathonPlus:NetDummyMode() {
 
 		/** Fall velocity table (numerators) */
 		private val tableSpeed = listOf(
-			listOf(
+			intArrayOf(
 				5, 8, 10, 12, 16, 20, 24, 30, 36, 42,
 				48, 54, 60, 66, 72, 80, 88, 96, 108, 120,
 				48, 60, 75, 90, 105, 120, 140, 160, 180, 200,
 				240, 280, 320, 360, 420, 480, 600, 720, 840, 960,
 				240, 320, 480, 640, 800, 960, 1200, 1440, 1920, 2400, -1
 			),
-			listOf(
+			intArrayOf(
 				1, 2, 3, 4, 5, 6, 7, 8, 9, 10,
 				11, 12, 13, 14, 15, 16, 17, 18, 19, 20,
 				8, 10, 12, 14, 16, 18, 20, 24, 28, 30,
@@ -786,8 +784,8 @@ class MarathonPlus:NetDummyMode() {
 				64, 80, 96, 128, 160, 192, 224, 256, 288, 320, -1
 			)
 		)
-		private val tableDenominator = listOf(240, 32)
-		private val tableLineDelay = listOf(listOf(12, 24, 16, 0), listOf(6, 18, 8, 0))
+		private val tableDenominator = intArrayOf(240, 32)
+		private val tableLineDelay = listOf(intArrayOf(12, 24, 16, 0), intArrayOf(6, 18, 8, 0))
 		private val ARE_TABLE = listOf(
 			15, 15, 15, 15, 14, 14,
 			13, 12, 11, 10, 9, 8, 7, 6, 5, 15

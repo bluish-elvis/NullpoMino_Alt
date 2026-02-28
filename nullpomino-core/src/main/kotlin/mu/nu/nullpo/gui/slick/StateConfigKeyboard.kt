@@ -35,9 +35,7 @@ import mu.nu.nullpo.gui.common.BaseFont
 import mu.nu.nullpo.gui.common.GameKeyDummy
 import mu.nu.nullpo.gui.slick.img.FontNormal
 import mu.nu.nullpo.util.GeneralUtil.toTimeStr
-import org.newdawn.slick.GameContainer
-import org.newdawn.slick.Graphics
-import org.newdawn.slick.Input
+import org.newdawn.slick.*
 import org.newdawn.slick.state.BasicGameState
 import org.newdawn.slick.state.StateBasedGame
 
@@ -96,7 +94,7 @@ internal class StateConfigKeyboard:BasicGameState() {
 	 */
 	private fun getKeyName(key:Int):String {
 		val str = org.lwjgl.input.Keyboard.getKeyName(key)
-		return str?.uppercase() ?: "$key"
+		return str?.uppercase()?:"$key"
 	}
 
 	/* Draw the screen */

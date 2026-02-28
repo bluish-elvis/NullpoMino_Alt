@@ -51,10 +51,10 @@ import java.util.zip.GZIPInputStream
 internal class StateReplaySelect:BaseMenuScrollState() {
 	private var directoryPlace = mutableListOf<String>()
 	private var cursorHistory = mutableListOf<Int>()
-	private fun dirName(it:String) = modeManager[it]?.name ?: it
+	private fun dirName(it:String) = modeManager[it]?.name?:it
 	private var listInternal:List<ReplayCol> = emptyList()
 	override var list:List<String>
-		get() = listInternal.map {(if(it.dir) dirName(it.name) else null) ?: it.name}
+		get() = listInternal.map {(if(it.dir) dirName(it.name) else null)?:it.name}
 		set(value) {}
 
 	private data class ReplayCol(val file:File, val name:String,

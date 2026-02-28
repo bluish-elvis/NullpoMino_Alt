@@ -79,7 +79,7 @@ class SubscriberChallenge:NetDummyMode() {
 	/** Game type  */
 	private var goalType:Int by DelegateMenuItem(itemMode)
 
-	private val itemBig = BooleanMenuItem("big", "BIG", COLOR.BLUE, false)
+	private val itemBig = BooleanMenuItem("big", "BIG", COLOR.ORANGE, false)
 	/** BigMode */
 	private var big:Boolean by DelegateMenuItem(itemBig)
 
@@ -94,7 +94,7 @@ class SubscriberChallenge:NetDummyMode() {
 	private var rankingRank = 0
 	/** Rankings' scores  */
 	private val rankingScore = List(RANKING_TYPE) {MutableList(rankingMax) {0L}}
-	/** Rankings' line counts  */
+	/** Rankings' lines counts  */
 	private val rankingLines = List(RANKING_TYPE) {MutableList(rankingMax) {0}}
 	/** Rankings' times  */
 	private val rankingTime = List(RANKING_TYPE) {MutableList(rankingMax) {-1}}
@@ -134,7 +134,7 @@ class SubscriberChallenge:NetDummyMode() {
 			netPlayerName = owner.replayProp.getProperty("${engine.playerID}.net.netPlayerName", "")
 		}
 		owner.bgMan.bg = startLevel
-		engine.frameSkin = GameEngine.FRAME_COLOR_GREEN
+		engine.frame = GameEngine.Frame.GREEN
 	}
 	/**
 	 * Set the gravity rate

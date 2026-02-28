@@ -34,7 +34,7 @@ import mu.nu.nullpo.game.component.Block
 import mu.nu.nullpo.game.component.Block.ATTRIBUTE
 import mu.nu.nullpo.game.component.Controller
 import mu.nu.nullpo.game.component.Field
-import mu.nu.nullpo.game.event.EventReceiver
+import mu.nu.nullpo.game.event.EventReceiver.COLOR
 import mu.nu.nullpo.game.event.ScoreEvent
 import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.game.play.LineGravity
@@ -108,7 +108,7 @@ class MarathonSquare:AbstractMode() {
 		} else
 			loadSetting(engine, owner.replayProp)
 
-		engine.frameSkin = GameEngine.FRAME_COLOR_PURPLE
+		engine.frame = GameEngine.Frame.PURPLE
 	}
 
 	/** Set the gravity speed
@@ -188,7 +188,7 @@ class MarathonSquare:AbstractMode() {
 			else -> "OFF"
 		}
 		drawMenu(
-			engine, receiver, 0, EventReceiver.COLOR.BLUE, 0, "GAME TYPE" to GAMETYPE_NAME[gametype], "OUTLINE" to strOutline,
+			engine, receiver, 0, COLOR.BLUE, 0, "GAME TYPE" to GAMETYPE_NAME[gametype], "OUTLINE" to strOutline,
 			"SPIN BONUS" to if(twistEnableType==0) "OFF" else if(twistEnableType==1) "T-ONLY" else "ALL",
 			"AVALANCHE" to if(tntAvalanche) "TNT" else "WORLDS",
 			"GRAYOUT" to grayoutStr
@@ -232,7 +232,7 @@ class MarathonSquare:AbstractMode() {
 
 	/* Renders HUD (leaderboard or game statistics) */
 	override fun renderLast(engine:GameEngine) {
-		receiver.drawScore(engine, 0, 0, "SQUARE (${GAMETYPE_NAME[gametype]})", BASE, EventReceiver.COLOR.COBALT)
+		receiver.drawScore(engine, 0, 0, "SQUARE (${GAMETYPE_NAME[gametype]})", BASE, COLOR.COBALT)
 
 		if(engine.stat==GameEngine.Status.SETTING||engine.stat==GameEngine.Status.RESULT&&!owner.replayMode) {
 			if(!owner.replayMode&&engine.ai==null) {
@@ -240,13 +240,13 @@ class MarathonSquare:AbstractMode() {
 				val topY = if(receiver.nextDisplayType==2&&gametype==0) 6 else 4
 
 				when(gametype) {
-					0 -> receiver.drawScore(engine, 3, topY-1, "SCORE SQUARE TIME", BASE, EventReceiver.COLOR.BLUE, scale)
-					1 -> receiver.drawScore(engine, 3, 3, "SCORE SQUARE", BASE, EventReceiver.COLOR.BLUE)
-					2 -> receiver.drawScore(engine, 3, 3, "TIME     SQUARE", BASE, EventReceiver.COLOR.BLUE)
+					0 -> receiver.drawScore(engine, 3, topY-1, "SCORE SQUARE TIME", BASE, COLOR.BLUE, scale)
+					1 -> receiver.drawScore(engine, 3, 3, "SCORE SQUARE", BASE, COLOR.BLUE)
+					2 -> receiver.drawScore(engine, 3, 3, "TIME     SQUARE", BASE, COLOR.BLUE)
 				}
 
 				for(i in 0..<rankingMax) {
-					receiver.drawScore(engine, 0, topY+i, "%2d".format(i+1), GRADE, EventReceiver.COLOR.YELLOW, scale)
+					receiver.drawScore(engine, 0, topY+i, "%2d".format(i+1), GRADE, COLOR.YELLOW, scale)
 					when(gametype) {
 						0 -> {
 							receiver.drawScore(engine, 3, topY+i, "${rankingScore[gametype][i]}", BASE, i==rankingRank, scale)
@@ -268,16 +268,16 @@ class MarathonSquare:AbstractMode() {
 				}
 			}
 		} else {
-			receiver.drawScore(engine, 0, 3, "Score", BASE, EventReceiver.COLOR.BLUE)
+			receiver.drawScore(engine, 0, 3, "Score", BASE, COLOR.BLUE)
 			receiver.drawScore(engine, 0, 4, "${engine.statistics.score}(+$lastScore)", BASE)
 
-			receiver.drawScore(engine, 0, 6, "LINE", BASE, EventReceiver.COLOR.BLUE)
+			receiver.drawScore(engine, 0, 6, "LINE", BASE, COLOR.BLUE)
 			receiver.drawScore(engine, 0, 7, "${engine.statistics.lines}", BASE)
 
-			receiver.drawScore(engine, 0, 9, "SQUARE", BASE, EventReceiver.COLOR.BLUE)
+			receiver.drawScore(engine, 0, 9, "SQUARE", BASE, COLOR.BLUE)
 			receiver.drawScore(engine, 0, 10, "$squares", BASE)
 
-			receiver.drawScore(engine, 0, 12, "Time", BASE, EventReceiver.COLOR.BLUE)
+			receiver.drawScore(engine, 0, 12, "Time", BASE, COLOR.BLUE)
 			if(gametype==1) {
 				// Ultra timer
 				val time = maxOf(0, ULTRA_MAX_TIME-engine.statistics.time)
@@ -355,7 +355,7 @@ class MarathonSquare:AbstractMode() {
 				}
 	}
 
-	/* Calculates line-clear score
+	/* Calculates lines-clear score
  (This function will be called even if no lines are cleared) */
 	override fun calcScore(engine:GameEngine, ev:ScoreEvent):Int {
 		val li = ev.lines
@@ -431,14 +431,14 @@ class MarathonSquare:AbstractMode() {
 					field.getBlock(x, y)?.setAttribute(true, ATTRIBUTE.ANTIGRAVITY)
 					field.getBlock(x, y-1)?.setAttribute(true, ATTRIBUTE.ANTIGRAVITY)
 				}
-		// Reset line flags
+		// Reset lines flags
 		for(y in -1*hiddenHeight..<height)
 			engine.field.setLineFlag(y, false)
 		// Set cascade flag
 		engine.lineGravityType = LineGravity.CASCADE
 	}
 
-	/* When the line clear ends */
+	/* When the lines clear ends */
 	override fun lineClearEnd(engine:GameEngine):Boolean {
 		if(engine.lineGravityType==LineGravity.CASCADE&&engine.lineGravityTotalLines>0&&tntAvalanche) {
 			val field = engine.field
@@ -463,14 +463,14 @@ class MarathonSquare:AbstractMode() {
 
 	/* Results screen */
 	override fun renderResult(engine:GameEngine) {
-		receiver.drawMenu(engine, 0, 1, "PLAY DATA", BASE, EventReceiver.COLOR.ORANGE)
+		receiver.drawMenu(engine, 0, 1, "PLAY DATA", BASE, COLOR.ORANGE)
 
 		drawResult(
-			engine, receiver, 3, EventReceiver.COLOR.BLUE, "Score", "%10d".format(engine.statistics.score),
+			engine, receiver, 3, COLOR.BLUE, "Score", "%10d".format(engine.statistics.score),
 			"LINE", "%10d".format(engine.statistics.lines), "SQUARE", "%10d".format(squares), "Time",
 			"%10s".format(engine.statistics.time.toTimeStr)
 		)
-		drawResultRank(engine, receiver, 11, EventReceiver.COLOR.BLUE, rankingRank)
+		drawResultRank(engine, receiver, 11, COLOR.BLUE, rankingRank)
 	}
 
 	/* This function will be called when the replay data is going to be saved */

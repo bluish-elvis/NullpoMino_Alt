@@ -104,7 +104,7 @@ class MarathonExtreme:NetDummyMode() {
 		engine.staffrollEnableStatistics = true
 
 		engine.owner.bgMan.bg = startLevel
-		engine.frameSkin = GameEngine.FRAME_COLOR_RED
+		engine.frame = GameEngine.Frame.RED
 	}
 
 	/** Set the gravity rate
@@ -157,15 +157,19 @@ class MarathonExtreme:NetDummyMode() {
 		return true
 	}
 
-	/* Called for initialization during "Ready" screen */
-	override fun startGame(engine:GameEngine) {
+	override fun onSettingChanged(engine:GameEngine) {
 		engine.statistics.level = startLevel
 		engine.statistics.levelDispAdd = 1
 		engine.b2bEnable = true
 		engine.splitB2B = true
 		engine.comboType = GameEngine.COMBO_TYPE_NORMAL
 		engine.big = big
+		setSpeed(engine)
 
+		super.onSettingChanged(engine)
+	}
+	/* Called for initialization during "Ready" screen */
+	override fun startGame(engine:GameEngine) {
 		owner.musMan.bgm = if(netIsWatch) BGM.Silent
 		else tableBGM[bgmLv]
 
@@ -174,7 +178,6 @@ class MarathonExtreme:NetDummyMode() {
 		engine.useAllSpinBonus = true
 		engine.twistEnableEZ = true
 
-		setSpeed(engine)
 	}
 
 	override fun renderFirst(engine:GameEngine) {

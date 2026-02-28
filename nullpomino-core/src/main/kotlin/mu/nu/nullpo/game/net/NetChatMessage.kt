@@ -35,7 +35,7 @@ import mu.nu.nullpo.util.GeneralUtil
 import mu.nu.nullpo.util.GeneralUtil.strGMT
 import org.apache.logging.log4j.LogManager
 import java.io.Serializable
-import java.util.Calendar
+import java.util.*
 
 /** Chat message */
 class NetChatMessage:Serializable {

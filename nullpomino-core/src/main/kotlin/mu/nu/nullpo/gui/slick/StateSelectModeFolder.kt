@@ -41,9 +41,9 @@ import org.newdawn.slick.state.GameState
 import org.newdawn.slick.state.StateBasedGame
 import org.newdawn.slick.state.transition.EmptyTransition
 import org.newdawn.slick.state.transition.HorizontalSplitTransition
-import java.io.FileReader
+import java.io.FileInputStream
 import java.io.IOException
-import java.util.LinkedList
+import java.util.*
 
 /** Mode folder select */
 internal class StateSelectModeFolder:BaseMenuScrollState() {
@@ -80,7 +80,7 @@ internal class StateSelectModeFolder:BaseMenuScrollState() {
 		val str2 = str.replace(' ', '_').replace('(', 'l')
 			.replace(')', 'r')
 		return NullpoMinoSlick.propModeDesc.getProperty("_$str2")
-			?: NullpoMinoSlick.propDefaultModeDesc.getProperty("_$str2", "_$str2") ?: str2
+			?:NullpoMinoSlick.propDefaultModeDesc.getProperty("_$str2", "_$str2")?:str2
 	}
 
 	/* Render screen */
@@ -109,7 +109,7 @@ internal class StateSelectModeFolder:BaseMenuScrollState() {
 		override fun init(firstState:GameState?, secondState:GameState?) {
 			super.init(firstState, secondState)
 			if(secondState is StateSelectMode) {
-				secondState.strCurrentFolder = folderName ?: ""
+				secondState.strCurrentFolder = folderName?:""
 				secondState.isTopLevel = folderName==null
 			}
 		}
@@ -146,33 +146,35 @@ internal class StateSelectModeFolder:BaseMenuScrollState() {
 
 			try {
 				var strFolder = ""
-				FileReader("config/list/modefolder.lst").buffered().use {b ->
-					b.forEachLine {s ->
-						val str = s.trim {it<=' '} // Trim the space
+				this::class.java.getResource("/modefolder.lst")?.file?.let {f ->
+					FileInputStream(f).bufferedReader().use {b ->
+						b.forEachLine {s ->
+							val str = s.trim {it<=' '} // Trim the space
 
-						if(str.startsWith("#")) {
-							// Commment-line. Ignore it.
-						} else if(str.startsWith(":")) {
-							// New folder
-							strFolder = str.substring(1)
-							if(!listFolder.contains(strFolder)) {
-								listFolder.add(strFolder)
-								val listMode = LinkedList<String>()
-								mapFolder[strFolder] = listMode
-							}
-						} else if(str.isNotEmpty())
-						// Mode name
-							if(strFolder.isEmpty()) {
-								log.debug("(top-level).$str")
-								listTopLevelModes.add(str)
-							} else {
-								val listMode = mapFolder[strFolder]
-								if(listMode!=null&&!listMode.contains(str)) {
-									log.debug("$strFolder.$str")
-									listMode.add(str)
+							if(str.startsWith("#")) {
+								// Commment-lines. Ignore it.
+							} else if(str.startsWith(":")) {
+								// New folder
+								strFolder = str.substring(1)
+								if(!listFolder.contains(strFolder)) {
+									listFolder.add(strFolder)
+									val listMode = LinkedList<String>()
 									mapFolder[strFolder] = listMode
 								}
-							}
+							} else if(str.isNotEmpty())
+							// Mode name
+								if(strFolder.isEmpty()) {
+									log.debug("(top-level).$str")
+									listTopLevelModes.add(str)
+								} else {
+									val listMode = mapFolder[strFolder]
+									if(listMode!=null&&!listMode.contains(str)) {
+										log.debug("$strFolder.$str")
+										listMode.add(str)
+										mapFolder[strFolder] = listMode
+									}
+								}
+						}
 					}
 				}
 			} catch(e:IOException) {

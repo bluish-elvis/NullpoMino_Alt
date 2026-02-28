@@ -37,9 +37,7 @@ import java.io.UnsupportedEncodingException
 import java.net.URLDecoder
 import java.net.URLEncoder
 import java.nio.charset.StandardCharsets
-import java.util.zip.DataFormatException
-import java.util.zip.Deflater
-import java.util.zip.Inflater
+import java.util.zip.*
 
 /** Network utils */
 object NetUtil {
@@ -160,8 +158,7 @@ object NetUtil {
 	 * @param level Compression level (0-9)
 	 * @return Compressed byte array (byte[])
 	 */
-	@JvmOverloads
-	fun compressByteArray(input:ByteArray, level:Int = Deflater.BEST_COMPRESSION):ByteArray {
+	@JvmOverloads fun compressByteArray(input:ByteArray, level:Int = Deflater.BEST_COMPRESSION):ByteArray {
 		// Create the compressor with the highest level of compression
 		val compressor = Deflater(level)
 
@@ -217,9 +214,8 @@ object NetUtil {
 	 * @param level Compression level (0-9)
 	 * @return Compressed + Base64 encoded String
 	 */
-	@JvmOverloads
-	fun compressString(input:String?, level:Int = Deflater.BEST_COMPRESSION):String {
-		val bCompressed = compressByteArray(stringToBytes(input ?: ""), level)
+	@JvmOverloads fun compressString(input:String?, level:Int = Deflater.BEST_COMPRESSION):String {
+		val bCompressed = compressByteArray(stringToBytes(input?:""), level)
 		val cCompressed = Base64Coder.encode(bCompressed)
 		return String(cCompressed)
 	}

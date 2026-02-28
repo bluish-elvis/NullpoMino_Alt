@@ -38,6 +38,7 @@ class LevelGrandMenuItem(color:EventReceiver.COLOR, maxSection:Int = 9, showG:Bo
 	constructor(color:EventReceiver.COLOR, showG:Boolean = true, showD:Boolean = true):this(
 		color, 9, showG, showD
 	)
+
 	override val valueString:String
 		get() = "${value*100}"
 }

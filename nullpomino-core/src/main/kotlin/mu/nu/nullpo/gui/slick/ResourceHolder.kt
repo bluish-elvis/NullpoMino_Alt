@@ -82,13 +82,16 @@ object ResourceHolder:mu.nu.nullpo.gui.common.ResourceHolder() {
 	override val imgFrameOld = super.imgFrameOld.map {ResourceImageSlick(it)}
 
 	/** Field background */
-	override val imgFieldBG = super.imgFieldBG.map {ResourceImageSlick(it)}
+	override val imgFieldBG = super.imgFieldBG.map {it.map {i -> ResourceImageSlick(i)}}
+
+	/** Field background Overlay*/
+	override val imgFieldBGO = ResourceImageSlick(super.imgFieldBGO)
 	//public static Image imgFieldbg;
 	override val imgFrags = super.imgFrags.map {ResourceImageSlick(it)}
-	/** Beam animation during line clears */
+	/** Beam animation during lines clears */
 	override val imgLine = super.imgLine.map {ResourceImageSlick(it)}
 
-	/** Block spatter animation during line clears */
+	/** Block spatter animation during lines clears */
 	override val imgBreak = super.imgBreak.map {it -> it.map {ResourceImageSlick(it)}}
 
 	/** Effects for clearing gem blocks */
@@ -114,14 +117,16 @@ object ResourceHolder:mu.nu.nullpo.gui.common.ResourceHolder() {
 	internal var ttfFont:UnicodeFont? = null
 
 	/** Sound effects */
-	internal var soundManager:SoundManager = SoundManager()
+	internal var soundManager:SoundManager = SoundManager(soundSet.size)
 
 	/** BGM */
 	private var bgm:List<MutableList<Pair<Music?, Boolean>>> = emptyList()
 
+	private var jingle:List<MutableList<Pair<Music?, Boolean>>> = emptyList()
+
 	/** Current BGM number */
 	private var bgmint:Pair<Int, Int> = 0 to 0
-	var bgmPlaying: BGM? = null; private set
+	var bgmPlaying:BGM? = null; private set
 
 	/** 画像や音声を読み込み */
 	fun load() {
@@ -158,7 +163,7 @@ object ResourceHolder:mu.nu.nullpo.gui.common.ResourceHolder() {
 		bgm = BGM.all.map {MutableList(it.size) {null to false}}
 		bgmPlaying = null
 
-		if(pCo.audio.bgmPreload) BGM.all.forEach { list ->
+		if(pCo.audio.bgmPreload) BGM.all.forEach {list ->
 			list.forEach {loadBGM(it, false)}
 		}
 	}
@@ -192,7 +197,7 @@ object ResourceHolder:mu.nu.nullpo.gui.common.ResourceHolder() {
 	 * @param _m enum [mu.nu.nullpo.game.component.BGM]
 	 * @param showErr 例外が発生したときにコンソールに表示する
 	 */
-	private fun loadBGM(_m: BGM, showErr:Boolean = false) {
+	private fun loadBGM(_m:BGM, showErr:Boolean = false) {
 		if(!pCo.audio.bgm) return
 		val name = _m.name
 		val n = _m.longName
@@ -222,7 +227,7 @@ object ResourceHolder:mu.nu.nullpo.gui.common.ResourceHolder() {
 	/** 指定した numberのBGMを再生
 	 * @param m enums of BGM [mu.nu.nullpo.game.component.BGM]
 	 */
-	internal fun bgmStart(m: BGM) {
+	internal fun bgmStart(m:BGM) {
 		if(!pCo.audio.bgm) return
 		bgmStop()
 		val x = minOf(m.id, bgm.size-1)
@@ -231,7 +236,7 @@ object ResourceHolder:mu.nu.nullpo.gui.common.ResourceHolder() {
 			if(it<=0) return bgmStop()
 		}
 
-		if(m!= BGM.Silent&&m!=bgmPlaying) {
+		if(m!=BGM.Silent&&m!=bgmPlaying) {
 			bgm[x][y].first?.also {
 				try {
 					val z = BGM.values.indexOf(m)
@@ -240,7 +245,7 @@ object ResourceHolder:mu.nu.nullpo.gui.common.ResourceHolder() {
 				} catch(e:Throwable) {
 					log.error("Failed to play BGM $x:$y ${m.longName}", e)
 				}
-			} ?: loadBGM(m, true)
+			}?:loadBGM(m, true)
 
 			bgmPlaying = m
 			bgmint = x to y
@@ -260,7 +265,7 @@ object ResourceHolder:mu.nu.nullpo.gui.common.ResourceHolder() {
 	/** BGM再生中かどうか
 	 * @return 再生中ならtrue
 	 */
-	internal val bgmIsPlaying get() = bgmPlaying!=null&&(bgm[bgmint.first][bgmint.second].first?.playing() ?: false)
+	internal val bgmIsPlaying get() = bgmPlaying!=null&&(bgm[bgmint.first][bgmint.second].first?.playing()?:false)
 
 	internal val bgmIsLooping get() = bgmPlaying!=null&&bgm[bgmint.first][bgmint.second].second
 

@@ -32,10 +32,7 @@
 package mu.nu.nullpo.gui.common.fx
 
 import mu.nu.nullpo.gui.common.AbstractRenderer
-import mu.nu.nullpo.gui.common.fx.FragAnim.ANIM.BLOCK
-import mu.nu.nullpo.gui.common.fx.FragAnim.ANIM.GEM
-import mu.nu.nullpo.gui.common.fx.FragAnim.ANIM.HANABI
-import mu.nu.nullpo.gui.common.fx.FragAnim.ANIM.SPARK
+import mu.nu.nullpo.gui.common.fx.FragAnim.ANIM.*
 import zeroxfc.nullpo.custom.libs.Vector
 
 class FragAnim(val type:ANIM, x:Float, y:Float, val color:Int, val spd:Int = 0, scale:Float = 1f, alpha:Float = 1f,

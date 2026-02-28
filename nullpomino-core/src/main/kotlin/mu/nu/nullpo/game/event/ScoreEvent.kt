@@ -57,7 +57,7 @@ data class ScoreEvent(val piece:Piece? = null, val lines:Int = 0, val b2b:Int = 
 		return !(lines!=other.lines||split!=other.split||piece!=other.piece||twistType!=other.twistType||combo!=other.combo||b2b!=other.b2b)
 	}
 
-	override fun toString():String = "sc<${piece?.type?.name},$lines,$b2b,$combo,${twistType?.name},${split.toInt()}>"
+	override fun toString():String = "sc<${piece?.shape?.name},$lines,$b2b,$combo,${twistType?.name},${split.toInt()}>"
 	override fun hashCode():Int {
 		var result = lines
 		result = 31*result+split.hashCode()

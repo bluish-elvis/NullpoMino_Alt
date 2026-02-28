@@ -50,7 +50,7 @@ import mu.nu.nullpo.game.subsystem.wallkick.Wallkick
 class MagicalChallengeWallkick:Wallkick {
 	override fun executeWallkick(
 		x:Int, y:Int, rtDir:Int, rtOld:Int, rtNew:Int, allowUpward:Boolean, piece:Piece, field:Field, ctrl:Controller?
-	): WallkickResult? = when(piece.id) {
+	):WallkickResult? = when(piece.id) {
 		0 -> when(rtNew) {
 			0, 2 -> if(checkCell(x+2, y+1, field)) testWallkick(piece, x, y, -2, 0, rtNew, field)
 			else if(checkCell(x+3, y+1, field)) testWallkick(piece, x, y, -1, 0, rtNew, field)
@@ -217,9 +217,8 @@ class MagicalChallengeWallkick:Wallkick {
 		else -> null
 	}
 
-	private fun testWallkick(piece:Piece, x:Int, y:Int, i:Int, j:Int, rtNew:Int, field:Field): WallkickResult? =
+	private fun testWallkick(piece:Piece, x:Int, y:Int, i:Int, j:Int, rtNew:Int, field:Field):WallkickResult? =
 		if(piece.checkCollision(x+i, y+j, rtNew, field)) null else WallkickResult(i, j, rtNew)
 
-	private fun checkCell(x:Int, y:Int, fld:Field):Boolean =
-		x>=fld.width||y>=fld.height||fld.getCoordAttribute(x, y)==3||fld.getCoordAttribute(x, y)!=2&&fld.getBlockColor(x, y)!=null
+	private fun checkCell(x:Int, y:Int, fld:Field):Boolean = !fld.getCoordVaild(x, y, true)
 }

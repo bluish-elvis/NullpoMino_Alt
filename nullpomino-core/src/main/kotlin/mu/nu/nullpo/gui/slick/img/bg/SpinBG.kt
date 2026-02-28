@@ -35,7 +35,7 @@ import kotlin.math.absoluteValue
 import kotlin.math.sin
 
 class SpinBG(bgi:mu.nu.nullpo.gui.slick.ResourceImageSlick, addBGFX:mu.nu.nullpo.gui.common.bg.AbstractBG<*>? = null):
-	AbstractBG(bgi,addBGFX) {
+	AbstractBG(bgi, addBGFX) {
 	val sc get() = ((1+sin(res.rotation*RG*2).absoluteValue/3)*640/minOf(res.width, res.height))
 	val cx get() = res.width/2*sc
 	val cy get() = res.height/2*sc

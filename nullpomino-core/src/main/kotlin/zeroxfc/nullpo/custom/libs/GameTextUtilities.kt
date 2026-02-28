@@ -40,7 +40,6 @@ import mu.nu.nullpo.game.event.EventReceiver
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
 import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.gui.common.BaseFont.FONT.BASE
-import zeroxfc.nullpo.custom.libs.MathHelper.pythonModulo
 import kotlin.random.Random
 
 object GameTextUtilities {
@@ -100,7 +99,7 @@ object GameTextUtilities {
 	 */
 	fun getCurrentCharacter(offset:Int):Char {
 		var i = CharacterPhase+offset
-		i = i.pythonModulo(CHARACTERS.length)
+		i = i.mod(CHARACTERS.length)
 		return CHARACTERS[i]
 	}
 	/**
@@ -110,7 +109,7 @@ object GameTextUtilities {
 	 */
 	@JvmOverloads
 	fun updatePhase(x:Int = 1) {
-		CharacterPhase = (CharacterPhase+x).pythonModulo(CHARACTERS.length)
+		CharacterPhase = (CharacterPhase+x).mod(CHARACTERS.length)
 	}
 	/**
 	 * Resets phase to 0.

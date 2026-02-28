@@ -62,14 +62,14 @@ class RetroModern:AbstractMode() {
 
 	private var special = false
 
-	private val itemMode = StringsMenuItem("gametype", "DIFFICULTY", COLOR.BLUE, 0, GAMETYPE_NAME)
+	private val itemMode = EnumMenuItem("gametype", "DIFFICULTY", COLOR.BLUE, GameType.NORMAL, GameType.entries)
 	/** Selected game type */
-	private var gameType:Int by DelegateMenuItem(itemMode)
+	private var gameType:GameType by DelegateMenuItem(itemMode)
 
-	private val itemLevel = LevelMenuItem("startlevel", "LEVEL", COLOR.BLUE, 0, 0..15, false, true)
+	private val itemLevel = LevelMenuItem("startlevel", "LEVEL", COLOR.BLUE, 0, 0..15, true, true)
 	/** Selected starting level */
 	private var startLevel:Int by DelegateMenuItem(itemLevel)
-	private val itemBig = BooleanMenuItem("big", "BIG", COLOR.BLUE, false)
+	private val itemBig = BooleanMenuItem("big", "BIG", COLOR.ORANGE, false)
 	/** BigMode */
 	private var big:Boolean by DelegateMenuItem(itemBig)
 
@@ -83,7 +83,7 @@ class RetroModern:AbstractMode() {
 
 	/** Ranking records */
 	override val ranking = List(GAMETYPE_MAX) {
-		Leaderboard(rankingMax, kotlinx.serialization.serializer<List<Rankable.ScoreRow>>()){Rankable.ScoreRow()}
+		Leaderboard(rankingMax, kotlinx.serialization.serializer<List<Rankable.ScoreRow>>()) {Rankable.ScoreRow()}
 	}
 	/** Returns the name of this mode */
 	override val name = "Retro Modern.S"
@@ -126,7 +126,7 @@ class RetroModern:AbstractMode() {
 		engine.statistics.level = startLevel
 		setSpeed(engine)
 		owner.bgMan.bg = levelBG[startLevel]
-		engine.frameSkin = GameEngine.FRAME_SKIN_HEBO
+		engine.frame = GameEngine.Frame.HEBO
 	}
 
 	/** Set the gravity speed
@@ -134,10 +134,9 @@ class RetroModern:AbstractMode() {
 	 */
 	override fun setSpeed(engine:GameEngine) {
 		val lv = maxOf(0, engine.statistics.level)
-
-		engine.ruleOpt.lockResetMove = gameType!=0
-		engine.ruleOpt.lockResetSpin = gameType!=1
-		engine.ruleOpt.lockResetWallkick = gameType!=2
+		engine.ruleOpt.lockResetMove = gameType!=GameType.EASY
+		engine.ruleOpt.lockResetSpin = gameType!=GameType.NORMAL
+		engine.ruleOpt.lockResetWallkick = gameType!=GameType.INTENSE
 		engine.ruleOpt.lockResetFall = true
 		engine.ruleOpt.softdropLock = true
 		engine.ruleOpt.softdropMultiplyNativeSpeed = false
@@ -145,15 +144,15 @@ class RetroModern:AbstractMode() {
 		engine.ruleOpt.softdropSpeed = 1f
 		engine.owSDSpd = -1
 		if(lv<=MAX_LEVEL) {
-			receiver.setBGSpd(owner, .5f+gameType*.4f)
-			engine.speed.replace(tableSpd[gameType][lv])
+			receiver.setBGSpd(owner, .5f+gameType.ordinal*.4f)
+			engine.speed.replace(gameType.spd[lv])
 		} else if(lv==MAX_LEVEL+1)
 			engine.speed.replace(SpeedParam(1, 24, 31, 57, 44, 15))
 		else {
-			engine.ruleOpt.lockResetMove = gameType==0||gameType==4
+			engine.ruleOpt.lockResetMove = gameType==GameType.EASY||gameType==GameType.EXTRA
 			engine.speed.replace(
-				if(gameType==4) SpeedParam(-1, 1, 15, 25, 22, 10)
-				else SpeedParam(1, 1, 17, 42, 21-gameType, 6)
+				if(gameType==GameType.EXTRA) SpeedParam(-1, 1, 15, 25, 22, 10)
+				else SpeedParam(1, 1, 17, 42, 21-gameType.ordinal, 6)
 			)
 		}
 
@@ -165,7 +164,7 @@ class RetroModern:AbstractMode() {
 		engine.statistics.level = startLevel
 		totalNorma = MAX_LINES-startLevel*16
 		owner.bgMan.bg = levelBG[startLevel]
-		receiver.setBGSpd(owner, .5f+gameType*.4f, levelBG[startLevel])
+		receiver.setBGSpd(owner, .5f+gameType.ordinal*.4f, levelBG[startLevel])
 		setSpeed(engine)
 	}
 
@@ -173,7 +172,7 @@ class RetroModern:AbstractMode() {
 		owner.musMan.bgm = when(lv) {
 //			MAX_LEVEL -> BGM.GrandM(1)
 			MAX_LEVEL+1 -> BGM.Silent
-			MAX_LEVEL+2 -> BGM.Ending(3+(gameType>0)+(gameType>2))
+			MAX_LEVEL+2 -> BGM.Ending(3+(gameType!=GameType.EASY)+(gameType.ordinal>2))
 			else -> BGM.RetroS(1+tableBGMLevel.count {it<=lv})
 		}
 	}
@@ -207,7 +206,7 @@ class RetroModern:AbstractMode() {
 	/** Renders HUD (leaderboard or game statistics) */
 	override fun renderLast(engine:GameEngine) {
 		receiver.drawScore(engine, 0, 0, name, BASE, color = COLOR.COBALT)
-		receiver.drawScore(engine, 0, 1, "(${GAMETYPE_NAME[gameType]} SPEED)", BASE, COLOR.COBALT)
+		receiver.drawScore(engine, 0, 1, "(${gameType} SPEED)", BASE, COLOR.COBALT)
 
 		if(engine.stat==GameEngine.Status.SETTING||engine.stat==GameEngine.Status.RESULT&&!owner.replayMode) {
 			// Leaderboard
@@ -215,7 +214,7 @@ class RetroModern:AbstractMode() {
 				val topY = if(receiver.nextDisplayType==2) 6 else 4
 				receiver.drawScore(engine, 2, topY-1, "SCORE LINE LV TIME", BASE, color = COLOR.BLUE)
 
-				ranking[gameType].forEachIndexed {i, it ->
+				ranking[gameType.ordinal].forEachIndexed {i, it ->
 					receiver.drawScore(engine, 0, topY+i, "%2d".format(i+1), GRADE, COLOR.YELLOW)
 					receiver.drawScore(engine, 2, topY+i, "${it.sc}", NUM, i==rankingRank)
 					receiver.drawScore(engine, 8.8f, topY+i, "%3d".format(it.li), NUM, i==rankingRank)
@@ -312,12 +311,12 @@ class RetroModern:AbstractMode() {
 			}
 	}
 
-	/** Calculates line-clear score
+	/** Calculates lines-clear score
 	 * (This function will be called even if no lines are cleared) */
 	override fun calcScore(engine:GameEngine, ev:ScoreEvent):Int {
-		// Determines line-clear bonus
+		// Determines lines-clear bonus
 
-		val mult = tableScoreMult[gameType][engine.statistics.level]*10
+		val mult = gameType.mult[engine.statistics.level]*10
 		val li = ev.lines
 		val pts = when {
 			li>0&&engine.field.isEmpty -> 2000*tableBonusMult[engine.statistics.level]
@@ -397,7 +396,7 @@ class RetroModern:AbstractMode() {
 			val pts1 = pts*10*tableBonusMult[engine.statistics.level]
 			lastScore = pts1
 			engine.statistics.scoreBonus += pts1
-			receiver.addScore(engine, engine.fieldWidth/2, engine.lastLineY, pts1, COLOR.RAINBOW)
+			receiver.addScore(engine, engine.fieldWidth/2, engine.lastLineY, pts1, COLOR.RAINBOW, big = true)
 		}
 
 		val slot = lineSlot.filter {it>0}
@@ -539,7 +538,7 @@ class RetroModern:AbstractMode() {
 
 		// Checks/Updates the ranking
 		if(!owner.replayMode&&!big&&engine.ai==null) {
-			rankingRank = ranking[gameType].add(Rankable.ScoreRow(engine.statistics))
+			rankingRank = ranking[gameType.ordinal].add(Rankable.ScoreRow(engine.statistics))
 
 			if(rankingRank!=-1) return true
 		}
@@ -554,50 +553,12 @@ class RetroModern:AbstractMode() {
 		private const val STRING_POWERON_PATTERN =
 			"4040050165233516506133350555213560141520224542633206134255165200333560031332022463366645230432611435533550326251231351500244220365666413154321122014634420132506140113461064400566344110153223400634050546214410040214650102256233133116353263111335043461206211262231565235306361150440653002222453302523255563545455656660124120450663502223206465164461126135621055103645066644052535021110020361422122352566156434351304346510363640453452505655142263102605202216351615031650050464160613325366023413453036542441246445101562252141201460505435130040221311400543416041660644410106141444041454511600413146353206260246251556635262420616451361336106153451563316660054255631510320566516465265421144640513424316315421664414026440165341010302443625101652205230550602002033120044344034100160442632436645325512265351205642343342312121523120061530234443062420033310461403306365402313212656105101254352514216210355230014040335464640401464125332132315552404146634264364245513600336065666305002023203545052006445544450440460"
 
-		private val tableSpd = listOf(
-			LevelData(
-				gravity = listOf(1), listOf(24, 15, 10, 6, 20, 5, 5, 4, 3, 3, 2, 2, 2, 2, 2, 1),
-				listOf(31, 28, 26, 26, 28, 26, 26, 26, 26, 26, 26, 26, 26, 25, 26, 26),
-				lineDelay = listOf(57), lockDelay = listOf(44, 39, 34, 30, 39, 29, 29, 29, 28, 28, 28, 28, 28, 28, 28, 24),
-			),
-			LevelData(
-				gravity = listOf(1), listOf(24, 15, 10, 4, 20, 3, 2, 2, 2, 2, 1, 1, 1, 1, 1, 1),
-				listOf(31, 28, 26, 26, 28, 26, 26, 26, 26, 26, 26, 26, 25, 24, 26, 25),
-				lineDelay = listOf(48), lockDelay = listOf(44, 39, 34, 30, 39, 29, 29, 29, 28, 28, 27, 26, 25, 24, 20, 22),
-			),
-			LevelData(
-				gravity = listOf(1), listOf(15, 10, +5, 3, 20, 2, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1),
-				listOf(28, 28, 26, 26, 28, 26, 26, 26, 26, 26, 26, 25, 24, 23, 26, 24),
-				lineDelay = listOf(39), lockDelay = listOf(39, 34, 32, 30, 39, 28, 28, 27, 26, 25, 24, 24, 24, 22, 20, 20),
-			),
-			LevelData(
-				gravity = listOf(1), listOf(+1, +1, +1, 1, 20, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1),
-				listOf(28, 28, 26, 26, 28, 26, 26, 26, 26, 26, 26, 25, 24, 23, 26, 24),
-				lineDelay = listOf(30), lockDelay = listOf(24, 24, 24, 30, 39, 24, 24, 24, 24, 24, 24, 24, 24, 20, 20, 19),
-			),
-			LevelData(
-				gravity = listOf(1, 1, 1, 2, +1, 1, 1, 2, 3, 4, 4, 4, 5, 4, 3, -1), listOf(1, 1, 1, 1, 20, 1),
-				listOf(26, 25, 24, 24, 28, 25, 24, 24, 24, 24, 23, 22, 22, 21, 21, 20),
-				lineDelay = listOf(20), lockDelay = listOf(24, 24, 24, 30, 39, 24, 24, 25, 25, 25, 24, 23, 23, 23, 23, 25)
-			)
-		).map {(g, gd, are, _, lined, lock) ->
-			LevelData(g, gd, are, lined, lock, lock.map {minOf(15, it-12)})
-		}
-
-		/** Score multiply table */
-		private val tableScoreMult = listOf(
-			listOf(1, 2, 3, 4, 5, 6, +6, +6, +8, +8, 10, 10, 10, 10, 10, 11, 12, 13),
-			listOf(1, 2, 3, 4, 5, 6, +7, +8, +9, 10, 11, 12, 13, 14, 15, 16, 20, 20),
-			listOf(2, 3, 4, 5, 6, 7, +8, +9, 10, 10, 11, 12, 13, 14, 15, 16, 20, 21),
-			listOf(5, 5, 6, 6, 8, 8, 10, 10, 10, 10, 11, 12, 13, 14, 15, 16, 21, 22),
-			listOf(5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 25, 25)
-		)
-		private val tableBonusMult = listOf(1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 3, 3, 3, 3, 3, 5, 5, 10)
+		private val tableBonusMult = intArrayOf(1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 3, 3, 3, 3, 3, 5, 5, 10)
 		/** Lines until level up occers */
-		private val levelNorma = listOf(6, 6, 7, 9, 6, 9, 9, 9, 10, 10, 20, 16, 16, 16, 16)
-		private val tableBGMLevel = listOf(5, 9, 12, 15)
+		private val levelNorma = intArrayOf(6, 6, 7, 9, 6, 9, 9, 9, 10, 10, 20, 16, 16, 16, 16)
+		private val tableBGMLevel = intArrayOf(5, 9, 12, 15)
 
-		private val levelBG = listOf(
+		private val levelBG = intArrayOf(
 			-1, -2, -3, -4, -5, -6,
 			-7, -8, -9, -10, -11, -12,
 			-13, -14, -15, -16, 29, -16
@@ -605,11 +566,49 @@ class RetroModern:AbstractMode() {
 		/** Max level */
 		private const val MAX_LEVEL = 15
 		private const val MAX_LINES = 300
-		/** Name of game types */
-		private val GAMETYPE_NAME = listOf("EASY", "NORMAL", "INTENSE", "HARD", "EXTRA")
 
+		private fun spd(g:List<Int>, d:List<Int>, a:List<Int>, lD:Int, lock:List<Int>):LevelData =
+			LevelData(g, d, a, a, listOf(lD), lock, lock.map {minOf(15, it-12)})
+
+		private fun spd(d:List<Int>, are:List<Int>, lineDelay:Int, lock:List<Int>):LevelData =
+			spd(listOf(1), d, are, lineDelay, lock)
+
+		private enum class GameType(val spd:LevelData,
+			/** Score multiply table */
+			val mult:IntArray) {
+			EASY(spd(
+				listOf(24, 15, 10, 6, 20, 5, 5, 4, 3, 3, 2, 2, 2, 2, 2, 1),
+				listOf(31, 28, 26, 26, 28, 26, 26, 26, 26, 26, 26, 26, 26, 25, 26, 26),
+				57, listOf(44, 39, 34, 30, 39, 29, 29, 29, 28, 28, 28, 28, 28, 28, 28, 24),
+			), intArrayOf(1, 2, 3, 4, 5, 6, +6, +6, +8, +8, 10, 10, 10, 10, 10, 11, 12, 13)),
+			NORMAL(
+				spd(
+					listOf(24, 15, 10, 4, 20, 3, 2, 2, 2, 2, 1, 1, 1, 1, 1, 1),
+					listOf(31, 28, 26, 26, 28, 26, 26, 26, 26, 26, 26, 26, 25, 24, 26, 25),
+					48, listOf(44, 39, 34, 30, 39, 29, 29, 29, 28, 28, 27, 26, 25, 24, 20, 22)),
+				intArrayOf(1, 2, 3, 4, 5, 6, +7, +8, +9, 10, 11, 12, 13, 14, 15, 16, 20, 20)),
+			INTENSE(
+				spd(
+					listOf(15, 10, +5, 3, 20, 2, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1),
+					listOf(28, 28, 26, 26, 28, 26, 26, 26, 26, 26, 26, 25, 24, 23, 26, 24),
+					39, listOf(39, 34, 32, 30, 39, 28, 28, 27, 26, 25, 24, 24, 24, 22, 20, 20)),
+				intArrayOf(2, 3, 4, 5, 6, 7, +8, +9, 10, 10, 11, 12, 13, 14, 15, 16, 20, 21)),
+			HARD(
+				spd(
+					listOf(+1, +1, +1, 1, 20, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1),
+					listOf(28, 28, 26, 26, 28, 26, 26, 26, 26, 26, 26, 25, 24, 23, 26, 24),
+					30, listOf(24, 24, 24, 30, 39, 24, 24, 24, 24, 24, 24, 24, 24, 20, 20, 19)),
+				intArrayOf(5, 5, 6, 6, 8, 8, 10, 10, 10, 10, 11, 12, 13, 14, 15, 16, 21, 22)),
+			EXTRA(
+				spd(
+					listOf(1, 1, 1, 2, +1, 1, 1, 2, 3, 4, 4, 4, 5, 4, 3, -1), listOf(1, 1, 1, 1, 20, 1),
+					listOf(26, 25, 24, 24, 28, 25, 24, 24, 24, 24, 23, 22, 22, 21, 21, 20),
+					20, listOf(24, 24, 24, 30, 39, 24, 24, 25, 25, 25, 24, 23, 23, 23, 23, 25)),
+				intArrayOf(5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 25, 25)),
+
+		}
 		/** Number of game type */
-		private const val GAMETYPE_MAX = 5
+		private val GAMETYPE_MAX = GameType.entries.size
 
 		/** LV17 roll time */
 		private const val ROLLTIMELIMIT = 12000

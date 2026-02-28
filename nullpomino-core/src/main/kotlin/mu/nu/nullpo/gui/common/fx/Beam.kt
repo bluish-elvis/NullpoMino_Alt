@@ -34,7 +34,7 @@ package mu.nu.nullpo.gui.common.fx
 import mu.nu.nullpo.gui.common.AbstractRenderer
 
 /** imgLine
- del_h.png del_v.png */
+del_h.png del_v.png */
 class Beam(x:Float, y:Float, val w:Int, val h:Int, alpha:Float = 1f):SpriteSheet(x, y, alpha = alpha) {
 	val isV = (h>=w*5)
 	override fun update(r:AbstractRenderer):Boolean = ++ticks>=16

@@ -34,7 +34,6 @@ import mu.nu.nullpo.game.component.Block
 import mu.nu.nullpo.game.component.Controller
 import mu.nu.nullpo.game.event.EventReceiver.COLOR.*
 import mu.nu.nullpo.game.play.GameEngine
-import mu.nu.nullpo.gui.common.BaseFont
 import mu.nu.nullpo.gui.common.BaseFont.FONT.*
 import mu.nu.nullpo.util.CustomProperties
 import mu.nu.nullpo.util.GeneralUtil.toTimeStr
@@ -51,7 +50,7 @@ class Avalanche1PFever:Avalanche1PDummyMode() {
 	/** Current round's ranking position */
 	private var rankingRank = 0
 
-	/** Rankings' line counts */
+	/** Rankings' lines counts */
 	private val rankingScore = List(3) {List(FEVER_MAPS.size) {MutableList(rankingMax) {0L}}}
 
 	/** Rankings' times */

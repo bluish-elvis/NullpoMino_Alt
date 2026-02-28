@@ -31,17 +31,11 @@
 
 package mu.nu.nullpo.gui.slick
 
-import kotlinx.serialization.Serializable
 import mu.nu.nullpo.gui.common.ConfigGlobal
-import mu.nu.nullpo.gui.common.ConfigGlobal.AudioConf
-import mu.nu.nullpo.gui.common.ConfigGlobal.CtrlConf
-import mu.nu.nullpo.gui.common.ConfigGlobal.GeneralConf
-import mu.nu.nullpo.gui.common.ConfigGlobal.RenderConf
-import mu.nu.nullpo.gui.common.ConfigGlobal.VisualConf
+import mu.nu.nullpo.gui.common.ConfigGlobal.*
 import mu.nu.nullpo.gui.common.GameKeyDummy
 
-@Serializable
-internal data class ConfigSlick(
+@kotlinx.serialization.Serializable internal data class ConfigSlick(
 	var general:GeneralConf, var visual:VisualConf, var render:RenderConf,
 	val ctrl:CtrlConf, var audio:AudioConf, var didFirstRun:Boolean = false,
 ) {

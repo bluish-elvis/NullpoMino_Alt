@@ -169,7 +169,7 @@ class NetSPRanking:Serializable {
 	 * player, or if the newer record (r1) is better than old one.
 	 */
 	fun isNewRecord(r1:NetSPRecord):Boolean {
-		val r2 = getRecord(r1.strPlayerName) ?: return true
+		val r2 = getRecord(r1.strPlayerName)?:return true
 		return r1.compare(rankingType, r2)
 	}
 

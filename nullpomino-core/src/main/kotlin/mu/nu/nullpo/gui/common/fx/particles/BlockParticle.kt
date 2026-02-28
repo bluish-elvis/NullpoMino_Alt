@@ -41,8 +41,8 @@ import mu.nu.nullpo.game.event.EventReceiver
 import mu.nu.nullpo.game.event.EventReceiver.Companion.BS
 import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.gui.common.AbstractRenderer
-import zeroxfc.nullpo.custom.libs.Vector
 import mu.nu.nullpo.util.GeneralUtil.toInt
+import zeroxfc.nullpo.custom.libs.Vector
 import kotlin.math.abs
 import kotlin.random.Random
 
@@ -88,6 +88,12 @@ class BlockParticle(block:Block?, x:Float, y:Float, velocity:Vector, accelerate:
 	 */
 	class Mapper(engine:GameEngine, receiver:EventReceiver, blocks:Map<Int, Map<Int, Block>>, type:Type,
 		isFlashing:Boolean, maxVelocity:Float = 4f, rand:Random = Random.Default) {
+		constructor(engine:GameEngine, receiver:EventReceiver, blocks:Collection<Triple<Int, Int, Block>>, type:Type,
+			isFlashing:Boolean, maxVelocity:Float = 4f, rand:Random = Random.Default):this(engine, receiver,
+			//blocks Collection<Triple<x:Int,y:Int, Block>> convert to Map<y:Int, Map<x:Int, Block>>
+			blocks.groupBy {it.second}.mapValues {(_, it) -> it.associate {(x, _, b) -> x to b}},
+			type, isFlashing, maxVelocity, rand)
+
 		val particles:MutableSet<Particle> = blocks.flatMap {(y, row) ->
 			val bs = engine.blockSize
 			val width = engine.field.width
@@ -101,14 +107,14 @@ class BlockParticle(block:Block?, x:Float, y:Float, velocity:Vector, accelerate:
 						val xU = x-width/2f+((width%2==0).toInt()*.5f)
 						val spd = abs(maxVelocity*.2f)
 						BlockParticle(
-							Block(b), receiver.fieldX(engine,x), receiver.fieldY(engine,y),
+							Block(b), receiver.fieldX(engine, x), receiver.fieldY(engine, y),
 							Vector((1f/3f*xU)*1.35f*spd, (-5f+cy+abs(xU)/width)*1.5f*spd), Vector(0f, .72f*spd),
 							Type.TGM, bs, isFlashing
 						)
 					}
 					Type.DTET -> {
 						BlockParticle(
-							Block(b), receiver.fieldX(engine,x), receiver.fieldY(engine,y),
+							Block(b), receiver.fieldX(engine, x), receiver.fieldY(engine, y),
 							Vector((x-width/2f)*5f/row.size, cy*2).apply {magnitude = maxVelocity*(.5f+rand.nextFloat()/2)},
 							Vector((.04f+rand.nextFloat()*.21f)*(1-rand.nextInt(2)*2), rand.nextFloat()*.2f-.09f),
 							type,

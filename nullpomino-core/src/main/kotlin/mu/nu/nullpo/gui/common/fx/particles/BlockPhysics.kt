@@ -41,9 +41,7 @@ import mu.nu.nullpo.game.component.Block
 import mu.nu.nullpo.game.event.EventReceiver.Companion.BS
 import mu.nu.nullpo.gui.common.AbstractRenderer
 import mu.nu.nullpo.gui.common.fx.Effect
-import zeroxfc.nullpo.custom.libs.PhysicsObject
-import zeroxfc.nullpo.custom.libs.Vector
-import zeroxfc.nullpo.custom.libs.AnchorPoint
+import zeroxfc.nullpo.custom.libs.*
 import kotlin.math.abs
 
 class BlockPhysics(x:Float = 0f, y:Float = 0f, velocity:Vector = Vector(0, 0),

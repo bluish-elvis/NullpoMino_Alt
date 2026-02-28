@@ -37,10 +37,7 @@ import mu.nu.nullpo.tool.airankstool.AIRanksConstants
 import mu.nu.nullpo.tool.airankstool.Ranks
 import mu.nu.nullpo.util.CustomProperties
 import org.apache.logging.log4j.LogManager
-import java.io.FileInputStream
-import java.io.FileNotFoundException
-import java.io.IOException
-import java.io.ObjectInputStream
+import java.io.*
 import kotlin.math.abs
 
 open class RanksAI:DummyAI(), Runnable {
@@ -56,8 +53,7 @@ open class RanksAI:DummyAI(), Runnable {
 	/** Tells other classes if the fictitious game is over
 	 * @return true if fictitious game is over
 	 */
-	var isGameOver = false
-		private set
+	var isGameOver = false; private set
 	private var plannedToUseIPiece = false
 	private var currentRanksFile:String? = ""
 	private var allowHold = false
@@ -80,13 +76,13 @@ open class RanksAI:DummyAI(), Runnable {
 
 		init {
 			rankStacking = 0f
-			distanceToSet = (ranks?.stackWidth ?: 0)*20
+			distanceToSet = (ranks?.stackWidth?:0)*20
 		}
 
 		override fun toString():String = " Rank Stacking : $rankStacking distance to set :$distanceToSet"
 
 		fun computeScore(heights:List<Int>) {
-			val ranks = ranks ?: return
+			val ranks = ranks?:return
 			distanceToSet = 0
 			val surface = MutableList(ranks.stackWidth-1) {0}
 			val maxJump = ranks.maxJump
@@ -303,7 +299,8 @@ open class RanksAI:DummyAI(), Runnable {
 	 * @param heights Heights of the columns
 	 * @param pieces Current Piece and Next Pieces
 	 */
-	fun playFictitiousMove(heights:MutableList<Int>, pieces:MutableList<Int>, holdPiece:MutableList<Int>, holdOK:MutableList<Boolean>) {
+	fun playFictitiousMove(heights:MutableList<Int>, pieces:MutableList<Int>, holdPiece:MutableList<Int>,
+		holdOK:MutableList<Boolean>) {
 		currentHeightMin = 25
 		currentHeightMax = 0
 		for(i in 0..<ranks!!.stackWidth) {
@@ -338,11 +335,11 @@ open class RanksAI:DummyAI(), Runnable {
 	 * @param engine GameEngine
 	 */
 	fun thinkBestPosition(engine:GameEngine) {
-		// Current line of the current piece
+		// Current lines of the current piece
 		val nowY = engine.nowPieceY
 
 		// Currently considered piece
-		val pieceNow = engine.nowPieceObject ?: return
+		val pieceNow = engine.nowPieceObject?:return
 
 		// Initialization of the heights array
 		heights = (0..<ranks!!.stackWidth).map {engine.field.height-engine.field.getHighestBlockY(it)}
@@ -353,7 +350,7 @@ open class RanksAI:DummyAI(), Runnable {
 			if(it==0) pieceNow.id else engine.getNextObject(engine.nextPieceCount+it-1)!!.id
 		}
 
-		val holdPiece = mutableListOf(engine.holdPieceObject?.id ?: -1)
+		val holdPiece = mutableListOf(engine.holdPieceObject?.id?:-1)
 
 		val holdOK = engine.isHoldOK
 
@@ -508,7 +505,8 @@ open class RanksAI:DummyAI(), Runnable {
 	 * @return The score for this move (placing the piece in this column, with
 	 * this rotation)
 	 */
-	fun thinkMain(x:Int, rt:Int, heights:List<Int>, pieces:MutableList<Int>, holdPiece:MutableList<Int>, holdOK:Boolean, numPreviews:Int):Score {
+	fun thinkMain(x:Int, rt:Int, heights:List<Int>, pieces:MutableList<Int>,
+		holdPiece:MutableList<Int>, holdOK:Boolean, numPreviews:Int):Score {
 		// Initialize the score with zero
 		val score = Score()
 

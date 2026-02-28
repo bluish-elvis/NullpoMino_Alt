@@ -42,6 +42,7 @@ import mu.nu.nullpo.game.component.Controller
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
 import mu.nu.nullpo.game.event.ScoreEvent
 import mu.nu.nullpo.game.play.GameEngine
+import mu.nu.nullpo.game.play.GameEngine.Status
 import mu.nu.nullpo.gui.common.AbstractRenderer.FontBadge.Companion.b
 import mu.nu.nullpo.gui.common.BaseFont.FONT.*
 import mu.nu.nullpo.gui.common.fx.particles.BlockParticle
@@ -55,7 +56,7 @@ class Joker:MarathonModeBase() {
 	private var mainTimer = 0
 	// should use timer?
 	private var shouldUseTimer = false
-	// Tetris line clear lifeline
+	// Tetris lines clear lifeline
 	private var stock = 0
 	// starting stock
 	private var startingStock = 0
@@ -134,7 +135,7 @@ class Joker:MarathonModeBase() {
 			netPlayerName = engine.owner.replayProp.getProperty("${engine.playerID}.net.netPlayerName", "")
 		}
 		engine.owner.bgMan.bg = 18
-		engine.frameSkin = GameEngine.FRAME_COLOR_PURPLE
+		engine.frame = GameEngine.Frame.PURPLE
 		engine.twistEnable = true
 		engine.comboType = GameEngine.COMBO_TYPE_NORMAL
 		engine.statistics.levelDispAdd = 0
@@ -221,7 +222,7 @@ class Joker:MarathonModeBase() {
 			if(engine.ctrl.isPush(Controller.BUTTON_E)&&engine.ai==null&&!netIsNetPlay) {
 				engine.playerProp.reset()
 				engine.playSE("decide")
-				engine.stat = GameEngine.Status.PROFILE
+				engine.stat = Status.PROFILE
 				engine.resetStatc()
 				return true
 			}
@@ -323,7 +324,7 @@ class Joker:MarathonModeBase() {
 	override fun renderLast(engine:GameEngine) {
 		if(owner.menuOnly) return
 		receiver.drawScore(engine, 0, 0, name, BASE, COLOR.RED)
-		if(engine.stat===GameEngine.Status.SETTING||engine.stat===GameEngine.Status.RESULT&&!owner.replayMode) {
+		if(engine.stat===Status.SETTING||engine.stat===Status.RESULT&&!owner.replayMode) {
 			if(!owner.replayMode&&!big&&engine.ai==null&&startingStock==0) {
 				val topY = if(receiver.nextDisplayType==2) 6 else 4
 				receiver.drawScore(engine, 3, topY-1, "LEVEL  LINE TIME", BASE, COLOR.BLUE)
@@ -369,7 +370,7 @@ class Joker:MarathonModeBase() {
 					)
 				}
 			}
-		} else if(engine.stat===GameEngine.Status.CUSTOM) {
+		} else if(engine.stat===Status.CUSTOM) {
 			engine.playerProp.loginScreen.renderScreen(receiver, engine)
 		} else {
 			receiver.drawScore(engine, 0, 3, "TIME", BASE, COLOR.BLUE)
@@ -431,7 +432,7 @@ class Joker:MarathonModeBase() {
 			loadRankingPlayer(engine.playerProp)
 			loadSetting(engine, engine.playerProp.propProfile)
 		}
-		if(engine.stat===GameEngine.Status.SETTING) engine.isInGame = false
+		if(engine.stat===Status.SETTING) engine.isInGame = false
 		return s
 	}
 	/*
@@ -446,10 +447,11 @@ class Joker:MarathonModeBase() {
 			/*if(engine.stat===GameEngine.Status.ARE) {
 				engine.dasCount = engine.speed.das
 			}*/
-			if(shouldUseTimer&&engine.stat!==GameEngine.Status.GAMEOVER) {
+			if(shouldUseTimer&&engine.stat!==Status.GAMEOVER) {
 				mainTimer--
 				if(mainTimer<=600&&mainTimer%60==0) {
 					receiver.playSE("countdown")
+					if(mainTimer<=300) engine.playSE("countdown${mainTimer/60}")
 				}
 			}
 
@@ -464,7 +466,7 @@ class Joker:MarathonModeBase() {
 			if(engine.statistics.level<300&&mainTimer<=0) {
 				engine.playSE("died")
 				engine.lives = 0
-				engine.stat = GameEngine.Status.GAMEOVER
+				engine.stat = Status.GAMEOVER
 				engine.resetStatc()
 				engine.gameEnded()
 			}
@@ -472,7 +474,7 @@ class Joker:MarathonModeBase() {
 				engine.playSE("died")
 				stock = 0
 				engine.lives = 0
-				engine.stat = GameEngine.Status.GAMEOVER
+				engine.stat = Status.GAMEOVER
 				engine.resetStatc()
 				engine.gameEnded()
 			}
@@ -484,9 +486,9 @@ class Joker:MarathonModeBase() {
 			warningTextSecondLine?.update()
 			if(warningTextSecondLine?.shouldPurge()==true) warningTextSecondLine = null
 		}
-		if(engine.stat===GameEngine.Status.SETTING||engine.stat===GameEngine.Status.RESULT&&!owner.replayMode||engine.stat===GameEngine.Status.CUSTOM) {
+		if(engine.stat===Status.SETTING||engine.stat===Status.RESULT&&!owner.replayMode||engine.stat===Status.CUSTOM) {
 			// Show rank
-			if(engine.ctrl.isPush(Controller.BUTTON_F)&&engine.playerProp.isLoggedIn&&engine.stat!==GameEngine.Status.CUSTOM) {
+			if(engine.ctrl.isPush(Controller.BUTTON_F)&&engine.playerProp.isLoggedIn&&engine.stat!==Status.CUSTOM) {
 				showPlayerStats = !showPlayerStats
 				engine.playSE("change")
 			}
@@ -500,6 +502,7 @@ class Joker:MarathonModeBase() {
      * Calculate score - PAIN
      */
 	override fun calcScore(engine:GameEngine, ev:ScoreEvent):Int {
+		calcPower(engine, ev, true)
 		// Line clear bonus
 		// if (linesUsed > 4) linesUsed = 4;
 		var res = 0
@@ -525,8 +528,8 @@ class Joker:MarathonModeBase() {
 					res--
 					stock--
 					if(stock<=4) {
-						val destinationX:Int = receiver.scoreX(engine)
-						val destinationY:Int = receiver.scoreY(engine, 16)
+						val destinationX = receiver.scoreX(engine).toInt()
+						val destinationY = receiver.scoreY(engine, 16).toInt()
 						val colors = arrayOf(COLOR.RED, COLOR.PURPLE)
 						warningText = FlyInOutText(
 							if(stock>=0) "WARNING: STOCK LOW!" else "STOCK DEPLETED!", destinationX, destinationY,
@@ -548,8 +551,8 @@ class Joker:MarathonModeBase() {
 					shouldUseTimer = false
 					engine.playSE("medal")
 					++engine.owner.bgMan.bg
-					val destinationX:Int = receiver.scoreX(engine)
-					val destinationY:Int = receiver.scoreY(engine, if(engine.displaySize==0) 18 else 36)
+					val destinationX = receiver.scoreX(engine).toInt()
+					val destinationY = receiver.scoreY(engine, if(engine.displaySize==0) 18 else 36).toInt()
 					val colors = arrayOf(COLOR.PINK, COLOR.RED, COLOR.PURPLE)
 					warningText = FlyInOutText(
 						"WARNING: NON-QUADS", destinationX, destinationY, 9, 162, 9, colors, 1.0f,
@@ -564,8 +567,8 @@ class Joker:MarathonModeBase() {
 				}
 				if(engine.statistics.level==300) {
 					engine.playSE("endingstart")
-					val destinationX:Int = receiver.scoreX(engine)
-					val destinationY:Int = receiver.scoreY(engine, if(engine.displaySize==0) 18 else 36)
+					val destinationX = receiver.scoreX(engine).toInt()
+					val destinationY = receiver.scoreY(engine, if(engine.displaySize==0) 18 else 36).toInt()
 					val colors = arrayOf(COLOR.YELLOW, COLOR.ORANGE, COLOR.RED)
 					warningText = FlyInOutText(
 						"OUTSTANDING!", destinationX, destinationY, 15, 120, 15, colors, 1.0f,

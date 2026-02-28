@@ -39,17 +39,13 @@ import mu.nu.nullpo.game.event.WallkickResult
 class AvalancheWallkick:Wallkick {
 	/* Wallkick */
 	override fun executeWallkick(x:Int, y:Int, rtDir:Int, rtOld:Int, rtNew:Int, allowUpward:Boolean, piece:Piece,
-		field:Field, ctrl:Controller?): WallkickResult? {
-		var check = 1
-		if(piece.big) check = 2
-
-		if(rtNew==Piece.DIRECTION_LEFT||!piece.checkCollision(x, y, rtNew, field)) return null
-		if(!piece.checkCollision(x, y-check, rtNew, field))
-			return WallkickResult(0, -1*check, rtNew)
-		else if(rtNew==Piece.DIRECTION_UP&&!piece.checkCollision(x-check, y, rtNew, field))
-			return WallkickResult(-1*check, 0, rtNew)
-		else if(rtNew==Piece.DIRECTION_DOWN&&!piece.checkCollision(x+check, y, rtNew, field))
-			return WallkickResult(check, 0, rtNew)
-		return null
+		field:Field, ctrl:Controller?):WallkickResult? = (if(piece.big) 2 else 1).let {check ->
+		when {
+			rtNew==Piece.DIRECTION_LEFT||!piece.checkCollision(x, y, rtNew, field) -> null
+			!piece.checkCollision(x, y-check, rtNew, field) -> WallkickResult(0, -1*check, rtNew)
+			rtNew==Piece.DIRECTION_UP&&!piece.checkCollision(x-check, y, rtNew, field) -> WallkickResult(-1*check, 0, rtNew)
+			rtNew==Piece.DIRECTION_DOWN&&!piece.checkCollision(x+check, y, rtNew, field) -> WallkickResult(check, 0, rtNew)
+			else -> null
+		}
 	}
 }

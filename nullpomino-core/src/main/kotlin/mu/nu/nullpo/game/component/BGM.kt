@@ -31,7 +31,6 @@
 
 package mu.nu.nullpo.game.component
 
-import kotlin.collections.List
 import kotlin.reflect.full.createInstance
 import kotlin.reflect.full.primaryConstructor
 
@@ -54,7 +53,7 @@ sealed class BGM(
 	val idx:Int = (_num-1).coerceIn(0, maxOf(0, _idx))
 	val nums = maxOf(1, _num, sn.size)
 
-	val name = this::class.simpleName ?: ""
+	val name = this::class.simpleName?:""
 	val longName:String = _long.ifEmpty {name}
 	val subName:String = if(sn.isEmpty()) "" else sn[maxOf(minOf(idx, minOf(sn.size, _num)-1), 0)]
 	val drawName = "#$id-$idx ${name.replace('_', ' ')}"
@@ -65,14 +64,7 @@ sealed class BGM(
 		super.equals(other)||if(other is BGM) id==other.id&&idx==other.idx else false
 
 	operator fun compareTo(o:BGM):Int = if(id==o.id) idx-o.idx else id-o.id
-	override fun hashCode():Int = hidden.hashCode().let {31*it+id}
-		.let {31*it+idx}
-		.let {31*it+nums}
-		.let {31*it+name.hashCode()}
-		.let {31*it+longName.hashCode()}
-		.let {31*it+subName.hashCode()}
-		.let {31*it+drawName.hashCode()}
-		.let {31*it+fullName.hashCode()}
+	override fun hashCode():Int = hidden.hashCode().let {31*it+id}.let {31*it+idx}.let {31*it+nums}
 
 	override fun toString():String = fullName
 
@@ -80,11 +72,11 @@ sealed class BGM(
 	class Generic(idx:Int = 0):BGM(1, idx, "Guidelines Modes", sn = List(7) {"Level:${it+1}"})
 	class Rush(idx:Int = 0):BGM(2, idx, "Trial Rush", sn = List(5) {"Level:${it+1}"})
 	class Puzzle(idx:Int = 0):BGM(3, idx, "Strategy Mode/Grand Blossom", "SAKURA", "TOMOYO", "CELBERUS", "KONOHA")
-	class Zen(idx:Int = 0):BGM(4, idx,  "Zen/Low Speeds Modes", sn = List(7) {"Level:${it+1}"})
+	class Zen(idx:Int = 0):BGM(4, idx, "Zen/Low Speeds Modes", sn = List(7) {"Level:${it+1}"})
 	class Extra(idx:Int = 0):BGM(5, idx, 3, "Extra Modes")
 
 	class RetroN(idx:Int = 0):BGM(6, idx, 4, "Retro Classic:N.")
-	class RetroA(idx:Int = 0):BGM(7, idx, 5, "Retro Marathon:AT")
+	class RetroA(idx:Int = 0):BGM(7, idx, 6, "Retro Marathon:AT")
 	class RetroS(idx:Int = 0):BGM(8, idx, 6, "Retro Mania:S")
 
 	class GrandM(idx:Int = 0):BGM(9, idx, "Grand Marathon", "Lv 0", "Lv 500")
@@ -113,7 +105,7 @@ sealed class BGM(
 
 	class Ending(idx:Int = 0):BGM(
 		14, idx, "Ending Challenge",
-		"Marathon", "Mania (60sec)", "Mastery (55sec)", "Modern-Easy (200Sec)","Modern-Medium (200Sec)", "Modern-Hard " +
+		"Marathon", "Mania (60sec)", "Mastery (55sec)", "Modern-Easy (200Sec)", "Modern-Medium (200Sec)", "Modern-Hard "+
 			"(200Sec)",
 		hidden = true
 	)
@@ -132,7 +124,7 @@ sealed class BGM(
 		val all:List<List<BGM>>
 			get() = BGM::class.sealedSubclasses.map {bg ->
 				bg.objectInstance?.let {listOf(it)}
-					?: List(bg.createInstance().nums) {i -> bg.primaryConstructor?.call(i)}.filterNotNull()
+					?:List(bg.createInstance().nums) {i -> bg.primaryConstructor?.call(i)}.filterNotNull()
 			}.filter {it.isNotEmpty()}.sortedBy {it.first().id}
 		val values:List<BGM> get() = all.flatten()
 		val listStr:List<String> get() = values.map {it.fullName}

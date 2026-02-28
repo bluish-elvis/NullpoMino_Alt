@@ -41,7 +41,7 @@ class BagBonusBagRandomizer:BagRandomizer() {
 	private fun bonusInit() {
 		bonusBag.clear()
 		bonusPt = 0
-		bonusBag+=super.bagInit.shuffled(r)
+		bonusBag += super.bagInit.shuffled(r)
 	}
 
 	private fun bonusNext():Int {

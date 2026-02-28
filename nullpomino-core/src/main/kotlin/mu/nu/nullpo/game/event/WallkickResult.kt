@@ -41,7 +41,7 @@ data class WallkickResult(
 	/** 回転後のピースのDirection */
 	val direction:Int = 0):Serializable {
 	/** 上DirectionへのWallkickかどうか判定
-	 * @return 上DirectionへのWallkickのとき (offsetY < 0のとき）にtrue
+	 * @return 上DirectionへのWallkickのとき (offsetY < 0のとき)にtrue
 	 */
 	val isUpward get() = offsetY<0
 

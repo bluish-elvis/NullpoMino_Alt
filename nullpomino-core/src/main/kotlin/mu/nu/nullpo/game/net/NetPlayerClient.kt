@@ -51,8 +51,7 @@ class NetPlayerClient:NetBaseClient {
 	/** 自分のPlayer名 */
 	/** @return Current Player名
 	 */
-	var playerName:String = ""
-		private set
+	var playerName:String = ""; private set
 
 	/** 自分のTeam name */
 	private var playerTeam:String = ""
@@ -60,8 +59,7 @@ class NetPlayerClient:NetBaseClient {
 	/** 自分のPlayer識別 number */
 	/** @return Current Playerの識別 number
 	 */
-	var playerUID = 0
-		private set
+	var playerUID = 0; private set
 
 	/** サーバーVersion */
 	/** @return サーバーVersion
@@ -71,11 +69,9 @@ class NetPlayerClient:NetBaseClient {
 	/** Number of players */
 	/** @return Number of players
 	 */
-	var playerCount = -1
-		private set
+	var playerCount = -1; private set
 
-	var observerCount = -1
-		private set
+	var observerCount = -1; private set
 
 	/** 自分自身の情報を取得
 	 * @return 自分自身の情報
@@ -86,7 +82,7 @@ class NetPlayerClient:NetBaseClient {
 	/** @return Current room ID
 	 */
 	val currentRoomID:Int
-		get() = yourPlayerInfo?.roomID ?: -1
+		get() = yourPlayerInfo?.roomID?:-1
 
 	/** @return Current room info
 	 */
@@ -133,8 +129,7 @@ class NetPlayerClient:NetBaseClient {
 	}
 
 	/* 受信したメッセージに応じていろいろ処理をする */
-	@Throws(IOException::class)
-	override fun processPacket(fullMessage:String) {
+	@Throws(IOException::class) override fun processPacket(fullMessage:String) {
 		val message = fullMessage.split(Regex("\t")).dropLastWhile {it.isEmpty()} // タブ区切り
 
 		// 接続完了

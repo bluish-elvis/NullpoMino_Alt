@@ -29,9 +29,7 @@ POSSIBILITY OF SUCH DAMAGE.
 
 package edu.cuhk.cse.fyp.tetrisai.pyai
 
-import jep.JepConfig
-import jep.JepException
-import jep.SubInterpreter
+import jep.*
 import mu.nu.nullpo.game.component.Controller
 import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.game.subsystem.ai.AIPlayer
@@ -151,7 +149,7 @@ abstract class PyAI(override val name:String = "PyAI", private val scriptPath:St
 				set("ctrl", ctrl)
 				eval("ctrlbit = ai.setControl(engine, playerID, ctrl)")
 				(this.getValue("ctrlbit") as Int?)
-			} ?: 0
+			}?:0
 		} catch(j:JepException) {
 			log.error("Error in setControl, ", j)
 			0

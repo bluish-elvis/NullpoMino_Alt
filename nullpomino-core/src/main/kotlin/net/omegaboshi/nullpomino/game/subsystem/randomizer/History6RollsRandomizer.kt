@@ -38,6 +38,6 @@ class History6RollsRandomizer:LimitedHistoryRandomizer() {
 
 	override fun init() {
 		super.init()
-		history+= listOf(Piece.PIECE_S, Piece.PIECE_Z, Piece.PIECE_S, Piece.PIECE_Z)
+		history += listOf(Piece.PIECE_S, Piece.PIECE_Z, Piece.PIECE_S, Piece.PIECE_Z)
 	}
 }

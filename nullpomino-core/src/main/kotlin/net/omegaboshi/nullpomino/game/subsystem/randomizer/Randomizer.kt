@@ -35,11 +35,10 @@ import mu.nu.nullpo.game.component.Piece.Shape
 import kotlin.random.Random
 
 abstract class Randomizer {
-	protected var seed:Long = 0L; private set//Random.Default.nextLong()
+	protected var seed:Long = 0L; private set//Random.nextLong()
 	protected var r:Random = Random(seed); private set
 	/**enabled pieces*/
-	var pieces = Shape.all.map {it.ordinal}
-		private set
+	var pieces = Shape.all.map {it.ordinal}; private set
 
 	protected val isPieceSZOOnly:Boolean
 		get() = pieces.all {p -> listOf(Shape.S, Shape.Z, Shape.O).any {it.ordinal==p}}
@@ -61,7 +60,7 @@ abstract class Randomizer {
 	}
 	@JvmOverloads @JvmName("setStateBooleans")
 	fun setState(pieceEnable:List<Boolean>, _seed:Long = seed) =
-		setState(Shape.all.map {it.ordinal}.filter {pieceEnable[it]}, _seed)
+		setState(Shape.all.map {it.ordinal}.sorted().filter {pieceEnable[it]}, _seed)
 	@JvmOverloads @JvmName("setStateShape")
-	fun setState(pieceEnable:Collection<Shape>, _seed:Long = seed) = setState(pieceEnable.map {it.ordinal}, _seed)
+	fun setState(pieceEnable:Collection<Shape>, _seed:Long = seed) = setState(pieceEnable.map {it.ordinal}.sorted(), _seed)
 }
