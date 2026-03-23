@@ -37,7 +37,7 @@ import mu.nu.nullpo.gui.common.BaseFont
 import mu.nu.nullpo.gui.common.BaseFont.FONT.BASE
 import mu.nu.nullpo.gui.common.BaseFont.FONT.NUM
 import mu.nu.nullpo.util.CustomProperties
-import java.util.LinkedList
+import java.util.*
 import kotlin.random.Random
 import mu.nu.nullpo.game.component.Block.COLOR as BCOLOR
 import mu.nu.nullpo.game.event.EventReceiver.COLOR as ECOLOR
@@ -123,7 +123,7 @@ class ToolMapEditor:AbstractMode() {
 				if(col==BCOLOR.BLACK||col==BCOLOR.WHITE) {
 					var color:BCOLOR
 					do
-						color = BCOLOR.colors()[rand.nextInt(BCOLOR.COLOR_NUM)]
+						color = BCOLOR.colors()[rand.nextInt(BCOLOR.GEM_NUM)]
 					while(color==field.getBlockColor(j-1, i)||color==field.getBlockColor(j+1, i)||
 						color==field.getBlockColor(j, i-1)||color==field.getBlockColor(j, i-1))
 					field.setBlockColor(j, i, color)

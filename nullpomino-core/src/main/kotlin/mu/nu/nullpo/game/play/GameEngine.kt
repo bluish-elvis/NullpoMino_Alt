@@ -246,7 +246,7 @@ class GameEngine(
 	var dasWall = false; private set
 
 	/** Disallow shift while locking key is pressed */
-	var shiftLock = 0; private set
+	var shiftLock:UShort = 0u; private set
 
 	/** IRS direction */
 	var initialSpinDirection = 0; private set
@@ -897,7 +897,7 @@ class GameEngine(
 		dasSpeedCount = dasDelay
 		dasRepeat = false
 		dasInstant = false
-		shiftLock = 0
+		shiftLock = 0u
 
 		initialSpinDirection = 0
 		initialSpinLastDirection = 0
@@ -1465,7 +1465,6 @@ class GameEngine(
 			}
 			replayTimer++
 		}
-
 		//  button input timeの更新
 		ctrl.updateButtonTime()
 		// 最初の処理
@@ -1742,7 +1741,6 @@ class GameEngine(
 			playSE("start1")
 		}
 		// NEXTスキップ
-		@Suppress("EmptyRange")
 		if(statc[0] in 1..<goEnd&&holdButtonNextSkip&&isHoldOK&&ctrl.isPush(Controller.BUTTON_D)) {
 			if(frame!=Frame.SG) playSE("initialhold")
 			holdPieceObject = getNextObjectCopy(nextPieceCount)?.also {
@@ -2093,9 +2091,9 @@ class GameEngine(
 					sideMoved = true
 					if(big&&bigMove) move *= 2
 					if(dasCount==0||dasCount>=das) {
-						if(dasCount==0||statc[0]==(!ruleOpt.moveFirstFrame).toInt()) shiftLock = 0
+						if(dasCount==0||statc[0]==(!ruleOpt.moveFirstFrame).toInt()) shiftLock = 0u
 						shiftLock = shiftLock and ctrl.buttonBit
-						if(shiftLock==0)
+						if(shiftLock==0u.toUShort())
 							if(dasSpeedCount>=dasDelay||dasCount==0) {
 								if(dasCount>0) dasSpeedCount = 1
 								if(!it.checkCollision(nowPieceX+move, nowPieceY, field)) {
@@ -2256,7 +2254,7 @@ class GameEngine(
 				}
 				if(manualLock&&ruleOpt.shiftLockEnable)
 				// bit 1 and 2 are button_up and button_down currently
-					shiftLock = ctrl.buttonBit and 3
+					shiftLock = ctrl.buttonBit and 3u
 
 				// 移動＆rotationcount制限超過
 				if(ruleOpt.lockResetLimitOver==RuleOptions.LOCKRESET_LIMIT_OVER_INSTANT&&(isMoveCountExceed||isSpinCountExceed))
@@ -3017,7 +3015,7 @@ class GameEngine(
 
 			val all:List<Frame> = entries.toList()
 			val allColor:List<Frame> = entries.filter {it.type==Type.COLOR}
-			fun COLOR(value:Int):Frame = allColor.let {it.firstOrNull {it.id==value}?:it[value.mod(allColor.size)]}
+			fun COLOR(value:Int):Frame = allColor.let {c -> c.firstOrNull {it.id==value}?:c[value.mod(allColor.size)]}
 			fun valueOf(value:Int):Frame = all.firstOrNull {it.id==value}?:COLOR(value)
 
 		}

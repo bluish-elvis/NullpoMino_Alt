@@ -90,7 +90,7 @@ class PopupAward(x:Float, y:Float, val event:ScoreEvent, val moveTime:Int, val e
 			ev.twistType.ez -> {
 				ev.piece?.let {r.drawPiece(x-16, y, it, 0.5f, alpha = alpha)}
 				r.drawFont(x-54, y-8, "EZ", BASE, color = COLOR.ORANGE, alpha = alpha)
-				r.drawFont(x+54, y-8, "TRICK", BASE, color = COLOR.ORANGE, alpha = alpha)
+				r.drawFont(x+54, y-8, "TWIST", BASE, color = COLOR.ORANGE, alpha = alpha)
 			}
 			else -> {
 				ev.piece?.let {r.drawPiece(x-64, y, it, 0.5f, alpha = alpha)}

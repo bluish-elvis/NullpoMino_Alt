@@ -46,7 +46,7 @@ For I = 0 To 29: Sea(I) = Rnd * 640: Next I*/
 	private val rasterX = MutableList(31) {Random.nextFloat()*640}
 	private val waveX = MutableList(31) {0f}
 
-	private var waveH = 0f; private set
+	private var waveH = 0f
 	private fun waveMag(i:Int) = maxOf(0.1f, (1.15f.pow(i)-spdN/2)*(1.4f-spdN*.2f))
 
 	override fun update() {

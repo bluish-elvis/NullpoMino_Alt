@@ -167,7 +167,7 @@ internal class NetAdmin:JFrame(), ActionListener, NetMessageListener {
 		}
 
 		// Set close action
-		defaultCloseOperation = WindowConstants.DO_NOTHING_ON_CLOSE
+		defaultCloseOperation = DO_NOTHING_ON_CLOSE
 		addWindowListener(object:WindowAdapter() {
 			override fun windowClosing(e:WindowEvent?) {
 				shutdown()
@@ -740,7 +740,7 @@ internal class NetAdmin:JFrame(), ActionListener, NetMessageListener {
 		pButtons.add(btnCancel)
 
 		// Set frame vitals
-		dialogBan.defaultCloseOperation = WindowConstants.DISPOSE_ON_CLOSE
+		dialogBan.defaultCloseOperation = DISPOSE_ON_CLOSE
 		dialogBan.setLocationRelativeTo(null)
 		dialogBan.isModal = true
 		dialogBan.isResizable = false

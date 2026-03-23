@@ -45,10 +45,6 @@ import mu.nu.nullpo.gui.slick.NullpoMinoSlick.Companion.propMusic as pMu
 /** 画像や音声の管理をするクラス */
 object ResourceHolder:mu.nu.nullpo.gui.common.ResourceHolder() {
 	override val skinDir:String by lazy {NullpoMinoSlick.propGlobal.custom.skinDir}
-
-//	override val bgMax get() = imgPlayBG.size
-
-	/** Block images */
 	override val imgNormalBlockList by lazy {
 		try {
 			super.imgNormalBlockList.map {ResourceImageSlick(it)}
@@ -59,11 +55,6 @@ object ResourceHolder:mu.nu.nullpo.gui.common.ResourceHolder() {
 	}
 	override val imgSmallBlockList by lazy {super.imgSmallBlockList.map {ResourceImageSlick(it)}}
 	override val imgBigBlockList by lazy {super.imgBigBlockList.map {ResourceImageSlick(it)}}
-
-	///** Block sticky flag */
-//	override var blockStickyFlagList:LinkedList<Boolean> = LinkedList()
-
-	/** Decoration Spriets : Badges and Medals */
 	override val imgBadges = ResourceImageSlick(super.imgBadges)
 
 	override val imgFont = super.imgFont.map {ResourceImageSlick(it)}
@@ -76,43 +67,24 @@ object ResourceHolder:mu.nu.nullpo.gui.common.ResourceHolder() {
 	override val imgCursor = ResourceImageSlick(super.imgCursor)
 	//public static Image imgSprite;
 
-	/** Field frame */
 	override val imgFrame = super.imgFrame.map {ResourceImageSlick(it)}
-
 	override val imgFrameOld = super.imgFrameOld.map {ResourceImageSlick(it)}
-
-	/** Field background */
 	override val imgFieldBG = super.imgFieldBG.map {it.map {i -> ResourceImageSlick(i)}}
-
-	/** Field background Overlay*/
 	override val imgFieldBGO = ResourceImageSlick(super.imgFieldBGO)
 	//public static Image imgFieldbg;
 	override val imgFrags = super.imgFrags.map {ResourceImageSlick(it)}
-	/** Beam animation during lines clears */
 	override val imgLine = super.imgLine.map {ResourceImageSlick(it)}
 
-	/** Block spatter animation during lines clears */
 	override val imgBreak = super.imgBreak.map {it -> it.map {ResourceImageSlick(it)}}
-
-	/** Effects for clearing gem blocks */
 	override val imgPErase = super.imgPErase.map {ResourceImageSlick(it)}
-
-	/** Effects for Fireworks */
 	override val imgHanabi = super.imgHanabi.map {ResourceImageSlick(it)}
-
-	/** Title Background */
 	override var imgTitleBG = ResourceImageSlick(super.imgTitleBG, true)
-
-	/** Title Logo */
 	override val imgLogo = ResourceImageSlick(super.imgLogo, true)
 	override val imgLogoSmall = ResourceImageSlick(super.imgLogoSmall, true)
-
-	/** Menu Background */
 	override val imgMenuBG:List<ResourceImageSlick> by lazy {super.imgMenuBG.map {ResourceImageSlick(it, true)}}
-
-	/** プレイ中のBackground */
 	override val imgPlayBG by lazy {super.imgPlayBG.map {ResourceImageSlick(it, true)}}
 	override val imgPlayBGA by lazy {super.imgPlayBGA.map {ResourceImageSlick(it, true)}}
+
 	/** TTF font */
 	internal var ttfFont:UnicodeFont? = null
 

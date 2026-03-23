@@ -4,9 +4,6 @@
                xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
 
  <variables></variables>
- <build-profile instance="nullpomino-docs">
-  <variables></variables>
- </build-profile>
  <build-profile instance="nullpomino-doc">
   <variables>
    <noindex-content>true</noindex-content>

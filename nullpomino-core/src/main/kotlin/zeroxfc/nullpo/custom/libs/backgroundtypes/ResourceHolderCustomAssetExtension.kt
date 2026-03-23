@@ -419,7 +419,7 @@ class ResourceHolderCustomAssetExtension @JvmOverloads constructor(initialCapaci
 		 *
 		 * @return Main class name.
 		 */
-		var mainClassName = ""
+		var mainClassName = ""; private set
 			get() {
 				if(field.isEmpty()||field=="Unknown") {
 					// Thread-safe code used for when more threads are being used.
@@ -438,7 +438,7 @@ class ResourceHolderCustomAssetExtension @JvmOverloads constructor(initialCapaci
 					if(field.isEmpty()) field = "Unknown"
 				}
 				return field
-			}; private set
+			}
 		/**
 		 * Gets the number of currently loaded block-skins inside the game.
 		 *

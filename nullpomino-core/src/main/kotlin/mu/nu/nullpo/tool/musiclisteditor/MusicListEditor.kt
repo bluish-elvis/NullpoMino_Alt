@@ -33,14 +33,10 @@ package mu.nu.nullpo.tool.musiclisteditor
 import mu.nu.nullpo.game.component.BGM
 import mu.nu.nullpo.util.CustomProperties
 import org.apache.logging.log4j.LogManager
-import java.awt.BorderLayout
-import java.awt.Component
-import java.awt.Dimension
+import java.awt.*
 import java.awt.event.ActionEvent
 import java.awt.event.ActionListener
-import java.io.File
-import java.io.FileOutputStream
-import java.io.IOException
+import java.io.*
 import java.util.*
 import javax.swing.*
 
@@ -102,7 +98,7 @@ class MusicListEditor:JFrame(), ActionListener {
 				log.warn("Failed to set native look&feel", e)
 			}
 
-		defaultCloseOperation = WindowConstants.EXIT_ON_CLOSE
+		defaultCloseOperation = EXIT_ON_CLOSE
 		title = getUIText("Title_MusicListEditor")
 
 		initUI()
@@ -116,7 +112,7 @@ class MusicListEditor:JFrame(), ActionListener {
 		// メイン画面
 		val pMusicSetting = JPanel()
 		pMusicSetting.layout = BoxLayout(pMusicSetting, BoxLayout.Y_AXIS)
-		pMusicSetting.alignmentX = Component.LEFT_ALIGNMENT
+		pMusicSetting.alignmentX = LEFT_ALIGNMENT
 		this.add(pMusicSetting)
 
 		// タブ全体 --------------------------------------------------
@@ -126,7 +122,7 @@ class MusicListEditor:JFrame(), ActionListener {
 		val panels:Array<JPanel> = Array(BGM.countCategory-1) {
 			JPanel().apply {
 				layout = BoxLayout(this, BoxLayout.Y_AXIS)
-				alignmentY = Component.TOP_ALIGNMENT
+				alignmentY = TOP_ALIGNMENT
 			}
 		}
 		txtFldMusicFileNames = Array(num) {JTextField(45)}
@@ -179,7 +175,7 @@ class MusicListEditor:JFrame(), ActionListener {
 		// 画面下の button類
 		val pButtons = JPanel()
 		pButtons.layout = BoxLayout(pButtons, BoxLayout.X_AXIS)
-		pButtons.alignmentX = Component.LEFT_ALIGNMENT
+		pButtons.alignmentX = LEFT_ALIGNMENT
 		this.add(pButtons)
 
 		val btnOK = JButton(getUIText("MusicListEditor_OK"))
@@ -245,10 +241,8 @@ class MusicListEditor:JFrame(), ActionListener {
 	override fun actionPerformed(e:ActionEvent) {
 		if(e.actionCommand.startsWith("OpenFileDialog")) {
 			// Button number取得
-			var number = 0
-			try {
-				val strNum = e.actionCommand.replaceFirst(Regex("OpenFileDialog"), "")
-				number = strNum.toInt()
+			val number = try {
+				e.actionCommand.replaceFirst(Regex("OpenFileDialog"), "").toInt()
 			} catch(e2:Exception) {
 				log.error("OpenFileDialog: Failed to get button number", e2)
 				return
@@ -282,10 +276,8 @@ class MusicListEditor:JFrame(), ActionListener {
 				txtFldMusicFileNames[number].text = strPath
 			}
 		} else if(e.actionCommand.startsWith("Clear")) {
-			var number = 0
-			try {
-				val strNum = e.actionCommand.replaceFirst(Regex("Clear"), "")
-				number = strNum.toInt()
+			val number = try {
+				e.actionCommand.replaceFirst(Regex("Clear"), "").toInt()
 			} catch(e2:Exception) {
 				log.error("Clear: Failed to get button number", e2)
 				return

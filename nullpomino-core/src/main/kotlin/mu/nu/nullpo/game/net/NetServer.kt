@@ -47,9 +47,7 @@ import java.nio.ByteBuffer
 import java.nio.channels.*
 import java.nio.channels.spi.SelectorProvider
 import java.util.*
-import java.util.zip.Adler32
-import java.util.zip.GZIPInputStream
-import java.util.zip.GZIPOutputStream
+import java.util.zip.*
 import kotlin.math.pow
 import kotlin.random.Random
 
@@ -709,7 +707,7 @@ class NetServer {
 					player = p.strName
 					if(p.isTripUse) {
 						len -= 12
-						player = player.substring(0, len)
+						player = player.take(len)
 					}
 				}
 				if(len+1<msg.length)
@@ -1061,7 +1059,7 @@ class NetServer {
 							pInfo.channel,
 							"lobbychat\t${chat.uid}\t${NetUtil.urlEncode(chat.strUserName)}\t${
 								chat.timestamp!!.strGMT
-							}\t${NetUtil.urlEncode("-> *"+playerName.substring(0, len)+"* "+msg)}\n"
+							}\t${NetUtil.urlEncode("-> *"+playerName.take(len)+"* "+msg)}\n"
 						)
 						send(
 							ch,
@@ -2550,13 +2548,13 @@ class NetServer {
 	private fun writeServerStatusFile() {
 		if(!propServer.getProperty("netserver.writestatusfile", false)) return
 
-		var status = propServer.getProperty("netserver.statusformat", "\$observers/\$players")
+		var status = propServer.getProperty("netserver.statusformat", $$"$observers/$players")
 
-		status = status.replace(Regex("\\\$version"), GameManager.versionMajor.toString())
-		status = status.replace(Regex("\\\$observers"), observerList.size.toString())
-		status = status.replace(Regex("\\\$players"), playerInfoMap.size.toString())
-		status = status.replace(Regex("\\\$clients"), (observerList.size+playerInfoMap.size).toString())
-		status = status.replace(Regex("\\\$rooms"), roomInfoList.size.toString())
+		status = status.replace(Regex($$"\\$version"), GameManager.versionMajor.toString())
+		status = status.replace(Regex($$"\\$observers"), observerList.size.toString())
+		status = status.replace(Regex($$"\\$players"), playerInfoMap.size.toString())
+		status = status.replace(Regex($$"\\$clients"), (observerList.size+playerInfoMap.size).toString())
+		status = status.replace(Regex($$"\\$rooms"), roomInfoList.size.toString())
 
 		try {
 			val outFile = FileWriter(propServer.getProperty("netserver.statusfilename", "status.txt"))

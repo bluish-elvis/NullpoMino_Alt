@@ -31,20 +31,25 @@
 package mu.nu.nullpo.game.event
 
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.json.Json
 import mu.nu.nullpo.game.component.Statistics
 import mu.nu.nullpo.util.CustomProperties
+import mu.nu.nullpo.util.GeneralUtil.us
 
 /** リプレイで使用する button input dataのクラス */
 @Suppress("EmptyRange")
 @Serializable
 data class ReplayData(
 	/** Button input data */
-	var inputDataArray:MutableMap<Int, Int> = mutableMapOf(),//(DEFAULT_ARRAYLIST_SIZE) {0},
+	var inputDataArray:MutableMap<Int, UShort> = mutableMapOf(),//(DEFAULT_ARRAYLIST_SIZE) {0},
 	var id:Int = 0,
 	var maxFrame:Int = 0,
 	val statistics:Statistics = Statistics()
 ) {
+//	/** Button input data,[startFrame, button, length] */
+//	var buttonPresses:MutableMap<Int, Pair<UShort, Int>> = mutableMapOf()//(DEFAULT_ARRAYLIST_SIZE) {0},
 
+	@Serializable val version = 2
 	/** Reset to defaults */
 	fun reset() {
 		inputDataArray.clear()
@@ -53,26 +58,26 @@ data class ReplayData(
 	/** 設定を[r]からコピー */
 	fun replace(r:ReplayData) {
 		reset()
-		r.inputDataArray.forEach {(i, it) ->
-			inputDataArray[i] = it
-		}
+		inputDataArray = r.inputDataArray
 	}
 
 	/** button input状況を設定
 	 * @param input button input状況のビット flag
 	 * @param frame frame (経過 time)
 	 */
-	fun setInputData(input:Int, frame:Int) {
+	fun setInputData(input:UShort, frame:Int) {
 		if(input!=inputDataArray[frame-1]) inputDataArray[frame] = input
+//		if(input and inputDataArray[frame])
 	}
 
 	/** button input状況を取得
 	 * @param frame frame (経過 time)
 	 * @return button input状況のビット flag
 	 */
-	fun getInputData(frame:Int):Int =
-		inputDataArray.getOrElse(frame) {inputDataArray.entries.lastOrNull {it.key<=frame}?.value?:-1}
+	fun getInputData(frame:Int):UShort =
+		inputDataArray.getOrElse(frame) {inputDataArray.filterKeys {it<=frame}.maxByOrNull {it.key}?.value?:0.us}
 
+	fun toJSON():String = Json.encodeToString(this)
 	/** プロパティセットに保存
 	 * @param p プロパティセット
 	 * @param _id 任意のID (Player IDなど)
@@ -98,8 +103,9 @@ data class ReplayData(
 		reset()
 		maxFrame = p.getProperty("$id.r.max", 0)
 		for(i in 0..<maxFrame) {
-			val data = p.getProperty("$id.r.$i", -1)
-			if(data!=-1) setInputData(data, i)
+			p.getProperty("$id.r.$i", -1).let {
+				if(it>=0) setInputData(it.toUShort(), i)
+			}
 			/*try {
 				replace(Json.decodeFromString<ReplayData>(p.getProperty("$id.r", "{}")))
 			} catch(_:Exception) {

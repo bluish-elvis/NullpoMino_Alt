@@ -106,8 +106,8 @@ class GameGrid @JvmOverloads constructor(val length:Int = 10, val height:Int = 1
 		for(loc in testLocations) {
 			val px = x+loc[0]
 			val py = y+loc[1]
-			if(px<0||px>=length) continue
-			if(py<0||py>=height) continue
+			if(px !in 0..<length) continue
+			if(py !in 0..<height) continue
 			if(contents[py][px].isMine) mine++
 		}
 		return mine
@@ -122,8 +122,8 @@ class GameGrid @JvmOverloads constructor(val length:Int = 10, val height:Int = 1
 		for(loc in testLocations) {
 			val px = x+loc[0]
 			val py = y+loc[1]
-			if(px<0||px>=length) continue
-			if(py<0||py>=height) continue
+			if(px !in 0..<length) continue
+			if(py !in 0..<height) continue
 			if(contents[py][px].flagged) flag++
 		}
 		return flag
@@ -138,8 +138,8 @@ class GameGrid @JvmOverloads constructor(val length:Int = 10, val height:Int = 1
 		for(loc in testLocations) {
 			val px = x+loc[0]
 			val py = y+loc[1]
-			if(px<0||px>=length) continue
-			if(py<0||py>=height) continue
+			if(px !in 0..<length) continue
+			if(py !in 0..<height) continue
 			if(!contents[py][px].uncovered) flag++
 		}
 		return flag
@@ -175,8 +175,8 @@ class GameGrid @JvmOverloads constructor(val length:Int = 10, val height:Int = 1
 				for(loc in testLocations) {
 					val px = x+loc[0]
 					val py = y+loc[1]
-					if(px<0||px>=length) continue
-					if(py<0||py>=height) continue
+					if(px !in 0..<length) continue
+					if(py !in 0..<height) continue
 					if(!contents[py][px].uncovered) uncoverAt(px, py)
 				}
 			}

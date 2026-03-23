@@ -152,7 +152,7 @@ class VSSprintLine:AbstractMode() {
 			engine.random = Random(owner.engine[0].randSeed)
 		}
 
-		engine.frameSkin = PLAYER_COLOR_FRAME[pid]
+		engine.frame = PLAYER_COLOR_FRAME[pid]
 
 		if(!engine.owner.replayMode) {
 			version = CURRENT_VERSION
@@ -416,6 +416,6 @@ class VSSprintLine:AbstractMode() {
 		private const val CURRENT_VERSION = 0
 
 		/** Each player's frame color-int */
-		private val PLAYER_COLOR_FRAME = listOf(GameEngine.FRAME_COLOR_RED, GameEngine.FRAME_COLOR_BLUE)
+		private val PLAYER_COLOR_FRAME = listOf(GameEngine.Frame.RED, GameEngine.Frame.BLUE)
 	}
 }

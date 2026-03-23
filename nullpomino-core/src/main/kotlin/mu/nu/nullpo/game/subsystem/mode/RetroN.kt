@@ -54,6 +54,7 @@ class RetroN:AbstractMode() {
 
 	/** Next level lines */
 	private var lvLines = 0
+	private var lvLBegin = 0
 
 	private val itemGame = EnumMenuItem("gametype", "GAME TYPE", COLOR.BLUE, GameType.A, GameType.entries)
 	/** Selected game type */
@@ -113,6 +114,7 @@ class RetroN:AbstractMode() {
 		sdScore = 0
 		hdScore = 0
 		lvLines = 0
+		lvLBegin = 0
 		drought = 0
 		droughts.removeAll {true}
 
@@ -151,7 +153,6 @@ class RetroN:AbstractMode() {
 				dasStoreChargeOnNeutral = true
 				dasRedirectInDelay = true
 			}
-			owSkin = if(speedType==SpeedLevel.PAL_RAW!=startLevel>=10) 8 else 9
 			owDelayCancel = 0
 		}
 
@@ -179,12 +180,21 @@ class RetroN:AbstractMode() {
 			engine.speed.das = 16
 			engine.owARR = 6
 		}
+		if(gameType==GameType.C) {
+			engine.speed.das = 6
+			engine.owARR = 2
+		}
 		engine.speed.lockDelay = engine.speed.denominator/engine.speed.gravity
 	}
 
 	/** Main routine for game setup screen */
 	override fun onSettingChanged(engine:GameEngine) {
+		engine.statistics.level = startLevel
+		engine.statistics.levelDispAdd = 1
+		lvLBegin = 0
+		engine.big = big
 		lvLines = ((startLevel-5)*10).coerceIn(minOf((startLevel+1)*10, 100), 100)
+		setSpeed(engine)
 		super.onSettingChanged(engine)
 	}
 
@@ -210,7 +220,6 @@ class RetroN:AbstractMode() {
 				createFieldIfNeeded()
 			}
 			fillGarbage(engine, startHeight)
-			lvLines = ((startLevel-5)*10).coerceIn(minOf((startLevel+1)*10, 100), 100)
 		}
 		return false
 	}
@@ -218,9 +227,6 @@ class RetroN:AbstractMode() {
 	/** This function will be called before the game actually begins
 	 * (after Ready&Go screen disappears) */
 	override fun startGame(engine:GameEngine) {
-		engine.statistics.level = startLevel
-		engine.statistics.levelDispAdd = 1
-		engine.big = big
 
 		owner.musMan.bgm = BGM.RetroN(if(startLevel>9) 3 else (gameType.ordinal+startLevel)%3)
 		setSpeed(engine)
@@ -310,44 +316,49 @@ class RetroN:AbstractMode() {
 			li>=4 -> pts += 1200*(engine.statistics.level+1) // Quadruple
 		}
 
-		// B-TYPE game completed
-		if(gameType==GameType.B&&engine.statistics.lines>=25) {
-			pts += (engine.statistics.level+startHeight)*1000
-			engine.ending = 1
-			engine.gameEnded()
-		}
-
 		// Add score to total
 		if(pts>0) {
 			lastScore = pts
 			engine.statistics.scoreLine += pts
 		}
 
-		if(gameType!=GameType.C&&engine.statistics.score>999999&&maxScoredTime==null) {
+		if(engine.statistics.score>999999&&maxScoredTime==null) {
 			maxScoredTime = engine.statistics.time
 			engine.playSE("applause5")
 		}
 
 		// Update meter
-		engine.meterColor = GameEngine.METER_COLOR_LEVEL
+		engine.meterColor = if(gameType==GameType.B) GameEngine.METER_COLOR_LIMIT else GameEngine.METER_COLOR_LEVEL
 		engine.meterValue =
 			if(gameType==GameType.B) minOf(engine.statistics.lines, 25)/25f else
-				engine.statistics.lines%10*1f/9f
+				(engine.statistics.lines-lvLBegin)*1f/lvLines
 
 		if(gameType!=GameType.B&&engine.statistics.lines>=lvLines) {
 			// Level up
 			engine.statistics.level++
 
-			lvLines += 10
+			lvLines += if(engine.statistics.level==235) 810 else 10
+			lvLBegin = engine.statistics.lines
+			if(gameType!=GameType.C&&engine.statistics.level>255) engine.statistics.level = 0
 
-			//engine.framecolor = engine.statistics.level
-			if(engine.statistics.level>255) engine.statistics.level = 0
-			if(engine.statistics.level>=10&&owner.musMan.bgm.idx!=BGM.RetroN(3).idx) owner.musMan.bgm = BGM.RetroN(3)
+			if((gameType!=GameType.C&&engine.statistics.level>=10||engine.statistics.lines>=130)
+				&&owner.musMan.bgm.idx!=BGM.RetroN(3).idx) owner.musMan.bgm = BGM.RetroN(3)
 			owner.bgMan.nextBg = engine.statistics.level
 
 			setSpeed(engine)
 			engine.playSE("levelup")
 		}
+
+		// Game ends: B-TYPE: 25 Lines, C-TYPE:255 levels(3300 lines)
+
+		if((gameType==GameType.B&&engine.statistics.lines>=25)||gameType==GameType.C&&engine.statistics.level>255) {
+			engine.statistics.scoreBonus += ((engine.statistics.level+startHeight)*1000).also {
+				engine.receiver.addScore(engine, +2, engine.field.highestBlockY-2, it, COLOR.RAINBOW, "CLEAR BONUS", true)
+			}
+			engine.ending = 1
+			engine.gameEnded()
+		}
+
 		return pts
 	}
 
@@ -373,12 +384,12 @@ class RetroN:AbstractMode() {
 	override fun onResult(engine:GameEngine):Boolean {
 		if(engine.ctrl.isMenuRepeatKey(Controller.BUTTON_UP)) {
 			engine.statc[1]--
-			if(engine.statc[1]<0) engine.statc[1] = 2
+			if(engine.statc[1]<0) engine.statc[1] = 1
 			engine.playSE("change")
 		}
 		if(engine.ctrl.isMenuRepeatKey(Controller.BUTTON_DOWN)) {
 			engine.statc[1]++
-			if(engine.statc[1]>2) engine.statc[1] = 0
+			if(engine.statc[1]>1) engine.statc[1] = 0
 			engine.playSE("change")
 		}
 
@@ -395,22 +406,32 @@ class RetroN:AbstractMode() {
 			receiver.drawMenu(engine, 0, 7, "Level", BASE, COLOR.BLUE)
 			val strLevel = "%10s".format(LEVEL_NAME[engine.statistics.level])
 			receiver.drawMenu(engine, 0, 8, strLevel, BASE)
-			drawResultStats(engine, receiver, 9, COLOR.BLUE, Statistic.SPL)
+
+			drawResultStats(engine, receiver, 10, COLOR.BLUE, Statistic.SPL)
+			receiver.drawMenu(engine, 0, 12, "%3d".format(engine.statistics.totalQuadruple), NUM, 2f)
+			receiver.drawMenu(engine, 5, 13, "Quads", BASE, COLOR.BLUE)
+			receiver.drawMenuNum(engine, 5, 12, engine.statistics.run {
+				totalQuadruple*100f/maxOf(1, totalQuadruple+totalSingle+totalDouble+totalTriple+totalSplitDouble+totalSplitTriple)
+			}, 7 to 3)
+			receiver.drawMenu(engine, 9.2f, 12, "%", NUM, COLOR.BLUE)
 			drawResultRank(engine, receiver, 15, COLOR.BLUE, rankingRank)
-			drawResult(engine, receiver, 11, COLOR.BLUE, "QUAD%", "%3d%%".format(engine.statistics.run {
-				totalQuadruple*100/maxOf(1, totalQuadruple+totalSingle+totalDouble+totalTriple+totalSplitDouble+totalSplitTriple)
-			}))
 		} else {
 			drawResultStats(engine, receiver, 3, COLOR.BLUE, Statistic.TIME, Statistic.LPM)
 			receiver.drawMenu(engine, 0, 7, "I-Droughts", BASE, COLOR.BLUE)
 			receiver.drawMenu(engine, 0, 8, "Longest", BASE, COLOR.BLUE, .8f)
 			receiver.drawMenu(engine, 6, 8, "%3d".format(droughts.maxOrNull()?:0), NUM, 2f)
-			receiver.drawMenu(engine, 0, 10, "Average", BASE, COLOR.BLUE, .8f)
-			receiver.drawMenuNum(engine, 2, 11, droughts.average(), null to 3, scale = 2f)
+			receiver.drawMenu(engine, 0, 9.5f, "Average", BASE, COLOR.BLUE, .8f)
+			receiver.drawMenuNum(engine, 2, 10.5f, droughts.average(), 7 to 3, scale = 2f)
 			drawResult(
 				engine, receiver, 13, COLOR.RED, "Burnouts",
-				"%3d".format(engine.statistics.run {totalSingle+totalDouble+totalSplitDouble+totalTriple+totalSplitTriple})
+				"%5d".format(engine.statistics.run {totalSingle+totalDouble+totalSplitDouble+totalTriple+totalSplitTriple})
 			)
+			receiver.drawMenu(engine, 5, 14, "S:", BASE, COLOR.BLUE)
+			receiver.drawMenu(engine, 7, 14, "%3d".format(engine.statistics.totalSingle), NUM)
+			receiver.drawMenu(engine, 5, 15, "D:", BASE, COLOR.BLUE)
+			receiver.drawMenu(engine, 7, 15, "%3d".format(engine.statistics.run {totalDouble+totalSplitDouble}), NUM)
+			receiver.drawMenu(engine, 5, 16, "T:", BASE, COLOR.BLUE)
+			receiver.drawMenu(engine, 7, 16, "%3d".format(engine.statistics.run {totalTriple+totalSplitTriple}), NUM)
 		}
 	}
 

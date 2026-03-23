@@ -139,7 +139,7 @@ object TrainerGarbageLine {
 		val bag = intArrayOf(0, 1, 2, 3, 4, 5, 6)
 		var bagIndex = 7
 		while(!s1.lost&&!s2.lost) {
-			if(bagIndex<0||bagIndex>6) {
+			if(bagIndex !in 0..6) {
 				val rnd:Random = ThreadLocalRandom.current()
 				for(k in bag.size-1 downTo 1) {
 					val index = rnd.nextInt(k+1)

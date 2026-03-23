@@ -46,9 +46,7 @@ import mu.nu.nullpo.game.event.EventReceiver.COLOR
 import mu.nu.nullpo.game.event.ScoreEvent
 import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.game.subsystem.mode.AbstractMode
-import mu.nu.nullpo.game.subsystem.mode.menu.DelegateMenuItem
-import mu.nu.nullpo.game.subsystem.mode.menu.MenuList
-import mu.nu.nullpo.game.subsystem.mode.menu.StringsMenuItem
+import mu.nu.nullpo.game.subsystem.mode.menu.*
 import mu.nu.nullpo.gui.common.BaseFont
 import mu.nu.nullpo.gui.common.BaseFont.FONT.*
 import mu.nu.nullpo.util.CustomProperties
@@ -163,25 +161,8 @@ class ScoreAttackRun:AbstractMode() {
 				engine.speed.gravity = -1
 				engine.speed.denominator = 1
 			}
-			4 -> {
-				var lv = engine.statistics.level
-				if(lv<0) {
-					lv = 0
-				}
-				if(lv>=tableGravity.size) {
-					lv = tableGravity.size-1
-				}
-				engine.speed.gravity = tableGravity[lv]
-				engine.speed.denominator = tableDenominator[lv]
-			}
 			else -> {
-				var lv = engine.statistics.level
-				if(lv<0) {
-					lv = 0
-				}
-				if(lv>=tableGravity.size) {
-					lv = tableGravity.size-1
-				}
+				val lv = engine.statistics.level.coerceIn(tableGravity.indices)
 				engine.speed.gravity = tableGravity[lv]
 				engine.speed.denominator = tableDenominator[lv]
 			}

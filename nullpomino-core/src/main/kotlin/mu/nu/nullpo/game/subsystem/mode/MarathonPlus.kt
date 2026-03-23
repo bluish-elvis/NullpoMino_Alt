@@ -451,10 +451,8 @@ class MarathonPlus:NetDummyMode() {
 				// Level up
 				lv = ++engine.statistics.level
 				setSpeed(engine)
-				owner.bgMan.nextBg = -1-when {
-					goalType==0 -> lv/2
-					goalType==3&&lv>=50 -> 11
-					else -> lv/5
+				owner.bgMan.nextBg = -1-when(goalType) {
+					0 -> lv/2; 3 if lv>=50 -> 11; else -> lv/5
 				}//if(lv<20) lv/2 else if(lv<50) 10+(lv-20)/3 else 20+(lv-50)/15
 				if(lv>=tableGameClearLevel[goalType]) {
 					// Bonus level unlocked

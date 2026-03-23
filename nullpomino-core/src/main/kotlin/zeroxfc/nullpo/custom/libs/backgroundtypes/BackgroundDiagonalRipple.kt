@@ -108,7 +108,7 @@ class BackgroundDiagonalRipple<T>(img:ResourceImage<T>, cellWidth:Int? = DEF_GRI
 
 	override fun update() {
 		currentPulsePhase = (currentPulsePhase+1)%pulseFrame
-		for(y in chunkGrid.indices) for(x in 0..<chunkGrid[y].size) {
+		for(y in chunkGrid.indices) for(x in chunkGrid[y].indices) {
 			val j = currentPulsePhase.let {
 				(if(reverse) pulseFrame-it-1 else it)+(x+y)*(if(reverseSlant) -1 else 1)
 			}

@@ -31,7 +31,6 @@
 
 package mu.nu.nullpo.gui.slick
 
-import mu.nu.nullpo.gui.common.ConfigGlobal
 import mu.nu.nullpo.gui.common.ConfigGlobal.*
 import mu.nu.nullpo.gui.common.GameKeyDummy
 
@@ -41,7 +40,7 @@ import mu.nu.nullpo.gui.common.GameKeyDummy
 ) {
 	constructor():this(
 		GeneralConf(), VisualConf(), RenderConf(),
-		CtrlConf(MutableList(GameKeyDummy.MAX_PLAYERS) {ConfigGlobal.GameKeyMaps()}), AudioConf()
+		CtrlConf(MutableList(GameKeyDummy.MAX_PLAYERS) {GameKeyMaps()}), AudioConf()
 	)
 
 }

@@ -39,6 +39,7 @@ import mu.nu.nullpo.gui.common.BaseFont.FONT.BASE
 import mu.nu.nullpo.gui.common.BaseFont.FONT.NUM
 import mu.nu.nullpo.util.CustomProperties
 import org.apache.logging.log4j.LogManager
+import org.apache.logging.log4j.Logger
 
 abstract class AbstractMenuItem<T>(
 	val name:String, val label:String, val color:COLOR, val defaultValue:T,
@@ -108,6 +109,6 @@ abstract class AbstractMenuItem<T>(
 		draw(engine, playerID, receiver, y, if(focus) 0 else -1)
 
 	companion object {
-		val log = LogManager.getLogger()
+		val log:Logger? = LogManager.getLogger()
 	}
 }

@@ -47,9 +47,7 @@ import mu.nu.nullpo.game.event.EventReceiver.COLOR
 import mu.nu.nullpo.game.event.ScoreEvent
 import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.game.play.GameEngine.Status
-import mu.nu.nullpo.game.subsystem.mode.menu.BooleanMenuItem
-import mu.nu.nullpo.game.subsystem.mode.menu.DelegateMenuItem
-import mu.nu.nullpo.game.subsystem.mode.menu.MenuList
+import mu.nu.nullpo.game.subsystem.mode.menu.*
 import mu.nu.nullpo.gui.common.BaseFont.FONT.*
 import mu.nu.nullpo.gui.slick.img.ext.RendererExtension
 import mu.nu.nullpo.util.CustomProperties
@@ -237,34 +235,20 @@ class ColorPower:MarathonModeBase() {
 		if(singlePiece) {
 			var v = -1
 			for(j in 0..7) {
-				var flag = false
 				v = nonRuleBoundRandomizer.nextInt(8)+1
-				for(elem in colorHistory) {
-					if(elem==v) {
-						flag = true
-						break
-					}
-				}
-				if(!flag) break
+				if(!colorHistory.any {it==v}) break
 			}
 			appendToHistory(v)
 			engine.getNextObject(engine.nextPieceCount+engine.ruleOpt.nextDisplay-1)?.setColor(v)
 		} else {
-			for(i in 0..<engine.nextPieceArrayObject.size) {
+			for(it in engine.nextPieceArrayObject) {
 				var v = -1
 				for(j in 0..7) {
-					var flag = false
 					v = nonRuleBoundRandomizer.nextInt(8)+1
-					for(elem in colorHistory) {
-						if(elem==v) {
-							flag = true
-							break
-						}
-					}
-					if(!flag) break
+					if(!colorHistory.any {it==v}) break
 				}
 				appendToHistory(v)
-				engine.nextPieceArrayObject[i].setColor(v)
+				it.setColor(v)
 			}
 		}
 	}
@@ -276,11 +260,7 @@ class ColorPower:MarathonModeBase() {
 			}
 			nonRuleBoundRandomizer = Random(engine.randSeed)
 			colorHistory.fill(621)
-			if(!ruleBoundMode) {
-				randomizeColors(engine, false)
-			} else {
-				engine.ruleOpt.pieceColor = defaultColors
-			}
+			if(!ruleBoundMode) randomizeColors(engine, false) else engine.ruleOpt.pieceColor = defaultColors
 		}
 		return false
 	}

@@ -112,7 +112,7 @@ open class DummyAI:AIPlayer, Runnable {
 		}
 	}
 
-	override fun setControl(engine:GameEngine, playerID:Int, ctrl:Controller):Int = 0
+	override fun setControl(engine:GameEngine, playerID:Int, ctrl:Controller):UShort = 0u
 
 	override fun shutdown() {
 		if(thread?.isAlive==true) {

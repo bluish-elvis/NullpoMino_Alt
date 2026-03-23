@@ -101,7 +101,13 @@ class PolyFrag(
 ):Particle(null, maxLifetime, x, y, vel, acc, friction, size, sizeEase, red, green, blue, alphaI) {
 
 	override fun draw(i:Int, r:AbstractRenderer) {
-
+		/*r.drawBlendAdd {
+			r.drawFillPolygon(
+				floatArrayOf(x, x+us/2, x+us, x+us/2),
+				floatArrayOf(y, y-us/2, y, y+us/2),
+				ur.toInt(), ug.toInt(), ub.toInt(), ua.toInt()
+			)
+		}*/
 	}
 
 	override fun update(r:AbstractRenderer):Boolean {

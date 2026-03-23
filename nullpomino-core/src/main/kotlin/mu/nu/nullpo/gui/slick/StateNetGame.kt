@@ -302,7 +302,7 @@ internal class StateNetGame:BasicGameState(), NetLobbyListener {
 		var strTitle = "NullpoMino Netplay"
 
 		gameManager?.also {
-			if(modeName!=="NET-DUMMY"&&it.engine.isNotEmpty())
+			if(modeName!="NET-DUMMY"&&it.engine.isNotEmpty())
 				strTitle = "[${
 					if(it.engine[0].isInGame&&!it.replayMode&&!it.replayRerecord)
 						"PLAY" else "Menu"

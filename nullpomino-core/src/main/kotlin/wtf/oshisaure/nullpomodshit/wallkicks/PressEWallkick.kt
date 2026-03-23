@@ -47,6 +47,7 @@ import mu.nu.nullpo.game.component.Piece
 import mu.nu.nullpo.game.event.WallkickResult
 import mu.nu.nullpo.game.subsystem.wallkick.ClassicWallkick
 import org.apache.logging.log4j.LogManager
+import org.apache.logging.log4j.Logger
 
 class PressEWallkick:ClassicWallkick() {
 	override fun executeWallkick(
@@ -73,6 +74,6 @@ class PressEWallkick:ClassicWallkick() {
 	}
 
 	companion object {
-		var log = LogManager.getLogger()
+		var log:Logger? = LogManager.getLogger()
 	}
 }

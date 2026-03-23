@@ -31,6 +31,7 @@
 
 package mu.nu.nullpo.gui.common.bg.tech
 
+import mu.nu.nullpo.game.component.Block.COLOR.Companion.COLOR_NUM
 import mu.nu.nullpo.gui.common.AbstractRenderer
 import mu.nu.nullpo.gui.common.ResourceImage
 import mu.nu.nullpo.gui.common.bg.AbstractBG
@@ -68,7 +69,11 @@ class Blocks(addBGFX:AbstractBG<*>? = null):AbstractBG<Nothing?>(ResourceImage.B
 			}
 			pos.set(if(pp) Random.nextFloat()*640 to Random.nextFloat()*480 else p)
 			vel.set(v)
-			color = Random.nextInt(mu.nu.nullpo.game.component.Block.COLOR.ALL_COLOR_NUM)
+			color = Random.nextInt(17).let {
+				if(it==0) -1 else
+					if(it<=3) COLOR_NUM+Random.nextInt(mu.nu.nullpo.game.component.Block.COLOR.GEM_NUM)
+					else Random.nextInt(COLOR_NUM)
+			}
 			skin = Random.nextInt()
 		}
 	}
@@ -94,7 +99,7 @@ class Blocks(addBGFX:AbstractBG<*>? = null):AbstractBG<Nothing?>(ResourceImage.B
 	override fun draw(render:AbstractRenderer, bg:Boolean) {
 		if(bg) render.drawBlackBG()
 		children.forEach {(x, y, sc, skin, color) ->
-			render.drawBlock(x-sc*8f, y-sc*8f, color, skin, false, 0f, .6f, sc)
+			render.drawBlock(x-sc*8f, y-sc*8f, maxOf(0, color), skin, color<0, 0f, .6f, sc)
 		}
 
 	}

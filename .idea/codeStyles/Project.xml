@@ -5,6 +5,7 @@
       <value>
         <option name="INDENT_SIZE" value="2" />
         <option name="TAB_SIZE" value="2" />
+        <option name="USE_TAB_CHARACTER" value="true" />
       </value>
     </option>
     <option name="LINE_SEPARATOR" value="&#13;&#10;" />
@@ -63,9 +64,26 @@
     <Properties>
       <option name="KEEP_BLANK_LINES" value="true" />
     </Properties>
+    <Python>
+      <option name="SPACE_AFTER_PY_COLON" value="false" />
+      <option name="SPACE_AROUND_POWER_OPERATOR" value="false" />
+      <option name="SPACE_BEFORE_BACKSLASH" value="false" />
+      <option name="ALIGN_COLLECTIONS_AND_COMPREHENSIONS" value="false" />
+      <option name="ALIGN_MULTILINE_IMPORTS" value="false" />
+      <option name="NEW_LINE_AFTER_COLON_MULTI_CLAUSE" value="false" />
+      <option name="SPACE_AFTER_NUMBER_SIGN" value="false" />
+      <option name="SPACE_BEFORE_NUMBER_SIGN" value="false" />
+    </Python>
     <XML>
       <option name="XML_WHITE_SPACE_AROUND_CDATA" value="1" />
     </XML>
+    <codeStyleSettings language="CSS">
+      <indentOptions>
+        <option name="INDENT_SIZE" value="2" />
+        <option name="CONTINUATION_INDENT_SIZE" value="2" />
+        <option name="TAB_SIZE" value="2" />
+      </indentOptions>
+    </codeStyleSettings>
     <codeStyleSettings language="Declarative">
       <indentOptions>
         <option name="INDENT_SIZE" value="2" />
@@ -127,6 +145,7 @@
         <option name="INDENT_SIZE" value="2" />
         <option name="CONTINUATION_INDENT_SIZE" value="2" />
         <option name="TAB_SIZE" value="2" />
+        <option name="USE_TAB_CHARACTER" value="true" />
       </indentOptions>
     </codeStyleSettings>
     <codeStyleSettings language="HTML">
@@ -222,6 +241,14 @@
         <option name="TAB_SIZE" value="1" />
       </indentOptions>
     </codeStyleSettings>
+    <codeStyleSettings language="JavaScript">
+      <indentOptions>
+        <option name="INDENT_SIZE" value="2" />
+        <option name="CONTINUATION_INDENT_SIZE" value="2" />
+        <option name="TAB_SIZE" value="2" />
+        <option name="USE_TAB_CHARACTER" value="true" />
+      </indentOptions>
+    </codeStyleSettings>
     <codeStyleSettings language="Lua">
       <option name="SPACE_AROUND_ASSIGNMENT_OPERATORS" value="false" />
       <indentOptions>
@@ -250,11 +277,37 @@
         <option name="TAB_SIZE" value="2" />
       </indentOptions>
     </codeStyleSettings>
-    <codeStyleSettings language="TOML">
+    <codeStyleSettings language="Python">
+      <option name="ALIGN_MULTILINE_PARAMETERS" value="false" />
+      <option name="ALIGN_MULTILINE_PARAMETERS_IN_CALLS" value="false" />
+      <option name="SPACE_AROUND_ASSIGNMENT_OPERATORS" value="false" />
+      <option name="SPACE_AROUND_EQUALITY_OPERATORS" value="false" />
+      <option name="SPACE_AROUND_RELATIONAL_OPERATORS" value="false" />
+      <option name="SPACE_AROUND_BITWISE_OPERATORS" value="false" />
+      <option name="SPACE_AROUND_ADDITIVE_OPERATORS" value="false" />
+      <option name="SPACE_AROUND_MULTIPLICATIVE_OPERATORS" value="false" />
+      <option name="SPACE_AROUND_SHIFT_OPERATORS" value="false" />
+      <option name="SPACE_AFTER_COMMA" value="false" />
       <indentOptions>
         <option name="INDENT_SIZE" value="2" />
         <option name="CONTINUATION_INDENT_SIZE" value="2" />
         <option name="TAB_SIZE" value="2" />
+        <option name="USE_TAB_CHARACTER" value="true" />
+      </indentOptions>
+    </codeStyleSettings>
+    <codeStyleSettings language="TOML">
+      <indentOptions>
+        <option name="INDENT_SIZE" value="1" />
+        <option name="CONTINUATION_INDENT_SIZE" value="2" />
+        <option name="TAB_SIZE" value="1" />
+      </indentOptions>
+    </codeStyleSettings>
+    <codeStyleSettings language="TypeScript">
+      <indentOptions>
+        <option name="INDENT_SIZE" value="2" />
+        <option name="CONTINUATION_INDENT_SIZE" value="2" />
+        <option name="TAB_SIZE" value="2" />
+        <option name="USE_TAB_CHARACTER" value="true" />
       </indentOptions>
     </codeStyleSettings>
     <codeStyleSettings language="XML">

@@ -30,15 +30,10 @@
  */
 package mu.nu.nullpo.game.subsystem.mode
 
-import mu.nu.nullpo.game.component.BGM
-import mu.nu.nullpo.game.component.Controller
-import mu.nu.nullpo.game.component.LevelData
+import mu.nu.nullpo.game.component.*
 import mu.nu.nullpo.game.component.Piece.Companion.createQueueFromIntStr
-import mu.nu.nullpo.game.component.SpeedParam
+import mu.nu.nullpo.game.event.*
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
-import mu.nu.nullpo.game.event.Leaderboard
-import mu.nu.nullpo.game.event.Rankable
-import mu.nu.nullpo.game.event.ScoreEvent
 import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.game.subsystem.mode.menu.*
 import mu.nu.nullpo.gui.common.BaseFont
@@ -190,7 +185,7 @@ class RetroModern:AbstractMode() {
 	override fun onReady(engine:GameEngine):Boolean {
 		if(engine.statc[0]==0)
 			if(engine.ending==0) {
-//				engine.framecolor = if(gameType==4) GameEngine.FRAME_COLOR_RED else GameEngine.FRAME_COLOR_WHITE
+//				engine.frame = if(gameType==4) GameEngine.Frame.RED else GameEngine.Frame.WHITE
 				totalNorma = MAX_LINES-startLevel*16
 				engine.statistics.level = startLevel
 			} else

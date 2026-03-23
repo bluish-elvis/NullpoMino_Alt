@@ -32,6 +32,7 @@ package mu.nu.nullpo.game.component
 
 import mu.nu.nullpo.util.GeneralUtil.aNum
 import mu.nu.nullpo.util.GeneralUtil.toAlphaNum
+import kotlin.random.Random
 import mu.nu.nullpo.game.event.EventReceiver.COLOR as RColor
 
 /** Block */
@@ -51,11 +52,7 @@ class Block @JvmOverloads constructor(
 	var cint:Int
 		get() = colorNumber(color, type, getAttribute(ATTRIBUTE.BONE), item)
 		set(v) {
-			intToColor(v).let {
-				color = it.first
-				type = it.second
-			}
-		}
+			intToColor(v).let {(c, t) -> color = c; type = t;}; }
 
 	private val squarePosInt:Int
 		get() = if(getAttribute(ATTRIBUTE.SQUARE_GOLD)||getAttribute(ATTRIBUTE.SQUARE_SILVER))
@@ -69,16 +66,15 @@ class Block @JvmOverloads constructor(
 				getAttribute(ATTRIBUTE.CONNECT_UP) -> 6
 				getAttribute(ATTRIBUTE.CONNECT_DOWN) -> 0
 				else -> 3
-			}
-		else 0
+			} else 0
 
 	/** Block color integer for Rendering */
 	val drawId:Int
 		get() = if(getAttribute(ATTRIBUTE.SQUARE_GOLD)) COLOR_GEM_PURPLE+1+squarePosInt else
 			if(getAttribute(ATTRIBUTE.SQUARE_SILVER)) COLOR_GEM_PURPLE+10+squarePosInt else
 				when(cint) {
-					COLOR_GEM_RAINBOW -> COLOR_GEM_RED+(elapsedFrames/3%COLOR.COLOR_NUM)
-					COLOR_RAINBOW -> COLOR_RED+(elapsedFrames/3%COLOR.COLOR_NUM)
+					COLOR_GEM_RAINBOW -> COLOR_GEM_RED+(elapsedFrames/3%COLOR.GEM_NUM)
+					COLOR_RAINBOW -> (elapsedFrames/3%COLOR.COLOR_NUM)
 					else -> cint
 				}
 
@@ -114,8 +110,7 @@ class Block @JvmOverloads constructor(
 	var iNum
 		get() = item?.let {it.ordinal+1}?:0
 		set(value) {
-			item = if(value in 1..items.size) items[value-1] else null
-		}
+			item = if(value in 1..items.size) items[value-1] else null; }
 
 	/** Number of extra clears required before block is erased */
 	var hard = 0
@@ -245,16 +240,21 @@ class Block @JvmOverloads constructor(
 		.let {31*it+bonusValue}
 
 	enum class TYPE(val pos:Byte = 0) { BLOCK, GEM, ITEM }
-	enum class COLOR(val color:Boolean = true) {
-		BLACK(false), WHITE(false), RED, ORANGE, YELLOW, GREEN, CYAN, BLUE, PURPLE, RAINBOW(false);
+	enum class COLOR(val color:Boolean = true, private val regular:Boolean = color) {
+		BLACK(false, true), WHITE(false, true), RED, ORANGE, YELLOW, GREEN, CYAN, BLUE, PURPLE, RAINBOW(false);
+
+		val fxInt:Int get() = if(this==RAINBOW) Random.nextInt(8) else (ordinal-1).coerceAtLeast(0)
 
 		companion object {
 			val all = entries
-			/** 通常のBlock colorのMaximum count */
+			/** 特殊colorも含めた総数 */
 			val COUNT = all.size
-			/** 宝石になりうるBlock colorのMaximum count */
-			val COLOR_NUM = all.count {it.color}
-			val ALL_COLOR_NUM = COUNT+COLOR_NUM-1
+			/** 通常のBlock colorの総数 */
+			val COLOR_NUM = all.count {it.regular}
+			/** 宝石になりうるBlock colorの総数 */
+			val GEM_NUM = all.count {it.color}
+			/** Block+Gemの総種類数 */
+			val ALL_COLOR_NUM = COLOR_NUM+GEM_NUM
 			fun colors() = all.filter {it.color}
 		}
 	}

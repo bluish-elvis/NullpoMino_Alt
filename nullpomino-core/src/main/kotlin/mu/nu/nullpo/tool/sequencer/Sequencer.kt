@@ -134,7 +134,7 @@ class Sequencer:JFrame(), ActionListener {
 		nextPieceEnable = MutableList(Piece.Shape.num) {it<Piece.Shape.numTetras}
 
 		title = getUIText("Title_Sequencer")
-		defaultCloseOperation = WindowConstants.EXIT_ON_CLOSE
+		defaultCloseOperation = EXIT_ON_CLOSE
 
 		initUI()
 		pack()

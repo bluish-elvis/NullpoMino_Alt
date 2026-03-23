@@ -141,18 +141,18 @@ abstract class PyAI(override val name:String = "PyAI", private val scriptPath:St
 		}
 	}
 
-	override fun setControl(engine:GameEngine, playerID:Int, ctrl:Controller):Int =
+	override fun setControl(engine:GameEngine, playerID:Int, ctrl:Controller):UShort =
 		try {
 			jep?.run {
 				set("engine", engine)
 				set("playerID", playerID)
 				set("ctrl", ctrl)
 				eval("ctrlbit = ai.setControl(engine, playerID, ctrl)")
-				(this.getValue("ctrlbit") as Int?)
-			}?:0
+				(this.getValue("ctrlbit") as UShort?)
+			}?:0u
 		} catch(j:JepException) {
 			log.error("Error in setControl, ", j)
-			0
+			0u
 		}
 
 	fun shutdown(engine:GameEngine?, playerID:Int) {

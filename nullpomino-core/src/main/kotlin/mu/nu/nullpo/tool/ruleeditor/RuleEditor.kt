@@ -30,29 +30,20 @@
  */
 package mu.nu.nullpo.tool.ruleeditor
 
-import mu.nu.nullpo.game.component.Block
-import mu.nu.nullpo.game.component.Piece
+import mu.nu.nullpo.game.component.*
 import mu.nu.nullpo.game.component.Piece.Shape
-import mu.nu.nullpo.game.component.RuleOptions
 import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.util.CustomProperties
 import mu.nu.nullpo.util.GeneralUtil.Json
 import org.apache.logging.log4j.LogManager
-import java.awt.BorderLayout
-import java.awt.Color
-import java.awt.Component
-import java.awt.Dimension
-import java.awt.event.ActionEvent
-import java.awt.event.ActionListener
-import java.awt.event.InputEvent
-import java.awt.event.KeyEvent
+import java.awt.*
+import java.awt.event.*
 import java.awt.image.BufferedImage
 import java.io.*
 import java.net.MalformedURLException
 import java.net.URL
 import java.util.*
-import java.util.zip.GZIPInputStream
-import java.util.zip.GZIPOutputStream
+import java.util.zip.*
 import javax.imageio.ImageIO
 import javax.swing.*
 import javax.swing.filechooser.FileFilter
@@ -475,7 +466,7 @@ class RuleEditor:JFrame, ActionListener {
 		strNowFile = null
 
 		title = getUIText("Title_RuleEditor")
-		defaultCloseOperation = WindowConstants.EXIT_ON_CLOSE
+		defaultCloseOperation = EXIT_ON_CLOSE
 
 		loadBlockSkins()
 

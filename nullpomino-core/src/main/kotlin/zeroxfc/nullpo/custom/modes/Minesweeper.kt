@@ -471,8 +471,8 @@ class Minesweeper:AbstractMode() {
 						receiver.blockBreak(engine, cursorX, cursorY, Block(Block.COLOR.WHITE))
 						val px = cursorX+loc[0]
 						val py = cursorY+loc[1]
-						if(px<0||px>=width) continue
-						if(py<0||py>=height) continue
+						if(px !in 0..<width) continue
+						if(py !in 0..<height) continue
 						if(mainGrid.uncoverAt(px, py)==GameGrid.State.MINE) {
 							caughtMine(engine)
 							return true
@@ -499,8 +499,8 @@ class Minesweeper:AbstractMode() {
 					for(loc in testLocations) {
 						val px = cursorX+loc[0]
 						val py = cursorY+loc[1]
-						if(px<0||px>=width) continue
-						if(py<0||py>=height) continue
+						if(px !in 0..<width) continue
+						if(py !in 0..<height) continue
 						if(!mainGrid.getSquareAt(px, py).uncovered) {
 							mainGrid.getSquareAt(px, py).flagged = true
 							mainGrid.getSquareAt(px, py).question = false

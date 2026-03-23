@@ -31,15 +31,11 @@
 package mu.nu.nullpo.game.subsystem.mode
 
 import kotlinx.serialization.Serializable
-import mu.nu.nullpo.game.component.BGM
-import mu.nu.nullpo.game.component.Block
+import mu.nu.nullpo.game.component.*
 import mu.nu.nullpo.game.component.Block.ATTRIBUTE
 import mu.nu.nullpo.game.component.Block.TYPE
-import mu.nu.nullpo.game.component.Statistics
+import mu.nu.nullpo.game.event.*
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
-import mu.nu.nullpo.game.event.Leaderboard
-import mu.nu.nullpo.game.event.Rankable
-import mu.nu.nullpo.game.event.ScoreEvent
 import mu.nu.nullpo.game.net.NetUtil
 import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.game.subsystem.mode.menu.*
@@ -193,7 +189,8 @@ class SprintDig:NetDummyMode() {
 			for(x:Int in 0..<w)
 				if(x!=hole) {
 					var color:bCOLOR = bCOLOR.WHITE
-					if(y==h-1) {
+					val gem = y==h-1||x==w-hole-1
+					if(gem) {
 						do
 							color = bCOLOR.all[1+engine.random.nextInt(7)]
 						while(color==prevColor)
@@ -201,7 +198,7 @@ class SprintDig:NetDummyMode() {
 					}
 					engine.field.setBlock(
 						x, y, Block(
-							color, if(y==h-1) TYPE.BLOCK else TYPE.GEM,
+							color, if(gem) TYPE.GEM else TYPE.BLOCK,
 							engine.blkSkin, ATTRIBUTE.VISIBLE, ATTRIBUTE.GARBAGE
 						)
 					)

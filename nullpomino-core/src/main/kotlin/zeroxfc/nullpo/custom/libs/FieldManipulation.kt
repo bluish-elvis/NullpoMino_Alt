@@ -73,7 +73,7 @@ Erases a mino in every filled lines on a field. Displays the blockbreak effect.
 fun Field.shotgunField(random:Random, receiver:EventReceiver? = null, engine:GameEngine? = null) {
 	(hiddenHeight*-1..<height).associateWith {y ->
 		getRow(y).mapIndexedNotNull {x, b -> b?.let {x to b}}.let {mapOf(it[random.nextInt(it.size)])}
-	}.filter {it.value.isNotEmpty()}.let {all ->
+	}.filter {(_, it) -> it.isNotEmpty()}.let {all ->
 		delBlocks(all).let {engine?.let {e -> receiver?.blockBreak(e, it)}}
 	}
 }

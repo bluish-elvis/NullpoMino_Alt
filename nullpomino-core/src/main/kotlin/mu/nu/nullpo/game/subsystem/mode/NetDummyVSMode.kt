@@ -31,14 +31,11 @@
 
 package mu.nu.nullpo.game.subsystem.mode
 
-import mu.nu.nullpo.game.component.BGM
-import mu.nu.nullpo.game.component.Block
-import mu.nu.nullpo.game.component.Controller
+import mu.nu.nullpo.game.component.*
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
-import mu.nu.nullpo.game.net.NetPlayerClient
-import mu.nu.nullpo.game.net.NetPlayerInfo
-import mu.nu.nullpo.game.net.NetRoomInfo
+import mu.nu.nullpo.game.net.*
 import mu.nu.nullpo.game.play.GameEngine
+import mu.nu.nullpo.game.play.GameEngine.Frame
 import mu.nu.nullpo.game.play.GameEngine.Status
 import mu.nu.nullpo.game.play.GameManager
 import mu.nu.nullpo.gui.common.BaseFont.FONT.*
@@ -246,7 +243,7 @@ internal abstract class NetDummyVSMode:NetDummyMode() {
 			netVSPlayerPlayCount[i] = 0
 			netVSPlayerName[i] = ""
 			netVSPlayerTeam[i] = ""
-			owner.engine[i].frame = GameEngine.Frame.GRAY
+			owner.engine[i].frame = Frame.GRAY
 		}
 
 		val pList = netLobby!!.updateSameRoomPlayerInfoList()
@@ -271,8 +268,7 @@ internal abstract class NetDummyVSMode:NetDummyMode() {
 					netVSPlayerTeam[playerID] = pInfo.strTeam
 
 					// Set frame color
-					if(pInfo.seatID<NET_PLAYER_COLOR_FRAME.size)
-						owner.engine[playerID].frameSkin = NET_PLAYER_COLOR_FRAME[pInfo.seatID]
+					owner.engine[playerID].frame = NET_PLAYER_COLOR_FRAME[pInfo.seatID]
 
 					// Set team color
 					if(netVSPlayerTeam[playerID].isNotEmpty())
@@ -404,8 +400,8 @@ internal abstract class NetDummyVSMode:NetDummyMode() {
 
 		// Set frame color
 		val seatID = netVSPlayerSeatID[engine.playerID]
-		engine.frameSkin = if(seatID>=0&&seatID<NET_PLAYER_COLOR_FRAME.size)
-			NET_PLAYER_COLOR_FRAME[seatID] else GameEngine.FRAME_COLOR_GRAY
+		engine.frame = if(seatID in NET_PLAYER_COLOR_FRAME.indices) NET_PLAYER_COLOR_FRAME[seatID] else
+			Frame.COLOR(seatID-NET_PLAYER_COLOR_FRAME.lastIndex)
 	}
 
 	/** NET-VS: Apply room's settings (such as gravity) to all GameEngine */
@@ -1280,8 +1276,8 @@ internal abstract class NetDummyVSMode:NetDummyMode() {
 		/** NET-VS: Each player's frame color-int */
 		private val NET_PLAYER_COLOR_FRAME =
 			listOf(
-				GameEngine.FRAME_COLOR_RED, GameEngine.FRAME_COLOR_BLUE, GameEngine.FRAME_COLOR_GREEN,
-				GameEngine.FRAME_COLOR_BRONZE, GameEngine.FRAME_COLOR_PURPLE, GameEngine.FRAME_COLOR_CYAN
+				Frame.RED, Frame.BLUE, Frame.GREEN,
+				Frame.BRONZE, Frame.PURPLE, Frame.CYAN
 			)
 
 		/** NET-VS: Team font colors */

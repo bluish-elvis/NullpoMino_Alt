@@ -32,12 +32,11 @@ package mu.nu.nullpo.game.subsystem.mode
 
 import mu.nu.nullpo.game.component.BGM
 import mu.nu.nullpo.game.component.Controller
+import mu.nu.nullpo.game.event.*
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
-import mu.nu.nullpo.game.event.Leaderboard
-import mu.nu.nullpo.game.event.Rankable
-import mu.nu.nullpo.game.event.ScoreEvent
 import mu.nu.nullpo.game.net.NetUtil
 import mu.nu.nullpo.game.play.GameEngine
+import mu.nu.nullpo.game.play.GameEngine.Frame
 import mu.nu.nullpo.game.subsystem.mode.menu.*
 import mu.nu.nullpo.gui.common.BaseFont.FONT.*
 import mu.nu.nullpo.util.CustomProperties
@@ -96,7 +95,6 @@ class Marathon:NetDummyMode() {
 		engine.statistics.level = startLevel
 		owner.bgMan.bg = startLevel
 		setSpeed(engine)
-		engine.frame = GameEngine.Frame.GREEN
 	}
 
 	/** Set the gravity rate
@@ -108,6 +106,7 @@ class Marathon:NetDummyMode() {
 		val lv = engine.statistics.lines.coerceIn(starts, goal.let {
 			if(it>starts) it else maxOf(engine.statistics.lines, starts)
 		})
+		engine.frame = Frame.valueOf(1+engine.statistics.level)
 		val (g, d) = if(goal in 0..200) tableSpeeds.first else tableSpeeds.second
 		val sLv = lv/(if(goal<=500) 10 else 20)
 		engine.speed.gravity = g[sLv.coerceIn(g.indices)]
@@ -146,7 +145,6 @@ class Marathon:NetDummyMode() {
 		engine.splitB2B = true
 		engine.comboType = GameEngine.COMBO_TYPE_NORMAL
 		engine.big = big
-		engine.frame = GameEngine.Frame.valueOf((1+startLevel)%GameEngine.FRAME_COLOR_ALL)
 		setSpeed(engine)
 
 		return super.onSettingChanged(engine)
@@ -154,7 +152,6 @@ class Marathon:NetDummyMode() {
 
 	/* Called for initialization during "Ready" screen */
 	override fun startGame(engine:GameEngine) {
-
 		engine.twistAllowKick = true
 		engine.twistEnable = true
 		engine.useAllSpinBonus = true
@@ -162,7 +159,6 @@ class Marathon:NetDummyMode() {
 		setSpeed(engine)
 
 		owner.musMan.bgm = if(netIsWatch) BGM.Silent else bgmLv(0)
-		engine.frame = GameEngine.Frame.valueOf((1+startLevel)%GameEngine.FRAME_COLOR_ALL)
 	}
 
 	/* Render score */
@@ -236,8 +232,7 @@ class Marathon:NetDummyMode() {
 			engine.gameEnded()
 		} else if(engine.statistics.lines>=(engine.statistics.level+1)*10&&engine.statistics.level<tableGameClearLines[goalType]/10) {
 			// Level up
-			engine.statistics.level++
-			engine.frameSkin = (1+engine.statistics.level)%GameEngine.FRAME_COLOR_ALL
+			engine.statistics.level = engine.statistics.lines/10+1
 			owner.bgMan.nextBg = engine.statistics.level
 
 			setSpeed(engine)

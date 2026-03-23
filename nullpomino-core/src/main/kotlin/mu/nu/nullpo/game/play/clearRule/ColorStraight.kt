@@ -43,8 +43,8 @@ data class ColorStraight(var colorClearSize:Int = 4, var lineColorDiagonals:Bool
 	:ClearType {
 	override fun check(field:Field) = field.checkConnectedColor(colorClearSize, false, lineColorDiagonals, gemSameColor)
 	override fun flag(engine:GameEngine, field:Field) =
-		field.checkConnectedColor(colorClearSize, true, lineColorDiagonals, gemSameColor).also {check ->
-			engine.statistics.blocks += check.size
+		field.checkConnectedColor(colorClearSize, true, lineColorDiagonals, gemSameColor).also {(size)->
+			engine.statistics.blocks+=size
 			engine.playSE("erase0")
 		}
 

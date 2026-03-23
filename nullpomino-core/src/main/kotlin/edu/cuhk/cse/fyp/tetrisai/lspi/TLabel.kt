@@ -51,8 +51,8 @@ class TLabel(w:Int, h:Int) {
 	// double buffered graphics
 	private val offscreenImage:BufferedImage
 	private val onscreenImage:BufferedImage
-	protected var offscreen:Graphics2D
-	protected var onscreen:Graphics2D
+	private var offscreen:Graphics2D
+	private var onscreen:Graphics2D
 	// change the user coordinate system
 	fun setXscale() {
 		setXscale(DEFAULT_XMIN, DEFAULT_XMAX)
@@ -74,9 +74,9 @@ class TLabel(w:Int, h:Int) {
 		yMax = max+border*size
 	}
 	// helper functions that scale from user coordinates to screen coordinates and back
-	protected fun scaleX(x:Double):Double = width*(x-xMin)/(xMax-xMin)
+	private fun scaleX(x:Double):Double = width*(x-xMin)/(xMax-xMin)
 
-	protected fun scaleY(y:Double):Double = height*(yMax-y)/(yMax-yMin)
+	private fun scaleY(y:Double):Double = height*(yMax-y)/(yMax-yMin)
 
 	fun factorX(w:Double):Double = w*width/abs(xMax-xMin)
 

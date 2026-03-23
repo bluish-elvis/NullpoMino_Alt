@@ -212,14 +212,14 @@ open class RanksAI:DummyAI(), Runnable {
 
 	override fun onLast(engine:GameEngine, playerID:Int) {}
 
-	override fun setControl(engine:GameEngine, playerID:Int, ctrl:Controller):Int {
+	override fun setControl(engine:GameEngine, playerID:Int, ctrl:Controller):UShort {
 		if(engine.nowPieceObject!=null&&engine.stat==GameEngine.Status.MOVE&&delay>=engine.aiMoveDelay&&engine.statc[0]>0&&
 			(!engine.aiUseThread||threadRunning&&!thinking&&thinkCurrentPieceNo<=thinkLastPieceNo)
 		) {
 			val totalPieceLocked = engine.statistics.totalPieceLocked+1
 			val tpm = (totalPieceLocked*3600f).toInt()/engine.statistics.time
-			if(tpm<=speedLimit||speedLimit<=0) {
-				var input = 0
+			if(speedLimit !in 1..<tpm) {
+				var input:UShort = 0u
 				val pieceNow = engine.nowPieceObject!!
 				val nowX = engine.nowPieceX
 				val nowY = engine.nowPieceY
@@ -289,7 +289,7 @@ open class RanksAI:DummyAI(), Runnable {
 			}
 		}
 		delay++
-		return 0
+		return 0u
 	}
 
 	/** Plays a fictitious move (ie not rendering it on the screen) for use in
@@ -441,7 +441,7 @@ open class RanksAI:DummyAI(), Runnable {
 						holdPiece[0] = piecesCopy[0]
 						System.arraycopy(piecesCopy, 1, piecesCopy, 0, piecesCopy.size-1)
 
-						pieceNow = piecesCopy[0]
+						// pieceNow = piecesCopy[0]
 						// numPreviews--;					} else {
 						val tempPiece = piecesCopy[0]
 						piecesCopy[0] = holdPiece[0]
@@ -587,7 +587,7 @@ open class RanksAI:DummyAI(), Runnable {
 								holdPiece2[0] = pieces2[0]
 								System.arraycopy(pieces2, 1, pieces2, 0, pieces2.size-1)
 
-								pieceNow = pieces2[0]
+								//pieceNow = pieces2[0]
 								// numPreviews2--;							} else {
 								val tempPiece = pieces2[0]
 								pieces2[0] = holdPiece2[0]

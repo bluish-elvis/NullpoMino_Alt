@@ -31,13 +31,12 @@
 
 package net.tetrisconcept.poochy.nullpomino.ai
 
-import mu.nu.nullpo.game.component.Controller
-import mu.nu.nullpo.game.component.Field
-import mu.nu.nullpo.game.component.Piece
+import mu.nu.nullpo.game.component.*
 import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.game.play.clearRule.Color.Companion.clearAll
 import mu.nu.nullpo.game.play.clearRule.Color.Companion.clearColor
 import mu.nu.nullpo.game.subsystem.ai.DummyAI
+import mu.nu.nullpo.util.GeneralUtil.us
 import org.apache.logging.log4j.LogManager
 import kotlin.math.abs
 
@@ -53,7 +52,7 @@ class Nohoho:DummyAI(), Runnable {
 	private var stuckDelay = 0
 
 	/** Status of last frame */
-	private var lastInput = 0
+	private var lastInput:UShort = 0u
 	private var lastX = 0
 	private var lastY = 0
 	private var lastRt = 0
@@ -62,7 +61,7 @@ class Nohoho:DummyAI(), Runnable {
 	/** DAS charge status. -1 = left, 0 = none, 1 = right */
 	private var setDAS = 0
 	/** Last input if done in ARE */
-	private var inputARE = 0
+	private var inputARE:UShort = 0u
 	/** Did the thinking thread finish successfully? */
 	override var thinkComplete = false
 	/** Did the thinking thread find a possible position? */
@@ -84,8 +83,8 @@ class Nohoho:DummyAI(), Runnable {
 		setDAS = 0
 
 		stuckDelay = 0
-		inputARE = 0
-		lastInput = 0
+		inputARE = 0u
+		lastInput = 0u
 		lastX = -1
 		lastY = -1
 		lastRt = -1
@@ -117,7 +116,7 @@ class Nohoho:DummyAI(), Runnable {
 	/* Called at the start of each frame */
 	override fun onFirst(engine:GameEngine, playerID:Int) {
 		if(engine.aiPreThink&&engine.speed.are>0&&engine.speed.areLine>0) {
-			inputARE = 0
+			inputARE = 0u
 			val newInARE = engine.stat===GameEngine.Status.ARE||engine.stat===GameEngine.Status.READY
 			if(newInARE&&!inARE||!thinking&&!thinkSuccess) {
 				if(DEBUG_ALL) log.debug("Begin pre-think of next piece.")
@@ -129,13 +128,13 @@ class Nohoho:DummyAI(), Runnable {
 	}
 
 	/* Set button input states */
-	override fun setControl(engine:GameEngine, playerID:Int, ctrl:Controller):Int {
+	override fun setControl(engine:GameEngine, playerID:Int, ctrl:Controller):UShort {
 		if(engine.nowPieceObject!=null&&engine.stat===GameEngine.Status.MOVE&&
 			delay>=engine.aiMoveDelay&&engine.statc[0]>0&&
 			(!engine.aiUseThread||threadRunning&&!thinking&&thinkCurrentPieceNo<=thinkLastPieceNo)
 		) {
-			inputARE = 0
-			var input = 0 // Button input data
+			inputARE = 0u
+			var input:UShort = 0u // Button input data
 			val pieceNow = checkOffset(engine.nowPieceObject!!, engine)
 			val nowX = engine.nowPieceX
 			val nowY = engine.nowPieceY
@@ -150,20 +149,15 @@ class Nohoho:DummyAI(), Runnable {
 
 			//If stuck, rethink.
 			if(pieceTouchGround&&rt==bestRt&&
-				(pieceNow.getMostMovableRight(nowX, nowY, rt, engine.field)<bestX||pieceNow.getMostMovableLeft(
-					nowX, nowY, rt,
-					engine.field
-				)>bestX)
-			)
-				stuckDelay++
-			else
-				stuckDelay = 0
+				(pieceNow.getMostMovableRight(nowX, nowY, rt, engine.field)<bestX||
+					pieceNow.getMostMovableLeft(nowX, nowY, rt, engine.field)>bestX)) stuckDelay++
+			else stuckDelay = 0
 			if(stuckDelay>4) {
 				thinkRequest.newRequest()
 				thinkComplete = false
 				if(DEBUG_ALL) log.debug("Needs rethink - piece is stuck!")
 			}
-			if(nowX==lastX&&nowY==lastY&&rt==lastRt&&lastInput!=0) {
+			if(nowX==lastX&&nowY==lastY&&rt==lastRt&&lastInput!=0.us) {
 				sameStatusTime++
 				if(sameStatusTime>4) {
 					thinkRequest.newRequest()
@@ -183,10 +177,8 @@ class Nohoho:DummyAI(), Runnable {
 			else {
 				if(DEBUG_ALL)
 					log.debug(
-						"bestX = $bestX, nowX = "+nowX+
-							", bestY = $bestY, nowY = "+nowY+
-							", bestRt = $bestRt, rt = "+rt+
-							", bestXSub = $bestXSub, bestYSub = $bestYSub, bestRtSub = "+bestRtSub
+						"bestX = $bestX, nowX = $nowX, bestY = $bestY, nowY = $nowY, bestRt = $bestRt, rt = $rt, "+
+							"bestXSub = $bestXSub, bestYSub = $bestYSub, bestRtSub = $bestRtSub"
 					)
 				// Rotation
 				val best180 = abs(rt-bestRt)==2

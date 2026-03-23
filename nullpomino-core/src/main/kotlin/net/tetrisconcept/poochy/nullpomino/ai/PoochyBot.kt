@@ -31,14 +31,13 @@
 
 package net.tetrisconcept.poochy.nullpomino.ai
 
-import mu.nu.nullpo.game.component.Controller
-import mu.nu.nullpo.game.component.Field
-import mu.nu.nullpo.game.component.Piece
+import mu.nu.nullpo.game.component.*
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
 import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.game.subsystem.ai.DummyAI
 import mu.nu.nullpo.gui.common.BaseFont.FONT.*
 import mu.nu.nullpo.util.GeneralUtil.getOX
+import mu.nu.nullpo.util.GeneralUtil.us
 import org.apache.logging.log4j.LogManager
 import kotlin.math.abs
 
@@ -55,7 +54,7 @@ open class PoochyBot:DummyAI(), Runnable {
 	private var stuckDelay = 0
 
 	/** Status of last frame */
-	private var lastInput = 0
+	private var lastInput:UShort = 0u
 	private var lastX = 0
 	private var lastY = 0
 	private var lastRt = 0
@@ -64,7 +63,7 @@ open class PoochyBot:DummyAI(), Runnable {
 	/** DAS charge status. -1 = left, 0 = none, 1 = right */
 	private var setDAS = 0
 	/** Last input if done in ARE */
-	private var inputARE = 0
+	private var inputARE:UShort = 0u
 	/** Wait extra frames at low speeds? */
 	//protected static final boolean DELAY_DROP_ON = false;
 	/** # of extra frames to wait */
@@ -90,8 +89,8 @@ open class PoochyBot:DummyAI(), Runnable {
 		setDAS = 0
 
 		stuckDelay = 0
-		inputARE = 0
-		lastInput = 0
+		inputARE = 0u
+		lastInput = 0u
 		lastX = -1
 		lastY = -1
 		lastRt = -1
@@ -124,7 +123,7 @@ open class PoochyBot:DummyAI(), Runnable {
 
 	/* Called at the start of each frame */
 	override fun onFirst(engine:GameEngine, playerID:Int) {
-		inputARE = 0
+		inputARE = 0u
 		val newInARE = engine.stat===GameEngine.Status.ARE
 		if(engine.aiPreThink&&engine.speed.are>0&&engine.speed.areLine>0&&(newInARE&&!inARE||!thinking&&!thinkSuccess)) {
 			if(DEBUG_ALL) log.debug("Begin pre-think of next piece.")
@@ -133,7 +132,7 @@ open class PoochyBot:DummyAI(), Runnable {
 		}
 		inARE = newInARE
 		if(inARE&&delay>=engine.aiMoveDelay) {
-			var input = 0
+			var input:UShort = 0u
 			var nextPiece = engine.getNextObject(engine.nextPieceCount)
 			if(bestHold&&thinkComplete) {
 				input = input or Controller.BUTTON_BIT_D
@@ -165,10 +164,10 @@ open class PoochyBot:DummyAI(), Runnable {
 	}
 
 	/* Set button input states */
-	override fun setControl(engine:GameEngine, playerID:Int, ctrl:Controller):Int {
+	override fun setControl(engine:GameEngine, playerID:Int, ctrl:Controller):UShort {
 		if(engine.nowPieceObject!=null&&engine.stat===GameEngine.Status.MOVE&&delay>=engine.aiMoveDelay&&engine.statc[0]>0&&(!engine.aiUseThread||threadRunning&&!thinking&&thinkComplete)) {
-			inputARE = 0
-			var input = 0 // Button input data
+			inputARE = 0u
+			var input:UShort = 0u // Button input data
 			val pieceNow = checkOffset(engine.nowPieceObject, engine)
 			val nowX = engine.nowPieceX
 			val nowY = engine.nowPieceY
@@ -233,7 +232,7 @@ open class PoochyBot:DummyAI(), Runnable {
 				if(DEBUG_ALL) log.debug("Needs rethink - piece is stuck!")
 				thinkRequest.newRequest()
 			}
-			if(nowX==lastX&&nowY==lastY&&rt==lastRt&&lastInput!=0) {
+			if(nowX==lastX&&nowY==lastY&&rt==lastRt&&lastInput!=0.us) {
 				sameStatusTime++
 				if(sameStatusTime>4) {
 					thinkComplete = false
@@ -517,7 +516,7 @@ open class PoochyBot:DummyAI(), Runnable {
 				if(DEBUG_ALL) log.debug("Attempting to perform synchro move.")
 				val bitsLR = Controller.BUTTON_BIT_LEFT or Controller.BUTTON_BIT_RIGHT
 				val bitsAB = Controller.BUTTON_BIT_A or Controller.BUTTON_BIT_B
-				if(input and bitsLR==0||input and bitsAB==0) {
+				if(input and bitsLR==0.us||input and bitsAB==0.us) {
 					setDAS = 0
 					input = input and (bitsLR or bitsAB).inv()
 				}
@@ -552,7 +551,7 @@ open class PoochyBot:DummyAI(), Runnable {
 		if(DEBUG_ALL) log.debug(result)
 	}
 
-	private fun calcIRS(piece:Piece?, engine:GameEngine):Int {
+	private fun calcIRS(piece:Piece?, engine:GameEngine):UShort {
 		val p = checkOffset(piece, engine)
 		val nextType = p.shape
 		val fld = engine.field
@@ -565,20 +564,20 @@ open class PoochyBot:DummyAI(), Runnable {
 			abs(spawnX-bestX)==1 ->
 				if(bestRt==1) if(engine.ruleOpt.spinToRight) Controller.BUTTON_BIT_A else Controller.BUTTON_BIT_B
 				else if(bestRt==3) if(engine.ruleOpt.spinToRight) Controller.BUTTON_BIT_B else Controller.BUTTON_BIT_A
-				else 0
+				else 0u
 
 			nextType==Piece.Shape.L ->
 				if(gravityHigh&&fld.getHighestBlockY(midColumnX-1)<
-					minOf(fld.getHighestBlockY(midColumnX), fld.getHighestBlockY(midColumnX+1))) 0
+					minOf(fld.getHighestBlockY(midColumnX), fld.getHighestBlockY(midColumnX+1))) 0u
 				else if(engine.ruleOpt.spinToRight) Controller.BUTTON_BIT_B else Controller.BUTTON_BIT_A
 			nextType==Piece.Shape.J -> {
 				if(gravityHigh&&fld.getHighestBlockY(midColumnX+1)<
-					minOf(fld.getHighestBlockY(midColumnX), fld.getHighestBlockY(midColumnX-1))) 0
+					minOf(fld.getHighestBlockY(midColumnX), fld.getHighestBlockY(midColumnX-1))) 0u
 				else if(engine.ruleOpt.spinToRight) Controller.BUTTON_BIT_A else Controller.BUTTON_BIT_B
 			}
 			/* else if (nextType == Piece.Shape.I)
 			 * return Controller.BUTTON_BIT_A; */
-			else -> 0
+			else -> 0u
 		}
 		/* else if (nextType == Piece.Shape.I)
 		 * return Controller.BUTTON_BIT_A; */

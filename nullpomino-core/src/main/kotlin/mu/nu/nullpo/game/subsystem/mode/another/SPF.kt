@@ -33,10 +33,8 @@ package mu.nu.nullpo.game.subsystem.mode.another
 import mu.nu.nullpo.game.component.*
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
 import mu.nu.nullpo.game.event.ScoreEvent
-import mu.nu.nullpo.game.play.GameEngine
+import mu.nu.nullpo.game.play.*
 import mu.nu.nullpo.game.play.GameEngine.GameStyle
-import mu.nu.nullpo.game.play.GameManager
-import mu.nu.nullpo.game.play.LineGravity
 import mu.nu.nullpo.game.play.LineGravity.CASCADE.canCascade
 import mu.nu.nullpo.game.play.clearRule.ColorGem
 import mu.nu.nullpo.game.subsystem.mode.AbstractMode
@@ -322,7 +320,7 @@ class SPF:AbstractMode() {
 			engine.random = Random(owner.engine[0].randSeed)
 		}
 
-		engine.frameSkin = PLAYER_COLOR_FRAME[pid]
+		engine.frame = PLAYER_COLOR_FRAME[pid]
 		engine.clearMode = ColorGem(2, true, false)
 		engine.colorClearSize = 2
 		engine.ignoreHidden = false
@@ -1482,7 +1480,7 @@ class SPF:AbstractMode() {
 		private val RAINBOW_POWER_NAMES = listOf("NONE", "50%", "80%", "100%", "50/100%")
 
 		/** Each player's frame color-int */
-		private val PLAYER_COLOR_FRAME = listOf(GameEngine.FRAME_COLOR_RED, GameEngine.FRAME_COLOR_BLUE)
+		private val PLAYER_COLOR_FRAME = listOf(GameEngine.Frame.RED, GameEngine.Frame.BLUE)
 
 		fun getAttackMultiplier(set:Int, map:Int):Double {
 			return try {

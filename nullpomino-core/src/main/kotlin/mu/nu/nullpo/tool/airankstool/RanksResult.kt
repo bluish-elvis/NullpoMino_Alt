@@ -125,7 +125,7 @@ class RanksResult(parent:JFrame, private var ranks:Ranks?, private val bestNRank
 	}
 
 	init {
-		defaultCloseOperation = WindowConstants.DISPOSE_ON_CLOSE
+		defaultCloseOperation = DISPOSE_ON_CLOSE
 
 		factorCompare = if(ascendant) -1 else 1
 		progressMonitor = ProgressMonitor(parent, getUIText("Result_Progress_Message"), "", 0, 100)

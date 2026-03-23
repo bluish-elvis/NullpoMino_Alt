@@ -106,7 +106,7 @@ open class State {
 	}
 	//random integer, returns 0-6
 	private fun randomPiece():Int {
-		if(bagIndex<0||bagIndex>6) {
+		if(bagIndex !in 0..6) {
 			shuffleBag()
 			bagIndex = 0
 		}

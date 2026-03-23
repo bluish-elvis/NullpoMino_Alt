@@ -528,15 +528,15 @@ If the piece is big (size == 2), a 2x2 space is allotted per block. */
 	 * @param fld field
 	 * @return 置いたピースの下に空白があるとtrue
 	 */
-	fun canMakeRoof(x:Int, y:Int, fld:Field?):Boolean = fld?.let {
+	fun canMakeRoof(x:Int, y:Int, fld:Field?):Boolean = fld?.let {f ->
 		val rt = direction
-		sp[rt].groupBy({it.first}) {it.second}.map {(x, y) -> x to (y.maxOrNull()?:0)}
+		sp[rt].groupBy({(x) -> x}) {(_, y) -> y}.map {(x, y) -> x to (y.maxOrNull()?:0)}
 			.any {(px, py) ->
 				val x2 = x+px
 				val y2 = y+py
-				it.getCoordVaild(x2, y2)&&!it.getBlockEmpty(x2, y2)&&
-					(it.getCoordVaild(x2, y2+1)||it.getCoordAttribute(x2, y2+1)!=Field.Coord.VANISH)
-					&&it.getBlockEmpty(x2, y2+1, false)
+				f.getCoordVaild(x2, y2)&&!f.getBlockEmpty(x2, y2)&&
+					(f.getCoordVaild(x2, y2+1)||f.getCoordAttribute(x2, y2+1)!=Field.Coord.VANISH)
+					&&f.getBlockEmpty(x2, y2+1, false)
 			}
 	}?:false
 
@@ -546,13 +546,13 @@ If the piece is big (size == 2), a 2x2 space is allotted per block. */
 	 * @param fld field
 	 * @return 置いたピースの下に空白があるとtrue
 	 */
-	fun isUnderRoof(x:Int, y:Int, fld:Field?):Boolean = fld?.let {
+	fun isUnderRoof(x:Int, y:Int, fld:Field?):Boolean = fld?.let {f ->
 		val rt = direction
-		sp[rt].groupBy({it.first}) {it.second}.map {(x, y) -> x to (y.minOrNull()?:0)}
+		sp[rt].groupBy({(x) -> x}) {(_, y) -> y}.map {(x, y) -> x to (y.minOrNull()?:0)}
 			.any {(px, py) ->
 				val x2 = x+px
 				val y2 = y+py
-				(y2 downTo -it.hiddenHeight).indexOfFirst {yc -> !it.getBlockEmpty(x2, yc, true)}>=0
+				(y2 downTo -f.hiddenHeight).indexOfFirst {yc -> !f.getBlockEmpty(x2, yc, true)}>=0
 			}
 	}?:false
 

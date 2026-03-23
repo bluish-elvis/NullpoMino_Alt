@@ -30,10 +30,8 @@
  */
 package mu.nu.nullpo.game.subsystem.mode
 
-import mu.nu.nullpo.game.component.Block
+import mu.nu.nullpo.game.component.*
 import mu.nu.nullpo.game.component.Block.ATTRIBUTE
-import mu.nu.nullpo.game.component.Controller
-import mu.nu.nullpo.game.component.Field
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
 import mu.nu.nullpo.game.event.ScoreEvent
 import mu.nu.nullpo.game.play.GameEngine
@@ -546,28 +544,18 @@ class MarathonSquare:AbstractMode() {
 	 */
 	private fun checkRanking(sc:Long, time:Int, sq:Int, type:Int):Int {
 		for(i in 0..<rankingMax)
-			when {
-				gametype==0 -> {
-					// Marathon
-					if(sc>rankingScore[type][i])
-						return i
-					else if(sc==rankingScore[type][i]&&sq>rankingSquares[type][i])
-						return i
-					else if(sc==rankingScore[type][i]&&sq==rankingSquares[type][i]&&time<rankingTime[type][i]) return i
-				}
-				gametype==1&&time>=ULTRA_MAX_TIME -> {
-					// Ultra
-					if(sc>rankingScore[type][i])
-						return i
+			when(gametype) {
+				0 -> // Marathon
+					if(sc>rankingScore[type][i]) return i
 					else if(sc==rankingScore[type][i]&&sq>rankingSquares[type][i]) return i
-				}
-				gametype==2&&sc>=SPRINT_MAX_SCORE
-					// Sprint
-					-> if(time<rankingTime[type][i]||rankingTime[type][i]<0)
-					return i
-				else if(time==rankingTime[type][i]&&sq>rankingSquares[type][i]) return i
+					else if(sc==rankingScore[type][i]&&sq==rankingSquares[type][i]&&time<rankingTime[type][i]) return i
+				1 if time>=ULTRA_MAX_TIME -> // Ultra
+					if(sc>rankingScore[type][i]) return i
+					else if(sc==rankingScore[type][i]&&sq>rankingSquares[type][i]) return i
+				2 if sc>=SPRINT_MAX_SCORE -> // Sprint
+					if(rankingTime[type][i] !in 0..time) return i
+					else if(time==rankingTime[type][i]&&sq>rankingSquares[type][i]) return i
 			}
-
 		return -1
 	}
 

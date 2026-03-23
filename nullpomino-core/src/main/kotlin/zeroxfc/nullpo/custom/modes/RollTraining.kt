@@ -37,9 +37,7 @@
 
 package zeroxfc.nullpo.custom.modes
 
-import mu.nu.nullpo.game.component.BGM
-import mu.nu.nullpo.game.component.Controller
-import mu.nu.nullpo.game.component.SpeedParam
+import mu.nu.nullpo.game.component.*
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
 import mu.nu.nullpo.game.event.ScoreEvent
 import mu.nu.nullpo.game.play.GameEngine
@@ -170,7 +168,7 @@ class RollTraining:MarathonModeBase() {
 			netPlayerName = engine.owner.replayProp.getProperty("${engine.playerID}.net.netPlayerName", "")
 		}
 		engine.owner.bgMan.bg = startLevel
-		engine.frameSkin = if(usedSpeed==SPEED_TAP) GameEngine.FRAME_COLOR_GRAY else GameEngine.FRAME_COLOR_BLUE
+		engine.frame = if(usedSpeed==SPEED_TAP) GameEngine.Frame.GRAY else GameEngine.Frame.BLUE
 	}
 	/**
 	 * Set the gravity rate
@@ -191,7 +189,7 @@ class RollTraining:MarathonModeBase() {
 			// Configuration changes
 			val change = updateMenu(engine)
 			if(change!=0) {
-				engine.frameSkin = if(usedSpeed==SPEED_TAP) GameEngine.FRAME_COLOR_GRAY else GameEngine.FRAME_COLOR_BLUE
+				engine.frame = if(usedSpeed==SPEED_TAP) GameEngine.Frame.GRAY else GameEngine.Frame.BLUE
 				engine.owner.bgMan.bg = startLevel
 
 				// NET: Signal options change

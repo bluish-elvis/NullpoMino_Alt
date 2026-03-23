@@ -635,7 +635,7 @@ class GrandM2:AbstractGrand() {
 				decTemp -= 3
 			else {
 				decTemp++
-				if(time%3600<=60||time%3600>=3540) decTemp++
+				if(time%3600 !in 61..<3540) decTemp++
 			}
 
 			if(time>41100) decTemp -= 1+(time-41100)/1800

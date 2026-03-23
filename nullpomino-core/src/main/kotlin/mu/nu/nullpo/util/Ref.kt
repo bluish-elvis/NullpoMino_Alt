@@ -53,7 +53,7 @@ interface Ref<T>:ReadonlyRef<T> {
 	/** 参照先の値を取得・設定するプロパティ。 */
 	override var value:T
 	/** 参照先の値を設定する関数。 */
-	operator fun invoke(value:T):Unit
+	operator fun invoke(value:T)
 }
 
 /**

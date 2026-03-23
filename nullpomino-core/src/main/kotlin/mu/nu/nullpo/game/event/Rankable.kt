@@ -87,7 +87,4 @@ interface Rankable:Comparable<Rankable> {
 		}
 	}
 
-	companion object {
-	}
-
 }

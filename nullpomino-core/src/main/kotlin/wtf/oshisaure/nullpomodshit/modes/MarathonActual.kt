@@ -46,10 +46,7 @@ import mu.nu.nullpo.game.event.EventReceiver.COLOR
 import mu.nu.nullpo.game.event.ScoreEvent
 import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.game.subsystem.mode.AbstractMode
-import mu.nu.nullpo.game.subsystem.mode.menu.BooleanMenuItem
-import mu.nu.nullpo.game.subsystem.mode.menu.DelegateMenuItem
-import mu.nu.nullpo.game.subsystem.mode.menu.LevelMenuItem
-import mu.nu.nullpo.game.subsystem.mode.menu.MenuList
+import mu.nu.nullpo.game.subsystem.mode.menu.*
 import mu.nu.nullpo.gui.common.BaseFont.FONT.*
 import mu.nu.nullpo.util.CustomProperties
 import mu.nu.nullpo.util.GeneralUtil.toTimeStr
@@ -238,7 +235,7 @@ class MarathonActual:AbstractMode() {
 	}
 
 	private fun checkRanking(pps:Float, piece:Int, time:Int):Int {
-		for(i in 0..9) if(time<rankingTime[i]||rankingTime[i]<0) return i
+		for(i in 0..9) if(rankingTime[i] !in 0..time) return i
 		else if(time==rankingTime[i]&&(piece<rankingPieces[i]||rankingPieces[i]==0)) return i
 		else if(time==rankingTime[i]&&piece==rankingPieces[i]&&pps>rankingPPS[i]) return i
 		return -1

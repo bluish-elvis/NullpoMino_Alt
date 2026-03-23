@@ -37,6 +37,8 @@
 
 package mu.nu.nullpo.gui.common.fx.particles
 
+import mu.nu.nullpo.game.component.Block
+import mu.nu.nullpo.game.component.Block.TYPE
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
 import mu.nu.nullpo.gui.common.AbstractRenderer
 import mu.nu.nullpo.gui.common.fx.Effect
@@ -52,7 +54,7 @@ red, green, blue, alpha, max color variance (all `int` type),
 max velocity (velocity is a `float`),
 min lifetime, max lifetime (both `int`) in that order.
 
-@param num    Number of particles / particle groups.
+@param num  Number of particles / particle groups.
  */
 class Fireworks @JvmOverloads constructor(
 	override var x:Float, override var y:Float, red:Int, green:Int, blue:Int, alpha:Int, variance:Int,
@@ -130,6 +132,20 @@ class Fireworks @JvmOverloads constructor(
 			listOf(0, 240, 240, 235, 20), listOf(0, 30, 240, 235, 20), listOf(210, 0, 210, 235, 20),
 		)
 
+		fun colorBy(b:Block):List<Int> = DEF_COLORS[
+			if(b.type!=TYPE.BLOCK&&b.color?.color!=true) Random.nextInt(DEF_COLORS.size) else
+				when(b.color) {
+					Block.COLOR.RED -> 1
+					Block.COLOR.ORANGE -> 2
+					Block.COLOR.YELLOW -> 3
+					Block.COLOR.GREEN -> 4
+					Block.COLOR.CYAN -> 5
+					Block.COLOR.BLUE -> 6
+					Block.COLOR.PURPLE -> 7
+					Block.COLOR.RAINBOW -> Random.nextInt(DEF_COLORS.size)
+					else -> 0
+				}]
+
 		fun colorBy(c:COLOR):List<Int> = DEF_COLORS[when(c) {
 			COLOR.RED -> 1
 			COLOR.ORANGE -> 2
@@ -138,6 +154,7 @@ class Fireworks @JvmOverloads constructor(
 			COLOR.CYAN -> 5
 			COLOR.BLUE, COLOR.COBALT -> 6
 			COLOR.PURPLE, COLOR.PINK -> 7
+			COLOR.RAINBOW -> Random.nextInt(DEF_COLORS.size)
 			else -> 0
 		}]
 

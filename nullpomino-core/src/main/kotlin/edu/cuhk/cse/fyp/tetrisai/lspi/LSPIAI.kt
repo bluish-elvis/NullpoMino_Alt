@@ -28,9 +28,7 @@ POSSIBILITY OF SUCH DAMAGE.
  */
 package edu.cuhk.cse.fyp.tetrisai.lspi
 
-import mu.nu.nullpo.game.component.Controller
-import mu.nu.nullpo.game.component.Field
-import mu.nu.nullpo.game.component.Piece
+import mu.nu.nullpo.game.component.*
 import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.game.subsystem.ai.DummyAI
 import mu.nu.nullpo.game.subsystem.mode.VSBattle
@@ -130,11 +128,11 @@ open class LSPIAI:DummyAI(), Runnable {
 	/*
 	 * Set button input states
 	 */
-	override fun setControl(engine:GameEngine, playerID:Int, ctrl:Controller):Int {
+	override fun setControl(engine:GameEngine, playerID:Int, ctrl:Controller):UShort {
 		if(engine.nowPieceObject!=null&&engine.stat===GameEngine.Status.MOVE&&delay>=engine.aiMoveDelay&&engine.statc[0]>0
 			&&(!engine.aiUseThread||threadRunning&&!thinking&&thinkCurrentPieceNo<=thinkLastPieceNo)
 		) {
-			var input = 0 // button input data
+			var input:UShort = 0u // button input data
 			val pieceNow = engine.nowPieceObject
 			val nowX = engine.nowPieceX
 			val nowY = engine.nowPieceY
@@ -207,7 +205,7 @@ open class LSPIAI:DummyAI(), Runnable {
 			return input
 		}
 		delay++
-		return 0
+		return 0u
 	}
 	/**
 	 * Search for the best choice

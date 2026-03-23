@@ -66,7 +66,7 @@ interface AIPlayer {
 	 * @param playerID Player ID
 	 * @param ctrl Button inputState management class
 	 */
-	fun setControl(engine:GameEngine, playerID:Int, ctrl:Controller):Int
+	fun setControl(engine:GameEngine, playerID:Int, ctrl:Controller):UShort
 
 	/** Called at the start of each frame
 	 * @param engine The GameEngine that owns this AI

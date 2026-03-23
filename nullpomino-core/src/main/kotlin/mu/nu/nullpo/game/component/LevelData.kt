@@ -31,7 +31,7 @@
 
 package mu.nu.nullpo.game.component
 
-data class LevelData internal constructor(
+@ConsistentCopyVisibility data class LevelData internal constructor(
 	/** Fall velocity table (numerators) 落下速度 */
 	val gravity:IntArray,
 	/** Fall velocity table (denominators) 落下速度の分母 (gravity==denominatorなら1Gになる) */

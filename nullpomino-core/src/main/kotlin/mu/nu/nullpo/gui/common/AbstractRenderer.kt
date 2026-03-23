@@ -47,10 +47,9 @@ import mu.nu.nullpo.gui.common.bg.dtet.*
 import mu.nu.nullpo.gui.common.bg.tech.*
 import mu.nu.nullpo.gui.common.fx.*
 import mu.nu.nullpo.gui.common.fx.FragAnim.ANIM
-import mu.nu.nullpo.gui.common.fx.particles.BlockParticle
-import mu.nu.nullpo.gui.common.fx.particles.Fireworks
-import mu.nu.nullpo.gui.common.fx.particles.LandingParticles
+import mu.nu.nullpo.gui.common.fx.particles.*
 import mu.nu.nullpo.util.GeneralUtil.length
+import mu.nu.nullpo.util.GeneralUtil.toHEXColor
 import mu.nu.nullpo.util.GeneralUtil.toInt
 import kotlin.math.absoluteValue
 import kotlin.random.Random
@@ -315,7 +314,7 @@ abstract class AbstractRenderer:EventReceiver() {
 
 		when(engine.frame) {
 			GameEngine.Frame.GB -> {
-				drawRect(lX.toInt(), tY.toInt(), fW, fH, 0x888888)
+				drawRect(lX.toInt(), tY.toInt(), fW, fH, (1-engine.field.level).let {Triple(it, it, it).toHEXColor})
 				val fi = resources.imgFrameOld[0]
 				for(i in 0..fieldH) {
 					val zx = lX.toInt()-s
@@ -682,7 +681,7 @@ abstract class AbstractRenderer:EventReceiver() {
 			}
 			if(engine.ruleOpt.nextDisplay>1) when(nextDisplayType) {
 				2 -> {
-					drawFont(rX, y-fbs/2, "NEXT", NANO, ORANGE)
+					drawFont(rX, y-fbs/2, "NEXT", NANO, ORANGE, .75f)
 					for(i in 0..<minOf(engine.ruleOpt.nextDisplay, 14)) {
 						engine.getNextObject(pid+i)?.let {
 							val centerX = ((4-it.width-1)*fbs)/2-it.minimumBlockX*fbs
@@ -694,7 +693,7 @@ abstract class AbstractRenderer:EventReceiver() {
 					}
 				}
 				1 -> {
-					drawFont(rX, y, "NEXT", NANO, ORANGE)
+					drawFont(rX, y, "NEXT", NANO, ORANGE, .75f)
 					for(i in 0..<minOf(engine.ruleOpt.nextDisplay, 14)) {
 						engine.getNextObject(pid+i)?.let {
 							val centerX = ((4-it.width-1)*fbs)/4-it.minimumBlockX*fbs/2
@@ -706,7 +705,7 @@ abstract class AbstractRenderer:EventReceiver() {
 					}
 				}
 				else -> {
-					drawFont(cX-16, y-nextHeight, "NEXT", NANO, ORANGE)
+					drawFont(cX-16, y-nextHeight, "NEXT", NANO, ORANGE, .75f)
 					// NEXT1~4
 					for(i in (0..<minOf(3, engine.ruleOpt.nextDisplay-1)).reversed())
 						engine.getNextObject(pid+i+1)?.let {
@@ -892,7 +891,7 @@ abstract class AbstractRenderer:EventReceiver() {
 				.filterNot {(_, _, blk) -> blk.isEmpty}
 				.groupBy {(x) -> x}.map {(_, it) -> it.minBy {(_, y) -> y}}.let {
 					it.forEach {(bx, by, blk) ->
-						val col = Fireworks.colorBy(blk.toERColor())
+						val col = Fireworks.colorBy(blk)
 						val x = engine.fX+(engine.nowPieceX+(bx+.5f)*bi)*engine.blockSize
 						for(z in 0..fall) {
 							val y = engine.fY+(engine.nowPieceY+(by+.5f)*bi-z)*engine.blockSize
@@ -931,14 +930,11 @@ abstract class AbstractRenderer:EventReceiver() {
 					!engine.field.getBlockEmpty(pX+x*bi, pY+(y+1)*bi, pY+y*bi<engine.field.height-bi) // 盤面に接しているブロックのみ
 				}.let {
 					it.flatMap {(bx, by, blk) ->
-						val col = Fireworks.colorBy(blk.toERColor())
+						val col = Fireworks.colorBy(blk)
 						val px = engine.fX+(pX+bx*bi)*engine.blockSize
 						val prx = px+bi*engine.blockSize
 						val py = engine.fY+(pY+(by+1)*bi)*engine.blockSize
-						LandingParticles(
-							3, px, prx, py, 0f, col[0], col[1], col[2],
-							235, 45, .44f, if(slide) .4f else 1f
-						).set
+						LandingParticles(3, px, prx, py, 0f, col[0], col[1], col[2], 235, 45, .44f, if(slide) .4f else 1f).set
 					}
 				}
 		)
@@ -953,7 +949,7 @@ abstract class AbstractRenderer:EventReceiver() {
 					it.flatMap {(bx, by, blk) ->
 						val x = engine.fX+(pX+(bx+.5f)*bi)*engine.blockSize
 						val y = engine.fY+(pY+(by+.5f)*bi)*engine.blockSize
-						val col = Fireworks.colorBy(blk.toERColor())
+						val col = Fireworks.colorBy(blk)
 						val fw = Fireworks(
 							x, y, col[0], col[1], col[2], 255, col[if(finesse) 3 else 4], -.05f, .95f,
 							27, 45, 4.1f, 2..4
@@ -962,10 +958,7 @@ abstract class AbstractRenderer:EventReceiver() {
 						val px = engine.fX+(pX+bx*bi)*engine.blockSize
 						val prx = px+engine.blockSize*bi
 						val py = engine.fY+(pY+(by+1)*bi)*engine.blockSize
-						val lp = LandingParticles(
-							3, px, prx, py, 0f, col[0], col[1], col[2],
-							235, 45, .44f, .66f
-						).particles
+						val lp = LandingParticles(3, px, prx, py, 0f, col[0], col[1], col[2], 235, 45, .44f, .66f).particles
 						fw+lp
 					}
 				}
@@ -985,35 +978,35 @@ abstract class AbstractRenderer:EventReceiver() {
 					val sx = engine.fX+x*s
 					val sy = engine.fY+y*s
 					if(particle) {
-						if(blk.getAttribute(ATTRIBUTE.BONE)||engine.isRetroSkin) Fireworks.colorBy(GREEN).let {col ->
+						Fireworks.colorBy(blk).let {col ->
 							LandingParticles(
 								5, sx, sx+s, sy+s/2f, s*.5f, col[0], col[1], col[2],
 								235, 25, .44f, .66f
-							).particles
-						} else Fireworks.colorBy(blk.toERColor()).let {col ->
-							Fireworks(
-								sx+s/2f, sy+s/2f, col[0], col[1], col[2], 255, 32, .1f, .95f, 25, 45,
-								4.5f, 4..10
-							).set
+							).let {
+								if(blk.getAttribute(ATTRIBUTE.BONE)||engine.isRetroSkin) it.set else (it.particles+
+									if(blk.type==Block.TYPE.GEM) setOf(Ripple(sx+s/2f, sy+s/2f, col[0], col[1], col[2], 255))
+									else
+										Fireworks(sx+s/2f, sy+s/2f, col[0], col[1], col[2], 255, 32, .1f, .95f, 25, 45, 4.5f, 4..10).set)
+							}
 						}
 					} else if(!engine.isRetroSkin) {
-						val color = blk.cint
+						val cint = blk.color?.fxInt?:0
 						val r = resources
 						setOf(
 							if(blk.isGemBlock) // 宝石Block
-								FragAnim(ANIM.GEM, sx, sy, (color-Block.COLOR_GEM_RED)%r.pEraseMax, lineEffectSpeed)
+								FragAnim(ANIM.GEM, sx, sy, (cint-1).mod(r.pEraseMax), lineEffectSpeed)
 							else // 通常Block
 								FragAnim(
 									if(blk.getAttribute(ATTRIBUTE.LAST_COMMIT)) ANIM.SPARK else ANIM.BLOCK,
-									sx, sy, maxOf(0, color-Block.COLOR_WHITE)%r.blockBreakMax, lineEffectSpeed
+									sx, sy, cint.mod(r.blockBreakMax), lineEffectSpeed
 								)
 						)
 					} else emptySet()
 				}
 			})
-			val btype =
-				engine.isRetroSkin||(engine.owner.mode?.gameIntensity?:0)<0
-			efxBG.addAll(
+			val btype = engine.frame==GameEngine.Frame.HEBO||(engine.owner.mode?.gameIntensity?:0)<0
+				||engine.owner.mode is mu.nu.nullpo.game.subsystem.mode.GrandM1
+			if(engine.frame!=GameEngine.Frame.GB&&engine.frame!=GameEngine.Frame.SG) efxBG.addAll(
 				BlockParticle.Mapper(
 					engine, this, blk, if(btype) BlockParticle.Type.TGM else BlockParticle.Type.DTET,
 					blk.size>=4, if(btype) 4f else 3.2f+blk.size
@@ -1400,13 +1393,9 @@ abstract class AbstractRenderer:EventReceiver() {
 				//			var g = meterColor/256%256
 				//			var b = meterColor%256
 				GameEngine.METER_COLOR_LEVEL ->
-					(0xFF*(value*3-1).coerceIn(0f, 1f)).toInt()*0x10000+
-						(0xFF*(3-value*3f).coerceIn(0f, 1f)).toInt()*0x100+
-						(0xFF*(1-value*3).coerceIn(0f, 1f)).toInt()
+					Triple((value*3-1), (3-value*3f), (1-value*3)).toHEXColor
 				GameEngine.METER_COLOR_LIMIT -> //red<yellow<green<cyan
-					(0xFF*(2-value*3).coerceIn(0f, 1f)).toInt()*0x10000+
-						(0xFF*(value*3).coerceIn(0f, 1f)).toInt()*0x100+
-						(0xFF*(value*3f-2f).coerceIn(0f, 1f)).toInt()
+					Triple((2-value*3), (value*3), (value*3f-2f)).toHEXColor
 				else -> meterColor
 			}
 	}

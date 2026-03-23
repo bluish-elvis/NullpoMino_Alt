@@ -34,7 +34,7 @@ package mu.nu.nullpo.game.net
 import mu.nu.nullpo.game.component.Statistics
 import mu.nu.nullpo.util.CustomProperties
 import java.io.Serializable
-import java.util.LinkedList
+import java.util.*
 
 /** Single player mode record */
 class NetSPRecord:Serializable {
@@ -329,7 +329,7 @@ class NetSPRecord:Serializable {
 						||(s1.rollClear==s2.rollClear&&l1==l2&&s1.time<s2.time)
 						||s1.rollClear==s2.rollClear&&l1==l2&&s1.time==s2.time&&s1.pps>s2.pps
 				}
-				else -> return false
+				else -> false
 			}
 		}
 	}

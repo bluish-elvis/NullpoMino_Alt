@@ -31,9 +31,7 @@
 
 package mu.nu.nullpo.game.subsystem.mode
 
-import mu.nu.nullpo.game.component.BGM
-import mu.nu.nullpo.game.component.Block
-import mu.nu.nullpo.game.component.Controller
+import mu.nu.nullpo.game.component.*
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
 import mu.nu.nullpo.game.event.ScoreEvent
 import mu.nu.nullpo.game.play.GameEngine
@@ -153,7 +151,7 @@ class VSSprintDig:AbstractMode() {
 			engine.random = Random(owner.engine[0].randSeed)
 		}
 
-		engine.frameSkin = PLAYER_COLOR_FRAME[pid]
+		engine.frame = PLAYER_COLOR_FRAME[pid]
 
 		if(!engine.owner.replayMode) {
 			version = CURRENT_VERSION
@@ -508,6 +506,6 @@ class VSSprintDig:AbstractMode() {
 		private const val CURRENT_VERSION = 0
 
 		/** Each player's frame color-int */
-		private val PLAYER_COLOR_FRAME = listOf(GameEngine.FRAME_COLOR_RED, GameEngine.FRAME_COLOR_BLUE)
+		private val PLAYER_COLOR_FRAME = listOf(GameEngine.Frame.RED, GameEngine.Frame.BLUE)
 	}
 }

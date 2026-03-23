@@ -1,5 +1,5 @@
 /*
- Copyright (c) 2022-2024, NullNoname
+ Copyright (c) 2026, NullNoname
  All rights reserved.
 
  Converted to Kotlin and modified by Venom_Nhelv as bluish-elvis
@@ -32,22 +32,28 @@
 package mu.nu.nullpo.gui.common.fx
 
 import mu.nu.nullpo.gui.common.AbstractRenderer
+import mu.nu.nullpo.util.GeneralUtil.times
+import mu.nu.nullpo.util.GeneralUtil.toHEXColor
+import zeroxfc.nullpo.custom.libs.Interpolation.cosStep
+import zeroxfc.nullpo.custom.libs.Interpolation.lerp
 
-/** imgLine : del_h.png del_v.png */
-class Beam(x:Float, y:Float, val w:Int, val h:Int, alpha:Float = 1f):SpriteSheet(x, y, alpha = alpha) {
-	val isV = (h>=w*5)
-	override fun update(r:AbstractRenderer):Boolean = ++ticks>=16
-
+class Ripple(override var x:Float, override var y:Float, red:Int, green:Int, blue:Int, alpha:Int):Effect {
+	private var ticks = 0
+	private val cColor = Triple(
+		lerp(red, 255, .2f)/255f, lerp(green, 255, .2f)/255f, lerp(blue, 255, .2f)/255f
+	)
+	private val cAlpha = lerp(alpha, 255, .2f)/255f
 	override fun draw(i:Int, r:AbstractRenderer) {
 		r.drawBlendAdd {
-			r.resources.imgLine[if(isV) 1 else 0].draw(x, y, dx2, dy2, srcX, srcY, srcX2, srcY2, alpha)
+			if(ticks<40) {
+				val c = cosStep(0f, 64f, ticks/40f)
+				r.drawOval(x-c/2, y-c/2, c, c, 0, lerp(cAlpha, 0f, ticks/40f), 1f, (cColor*cAlpha).toHEXColor)
+			}
+			val s = cosStep(32f, 0f, ticks/60f)
+			r.resources.imgFrags[1].draw(x-s, y-s, x+s, y+s, lerp(cAlpha, 0f, ticks/60f), cColor*cAlpha)
 		}
 	}
 
-	override val dx2:Float get() = x+w
-	override val dy2:Float get() = y+h
-	override val srcX:Int get() = if(isV) (ticks-1)*8 else 0
-	override val srcX2:Int get() = srcX+if(isV) 16 else 80
-	override val srcY:Int get() = if(isV) 0 else (ticks/2-1)*8
-	override val srcY2:Int get() = srcY+if(isV) 160 else 8
+	override fun update(r:AbstractRenderer):Boolean = ++ticks>=60
+
 }

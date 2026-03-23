@@ -706,7 +706,7 @@ class Collapse:AbstractMode() {
 			}
 			else -> { }*/
 		}
-		if(curFX<0||curFX>11||curFY<0||curFY>15) {
+		if(curFX !in 0..11||curFY<0||curFY>15) {
 			if(curFY==17&&localState==LOCALSTATE_INGAME) force = true
 			curFX = -1
 			curFY = -1

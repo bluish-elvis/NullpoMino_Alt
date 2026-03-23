@@ -242,8 +242,8 @@ class GrandS2:AbstractGrand() {
 						receiver.drawScore(engine, 0, topY+i, "%02d".format(i+1), GRADE, COLOR.YELLOW)
 						receiver.drawScore(
 							engine, 2, topY+i, tableGradeName[goalType][it.grade], GRADE,
-							if(it.clear==1) COLOR.GREEN
-							else if(it.clear==2) COLOR.ORANGE else COLOR.WHITE
+							when(it.clear) {
+								1 -> COLOR.GREEN; 2 -> COLOR.ORANGE; else -> COLOR.WHITE; }
 						)
 						receiver.drawScore(engine, 5, topY+i, "%03d".format(it.lv), NUM, i==rankingRank)
 						receiver.drawScore(engine, 8, topY+i, it.ti.toTimeStr, NUM, i==rankingRank)

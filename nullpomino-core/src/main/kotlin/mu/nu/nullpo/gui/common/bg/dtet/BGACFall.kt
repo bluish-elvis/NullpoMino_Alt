@@ -36,7 +36,7 @@ import mu.nu.nullpo.gui.common.bg.AbstractBG
 import kotlin.random.Random
 
 class BGACFall<T>(bg:mu.nu.nullpo.gui.common.ResourceImage<T>, addBGFX:AbstractBG<*>? = null):
-	mu.nu.nullpo.gui.common.bg.AbstractBG<T>(bg, addBGFX) {
+	AbstractBG<T>(bg, addBGFX) {
 	/*'(紫空)
 PSkD(0) = 0: PSkD(1) = 24: PSkD(2) = 72: PSkD(3) = 144
 PSkD(4) = 240: PSkD(5) = 336: PSkD(6) = 408: PSkD(7) = 456

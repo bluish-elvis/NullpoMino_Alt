@@ -37,6 +37,7 @@ import mu.nu.nullpo.game.event.*
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
 import mu.nu.nullpo.game.net.NetUtil
 import mu.nu.nullpo.game.play.GameEngine
+import mu.nu.nullpo.game.play.GameEngine.Frame
 import mu.nu.nullpo.game.subsystem.mode.GrandOrders.Companion.Mission.*
 import mu.nu.nullpo.game.subsystem.mode.menu.*
 import mu.nu.nullpo.gui.common.BaseFont.Companion.CURSOR
@@ -161,7 +162,7 @@ class GrandOrders:NetDummyMode() {
 		engine.b2bEnable = true
 		engine.splitB2B = true
 		engine.comboType = GameEngine.COMBO_TYPE_DISABLE
-		engine.frameSkin = DEFAULT_SKIN
+		engine.frame = DEFAULT_SKIN
 		engine.bigHalf = true
 		engine.bigMove = true
 		engine.staffrollEnable = false
@@ -718,7 +719,7 @@ class GrandOrders:NetDummyMode() {
 	companion object {
 		/** Current version of this mode */
 		private const val CURRENT_VERSION = 1
-		private const val DEFAULT_SKIN = GameEngine.FRAME_COLOR_WHITE
+		private val DEFAULT_SKIN = Frame.METAL
 
 		/** Default section record */
 		private const val DEFAULT_SECTION_TIME = 6000
@@ -726,14 +727,15 @@ class GrandOrders:NetDummyMode() {
 		@Serializable sealed class InterLines {
 			abstract val lines:Int
 			/** ミッションクリア時にラインが[lines]段下がる */
-			@Serializable data class FALL private constructor(override val lines:Int):InterLines() {
+			@ConsistentCopyVisibility @Serializable data class FALL private constructor(override val lines:Int):InterLines() {
 				companion object {
 					operator fun invoke(li:Int) = FALL(li.coerceAtLeast(0))
 				}
 			}
 			/** ミッションクリア時にラインが[lines]段上がる
 			 *@param messiness falseでせりあがるラインの穴が揃う */
-			data class RISE private constructor(override val lines:Int, val messiness:Boolean = true):InterLines() {
+			@ConsistentCopyVisibility @Serializable data class RISE
+			private constructor(override val lines:Int, val messiness:Boolean = true):InterLines() {
 				companion object {
 					operator fun invoke(li:Int, me:Boolean = true) = RISE(li.coerceIn(0, 18), me)
 				}
@@ -795,8 +797,9 @@ class GrandOrders:NetDummyMode() {
 
 			/** 中抜きで2~3ライン消しを[time]秒内に[norm]回数行うとクリア
 			 * @param lines 2,3のどちらかで指定同時ライン数以外を対象外にする 0にすると同時消ししたライン数に応じて進行*/
-			data class Split private constructor(override val lv:Int, override val norm:Int, override val time:Int = 0,
-				val lines:Int):Mission() {
+
+			@ConsistentCopyVisibility data class Split private constructor(override val lv:Int, override val norm:Int,
+				override val time:Int = 0, val lines:Int):Mission() {
 				companion object {
 					operator fun invoke(lv:Int, norm:Int, time:Int = 0, lines:Int = 0) = Split(lv, norm, time, lines.coerceIn(0, 3))
 				}
@@ -808,9 +811,9 @@ class GrandOrders:NetDummyMode() {
 			 * @param lines 指定同時ライン数以外を対象外にする
 			 * @param progL trueにすると同時消ししたライン数に応じて進行
 			 */
-			data class Twister private constructor(override val lv:Int, override val norm:Int, override val time:Int = 0,
-				val zeroL:Int, val shapes:Set<Shape> = emptySet(), val lines:Set<Int> = emptySet(), val progL:Boolean = false):
-				Mission() {
+			@ConsistentCopyVisibility data class Twister private constructor(override val lv:Int, override val norm:Int,
+				override val time:Int = 0, val zeroL:Int, val shapes:Set<Shape> = emptySet(), val lines:Set<Int> = emptySet(),
+				val progL:Boolean = false):Mission() {
 				companion object {
 					operator fun invoke(lv:Int, norm:Int, time:Int = 0, zeroL:Int, shape:Set<Shape> = emptySet(),
 						line:Set<Int> = emptySet(), progL:Boolean = false) =
@@ -837,8 +840,9 @@ class GrandOrders:NetDummyMode() {
 			 * @param lines 1～4で、同時に消すライン数の指定。0以下の場合は指定なし。
 			 * @param holdUse trueの場合、[shapes]をHOLDスロットに経由させなければカウントされない
 			 */
-			data class Order private constructor(override val lv:Int, override val norm:Int, override val time:Int = 0,
-				val shapes:Set<Shape> = emptySet(), val lines:Set<Int> = emptySet(), val holdUse:Boolean = false):Mission() {
+			@ConsistentCopyVisibility data class Order private constructor(override val lv:Int, override val norm:Int,
+				override val time:Int = 0, val shapes:Set<Shape> = emptySet(), val lines:Set<Int> = emptySet(),
+				val holdUse:Boolean = false):Mission() {
 				companion object {
 					operator fun invoke(lv:Int, norm:Int, time:Int = 0, shapes:Set<Shape> = emptySet(), lines:Set<Int> = emptySet(),
 						holdUse:Boolean = false) =
@@ -861,8 +865,8 @@ class GrandOrders:NetDummyMode() {
 			/** Roll(ブロックが強制的に回転する)状態で[time]秒以内に[norm]ラインを消すとクリア*/
 			data class RollRoll(override val lv:Int, override val norm:Int, override val time:Int = 0):Mission()
 			/** Mirror([freq]ピース毎にフィールドが左右反転する)状態で[time]秒以内に[norm]ラインを消すとクリア*/
-			data class Mirror private constructor(override val lv:Int, override val norm:Int, override val time:Int = 0,
-				val freq:Int = 0):Mission() {
+			@ConsistentCopyVisibility data class Mirror private constructor(override val lv:Int, override val norm:Int,
+				override val time:Int = 0, val freq:Int = 0):Mission() {
 				companion object {
 					operator fun invoke(lv:Int, norm:Int, time:Int = 0, freq:Int = 0) = Mirror(lv, norm, time, freq.coerceAtLeast(0))
 				}
@@ -880,8 +884,8 @@ class GrandOrders:NetDummyMode() {
 				Mission()
 
 			/**[time]秒以内に[norm]ラインを消すとクリア。ただし、最初のピースを置くと[height]段せり上げられる*/
-			data class Spiked private constructor(override val lv:Int, override val norm:Int, override val time:Int = 0,
-				val height:Int = 1):Mission() {
+			@ConsistentCopyVisibility data class Spiked private constructor(override val lv:Int, override val norm:Int,
+				override val time:Int = 0, val height:Int = 1):Mission() {
 				var temp = false
 
 				companion object {
@@ -916,8 +920,8 @@ class GrandOrders:NetDummyMode() {
 				override val lv:Int, override val norm:Int, override val time:Int = 0):Mission()
 			/** 1色のピースだけ([shapes]指定時はそのピースのみ)を使って4x4の正方形を[time]秒以内に[norm]個作るとクリア
 			 * S,Zは指定不可 */
-			data class GoldSquares private constructor(override val lv:Int, override val norm:Int, override val time:Int = 0,
-				val shapes:Set<Shape> = emptySet())
+			@ConsistentCopyVisibility data class GoldSquares private constructor(override val lv:Int, override val norm:Int,
+				override val time:Int = 0, val shapes:Set<Shape> = emptySet())
 				:Mission() {
 				companion object {
 					operator fun invoke(lv:Int, norm:Int, time:Int = 0, shapes:Set<Shape> = emptySet()) =
@@ -974,13 +978,13 @@ class GrandOrders:NetDummyMode() {
 						e.useAllSpinBonus = true
 					}
 					is Retro -> {e ->
-						e.frameSkin =
+						e.frame =
 							if(type>0) {
 								e.speed.lockDelay = 0
 								e.speed.are = 20
 								e.speed.areLine = 20
-								GameEngine.FRAME_SKIN_GB
-							} else GameEngine.FRAME_SKIN_SG
+								Frame.GB
+							} else Frame.SG
 //							e.wallkickEnable = false
 						e.holdDisable = true
 //							e.initialSpinEnable = false
@@ -1035,7 +1039,7 @@ class GrandOrders:NetDummyMode() {
 						e.useAllSpinBonus = false
 					}
 					is Retro -> {e ->
-						e.frameSkin = DEFAULT_SKIN
+						e.frame = DEFAULT_SKIN
 //							e.wallkickEnable = true
 						e.holdDisable = false
 //							e.initialSpinEnable = true

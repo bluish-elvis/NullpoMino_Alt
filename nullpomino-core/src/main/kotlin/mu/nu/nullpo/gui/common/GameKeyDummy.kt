@@ -113,9 +113,8 @@ abstract class GameKeyDummy(
 	/** Controllerに input 状況を伝える
 	 * @param ctrl input 状況を伝えるControllerのインスタンス
 	 */
-	fun inputStatusUpdate(ctrl:Controller?) {
-		val c = ctrl?:return
-		c.setButtonBit(inputState.mapIndexed {i, b -> if(b>0) (1 shl i) else 0}.sum())
+	fun inputStatusUpdate(ctrl:Controller?) = ctrl?.let {c ->
+		c.setButtonBit(inputState.mapIndexed {i, b -> if(b>0) (1 shl i) else 0}.sum().toUShort())
 		inputState.forEachIndexed {i, v ->
 			if(i<Controller.BUTTON_COUNT) {
 				c.buttonTime[i] = v-1

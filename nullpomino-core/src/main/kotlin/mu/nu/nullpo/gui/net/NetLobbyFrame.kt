@@ -54,15 +54,11 @@ import java.net.MalformedURLException
 import java.net.URL
 import java.text.SimpleDateFormat
 import java.util.*
-import java.util.zip.Adler32
-import java.util.zip.GZIPInputStream
-import java.util.zip.GZIPOutputStream
+import java.util.zip.*
 import javax.imageio.ImageIO
 import javax.swing.*
 import javax.swing.table.DefaultTableModel
-import javax.swing.text.JTextComponent
-import javax.swing.text.SimpleAttributeSet
-import javax.swing.text.StyleConstants
+import javax.swing.text.*
 
 /** NullpoMino NetLobby */
 /** Constructor */
@@ -627,7 +623,7 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 		loadBlockSkins()
 
 		// GUI Init
-		defaultCloseOperation = WindowConstants.DO_NOTHING_ON_CLOSE
+		defaultCloseOperation = DO_NOTHING_ON_CLOSE
 		title = getUIText("Title_NetLobby")
 
 		initUI()
@@ -1996,7 +1992,7 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 		// *** A button spin
 		val pTuningSpinDefaultRight = JPanel()
 		//pTuningRotateButtonDefaultRight.setLayout(new BoxLayout(pTuningRotateButtonDefaultRight, BoxLayout.Y_AXIS));
-		pTuningSpinDefaultRight.alignmentX = Component.LEFT_ALIGNMENT
+		pTuningSpinDefaultRight.alignmentX = LEFT_ALIGNMENT
 		subpanelTuning.add(pTuningSpinDefaultRight)
 
 		pTuningSpinDefaultRight.add(JLabel(getUIText("GameTuning_RotateButtonDefaultRight_Label")))
@@ -2008,7 +2004,7 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 
 		// *** Diagonal move
 		val pTuningMoveDiagonal = JPanel()
-		pTuningMoveDiagonal.alignmentX = Component.LEFT_ALIGNMENT
+		pTuningMoveDiagonal.alignmentX = LEFT_ALIGNMENT
 		subpanelTuning.add(pTuningMoveDiagonal)
 
 		pTuningMoveDiagonal.add(JLabel(getUIText("GameTuning_MoveDiagonal_Label")))
@@ -2017,7 +2013,7 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 
 		// *** Show Outline Only
 		val pTuningBlockShowOutlineOnly = JPanel()
-		pTuningBlockShowOutlineOnly.alignmentX = Component.LEFT_ALIGNMENT
+		pTuningBlockShowOutlineOnly.alignmentX = LEFT_ALIGNMENT
 		subpanelTuning.add(pTuningBlockShowOutlineOnly)
 
 		pTuningBlockShowOutlineOnly.add(JLabel(getUIText("GameTuning_BlockShowOutlineOnly_Label")))
@@ -2028,7 +2024,7 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 
 		// *** Outline Type
 		val pTuningOutlineType = JPanel()
-		pTuningOutlineType.alignmentX = Component.LEFT_ALIGNMENT
+		pTuningOutlineType.alignmentX = LEFT_ALIGNMENT
 		subpanelTuning.add(pTuningOutlineType)
 
 		pTuningOutlineType.add(JLabel(getUIText("GameTuning_OutlineType_Label")))
@@ -2039,7 +2035,7 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 
 		// *** Skin
 		val pTuningSkin = JPanel()
-		pTuningSkin.alignmentX = Component.LEFT_ALIGNMENT
+		pTuningSkin.alignmentX = LEFT_ALIGNMENT
 		subpanelTuning.add(pTuningSkin)
 
 		pTuningSkin.add(JLabel(getUIText("GameTuning_Skin_Label")))
@@ -2056,7 +2052,7 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 
 		// *** Minimum DAS
 		val pTuningMinDAS = JPanel()
-		pTuningMinDAS.alignmentX = Component.LEFT_ALIGNMENT
+		pTuningMinDAS.alignmentX = LEFT_ALIGNMENT
 		subpanelTuning.add(pTuningMinDAS)
 
 		pTuningMinDAS.add(JLabel(getUIText("GameTuning_MinDAS_Label")))
@@ -2066,7 +2062,7 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 
 		// *** Maximum DAS
 		val pTuningMaxDAS = JPanel()
-		pTuningMaxDAS.alignmentX = Component.LEFT_ALIGNMENT
+		pTuningMaxDAS.alignmentX = LEFT_ALIGNMENT
 		subpanelTuning.add(pTuningMaxDAS)
 
 		pTuningMaxDAS.add(JLabel(getUIText("GameTuning_MaxDAS_Label")))
@@ -2076,7 +2072,7 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 
 		// *** DAS delay
 		val pTuningDasDelay = JPanel()
-		pTuningDasDelay.alignmentX = Component.LEFT_ALIGNMENT
+		pTuningDasDelay.alignmentX = LEFT_ALIGNMENT
 		subpanelTuning.add(pTuningDasDelay)
 
 		pTuningDasDelay.add(JLabel(getUIText("GameTuning_DasDelay_Label")))
@@ -2086,7 +2082,7 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 
 		// *** Reverse Up/Down
 		val pTuningReverseUpDown = JPanel()
-		pTuningReverseUpDown.alignmentX = Component.LEFT_ALIGNMENT
+		pTuningReverseUpDown.alignmentX = LEFT_ALIGNMENT
 		subpanelTuning.add(pTuningReverseUpDown)
 
 		pTuningReverseUpDown.add(JLabel(getUIText("GameTuning_ReverseUpDown_Label")))
@@ -3831,10 +3827,7 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 		}
 		// PlayerEntering a room
 		if(message[0]=="playerenter") {
-			val uid = message[1].toInt()
-			val pInfo = netPlayerClient?.getPlayerInfoByUID(uid)
-
-			if(pInfo!=null) {
+			netPlayerClient?.getPlayerInfoByUID(message[1].toInt())?.let {pInfo ->
 				val strTemp:String = if(pInfo.strHost.isNotEmpty()) String.format(
 					getUIText("SysMsg_EnterRoomWithHost"),
 					getPlayerNameWithTripCode(pInfo),
@@ -3846,11 +3839,8 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 		}
 		// PlayerWithdrawal
 		if(message[0]=="playerleave") {
-			val uid = message[1].toInt()
-			val pInfo = netPlayerClient?.getPlayerInfoByUID(uid)
-
-			if(pInfo!=null) {
-				val strTemp:String = if(pInfo.strHost.isNotEmpty()) String.format(
+			netPlayerClient?.getPlayerInfoByUID(message[1].toInt())?.let {pInfo ->
+				val strTemp = if(pInfo.strHost.isNotEmpty()) String.format(
 					getUIText("SysMsg_LeaveRoomWithHost"),
 					getPlayerNameWithTripCode(pInfo),
 					pInfo.strHost
@@ -3861,29 +3851,19 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 		}
 		// Change team
 		if(message[0]=="changeteam") {
-			val uid = message[1].toInt()
-			val pInfo = netPlayerClient!!.getPlayerInfoByUID(uid)
-
-			if(pInfo!=null) {
-				val strTeam:String
-				val strTemp:String
-
-				if(message.size>3) {
-					strTeam = NetUtil.urlDecode(message[3])
-					strTemp = String.format(getUIText("SysMsg_ChangeTeam"), getPlayerNameWithTripCode(pInfo), strTeam)
-				} else strTemp = String.format(getUIText("SysMsg_ChangeTeam_None"), getPlayerNameWithTripCode(pInfo))
+			netPlayerClient?.getPlayerInfoByUID(message[1].toInt())?.let {pInfo ->
+				val strTemp = if(message.size>3)
+					String.format(getUIText("SysMsg_ChangeTeam"), getPlayerNameWithTripCode(pInfo), NetUtil.urlDecode(message[3]))
+				else String.format(getUIText("SysMsg_ChangeTeam_None"), getPlayerNameWithTripCode(pInfo))
 
 				addSystemChatLogLater(currentChatLogTextPane, strTemp, Color.blue)
 			}
 		}
 		// Room list
 		if(message[0]=="roomlist") {
-			val size = message[1].toInt()
-
 			tablemodelRoomList.rowCount = 0
-			for(i in 0..<size) {
-				val r = NetRoomInfo(message[2+i])
-				tablemodelRoomList.addRow(createRoomListRowData(r))
+			repeat(message[1].toInt()) {i ->
+				tablemodelRoomList.addRow(createRoomListRowData(NetRoomInfo(message[2+i])))
 			}
 		}
 		// Receive presets
@@ -3893,10 +3873,8 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 			changeCurrentScreenCard(SCREENCARD_CREATEROOM)
 		} else {
 			comboboxCreateRatedPresets.removeAllItems()
-			var preset:String
 			for(i in 1..<message.size) {
-				preset = NetUtil.decompressString(message[i])
-				val r = NetRoomInfo(preset)
+				val r = NetRoomInfo(NetUtil.decompressString(message[i]))
 				presets.add(r)
 				comboboxCreateRatedPresets.addItem(r.strName)
 			}
@@ -3956,30 +3934,32 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 				val roomInfo = netPlayerClient!!.getRoomInfo(roomID)
 				val pInfo = netPlayerClient!!.yourPlayerInfo
 
-				if(seatID==-1&&queueID==-1) {
-					val strTemp = String.format(getUIText("SysMsg_StatusChange_Spectator"), getPlayerNameWithTripCode(pInfo))
-					addSystemChatLogLater(txtPaneRoomChatLog, strTemp, Color.blue)
-					setRoomJoinButtonVisible(true)
-				} else if(seatID==-1) {
+				when(seatID) {
+					-1 if queueID==-1 -> {
+						val strTemp = String.format(getUIText("SysMsg_StatusChange_Spectator"), getPlayerNameWithTripCode(pInfo))
+						addSystemChatLogLater(txtPaneRoomChatLog, strTemp, Color.blue)
+						setRoomJoinButtonVisible(true)
+					}; -1 -> {
 					val strTemp = String.format(getUIText("SysMsg_StatusChange_Queue"), getPlayerNameWithTripCode(pInfo))
 					addSystemChatLogLater(txtPaneRoomChatLog, strTemp, Color.blue)
 					setRoomJoinButtonVisible(false)
-				} else {
+				}; else -> {
 					val strTemp = String.format(getUIText("SysMsg_StatusChange_Joined"), getPlayerNameWithTripCode(pInfo))
 					addSystemChatLogLater(txtPaneRoomChatLog, strTemp, Color.blue)
 					setRoomJoinButtonVisible(false)
 				}
-
-				if(netPlayerClient!=null&&netPlayerClient!!.getRoomInfo(roomID)!=null) if(netPlayerClient!!.getRoomInfo(
-						roomID)!!.singleplayer) {
-					btnRoomButtonsJoin.isVisible = false
-					btnRoomButtonsSitOut.isVisible = false
-					btnRoomButtonsRanking.isVisible = false
-					gameStatCardLayout.show(subPanelGameStat, "GameStat1P")
-				} else {
-					btnRoomButtonsRanking.isVisible = netPlayerClient!!.getRoomInfo(roomID)!!.rated
-					gameStatCardLayout.show(subPanelGameStat, "GameStatMP")
 				}
+
+				if(netPlayerClient!=null&&netPlayerClient!!.getRoomInfo(roomID)!=null)
+					if(netPlayerClient!!.getRoomInfo(roomID)!!.singleplayer) {
+						btnRoomButtonsJoin.isVisible = false
+						btnRoomButtonsSitOut.isVisible = false
+						btnRoomButtonsRanking.isVisible = false
+						gameStatCardLayout.show(subPanelGameStat, "GameStat1P")
+					} else {
+						btnRoomButtonsRanking.isVisible = netPlayerClient!!.getRoomInfo(roomID)!!.rated
+						gameStatCardLayout.show(subPanelGameStat, "GameStatMP")
+					}
 
 				SwingUtilities.invokeLater {
 					setRoomButtonsEnabled(true)
@@ -4072,16 +4052,16 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 			val pInfo = netPlayerClient!!.getPlayerInfoByUID(uid)
 
 			if(pInfo!=null) if(message[1]=="watchonly") {
-				val strTemp = String.format(getUIText("SysMsg_StatusChange_Spectator"), getPlayerNameWithTripCode(pInfo))
-				addSystemChatLogLater(txtPaneRoomChatLog, strTemp, Color.blue)
+				addSystemChatLogLater(txtPaneRoomChatLog,
+					String.format(getUIText("SysMsg_StatusChange_Spectator"), getPlayerNameWithTripCode(pInfo)), Color.blue)
 				if(uid==netPlayerClient!!.playerUID) setRoomJoinButtonVisible(true)
 			} else if(message[1]=="joinqueue") {
-				val strTemp = String.format(getUIText("SysMsg_StatusChange_Queue"), getPlayerNameWithTripCode(pInfo))
-				addSystemChatLogLater(txtPaneRoomChatLog, strTemp, Color.blue)
+				addSystemChatLogLater(txtPaneRoomChatLog,
+					String.format(getUIText("SysMsg_StatusChange_Queue"), getPlayerNameWithTripCode(pInfo)), Color.blue)
 				if(uid==netPlayerClient!!.playerUID) setRoomJoinButtonVisible(false)
 			} else if(message[1]=="joinseat") {
-				val strTemp = String.format(getUIText("SysMsg_StatusChange_Joined"), getPlayerNameWithTripCode(pInfo))
-				addSystemChatLogLater(txtPaneRoomChatLog, strTemp, Color.blue)
+				addSystemChatLogLater(txtPaneRoomChatLog,
+					String.format(getUIText("SysMsg_StatusChange_Joined"), getPlayerNameWithTripCode(pInfo)), Color.blue)
 				if(uid==netPlayerClient!!.playerUID) setRoomJoinButtonVisible(false)
 			}
 
@@ -4089,8 +4069,8 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 		}
 		// Automatically start timerStart
 		if(message[0]=="autostartbegin") {
-			val strTemp = String.format(getUIText("SysMsg_AutoStartBegin"), message[1])
-			addSystemChatLogLater(txtPaneRoomChatLog, strTemp, Color(64, 128, 0))
+			addSystemChatLogLater(txtPaneRoomChatLog,
+				String.format(getUIText("SysMsg_AutoStartBegin"), message[1]), Color(64, 128, 0))
 		}
 		// game start
 		if(message[0]=="start") {
@@ -4107,15 +4087,11 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 		}
 		// Death
 		if(message[0]=="dead") {
-			val uid = message[1].toInt()
-			val name = convTripCode(NetUtil.urlDecode(message[2]))
-
-			if(message.size>6) {
-				val strTemp = String.format(getUIText("SysMsg_KO"), convTripCode(NetUtil.urlDecode(message[6])), name)
-				addSystemChatLogLater(txtPaneRoomChatLog, strTemp, Color(0, 128, 0))
-			}
-
-			if(uid==netPlayerClient!!.playerUID) {
+			if(message.size>6)
+				addSystemChatLogLater(txtPaneRoomChatLog,
+					String.format(getUIText("SysMsg_KO"), convTripCode(NetUtil.urlDecode(message[6])),
+						convTripCode(NetUtil.urlDecode(message[2]))), Color(0, 128, 0))
+			if(message[1].toInt()==netPlayerClient!!.playerUID) {
 				btnRoomButtonsSitOut.isEnabled = true
 				btnRoomButtonsTeamChange.isEnabled = true
 				itemLobbyMenuTeamChange.isEnabled = true

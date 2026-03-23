@@ -67,7 +67,7 @@ abstract class BaseFontNumber:BaseFont {
 			}
 
 			if(stringChar in 0x30..0x40) { // 文字出力
-				val sx = if(c.code==0x20) 0 else (stringChar-48)%16
+				val sx = if(c.code==0x20) 0 else (stringChar-48).mod(17)
 				val sy = (if(color==COLOR.RAINBOW) COLOR.getRainbowColor(rainbow, i) else color).ordinal
 				val a = if(c.code==0x20) alpha*.4f else alpha
 				if(fontBig) draw(1, dx, dy, scale/2, sx*W*2, sy*H*2, W*2, H*2, a)

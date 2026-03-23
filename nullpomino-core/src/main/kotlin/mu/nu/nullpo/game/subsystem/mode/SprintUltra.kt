@@ -32,14 +32,9 @@ package mu.nu.nullpo.game.subsystem.mode
 
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.serializer
-import mu.nu.nullpo.game.component.BGM
-import mu.nu.nullpo.game.component.Controller
-import mu.nu.nullpo.game.component.SpeedParam
-import mu.nu.nullpo.game.component.Statistics
+import mu.nu.nullpo.game.component.*
+import mu.nu.nullpo.game.event.*
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
-import mu.nu.nullpo.game.event.Leaderboard
-import mu.nu.nullpo.game.event.Rankable
-import mu.nu.nullpo.game.event.ScoreEvent
 import mu.nu.nullpo.game.net.NetUtil
 import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.game.subsystem.mode.menu.*
@@ -131,8 +126,6 @@ class SprintUltra:NetDummyMode() {
 		rankingRank.fill(-1)
 
 		owner.bgMan.bg = -14
-		engine.frameSkin = if(is20g(engine.speed)) GameEngine.FRAME_COLOR_RED else GameEngine.FRAME_COLOR_BLUE
-
 		netPlayerInit(engine)
 
 		if(!owner.replayMode) {
@@ -155,16 +148,13 @@ class SprintUltra:NetDummyMode() {
 				if(rankingShow>=RANKTYPE_MAX) rankingShow = 0
 			}
 		}
-		return super.onSetting(engine).also {
-			engine.speed.replace(itemSpd.spd)
-			engine.frameSkin = if(is20g(engine.speed)) GameEngine.FRAME_COLOR_RED else GameEngine.FRAME_COLOR_BLUE
-		}
+		return super.onSetting(engine)
 	}
 
 	override fun onSettingChanged(engine:GameEngine) {
 		super.onSettingChanged(engine)
 		engine.speed.replace(itemSpd.spd)
-		engine.frameSkin = if(is20g(engine.speed)) GameEngine.FRAME_COLOR_RED else GameEngine.FRAME_COLOR_BLUE
+		engine.frame = if(is20g(engine.speed)) GameEngine.Frame.RED else GameEngine.Frame.BLUE
 	}
 
 	/* This function will be called before the game actually begins (after

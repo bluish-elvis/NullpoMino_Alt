@@ -123,7 +123,7 @@ abstract class AbstractGrand:AbstractMode() {
 	protected fun stMedalCheck(engine:GameEngine, section:Int = engine.statistics.level/100, lastTime:Int, best:Int) {
 //		val best = bestSectionTime[goalType][section]
 
-		if(lastTime<best||best<=0) {
+		if(best !in 1..lastTime) {
 			engine.playSE("medal3")
 			if(medalST<1) decTemp += 3
 			if(medalST<2) decTemp += 6
@@ -152,10 +152,10 @@ abstract class AbstractGrand:AbstractMode() {
 			999 -> 2
 			else -> return
 		}
-		val e = spinCount to engine.statistics.totalPieceLocked-sectionSpins.sumOf {it.second}
+		val e = spinCount to engine.statistics.totalPieceLocked-sectionSpins.sumOf {(_, p) -> p}
 		sectionSpins[lv] = e
 		spinCount = 0
-		(sectionSpins.indexOfLast {(it.first.toFloat()/it.second)>=1.2f}+1).let {
+		(sectionSpins.indexOfLast {(s, p) -> (s.toFloat()/p)>=1.2f}+1).let {
 			if(it>medalRO) {
 				engine.playSE("medal$it")
 				if(medalRO<1) decTemp += 3
@@ -270,9 +270,9 @@ abstract class AbstractGrand:AbstractMode() {
 			// Level up
 			val levelb = engine.statistics.level+li
 			val levela = engine.statistics.level+if(li>2) li*2-2 else li
-			val twist = if(ev.twist) 2 to 3 else 1 to 2
+			val (tx, ty) = if(ev.twist) 2 to 3 else 1 to 2
 			((levelb/(4-(ev.b2b>0).toInt())+engine.softdropFall+engine.manualLock.toInt()+engine.harddropFall*2)
-				*li*comboValue)*bravo+maxOf(0, engine.lockDelay-engine.lockDelayNow)*7+levela*twist.first/twist.second
+				*li*comboValue)*bravo+maxOf(0, engine.lockDelay-engine.lockDelayNow)*7+levela*tx/ty
 		} else 0
 	}
 }

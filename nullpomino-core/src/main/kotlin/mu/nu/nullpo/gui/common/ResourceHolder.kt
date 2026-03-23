@@ -32,7 +32,6 @@
 package mu.nu.nullpo.gui.common
 
 import com.davekoelle.AlphaNumComparator
-import mu.nu.nullpo.game.component.Block
 import mu.nu.nullpo.game.component.Piece
 import mu.nu.nullpo.gui.common.ResourceImage.ResourceImageStr
 import mu.nu.nullpo.util.GeneralUtil.flattenList
@@ -72,11 +71,11 @@ abstract class ResourceHolder {
 	internal val blockBreakSegments:Int = 2
 
 	/** Number of images for block spatter animation during lines clears */
-	internal val blockBreakMax = Block.COLOR.COLOR_NUM+1
+	internal val blockBreakMax = 8
 
 	/** Number of gem block clear effects */
-	internal val pEraseMax = Block.COLOR.COLOR_NUM
-	internal val hanabiMax = Block.COLOR.COLOR_NUM
+	internal val pEraseMax = 7
+	internal val hanabiMax = 7
 
 	/** Block images */
 	internal open val imgNormalBlockList:List<ResourceImage<*>> by lazy {
@@ -129,7 +128,7 @@ abstract class ResourceHolder {
 
 	/** Field frame */
 	internal open val imgFrame:List<ResourceImage<*>> by lazy {
-		File("$skinDir/graphics/frames/").listFiles(FileFilter {it.isImage&&it.nameWithoutExtension.all {i -> i.isDigit()}})
+		File("$skinDir/graphics/frames/").listFiles {it.isImage&&it.nameWithoutExtension.all {i -> i.isDigit()}}
 			?.sortedWith(nameSort)?.map {
 				ResourceImageStr("frames/"+it.nameWithoutExtension)
 			}?:emptyList()
@@ -146,7 +145,7 @@ abstract class ResourceHolder {
 	/** Field background Overlay*/
 	internal open val imgFieldBGO:ResourceImage<*> = ResourceImageStr("fieldbg")
 
-	/**Particles sprite*/
+	/**Particles sprite: "brk_halo", "brk_tail", "fw_part"*/
 	internal open val imgFrags:List<ResourceImage<*>> =
 		listOf("brk_halo", "brk_tail", "fw_part").map {ResourceImageStr("effects/frag_$it")}
 
@@ -155,7 +154,7 @@ abstract class ResourceHolder {
 		listOf("mirr", "roll", "big", "xray", "col", "dark", "morph", "nega", "shot", "excg", "hard", "reve").map {
 			ResourceImageStr("effects/frag_$it")
 		}
-	/** Beam Spritesheets for lines clears */
+	/** Beam Spritesheets for lines clears [horizontal,vertical] */
 	internal open val imgLine:List<ResourceImage<*>> = listOf("h", "v").map {ResourceImageStr("effects/del_$it")}
 	/** Block spatter Spritesheets for lines clears */
 	internal open val imgBreak:List<List<ResourceImage<*>>> = List(blockBreakMax) {i ->

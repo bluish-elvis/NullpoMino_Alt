@@ -46,8 +46,7 @@ import mu.nu.nullpo.util.GeneralUtil.toInt
 import mu.nu.nullpo.util.GeneralUtil.toReplayFilename
 import org.apache.logging.log4j.LogManager
 import java.io.*
-import java.util.zip.GZIPInputStream
-import java.util.zip.GZIPOutputStream
+import java.util.zip.*
 import kotlin.math.absoluteValue
 import kotlin.math.sign
 import kotlin.random.Random
@@ -304,11 +303,9 @@ open class EventReceiver {
 	open fun drawStaffRoll(x:Number, y:Number, scr:Number, height:Number, alpha:Float = 1f) {}
 	fun drawStaffRoll(engine:GameEngine, scr:Float,
 		height:Number = if(!engine.owner.menuOnly) engine.fieldHeight*BS else 480f, alpha:Float = 1f) =
-		(if(!engine.owner.menuOnly) (engine.fX to engine.fY) else (320f to 0f)).let {
+		(if(!engine.owner.menuOnly) (engine.fX to engine.fY) else (320f to 0f)).let {(x, y) ->
 			val _h = height.toFloat()
-			drawStaffRoll(
-				it.first, it.second, scr*(_h+BaseStaffRoll.height+256)-_h, _h, alpha
-			)
+			drawStaffRoll(x, y, scr*(_h+BaseStaffRoll.height+256)-_h, _h, alpha)
 		}
 
 	private fun menuPos(engine:GameEngine, x:Float, y:Float, str:String, font:FONT, scale:Float):Pair<Float, Float> {
@@ -886,7 +883,7 @@ open class EventReceiver {
 		drawFont(x+7*16, y, "D", BASE, pid, ctrl.isPress(Controller.BUTTON_D))
 		drawFont(x+8*16, y, "E", BASE, pid, ctrl.isPress(Controller.BUTTON_E))
 		drawFont(x+9*16, y, "F", BASE, pid, ctrl.isPress(Controller.BUTTON_F))
-		drawFont(x, y, "%1dP:%04d %2d".format(pid+1, engine.ctrl.buttonBit, engine.getSpinOperation()), NANO,
+		drawFont(x, y-7, "%1dP:%04d %2d".format(pid+1, engine.ctrl.buttonBit.toShort(), engine.getSpinOperation()), NANO,
 			getPlayerColor(pid), .5f)
 	}
 

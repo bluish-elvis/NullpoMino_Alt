@@ -37,8 +37,7 @@
 
 package zeroxfc.nullpo.custom.libs
 
-import kotlin.math.PI
-import kotlin.math.sin
+import kotlin.math.*
 
 object Interpolation {
 	/**
@@ -243,5 +242,13 @@ object Interpolation {
 		val ofs = PI/2.0
 		val t = (sin(-1.0*ofs+interpVal*ofs*2)+1.0)/2.0
 		return (1.0-t)*s+e*t
+	}
+	/**
+	 * Cosine interpolation (ease-out) of two `float` values.
+	 */
+	fun cosStep(s:Float, e:Float, interpVal:Float):Float {
+		val ofs = (PI/2f).toFloat()
+		val t = (cos(-1f*ofs+interpVal*ofs)+1f)/2f
+		return (1f-t)*s+e*t
 	}
 }

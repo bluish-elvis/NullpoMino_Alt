@@ -190,7 +190,7 @@ class RanksIterator(parent:JFrame, inputFile:String, private val outputFile:Stri
 	}
 
 	init {
-		defaultCloseOperation = WindowConstants.DO_NOTHING_ON_CLOSE
+		defaultCloseOperation = DO_NOTHING_ON_CLOSE
 
 		progressLabel = JLabel(String.format(getUIText("Progress_Note"), 1, 0, numIterations, 0))
 		val message = String.format(getUIText("Progress_Note"), 100, 100, 100, 100)

@@ -47,6 +47,7 @@ import mu.nu.nullpo.game.component.Piece
 import mu.nu.nullpo.game.event.WallkickResult
 import mu.nu.nullpo.game.subsystem.wallkick.ClassicWallkick
 import org.apache.logging.log4j.LogManager
+import org.apache.logging.log4j.Logger
 
 open class ClassicRecoveryOnFailWallkick:ClassicWallkick() {
 	fun fallbackWallKick(
@@ -72,6 +73,6 @@ open class ClassicRecoveryOnFailWallkick:ClassicWallkick() {
 	private fun isABlockOnTheField(x:Int, y:Int, fld:Field):Boolean = !fld.getCoordVaild(x, y, true)
 
 	companion object {
-		var log = LogManager.getLogger()
+		var log:Logger? = LogManager.getLogger()
 	}
 }

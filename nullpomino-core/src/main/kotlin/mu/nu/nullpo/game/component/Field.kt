@@ -100,9 +100,7 @@ class Field {
 	private var lineflagHidden = MutableList(hiddenHeight) {false}
 
 	val lineFlags
-		get() = (-hiddenHeight..<heightWithoutHurryupFloor).associate {
-			it to getLineFlag(it)
-		}
+		get()=(-hiddenHeight..<heightWithoutHurryupFloor).associateWith {getLineFlag(it)}
 
 	/** HURRY UP地面のcount */
 	var hurryUpFloorLines = 0; private set
@@ -803,12 +801,12 @@ class Field {
 	fun filterAttributeMap(vararg attr:ATTRIBUTE):Map<Int, Map<Int, Block>> =
 		(-hiddenHeight..<heightWithoutHurryupFloor).associateWith {y ->
 			(getRow(y).mapIndexedNotNull {x, it -> if(it?.getAttribute(*attr)==true) x to it else null}.toMap())
-		}.filter {it.value.isNotEmpty()}
+		}.filter {(_, it)-> it.isNotEmpty()}
 
 	fun filterAttributeIList(vararg attr:ATTRIBUTE):Iterable<IndexedValue<List<Block?>>> =
 		(-hiddenHeight..<heightWithoutHurryupFloor).map {i ->
 			IndexedValue(i, getRow(i).map {if(it?.getAttribute(*attr)==true) it else null})
-		}.filter {it.value.isNotEmpty()}
+		}.filter {(_, it)-> it.isNotEmpty()}
 
 	fun filterAttributeBlocks(vararg attr:ATTRIBUTE):Set<Triple<Int, Int, Block>> =
 		(-hiddenHeight..<heightWithoutHurryupFloor).flatMap {y ->

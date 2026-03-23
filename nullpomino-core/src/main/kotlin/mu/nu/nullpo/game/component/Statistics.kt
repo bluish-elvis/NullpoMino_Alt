@@ -160,11 +160,11 @@ class Statistics {
 		get() = totalTwistsLine+totalTwistDoubleMini+totalTwistDouble+totalTwistSplitDouble+
 			(totalTwistTriple+totalTwistSplitTriple)*2
 
-	/** Back to Back 4-lines clear count */
+	/** Back to Backs by 4-lines clear */
 	var totalB2BQuad = 0
-	/** Back to Back Split clear count */
+	/** Back to Backs by Split clear */
 	var totalB2BSplit = 0
-	/** Back to Back Twister clear count */
+	/** Back to Backs by Twister clear */
 	var totalB2BTwist = 0
 
 	/** All clear count */

@@ -142,7 +142,7 @@ class AIRanksTool:JFrame(), ActionListener {
 
 
 		title = getUIText("Main_Title")
-		defaultCloseOperation = WindowConstants.EXIT_ON_CLOSE
+		defaultCloseOperation = EXIT_ON_CLOSE
 		initUI()
 		pack()
 

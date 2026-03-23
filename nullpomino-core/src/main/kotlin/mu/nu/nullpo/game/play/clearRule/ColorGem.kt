@@ -43,8 +43,8 @@ data class ColorGem(var colorClearSize:Int = 2, var garbageColorClear:Boolean = 
 	:ClearType {
 	override fun check(field:Field) = field.gemColorCheck(colorClearSize, false, garbageColorClear, ignoreHidden)
 	override fun flag(engine:GameEngine, field:Field) =
-		field.gemColorCheck(colorClearSize, true, garbageColorClear, ignoreHidden).also {check ->
-			engine.statistics.blocks += check.size
+		field.gemColorCheck(colorClearSize, true, garbageColorClear, ignoreHidden).also {(size)->
+			engine.statistics.blocks+=size
 			engine.playSE("erase0")
 		}
 

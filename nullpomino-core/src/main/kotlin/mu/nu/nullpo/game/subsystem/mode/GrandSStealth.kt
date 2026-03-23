@@ -32,10 +32,8 @@ package mu.nu.nullpo.game.subsystem.mode
 
 import mu.nu.nullpo.game.component.BGM
 import mu.nu.nullpo.game.component.Controller
+import mu.nu.nullpo.game.event.*
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
-import mu.nu.nullpo.game.event.Leaderboard
-import mu.nu.nullpo.game.event.Rankable
-import mu.nu.nullpo.game.event.ScoreEvent
 import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.game.subsystem.mode.menu.BooleanMenuItem
 import mu.nu.nullpo.game.subsystem.mode.menu.DelegateMenuItem
@@ -312,11 +310,11 @@ class GrandSStealth:AbstractGrand() {
 							engine, 0, topY+i, "%2d".format(i+1), GRADE,
 							if(rankingRank==i) COLOR.RAINBOW else COLOR.YELLOW
 						)
-						if(it.grade in 0..<tableGradeName.size)
+						if(it.grade in tableGradeName.indices)
 							receiver.drawScore(
 								engine, 3, topY+i, tableGradeName[it.grade],
-								BASE, when {
-									it.clear==1 -> COLOR.GREEN; it.clear==2 -> COLOR.ORANGE; else -> COLOR.WHITE
+								BASE, when(it.clear) {
+									1 -> COLOR.GREEN; 2 -> COLOR.ORANGE; else -> COLOR.WHITE
 								}
 							)
 						receiver.drawScore(engine, 5, topY+i, "%03d".format(it.lv), NUM, i==rankingRank)

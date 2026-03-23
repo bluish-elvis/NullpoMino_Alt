@@ -30,10 +30,7 @@
  */
 package mu.nu.nullpo.game.subsystem.mode
 
-import mu.nu.nullpo.game.component.BGM
-import mu.nu.nullpo.game.component.Block
-import mu.nu.nullpo.game.component.Controller
-import mu.nu.nullpo.game.component.Field
+import mu.nu.nullpo.game.component.*
 import mu.nu.nullpo.game.event.EventReceiver
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
 import mu.nu.nullpo.game.event.ScoreEvent
@@ -313,7 +310,7 @@ open class VSBattle:AbstractMode() {
 			engine.random = Random(owner.engine[0].randSeed)
 		}
 
-		engine.frameSkin = PLAYER_COLOR_FRAME[playerID]
+		engine.frame = PLAYER_COLOR_FRAME[playerID]
 		engine.ruleOpt.lockResetMoveLimit = engine.ruleOpt.lockResetMoveLimit.let {if(it<0) 30 else minOf(it, 30)}
 		engine.ruleOpt.lockResetSpinLimit = engine.ruleOpt.lockResetSpinLimit.let {if(it<0) 20 else minOf(it, 20)}
 		lastHole[playerID] = -1
@@ -834,7 +831,7 @@ open class VSBattle:AbstractMode() {
 		private val PLAYER_COLOR_BLOCK = listOf(Block.COLOR.RED, Block.COLOR.BLUE)
 
 		/** Each player's frame color-int */
-		private val PLAYER_COLOR_FRAME = listOf(GameEngine.FRAME_COLOR_GREEN, GameEngine.FRAME_COLOR_BLUE)
+		private val PLAYER_COLOR_FRAME = listOf(GameEngine.Frame.GREEN, GameEngine.Frame.BLUE)
 
 		/** Current version */
 		private const val CURRENT_VERSION = 5

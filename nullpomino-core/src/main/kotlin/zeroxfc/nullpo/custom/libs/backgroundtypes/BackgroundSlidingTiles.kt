@@ -127,7 +127,7 @@ class BackgroundSlidingTiles(private val custom:ResourceImage<*>?, directionRand
 			move = false
 			if(horizontal) {
 				for(y in gridChunks.indices) {
-					for(x in 0..<gridChunks[y].size) {
+					for(x in gridChunks[y].indices) {
 						val locOld = gridChunks[y][x].anchorLocation
 						val yMod = abs(locOld[1]/width)
 						val dir = (direction+yMod)%DIRECTIONS
@@ -150,7 +150,7 @@ class BackgroundSlidingTiles(private val custom:ResourceImage<*>?, directionRand
 				}
 				currentMovement++
 			} else {
-				for(x in 0..<gridChunks[0].size) {
+				for(x in gridChunks[0].indices) {
 					for(y in gridChunks.indices) {
 						val locOld = gridChunks[y][x].anchorLocation
 						val xMod = abs(locOld[0]/width)
@@ -206,7 +206,7 @@ class BackgroundSlidingTiles(private val custom:ResourceImage<*>?, directionRand
 	}
 
 	override fun draw(render:AbstractRenderer, bg:Boolean) {
-		for(y in gridChunks.indices) for(x in 0..<gridChunks[y].size) {
+		for(y in gridChunks.indices) for(x in gridChunks[y].indices) {
 			val i = gridChunks[y][x]
 			val pos = i.drawLocation
 			val ddim = i.drawDimensions

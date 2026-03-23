@@ -29,8 +29,7 @@ POSSIBILITY OF SUCH DAMAGE.
 
 package edu.cuhk.cse.fyp.tetrisai.lspi
 
-import java.util.Arrays
-import java.util.Random
+import java.util.*
 
 class FutureState:State() {
 	override val field = Array<IntArray?>(ROWS) {IntArray(COLS)}
@@ -57,7 +56,7 @@ class FutureState:State() {
 	// add lines stack to field
 	fun addLines(lines:Int):Boolean {
 		// check if game end
-		var stk = lines
+		val stk = lines
 		for(i in ROWS-1 downTo ROWS-1-stk+1) {
 			for(j in 0..<COLS) {
 				if(field[i]!![j]!=0) {
@@ -75,7 +74,6 @@ class FutureState:State() {
 			}
 		}
 		for(i in 0..<COLS) top[i] += stk
-		stk = 0
 		return true
 	}
 	// add lines stack to field

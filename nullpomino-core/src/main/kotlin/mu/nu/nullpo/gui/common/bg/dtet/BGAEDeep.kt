@@ -37,7 +37,7 @@ import kotlin.math.sin
 import kotlin.random.Random
 
 class BGAEDeep<T>(bg:mu.nu.nullpo.gui.common.ResourceImage<T>, addBGFX:AbstractBG<*>? = null):
-	mu.nu.nullpo.gui.common.bg.AbstractBG<T>(bg, addBGFX) {
+	AbstractBG<T>(bg, addBGFX) {
 	/*'(オーロラ)
 Crs = Rnd * 360
 CrsF = Rnd * 640

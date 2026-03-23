@@ -33,11 +33,9 @@ package mu.nu.nullpo.game.subsystem.mode.another
 import mu.nu.nullpo.game.component.*
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
 import mu.nu.nullpo.game.event.ScoreEvent
-import mu.nu.nullpo.game.play.GameEngine
+import mu.nu.nullpo.game.play.*
 import mu.nu.nullpo.game.play.GameEngine.GameStyle
 import mu.nu.nullpo.game.play.GameEngine.Status
-import mu.nu.nullpo.game.play.GameManager
-import mu.nu.nullpo.game.play.LineGravity
 import mu.nu.nullpo.game.play.LineGravity.CASCADE.canCascade
 import mu.nu.nullpo.game.play.clearRule.ColorStraight
 import mu.nu.nullpo.game.subsystem.mode.AbstractMode
@@ -271,7 +269,7 @@ class PhysicianVS:AbstractMode() {
 			engine.random = Random(owner.engine[0].randSeed)
 		}
 
-		engine.frameSkin = PLAYER_COLOR_FRAME[pid]
+		engine.frame = PLAYER_COLOR_FRAME[pid]
 		engine.clearMode = ColorStraight(4, false, true)
 		engine.garbageColorClear = false
 		engine.colorClearSize = 4
@@ -774,6 +772,6 @@ class PhysicianVS:AbstractMode() {
 		private val SPEED_COLOR = listOf(COLOR.BLUE, COLOR.YELLOW, COLOR.RED)
 
 		/** Each player's frame color-int */
-		private val PLAYER_COLOR_FRAME = listOf(GameEngine.FRAME_COLOR_RED, GameEngine.FRAME_COLOR_BLUE)
+		private val PLAYER_COLOR_FRAME = listOf(GameEngine.Frame.RED, GameEngine.Frame.BLUE)
 	}
 }

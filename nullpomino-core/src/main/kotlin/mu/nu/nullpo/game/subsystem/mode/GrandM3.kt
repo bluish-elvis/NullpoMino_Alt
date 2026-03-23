@@ -44,10 +44,7 @@ import mu.nu.nullpo.util.CustomProperties
 import mu.nu.nullpo.util.GeneralUtil.toInt
 import mu.nu.nullpo.util.GeneralUtil.toTimeStr
 import org.apache.logging.log4j.LogManager
-import kotlin.math.floor
-import kotlin.math.ln
-import kotlin.math.roundToInt
-import kotlin.math.sqrt
+import kotlin.math.*
 import kotlin.random.Random
 
 /** GRADE MANIA 3 Mode */
@@ -479,10 +476,8 @@ class GrandM3:AbstractGrand() {
 							if(rankingRank==i) COLOR.RAINBOW else COLOR.YELLOW
 						)
 						receiver.drawScore(
-							engine, 2, 3+i, getGradeName(it.grade), GRADE, when {
-								it.clear==1||it.clear==3 -> COLOR.GREEN
-								it.clear==2||it.clear==4 -> COLOR.ORANGE
-								else -> COLOR.WHITE
+							engine, 2, 3+i, getGradeName(it.grade), GRADE, when(it.clear) {
+								1, 3 -> COLOR.GREEN; 2, 4 -> COLOR.ORANGE; else -> COLOR.WHITE
 							}
 						)
 						receiver.drawScore(engine, 5, 3+i, it.ti.toTimeStr, NUM, i==rankingRank)
@@ -1032,7 +1027,7 @@ class GrandM3:AbstractGrand() {
 			if(time<6000) decTemp -= 3
 			else {
 				decTemp++
-				if(time%3600<=60||time%3600>=3540) decTemp++
+				if(time%3600 !in 61..<3540) decTemp++
 			}
 
 			if(time>41100) decTemp -= 1+(time-41100)/1800

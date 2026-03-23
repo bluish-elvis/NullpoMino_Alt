@@ -42,8 +42,7 @@ import org.apache.logging.log4j.LogManager
 import java.io.FileInputStream
 import java.text.SimpleDateFormat
 import java.util.*
-import java.util.zip.GZIPInputStream
-import java.util.zip.ZipException
+import java.util.zip.*
 import kotlin.math.absoluteValue
 import kotlin.math.log10
 
@@ -52,7 +51,7 @@ object GeneralUtil {
 	/** Log */
 	internal val log = LogManager.getLogger()
 	@Suppress("UNCHECKED_CAST")
-	fun <T:Any?> flattenList(nestList:Collection<*>, flatList:MutableList<T> = mutableListOf()):List<T> {
+	fun <T> flattenList(nestList:Collection<*>, flatList:MutableList<T> = mutableListOf()):List<T> {
 		for(e in nestList)
 			if(e is Collection<*>)
 			// using unchecked cast here as can't check for instance of 'erased' generic type
@@ -84,6 +83,8 @@ object GeneralUtil {
 	operator fun Boolean.plus(x:Int) = if(this) x+1 else x
 	operator fun Boolean.minus(x:Int) = if(this) x-1 else x
 	operator fun Boolean.times(x:Int) = if(this) x else 0
+
+	val Number.us get() = toShort().toUShort()
 
 	fun Triple<Float, Float, Float>.HSBtoRGB():Triple<Float, Float, Float> {
 		val (h, s, b) = this
@@ -350,6 +351,22 @@ object GeneralUtil {
 			else -> code-'0'.code
 		}
 
+	/**
+	 * Triple<Float, Float, Float>型（通常はRGB成分を0.0～1.0の範囲で表現）を、24ビットのHEXカラー値（0xRRGGBB形式のInt型）に変換する
+	 *
+	 * 各成分は0.0～1.0の範囲に切り捨てられる
+	 *
+	 * 例えば、`Triple(1.0f, 0.5f, 0.0f)` の場合、赤=1.0、緑=0.5、青=0.0 となり、
+	 * それぞれ255倍して整数化・範囲制限（coerceIn(0, 255)）した後、
+	 * 赤は16ビット、緑は8ビットシフトして合成します。
+	 *
+	 */
+	val Triple<Float, Float, Float>.toHEXColor:Int
+		get() = ((this.first*255).toInt().coerceIn(0, 255) shl 16) or
+			((this.second*255).toInt().coerceIn(0, 255) shl 8) or
+			((this.third*255).toInt().coerceIn(0, 255))
+
+	operator fun Triple<Float, Float, Float>.times(s:Float) = Triple(first*s, second*s, third*s)
 	/** Returns a list containing all elements that are not `null`.*/
 	fun <T:Any> Collection<T?>.filterNotNullIndexed():List<IndexedValue<T>> =
 		this.mapIndexedNotNull {i, it -> it?.let {IndexedValue(i, it)}}

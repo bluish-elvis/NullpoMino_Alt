@@ -49,6 +49,7 @@ import mu.nu.nullpo.util.GeneralUtil.getOX
 import mu.nu.nullpo.util.GeneralUtil.toInt
 import mu.nu.nullpo.util.GeneralUtil.toTimeStr
 import org.apache.logging.log4j.LogManager
+import org.apache.logging.log4j.Logger
 import zeroxfc.nullpo.custom.libs.ProfileProperties
 import kotlin.math.*
 
@@ -240,7 +241,7 @@ abstract class AbstractMode:GameMode {
 	override fun lineClear(gameEngine:GameEngine, i:Collection<Int>) {}
 	override fun blockBreak(engine:GameEngine, blk:Map<Int, Map<Int, Block>>):Boolean = false
 	final override fun blockBreak(engine:GameEngine, blk:Collection<Triple<Int, Int, Block>>):Boolean =
-		blockBreak(engine, blk.groupBy {it.second}.mapValues {(_, it) -> it.associate {(x, _, b) -> x to b}})
+		blockBreak(engine, blk.groupBy {(_, y) -> y}.mapValues {(_, it) -> it.associate {(x, _, b) -> x to b}})
 
 	override fun lineClearEnd(engine:GameEngine):Boolean = false
 	/** Calculates lines-clear score
@@ -617,33 +618,29 @@ abstract class AbstractMode:GameMode {
 		drawMenuSpeeds(engine, receiver, are, aline, lined, lock, das)
 	}
 
-	protected fun drawMenuSpeeds(engine:GameEngine, receiver:EventReceiver, are:Int, aline:Int, lined:Int, lock:Int,
-		das:Int) {
+	protected fun drawMenuSpeeds(engine:GameEngine, receiver:EventReceiver,
+		are:Int, aline:Int, lined:Int, lock:Int, das:Int) {
 		for(i in 0..1) {
 			val cur = menuCursor==statcMenu&&!owner.replayMode
-			val show = if(i==0) "ARE" to are else "LINE" to aline
+			val (str, fra) = if(i==0) "ARE" to are else "LINE" to aline
 			if(cur) receiver.drawMenu(engine, 3+i*3, menuY, BaseFont.CURSOR, BASE, true)
 
-			receiver.drawMenu(
-				engine, 4+i*3, menuY, String.format(if(i==0) "%2d/" else "%2d", show.second), NUM, cur
-			)
-			receiver.drawMenu(engine, 6+i*6, menuY*2+1, show.first, NANO, menuColor, .5f)
+			receiver.drawMenu(engine, 4+i*3, menuY, String.format(if(i==0) "%2d/" else "%2d", fra), NUM, cur)
+			receiver.drawMenu(engine, 6+i*6, menuY*2+1, str, NANO, menuColor, .5f)
 			statcMenu++
 		}
 		menuY++
 		for(i in 0..2) {
 			val cur = menuCursor==statcMenu&&!owner.replayMode
-			val show = when(i) {
+			val (str, fra) = when(i) {
 				0 -> "LINE" to lined
 				1 -> "LOCK" to lock
 				else -> "DAS" to das
 			}
 			if(cur) receiver.drawMenu(engine, 7-i*3, menuY, BaseFont.CURSOR, BASE, true)
 
-			receiver.drawMenu(
-				engine, 8-i*3, menuY, String.format(if(i==1) "%2d+" else "%2d", show.second), NUM, cur
-			)
-			receiver.drawMenu(engine, 14-i*6, menuY*2+1, show.first, NANO, menuColor, .5f)
+			receiver.drawMenu(engine, 8-i*3, menuY, String.format(if(i==1) "%2d+" else "%2d", fra), NUM, cur)
+			receiver.drawMenu(engine, 14-i*6, menuY*2+1, str, NANO, menuColor, .5f)
 			statcMenu++
 		}
 		receiver.drawMenu(engine, 0, menuY*2-2, "DELAYS", NANO, menuColor, .5f)
@@ -913,7 +910,7 @@ abstract class AbstractMode:GameMode {
 			val total = base+bonus
 		}
 
-		val log = LogManager.getLogger()
+		val log:Logger? = LogManager.getLogger()
 	}
 
 }

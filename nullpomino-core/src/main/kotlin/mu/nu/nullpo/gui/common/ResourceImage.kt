@@ -32,7 +32,7 @@
 package mu.nu.nullpo.gui.common
 
 /** 画像オブジェ共通部 */
-interface ResourceImage<T:Any?> {
+interface ResourceImage<T> {
 	var res:T
 	/** 画像 Filename */
 	val name:String

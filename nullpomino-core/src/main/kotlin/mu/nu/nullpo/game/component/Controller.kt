@@ -30,6 +30,8 @@
  */
 package mu.nu.nullpo.game.component
 
+import mu.nu.nullpo.util.GeneralUtil.us
+
 /** button input状態を管理するクラス */
 @kotlinx.serialization.Serializable data class Controller(
 	/** Buttonを押した状態ならtrue */
@@ -39,8 +41,8 @@ package mu.nu.nullpo.game.component
 ) {
 
 	/** button input状態をビット flagで返す*/
-	val buttonBit:Int
-		get() = buttonPress.mapIndexed {i, b -> if(b) (1 shl i) else 0}.sum()
+	val buttonBit:UShort
+		get() = buttonPress.mapIndexed {i, b -> if(b) (1 shl i) else 0}.sum().us
 
 	/** Constructor */
 	constructor():this(MutableList(BUTTON_COUNT) {false}, MutableList(BUTTON_COUNT) {0})
@@ -66,7 +68,7 @@ package mu.nu.nullpo.game.component
 		buttonPress.fill(false)
 	}
 
-	/** buttonを1 frame だけ押した状態かどうか判定
+	/** buttonを押し始めた瞬間の状態かどうか判定
 	 * @param btn Button number
 	 * @return buttonを1 frame だけ押した状態ならtrue
 	 */
@@ -108,8 +110,8 @@ package mu.nu.nullpo.game.component
 		if(key in buttonPress.indices) buttonPress[key] = pressed
 	}
 
-	fun setButtonBit(input:Int) {
-		for(i in buttonPress.indices) buttonPress[i] = input and (1 shl i)>0
+	fun setButtonBit(input:UShort) {
+		for(i in buttonPress.indices) buttonPress[i] = (input and (1 shl i).us)>0u
 	}
 
 	/** button input timeを更新 */
@@ -158,15 +160,15 @@ package mu.nu.nullpo.game.component
 		const val BUTTON_COUNT = 10
 
 		/** ビット演算用定数 */
-		const val BUTTON_BIT_UP = 1
-		const val BUTTON_BIT_DOWN = 2
-		const val BUTTON_BIT_LEFT = 4
-		const val BUTTON_BIT_RIGHT = 8
-		const val BUTTON_BIT_A = 16
-		const val BUTTON_BIT_B = 32
-		const val BUTTON_BIT_C = 64
-		const val BUTTON_BIT_D = 128
-		const val BUTTON_BIT_E = 256
-		const val BUTTON_BIT_F = 512
+		const val BUTTON_BIT_UP:UShort = 1u
+		const val BUTTON_BIT_DOWN:UShort = 2u
+		const val BUTTON_BIT_LEFT:UShort = 4u
+		const val BUTTON_BIT_RIGHT:UShort = 8u
+		const val BUTTON_BIT_A:UShort = 16u
+		const val BUTTON_BIT_B:UShort = 32u
+		const val BUTTON_BIT_C:UShort = 64u
+		const val BUTTON_BIT_D:UShort = 128u
+		const val BUTTON_BIT_E:UShort = 256u
+		const val BUTTON_BIT_F:UShort = 512u
 	}
 }

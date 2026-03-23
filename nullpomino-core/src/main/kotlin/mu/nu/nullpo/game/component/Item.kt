@@ -139,15 +139,13 @@ sealed class Item(val id:Int, val showName:String? = null,
 	/** Unable opponents HoldSwap Slots */
 	data object LOCK_HOLD:Item(9, "LOCK SWAP ZONE", 6, false, Type.DIRECT)
 	/** Flip opponents control horizontally  */
-	data object REV_CTRL_H:Item(10, "Horiz. REV.CTRL", duration = 4, true, Type.DIRECT) {
-	}
+	data object REV_CTRL_H:Item(10, "Horiz. REV.CTRL", duration = 4, true, Type.DIRECT)
 	/** Increase Oopponents Speed to 20G for 7 seconds */
 	data object SPEED:Item(11, "BOOST FIRE", 7, true, Type.DIRECT)
 	/**  piece becomes I shape and hard drops for 10 seconds */
 	data object ALL_I:Item(12, "I FEVER!!", 10, true, Type.SELF, BCOLOR.RAINBOW)
 	data object REV_CTRL_V:Item(13, "FLIP 180 Vertical", 4, true, Type.DIRECT)
-	data object REMOTE:Item(14, "REMOTE CONTROL", 1) {
-	}
+	data object REMOTE:Item(14, "REMOTE CONTROL", 1)
 	/** Opponent's field becomes totally invisible for 3 seconds */
 	data object DARK:Item(15, "INVISIBLE FIELD")
 	/** Erase upper half of owner's field*/
@@ -392,9 +390,7 @@ sealed class Item(val id:Int, val showName:String? = null,
 	data object REFLECT:Item(32, "Reflect Shield", 10, true, Type.SELF)
 	/** Double Sending Garbage Power */
 	data object DOUBLE_RISE:Item(33, "Doubled Power", 10, true, Type.SELF, BCOLOR.YELLOW)
-	data object ALL_CLEAR:Item(34, "All Clean") {
-
-	}
+	data object ALL_CLEAR:Item(34, "All Clean")
 
 	data object MISS:Item(35, "Miss", 20, false, Type.SELF, color = BCOLOR.WHITE)
 	data object COPY_FIELD:Item(36, "Field DUPLICATE", color = BCOLOR.PURPLE)

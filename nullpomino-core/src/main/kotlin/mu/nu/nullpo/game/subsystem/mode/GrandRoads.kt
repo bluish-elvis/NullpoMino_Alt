@@ -36,7 +36,6 @@ import mu.nu.nullpo.game.event.EventReceiver.COLOR
 import mu.nu.nullpo.game.net.NetUtil
 import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.game.subsystem.mode.menu.*
-import mu.nu.nullpo.gui.common.BaseFont
 import mu.nu.nullpo.gui.common.BaseFont.Companion.CURSOR
 import mu.nu.nullpo.gui.common.BaseFont.Companion.DOWN_S
 import mu.nu.nullpo.gui.common.BaseFont.Companion.UP_S
@@ -355,25 +354,26 @@ class GrandRoads:NetDummyMode() {
 				}
 			}
 		} else {
-			receiver.drawScore(engine, 0, 3, "Level", BASE, COLOR.BLUE)
-			receiver.drawScore(engine, 5, 2, "%02d".format(engine.statistics.level+1), NUM, 2f)
-			receiver.drawScore(engine, 8, 3, "/%3d".format(nowCourse.goalLevel), NUM)
-			receiver.drawScore(engine, 0, 4, "%3d/%3d/%3d".format(norm, nextLv, nowCourse.goalLines), NUM)
+			receiver.drawScore(engine, 0, 5, "%3d".format(norm), NUM)
+			receiver.drawScoreSpeed(engine, 0, 6, engine.speed.rank, 6f)
+			receiver.drawScore(engine, 0, 7, "%3d/%3d".format(nextLv, nowCourse.goalLines), NUM)
 
-			receiver.drawScoreSpeed(engine, 0, 5, engine.speed.rank, 6f)
+			receiver.drawScore(engine, 2.5f, 5, "Level", NANO, COLOR.BLUE)
+			receiver.drawScore(engine, 5.5f, 5, "%02d".format(engine.statistics.level+1), NUM, 2f)
+			receiver.drawScore(engine, 6, 7, "/%3d".format(nowCourse.goalLevel), NUM)
 
-			receiver.drawScore(engine, 0, 7, "TIME LIMIT", BASE, COLOR.BLUE)
-			receiver.drawScore(engine, 0, 8, levelTimer.toTimeStr, NUM, levelTimer in 1..<600&&levelTimer%4==0, 2f)
+			receiver.drawScore(engine, 0, 9, "TIME LIMIT", BASE, COLOR.BLUE)
+			receiver.drawScore(engine, 0, 10, levelTimer.toTimeStr, NUM, levelTimer in 1..<600&&levelTimer%4==0, 2f)
 
-			receiver.drawScore(engine, 0, 10, "TOTAL TIME", BASE, COLOR.BLUE)
-			receiver.drawScore(engine, 0, 11, engine.statistics.time.toTimeStr, NUM_T)
+			receiver.drawScore(engine, 0, 12, "TOTAL TIME", BASE, COLOR.BLUE)
+			receiver.drawScore(engine, 0, 13, engine.statistics.time.toTimeStr, NUM_T)
 
 			// Remaining ending time
 			if(engine.gameActive&&engine.ending==2&&engine.staffrollEnable) {
 				var time = ROLLTIMELIMIT-rollTime
 				if(time<0) time = 0
-				receiver.drawScore(engine, 0, 17, "ROLL TIME", BASE, COLOR.BLUE)
-				receiver.drawScore(engine, 0, 18, time.toTimeStr, NUM, time>0&&time<10*60, 2f)
+				receiver.drawScore(engine, 0, 18, "ROLL TIME", BASE, COLOR.BLUE)
+				receiver.drawScore(engine, 0, 19, time.toTimeStr, NUM, time>0&&time<10*60, 2f)
 			}
 
 			// Section time
@@ -384,17 +384,15 @@ class GrandRoads:NetDummyMode() {
 				receiver.drawScore(engine, x, y, "SECTION TIME", BASE, COLOR.BLUE)
 
 				val l = maxOf(0, engine.statistics.level-20)
-				var i = l
-				while(i<sectionTime.size) {
-					if(sectionTime[i]>0) {
-						val strSeparator = if(i==engine.statistics.level&&engine.ending==0) "+" else "-"
-						val strSectionTime = "%2d%s%s".format(i+1, strSeparator, sectionTime[i].toTimeStr)
-						receiver.drawScore(engine, x+1, y+1+i-l, strSectionTime, NUM)
-					}
-					i++
+				repeat(minOf(nowCourse.goalLevel, 20)) {
+					val i = it+l
+					val strSeparator = if(i==engine.statistics.level&&engine.ending==0) "+" else "-"
+					receiver.drawScore(engine, x+1, y+1+it,
+						"%2d%s%s".format(i+1, strSeparator, sectionTime.getOrElse(i) {-1}.toTimeStr), NUM, 1f,
+						if(i<=engine.statistics.level) 1f else .5f)
 				}
-				receiver.drawScore(engine, 0, 13, "AVERAGE", BASE, COLOR.BLUE)
-				receiver.drawScore(engine, 0, 14, (engine.statistics.time/(sectionsDone+1)).toTimeStr, NUM_T)
+				receiver.drawScore(engine, 5, 15, "AVERAGE", BASE, COLOR.BLUE)
+				receiver.drawScore(engine, 5, 16, sectionAvgTime.toTimeStr, NUM_T)
 			}
 		}
 		super.renderLast(engine)
@@ -546,7 +544,7 @@ class GrandRoads:NetDummyMode() {
 	override fun renderResult(engine:GameEngine) {
 		if(!netIsWatch)
 			receiver.drawMenu(
-				engine, 0, 0, "${BaseFont.UP_S}${BaseFont.DOWN_S} PAGE${engine.statc[1]+1}/3", BASE, COLOR.RED
+				engine, 0, 0, "${UP_S}${DOWN_S} PAGE${engine.statc[1]+1}/3", BASE, COLOR.RED
 			)
 
 		if(engine.statc[1]==0) {

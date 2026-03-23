@@ -490,7 +490,7 @@ class Avalanche1P:Avalanche1PDummyMode() {
 			} else if(type==1) {
 				if(sc>rankingScore[sctype][colors-3][type][i]) return i
 			} else if(type==2)
-				if(time<rankingTime[sctype][colors-3][type+sprintTarget][i]||rankingTime[sctype][colors-3][type+sprintTarget][i]<0)
+				if(rankingTime[sctype][colors-3][type+sprintTarget][i] !in 0..time)
 					return i
 
 		return -1

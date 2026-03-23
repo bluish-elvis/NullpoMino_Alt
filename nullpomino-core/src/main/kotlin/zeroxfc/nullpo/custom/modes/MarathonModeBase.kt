@@ -113,7 +113,7 @@ open class MarathonModeBase:NetDummyMode() {
 			netPlayerName = engine.owner.replayProp.getProperty("${engine.playerID}.net.netPlayerName", "")
 		}
 		engine.owner.backgroundStatus.bg = startLevel
-		engine.framecolor = GameEngine.FRAME_COLOR_GREEN*/
+		engine.frame = GameEngine.Frame.GREEN*/
 	}
 	/**
 	 * Set the gravity rate

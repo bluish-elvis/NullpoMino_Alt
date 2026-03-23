@@ -53,7 +53,7 @@ interface ClearType {
 	@kotlinx.serialization.Serializable
 	data class ClearResult(val size:Int = 0, val blocksCleared:Map<Int, Map<Int, Block?>> = emptyMap()) {
 
-		val linesY = blocksCleared.map {it.key}.toSet()
+		val linesY=blocksCleared.map {(y)-> y}.toSet()
 		val gemCleared = blocksCleared.count {(_, r) -> r.any {(_, b) -> b?.isGemBlock?:false}}
 		val garbageCleared =
 			blocksCleared.asSequence().sumOf {(_, r) -> r.count {(_, b) -> b?.getAttribute(ATTRIBUTE.GARBAGE)?:false}}
@@ -104,13 +104,13 @@ interface ClearType {
 						delBlock(x, y)
 					b
 				} else null
-			}.filterValues {it!=null}.mapValues {it.value!!}
+			}.filterValues {it!=null}.mapValues {(_, it)-> it!!}
 		}.let {total ->
 			ClearResult(total.values.sumOf {it.size}, total)
 		}
 
 		internal fun setBlkToRes(total:Set<Triple<Int, Int, Block>>) =
-			ClearResult(total.size, total.groupBy {it.second}.mapValues {it.value.associate {(x, _, b) -> x to b}})
+			ClearResult(total.size, total.groupBy {(_, y)-> y}.mapValues {it.value.associate {(x, _, b)-> x to b}})
 
 		fun valueOf(value:String):ClearType = when {
 			value=="Line" -> Line
