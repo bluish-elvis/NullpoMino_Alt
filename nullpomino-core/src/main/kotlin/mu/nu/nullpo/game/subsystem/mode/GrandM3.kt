@@ -32,15 +32,15 @@ package mu.nu.nullpo.game.subsystem.mode
 
 import mu.nu.nullpo.game.component.BGM
 import mu.nu.nullpo.game.component.Controller
+import mu.nu.nullpo.game.event.*
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
-import mu.nu.nullpo.game.event.Leaderboard
 import mu.nu.nullpo.game.event.Rankable.GrandRow
-import mu.nu.nullpo.game.event.ScoreEvent
 import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.game.subsystem.mode.menu.*
 import mu.nu.nullpo.gui.common.BaseFont
 import mu.nu.nullpo.gui.common.BaseFont.FONT.*
 import mu.nu.nullpo.util.CustomProperties
+import mu.nu.nullpo.util.GeneralUtil.plus
 import mu.nu.nullpo.util.GeneralUtil.toInt
 import mu.nu.nullpo.util.GeneralUtil.toTimeStr
 import org.apache.logging.log4j.LogManager
@@ -261,6 +261,7 @@ class GrandM3:AbstractGrand() {
 		demotionExamGrade = 0
 
 		rankingRank = -1
+		ranking.forEach {it.fill(GrandRow())}
 		bestSectionTime.forEachIndexed {x, it ->
 			for(i in it.indices) bestSectionTime[x][i] = tableTimeRegret[minOf(i, tableTimeRegret.lastIndex)]
 		}
@@ -323,11 +324,17 @@ class GrandM3:AbstractGrand() {
 	}
 
 	/** Set BGM at start of game
+	 * @param lv Level in InternalRank
+	 * @param rLv Level in game
 	 */
 	private fun calcBgmLv(lv:Int, rLv:Int = lv):Int =
 		if(rLv>=900&&grade>=24&&coolCount>=9) BGM.GrandT().nums-1
 		else tableBGMChange.count {lv>=it}.let {
-			minOf(it+maxOf(0, it-4)+(it>=3&&coolCount>=3).toInt(), 6)
+			when(it) {
+				3 -> 3+(coolCount>=3)
+				4 -> 5+(coolCount>=3)
+				else -> it
+			}.coerceIn(0, 6)
 		}
 
 	/** Update falling speed
@@ -458,11 +465,12 @@ class GrandM3:AbstractGrand() {
 	}
 	/* Render score */
 	override fun renderLast(engine:GameEngine) {
+//		receiver.drawScore(engine, 0, -1, "GrandMaster3", GRADE, scale = , alpha =  .5f)
 		receiver.drawScore(engine, 0, 0, name, BASE, COLOR.CYAN)
 
-		receiver.drawScore(engine, -1, -4*2, "DECORATION", BASE, scale = .5f)
-		receiver.drawScoreBadges(engine, 0, -3, 100, owner.stats.decoration)
-		receiver.drawScoreBadges(engine, 5, -4, 100, decTemp)
+		receiver.drawScore(engine, -1, -1.5f, "DECORATION", NANO, scale = .5f)
+		receiver.drawScoreBadges(engine, 0, -1, 100, owner.stats.decoration)
+		receiver.drawScoreBadges(engine, 6, -1, 100, decTemp)
 		if(engine.stat==GameEngine.Status.SETTING||engine.stat==GameEngine.Status.RESULT&&!owner.replayMode) {
 			if(startLevel==0&&!big&&!always20g&&!owner.replayMode&&engine.ai==null)
 				if(!isShowBestSectionTime) {
@@ -524,11 +532,11 @@ class GrandM3:AbstractGrand() {
 					receiver.drawScore(engine, 13, 2, "TOTAL", BASE, COLOR.BLUE)
 					receiver.drawScore(engine, 13, 3, totalTime.toTimeStr, NUM_T)
 					receiver.drawScore(
-						engine, if(receiver.nextDisplayType==2) 0 else 12, if(receiver.nextDisplayType==2) 18 else 14,
+						engine, if(receiver.bigSideNext) 0 else 12, if(receiver.bigSideNext) 18 else 14,
 						"AVERAGE", BASE, COLOR.BLUE
 					)
 					receiver.drawScore(
-						engine, if(receiver.nextDisplayType==2) 0 else 12, if(receiver.nextDisplayType==2) 19 else 15,
+						engine, if(receiver.bigSideNext) 0 else 12, if(receiver.bigSideNext) 19 else 15,
 						(totalTime/tableSectionMax[goalType]).toTimeStr, NUM_T
 					)
 
@@ -585,7 +593,7 @@ class GrandM3:AbstractGrand() {
 
 			// Time
 			receiver.drawScore(engine, 0, 14, "Time", BASE, headCol)
-			if(engine.ending!=2||rollTime/10%2==0)
+			if(engine.ending!=2||rollTime/10%2==0||!engine.gameActive)
 				receiver.drawScore(engine, 0, 15, engine.statistics.time.toTimeStr, NUM_T)
 
 			if(engine.gameActive&&engine.ending!=2)
@@ -627,7 +635,7 @@ class GrandM3:AbstractGrand() {
 
 			// Section Time
 			if(showST&&sectionTime.isNotEmpty()) {
-				val x = receiver.nextDisplayType==2
+				val x = receiver.bigSideNext
 				receiver.drawScore(engine, if(x) 8 else 10, 2, "SECTION TIME", BASE, COLOR.BLUE)
 
 				val section = engine.statistics.level/100
@@ -644,11 +652,7 @@ class GrandM3:AbstractGrand() {
 					)
 				}
 				receiver.drawScore(engine, if(x) 8 else 12, if(x) 11 else 14, "AVERAGE", BASE, COLOR.BLUE)
-				receiver.drawScore(
-					engine, if(x) 8 else 12, if(x) 12 else 15,
-					(engine.statistics.time/(sectionsDone+(engine.ending==0).toInt())).toTimeStr,
-					NUM_T
-				)
+				receiver.drawScore(engine, if(x) 8 else 12, if(x) 12 else 15, sectionTime.filter {it>0}.average().toTimeStr, NUM_T)
 			}
 		}
 	}
@@ -1147,11 +1151,10 @@ class GrandM3:AbstractGrand() {
 						engine, receiver, 4, COLOR.BLUE, Statistic.SCORE, Statistic.LINES, Statistic.LEVEL_MANIA, Statistic.TIME
 					)
 					drawResultRank(engine, receiver, 12, COLOR.BLUE, rankingRank)
-					if(secretGrade>4)
-						drawResult(
-							engine, receiver, 15, COLOR.BLUE, "S. GRADE",
-							"%10s".format(tableSecretGradeName[secretGrade-1])
-						)
+					if(secretGrade>4) {
+						receiver.drawMenu(engine, 0, 15, "SECRET GRADE", NANO, COLOR.BLUE, .75f)
+						receiver.drawMenu(engine, 6, 15, tableSecretGradeName[secretGrade-1], GRADE, 2f)
+					}
 				}
 				1 -> {
 					receiver.drawMenu(engine, 0, 2, "SECTION", BASE, COLOR.BLUE)
@@ -1414,14 +1417,15 @@ class GrandM3:AbstractGrand() {
 			"9", "8", "7", "6", "5", "4", "3", "2", "1", // 0～ 8
 			"S1", "S2", "S3", "S4", "S5", "S6", "S7", "S8", "S9", // 9～17
 			"m1", "m2", "m3", "m4", "m5", "m6", "m7", "m8", "m9", // 18～26
-			"M", "MK", "MV", "MO", "MM", "GM" // 27～32
+			"Masterm", "MasterK", "MasterV", "MasterO", "MasterM", "GrandMaster" // 27～32
 		)
 		private val tableLongGradeName = listOf(
 			"9", "8", "7", "6", "5", "4", "3", "2", "1", // 0～ 8
 			"S1", "S2", "S3", "S4", "S5", "S6", "S7", "S8", "S9", "S10", "S11", "S12", "S13", // 9～21
-			"m1", "m2", "m3", "m4", "m5", "m6", "m7", "m8", "m9", "mK", "mV", "mO", "mM", // 22～34
-			"M1", "M2", "M3", "M4", "M5", "M6", "M7", "M8", "M9", "MK", "MV", "MO", "MM", // 35～47
-			"G", "GS", "Gm", "GM" // 48～50,51
+			"m1", "m2", "m3", "m4", "m5", "m6", "m7", "m8", "m9", "mK", "mV", "mO", "mm", // 22～34
+			"Master1", "Master2", "Master3", "Master4", "Master5", "Master6", "Master7", "Master8", "Master9",
+			"MasterK", "MasterV", "MasterO", "MasterM",  // 35～47
+			"GrandK", "GrandV", "GrandO", "GrandMaster" // 48～50,51
 		)
 
 		/** 裏段位のName */

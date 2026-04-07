@@ -302,7 +302,7 @@ class GrandZ:AbstractGrand() {
 			if(!owner.replayMode&&startLevel==0&&!big&&engine.ai==null)
 				if(!isShowBestSectionTime) {
 					// Leaderboard
-					val topY = if(receiver.nextDisplayType==2) 5 else 3
+					val topY = if(receiver.bigSideNext) 5 else 3
 					receiver.drawScore(engine, 0, topY-1, "GRADE LV TIME", BASE, COLOR.RED)
 
 					for(i in 0..<rankingMax) {
@@ -352,7 +352,7 @@ class GrandZ:AbstractGrand() {
 
 			// Time
 			receiver.drawScore(engine, 0, 4, "Time", BASE, color)
-			if((engine.ending!=2) or (rollTime/10%2==0))
+			if(engine.ending!=2||rollTime/10%2==0||!engine.gameActive)
 				receiver.drawScore(engine, 0, 5, engine.statistics.time.toTimeStr, NUM_T)
 			// Level
 			receiver.drawScore(engine, 0, 8, "Level", BASE, color)
@@ -396,8 +396,8 @@ class GrandZ:AbstractGrand() {
 
 			// Section Time
 			if(showST&&sectionTime.isNotEmpty()) {
-				val x = if(receiver.nextDisplayType==2) 8 else 12
-				val x2 = if(receiver.nextDisplayType==2) 9 else 12
+				val x = if(receiver.bigSideNext) 8 else 12
+				val x2 = if(receiver.bigSideNext) 9 else 12
 
 				receiver.drawScore(engine, x, 2, "SECTION TIME", BASE, COLOR.RED)
 				val section = engine.statistics.level/100
@@ -409,7 +409,7 @@ class GrandZ:AbstractGrand() {
 					)
 				}
 				receiver.drawScore(engine, x2, 17, "AVERAGE", BASE, COLOR.RED)
-				receiver.drawScore(engine, x2, 18, (engine.statistics.time/(sectionsDone+1)).toTimeStr, NUM_T)
+				receiver.drawScore(engine, x2, 18, sectionTime.filter {it>0}.average().toTimeStr, NUM_T)
 			}
 		}
 	}
@@ -598,11 +598,10 @@ class GrandZ:AbstractGrand() {
 			drawResultStats(
 				engine, receiver, 4, COLOR.RED, Statistic.SCORE, Statistic.LINES, Statistic.LEVEL_MANIA, Statistic.TIME
 			)
-			if(secretGrade>4)
-				drawResult(
-					engine, receiver, 14, COLOR.RED, "S. GRADE",
-					"%10s".format(tableSecretGradeName[secretGrade-1])
-				)
+			if(secretGrade>4) {
+				receiver.drawMenu(engine, 0, 15, "SECRET GRADE", NANO, COLOR.BLUE, .75f)
+				receiver.drawMenu(engine, 6, 15, tableSecretGradeName[secretGrade-1], GRADE, 2f)
+			}
 		} else if(engine.statc[1]==1) {
 			receiver.drawMenu(engine, 0, 2, "SECTION", BASE, COLOR.RED)
 
@@ -754,7 +753,7 @@ class GrandZ:AbstractGrand() {
 		private val tableGradeName =
 			listOf(
 				"", "S1", "S2", "S3", "S4", "S5", "S6", "S7", "S8", "S9", "S10", "m", "m1", "m2", "m3", "m4", "m5", "m6", "m7",
-				"m8", "m9", "mK", "mV", "mO", "M", "MK", "MV", "MO", "MM", "Gm", "GM", "GOD"
+				"m8", "m9", "mK", "mV", "mO", "M", "MK", "MV", "MO", "MM", "Gm", "GM", "GrandMaster"
 			)
 
 		/** Secret grade names */

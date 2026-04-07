@@ -32,10 +32,9 @@ package mu.nu.nullpo.game.subsystem.mode
 
 import mu.nu.nullpo.game.component.BGM
 import mu.nu.nullpo.game.component.Controller
+import mu.nu.nullpo.game.event.*
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
-import mu.nu.nullpo.game.event.Leaderboard
 import mu.nu.nullpo.game.event.Rankable.GrandRow
-import mu.nu.nullpo.game.event.ScoreEvent
 import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.game.subsystem.mode.menu.*
 import mu.nu.nullpo.gui.common.BaseFont
@@ -146,6 +145,7 @@ class GrandM2:AbstractGrand() {
 		mRollLines = 0
 		medals.reset()
 		rankingRank = -1
+		ranking.forEach {it.fill(GrandRow())}
 		bestSectionTime.fill(DEFAULT_SECTION_TIME)
 		bestSectionQuads.fill(0)
 
@@ -330,11 +330,11 @@ class GrandM2:AbstractGrand() {
 					receiver.drawScore(engine, 0, 14, "TOTAL", BASE, COLOR.BLUE)
 					receiver.drawScore(engine, 0, 15, totalTime.toTimeStr, NUM_T)
 					receiver.drawScore(
-						engine, if(receiver.nextDisplayType==2) 0 else 12, if(receiver.nextDisplayType==2) 18 else 14,
+						engine, if(receiver.bigSideNext) 0 else 12, if(receiver.bigSideNext) 18 else 14,
 						"AVERAGE", BASE, COLOR.BLUE
 					)
 					receiver.drawScore(
-						engine, if(receiver.nextDisplayType==2) 0 else 12, if(receiver.nextDisplayType==2) 19 else 15,
+						engine, if(receiver.bigSideNext) 0 else 12, if(receiver.bigSideNext) 19 else 15,
 						(totalTime/sectionMax).toTimeStr, NUM_T
 					)
 
@@ -368,8 +368,8 @@ class GrandM2:AbstractGrand() {
 
 			// Time
 			receiver.drawScore(engine, 0, 14, "Time", BASE, if(g20&&mRollSTime) COLOR.CYAN else COLOR.BLUE)
-			if(engine.ending!=2||rollTime/20%2==0)
-				receiver.drawScore(engine, 0, 15, engine.statistics.time.toTimeStr, NUM, g20&&mRollSTime, 2f)
+			if(engine.ending!=2||rollTime/20%2==0||!engine.gameActive)
+				receiver.drawScore(engine, 0, 15, engine.statistics.time.toTimeStr, NUM_T, g20&&mRollSTime)
 
 			// Roll 残り time
 			if(engine.gameActive&&engine.ending==2) {
@@ -393,7 +393,7 @@ class GrandM2:AbstractGrand() {
 
 			// Section Time
 			if(showST&&sectionTime.isNotEmpty()) {
-				val x = receiver.nextDisplayType==2
+				val x = receiver.bigSideNext
 				receiver.drawScore(engine, if(x) 8 else 10, 2, "SECTION TIME", BASE, COLOR.BLUE)
 				val section = engine.statistics.level/100
 				sectionTime.forEachIndexed {i, it ->
@@ -411,10 +411,7 @@ class GrandM2:AbstractGrand() {
 				}
 
 				receiver.drawScore(engine, if(x) 8 else 12, if(x) 11 else 14, "AVERAGE", BASE, COLOR.BLUE)
-				receiver.drawScore(
-					engine, if(x) 8 else 12, if(x) 12 else 15,
-					(engine.statistics.time/(sectionsDone+(engine.ending==0).toInt())).toTimeStr, NUM_T
-				)
+				receiver.drawScore(engine, if(x) 8 else 12, if(x) 12 else 15, sectionTime.filter {it>0}.average().toTimeStr, NUM_T)
 			}
 		}
 	}
@@ -669,11 +666,10 @@ class GrandM2:AbstractGrand() {
 					engine, receiver, 4, COLOR.BLUE, Statistic.SCORE, Statistic.LINES, Statistic.LEVEL_MANIA, Statistic.TIME
 				)
 				drawResultRank(engine, receiver, 13, COLOR.BLUE, rankingRank)
-				if(secretGrade>4)
-					drawResult(
-						engine, receiver, 15, COLOR.BLUE, "S. GRADE",
-						"%10s".format(tableSecretGradeName[secretGrade-1])
-					)
+				if(secretGrade>4) {
+					receiver.drawMenu(engine, 0, 15, "SECRET GRADE", NANO, COLOR.BLUE, .75f)
+					receiver.drawMenu(engine, 6, 15, tableSecretGradeName[secretGrade-1], GRADE, 2f)
+				}
 			}
 			1 -> {
 				receiver.drawMenu(engine, 0, 2, "SECTION", BASE, COLOR.BLUE)

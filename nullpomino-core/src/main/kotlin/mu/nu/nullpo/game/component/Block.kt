@@ -169,7 +169,7 @@ class Block @JvmOverloads constructor(
 	/** Copy constructor
 	 * @param b Copy source
 	 */
-	constructor(b:Block?):this(b?.color, b?.type?:TYPE.BLOCK, b?.skin?:0) {
+	constructor(b:Block?):this(b?.color, b?.type?:TYPE.BLOCK, b?.skin?:0, b?.aint?:0) {
 		replace(b)
 	}
 
@@ -292,7 +292,7 @@ class Block @JvmOverloads constructor(
 		ANTIGRAVITY,
 		/** Last commit flag -- block was part of last placement or cascade */
 		LAST_COMMIT,
-		/** Ignore block connections (for Avalanche modes) */
+		/** Ignore block connections for Avalanche modes, Freeze(become hard block over time) on Grand Season */
 		IGNORE_LINK,
 		/** Marked as Gold Square */
 		SQUARE_GOLD,

@@ -3,19 +3,19 @@
  <modelVersion>4.0.0</modelVersion>
  <groupId>mu.nu.nullpo</groupId>
  <artifactId>NullpoMino_Alt</artifactId>
- <version>7.7.2025</version>
+ <version>7.7.2026</version>
  <packaging>pom</packaging>
  <name>NullpoMino</name>
  <dependencies>
   <dependency>
    <groupId>mu.nu.nullpo</groupId>
    <artifactId>nullpomino-core</artifactId>
-   <version>7.7.2025</version>
+   <version>7.7.2026</version>
   </dependency>
   <dependency>
    <groupId>mu.nu.nullpo</groupId>
    <artifactId>nullpomino-run</artifactId>
-   <version>7.7.2025</version>
+   <version>7.7.2026</version>
   </dependency>
  </dependencies>
  <modules>
@@ -26,7 +26,7 @@
  <properties>
   <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
   <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-  <kotlin.version>2.3.20</kotlin.version>
+  <kotlin.version>2.4.0-Beta1</kotlin.version>
   <java.version>25</java.version>
   <maven.compiler.source>${java.version}</maven.compiler.source>
   <maven.compiler.target>${java.version}</maven.compiler.target>
@@ -42,13 +42,28 @@
    <plugins>
     <plugin>
      <groupId>org.apache.maven.plugins</groupId>
+     <artifactId>maven-resources-plugin</artifactId>
+     <version>3.3.1</version>
+    </plugin>
+    <plugin>
+     <groupId>org.apache.maven.plugins</groupId>
+     <artifactId>maven-surefire-plugin</artifactId>
+     <version>3.2.5</version>
+    </plugin>
+    <plugin>
+     <groupId>org.apache.maven.plugins</groupId>
+     <artifactId>maven-jar-plugin</artifactId>
+     <version>3.3.0</version>
+    </plugin>
+    <plugin>
+     <groupId>org.apache.maven.plugins</groupId>
      <artifactId>maven-dependency-plugin</artifactId>
      <version>3.10.0</version>
     </plugin>
     <plugin>
      <groupId>org.apache.maven.plugins</groupId>
      <artifactId>maven-assembly-plugin</artifactId>
-     <version>3.7.1</version>
+     <version>3.8.0</version>
     </plugin>
     <plugin>
      <groupId>org.apache.maven.plugins</groupId>

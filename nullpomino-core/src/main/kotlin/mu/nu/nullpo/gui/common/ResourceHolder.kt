@@ -46,6 +46,9 @@ abstract class ResourceHolder {
 
 	private val logConf = "config/etc/log.xml"
 
+	companion object {
+		var imgBlockListSize = 0
+	}
 	init {
 		try {
 			val originLog = File(ResourceHolder::class.java.getResource("/log4j2.xml")?.toString()?:"")
@@ -87,7 +90,7 @@ abstract class ResourceHolder {
 		} catch(e:Exception) {
 			//log.error(e)
 			emptyList()
-		}
+		}.also {Companion.imgBlockListSize = it.size}
 	}
 
 	val imgBlockListSize:Int get() = imgNormalBlockList.size
@@ -107,7 +110,9 @@ abstract class ResourceHolder {
 		}?:emptyList()
 	}
 
-	internal open val imgItemBlock:List<ResourceImage<*>> = listOf("s", "n", "b").map {ResourceImageStr("blockskin/item$it")}
+	internal open val imgItemBlock:List<ResourceImage<*>> = listOf("s", "n", "b").map {
+		ResourceImageStr("blockskin/item_$it")
+	}
 	/** Decoration Spriets : Badges and Medals */
 	internal open val imgBadges:ResourceImage<*> = ResourceImageStr("badge")
 
@@ -207,7 +212,7 @@ abstract class ResourceHolder {
 
 		// Blocks
 		log.debug("${imgNormalBlockList.size} block skins found")
-		listOf(imgNormalBlockList, imgSmallBlockList, imgBigBlockList).flatten()
+		listOf(imgNormalBlockList, imgSmallBlockList, imgBigBlockList, imgItemBlock, imgItemAnims).flatten()
 			.forEach {it.load()}
 
 		flattenList<ResourceImage<*>>(

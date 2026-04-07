@@ -102,46 +102,46 @@ abstract class AbstractRenderer:EventReceiver() {
 		}
 	}
 
-	protected val showLineEffect get() = heavyEffect>0
-	protected val animBG get() = heavyEffect>1
-	protected val particle get() = heavyEffect>2
+	val showLineEffect get() = heavyEffect>0
+	val animBG get() = heavyEffect>1
+	val particle get() = heavyEffect>2
 
 	/** Background display */
-	protected val showBG get() = conf.showBG
+	val showBG get() = conf.showBG
 	/** Show Meter on right field */
-	protected val showMeter get() = conf.showMeter
+	val showMeter get() = conf.showMeter
 	/** Show ARE meter */
-	protected val showSpeed get() = conf.showSpeed
+	val showSpeed get() = conf.showSpeed
 
 	/** Show ghost piece as Outline */
-	protected val outlineGhost get() = conf.outlineGhost
+	val outlineGhost get() = conf.outlineGhost
 
 	/** fieldBackgroundの明るさ */
-	protected val fieldBgBright get() = conf.fieldBgBright/255f
+	val fieldBgBright get() = conf.fieldBgBright/255f
 
 	/** 縁線を太くする */
-	protected val edgeBold get() = conf.edgeBold
+	val edgeBold get() = conf.edgeBold
 
 	/** Show field BG grid */
-	protected val showFieldBgGrid get() = conf.showFieldBgGrid
+	val showFieldBgGrid get() = conf.showFieldBgGrid
 
 	/** NEXT欄を暗くする */
-	protected val darkNextArea get() = conf.darkNextArea
+	val darkNextArea get() = conf.darkNextArea
 
 	/** ghost ピースの上にNEXT表示 */
-	protected val nextShadow get() = conf.nextShadow
+	val nextShadow get() = conf.nextShadow
 
 	/** Line clear effect speed */
-	protected val lineEffectSpeed get() = conf.lineEffectSpeed
+	val lineEffectSpeed get() = conf.lineEffectSpeed
 
 	/** 回転軸を表示する */
-	protected val showCenter get() = conf.showCenter
+	val showCenter get() = conf.showCenter
 
 	/** 操作ブロック降下を滑らかにする */
-	protected val smoothFall get() = conf.smoothFall
+	val smoothFall get() = conf.smoothFall
 
 	/** 高速落下時の軌道を表示する */
-	protected val showLocus get() = conf.showLocus
+	val showLocus get() = conf.showLocus
 
 	override fun setBGSpd(owner:GameManager, spd:Number, id:Int?) {
 		val bgMax = resources.bgMax
@@ -176,11 +176,13 @@ abstract class AbstractRenderer:EventReceiver() {
 		x:Float, y:Float, color:Int, skin:Int, bone:Boolean, darkness:Float, alpha:Float, scale:Float,
 		attr:Int
 	) {
-		val sk = skin.mod(resources.imgBlockListSize)
+		val sk = skin%resources.imgBlockListSize
 		if(color<0) return
-		val isSticky = resources.getBlockIsSticky(sk)
-		val isGem = color>=Block.COLOR_GEM_RED
-		drawBlockSpecific(x, y, if(isSticky) {
+
+		val isSticky = sk>=0&&resources.getBlockIsSticky(sk)
+		val isGem = sk>=0&&color>=Block.COLOR_GEM_RED
+
+		drawBlockSpecific(x, y, if(sk<0) color else if(isSticky) {
 			if(isGem) color-Block.COLOR_GEM_RED
 			else (attr and ATTRIBUTE.CONNECT_UP.bit>0).toInt()+
 				(attr and ATTRIBUTE.CONNECT_DOWN.bit>0).toInt()*2+
@@ -188,8 +190,7 @@ abstract class AbstractRenderer:EventReceiver() {
 				(attr and ATTRIBUTE.CONNECT_RIGHT.bit>0).toInt()*8
 		} else color+bone.toInt()*9+(18-Block.COLOR_GEM_RED)*isGem.toInt(), if(isSticky) {
 			if(isGem) 18 else color+(bone).toInt()*9
-		} else 0,
-			sk, BS*scale, darkness, alpha)
+		} else 0, sk, BS*scale, darkness, alpha)
 //		drawFont(x, y, "$color $sk $isSticky", NANO, scale = scale*.5f, alpha = alpha*.7f)
 	}
 
@@ -546,7 +547,7 @@ abstract class AbstractRenderer:EventReceiver() {
 				if(!blk.getAttribute(ATTRIBUTE.CONNECT_RIGHT)&&engine.field.getBlockEmpty(bX+1, bY, false))
 					drawLineSpecific(x+ps, y, x+ps, y+ps, oColor, w = outline)
 			}
-			if(engine.nowPieceSteps<10) {
+			/*if(engine.nowPieceSteps<10) {
 				drawFont(dX+(p.spinCX-.1f)*ps, dY,
 					"${engine.nowPieceSteps}/${p.finesseLimit(engine.nowPieceX)}",
 					NANO, WHITE, .5f
@@ -555,7 +556,7 @@ abstract class AbstractRenderer:EventReceiver() {
 			drawFont(dX+(p.spinCX-.1f)*ps, dY+14,
 				"${engine.nowPieceObject?.direction?:""} ${engine.nowWallkickRiseCount}/${engine.ruleOpt.spinWallkickMaxRise}",
 				NANO, WHITE, .5f
-			)
+			)*/
 			if(showCenter) drawDia(
 				dX+(p.spinCX+.5f)*ps, dY+(p.spinCY+.5f)*ps, ps*2/3, ps*2/3,
 				engine.statc[0]/(14f-engine.speed.rank*10f), alpha = .75f,
@@ -602,7 +603,13 @@ abstract class AbstractRenderer:EventReceiver() {
 					else if(it.color!=null) {
 						if(engine.owner.replayMode&&engine.owner.replayShowInvisible)
 							drawBlockForceVisible(x2, y2, it, scale)
-						else if(it.getAttribute(ATTRIBUTE.VISIBLE)) drawBlock(x2, y2, it, scale = scale)
+						else if(it.getAttribute(ATTRIBUTE.VISIBLE)) {
+							if(heavyEffect>2||it.hard==0) drawBlock(x2, y2, it, if(heavyEffect>2&&it.hard!=0) .25f else 0f,
+								scale = scale)
+							if(it.hard!=0) if(heavyEffect>2) drawBlendAdd {
+								drawBlock(x2, y2, 42, -1, false, it.darkness, it.alpha, scale)
+							} else drawBlock(x2, y2, 42, -1, false, it.darkness, it.alpha, scale)
+						}
 
 						if(it.getAttribute(ATTRIBUTE.OUTLINE)&&!it.getAttribute(ATTRIBUTE.BONE)) {
 							val ls = blkSize-1
@@ -651,6 +658,14 @@ abstract class AbstractRenderer:EventReceiver() {
 						drawBlock(x+j*blkSize, y+(height-1-i)*blkSize, (x+y).toInt()%2, 0, scale = zoom)
 			}
 		}
+		engine.field.lockedLines.forEach {ly ->
+			printFontSpecific(x+engine.fieldXOffset-blkSize, y+ly*blkSize, BaseFont.CMARK, BASE, CYAN, 1f,
+				if(field.lockedLines.contains(ly)) .5f else 1f)
+		}
+		engine.field.lineFlags.filter {(_, b) -> b}.forEach {(ly) ->
+			printFontSpecific(x+engine.fieldXOffset-blkSize, y+ly*blkSize, BaseFont.CURSOR, BASE, RAINBOW, 1f,
+				if(field.lockedLines.contains(ly)) .5f else 1f)
+		}
 	}
 
 	/** NEXTを描画
@@ -677,6 +692,13 @@ abstract class AbstractRenderer:EventReceiver() {
 				if(engine.ruleOpt.fieldCeiling||!engine.ruleOpt.pieceEnterAboveField)
 					drawPieceOutline(x2, y2, it, fbs, .5f)
 				drawPiece(x2, y2, it)
+				if(showCenter) drawDia(
+					x2+(it.spinCX+.5f)*fbs, y2+(it.spinCY+.5f)*fbs, fbs*2/3, fbs*2/3,
+					engine.statc[0]/(14f-engine.speed.rank*10f), alpha = .75f,
+					outlineColor = getColorByID(it.block[engine.statc[0]%it.block.size].run {
+						if(getAttribute(ATTRIBUTE.BONE)) Block.COLOR.WHITE else color
+					}), outlineW = 2f
+				)
 				drawFont(cX-45, y-26, "%3d".format(pid), NANO, if(pid%7==0) YELLOW else WHITE, .75f)
 			}
 			if(engine.ruleOpt.nextDisplay>1) when(nextDisplayType) {
@@ -799,7 +821,7 @@ abstract class AbstractRenderer:EventReceiver() {
 	 */
 	protected fun drawShadowNexts(x:Float, y:Float, engine:GameEngine) {
 		val blkSize = engine.blockSize.toFloat()
-		engine.getNextObject(engine.nextPieceCount)?.let {next ->
+		engine.getNextObject()?.let {next ->
 			val sx = engine.getSpawnPosX(next)
 			val sy = next.getBottom(sx, engine.getSpawnPosY(next), engine.field)
 			drawPieceOutline(x+(blkSize*sx).toInt(), y+(blkSize*sy).toInt(), next, blkSize, .5f, true)
@@ -1127,6 +1149,7 @@ abstract class AbstractRenderer:EventReceiver() {
 			efxBG.forEachIndexed {i, it -> it.draw(i, this)}
 			if(engine.displaySize!=-1) drawNext(offsetX+engine.fieldXOffset, offsetY, engine)
 			drawField(offsetX, offsetY, engine, engine.displaySize)
+
 			printFontSpecific(offsetX+engine.fieldXOffset, offsetY-8, "${engine.field.level}", NANO, WHITE, .5f, .5f)
 			printFontSpecific(offsetX+engine.fieldXOffset, offsetY,
 				"${engine.field.howManyHoles*2+engine.field.howManyLidAboveHoles}", NANO, WHITE, .5f, .5f)

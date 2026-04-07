@@ -86,12 +86,13 @@ class RetroA:AbstractMode() {
 
 	/** Your place on leaderboard (-1: out of rank) */
 	private var rankingRank = 0
-
 	override val ranking =
 		List(RANKING_TYPE) {Leaderboard(rankingMax, kotlinx.serialization.serializer<List<Rankable.ScoreRow>>())}
 
+
 	/** Returns the name of this mode */
 	override val name = "Retro Marathon.A"
+	override val gameIntensity = -2
 
 	/** This function will be called when the game enters the main game
 	 * screen. */

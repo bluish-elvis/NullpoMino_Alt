@@ -301,7 +301,7 @@ class Avalanche1PFever:Avalanche1PDummyMode() {
 
 		if(engine.stat==GameEngine.Status.SETTING||engine.stat==GameEngine.Status.RESULT&&!owner.replayMode) {
 			if(!owner.replayMode&&engine.ai==null) {
-				val topY = if(receiver.nextDisplayType==2) 6 else 4
+				val topY = if(receiver.bigSideNext) 6 else 4
 
 				receiver.drawScore(engine, 3, topY-1, "SCORE      TIME", BASE, BLUE)
 
@@ -325,7 +325,7 @@ class Avalanche1PFever:Avalanche1PDummyMode() {
 			if(timeLimitAddDisplay>0) receiver.drawScore(engine, 0, 14, "(+${timeLimitAdd/60} SEC.)", BASE)
 
 			receiver.drawScore(engine, 0, 12, "Played", BASE, BLUE)
-			receiver.drawScore(engine, 0, 13, engine.statistics.time.toTimeStr, NUM)
+			receiver.drawScore(engine, 0, 13, engine.statistics.time.toTimeStr, NUM_T)
 
 			receiver.drawScore(engine, 11, 6, "Boards #", BASE, BLUE)
 			receiver.drawScore(engine, 11, 7, "$boardsPlayed", NUM)

@@ -3,11 +3,11 @@
  <modelVersion>4.0.0</modelVersion>
  <groupId>mu.nu.nullpo</groupId>
  <artifactId>nullpomino-run</artifactId>
- <version>7.7.2025</version>
+ <version>7.7.2026</version>
  <properties>
   <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
   <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-  <kotlin.version>2.3.20</kotlin.version>
+  <kotlin.version>2.4.0-Beta1</kotlin.version>
   <java.version>25</java.version>
  </properties>
 

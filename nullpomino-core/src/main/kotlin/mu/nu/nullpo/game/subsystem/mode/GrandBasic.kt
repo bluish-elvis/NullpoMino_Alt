@@ -32,26 +32,17 @@ package mu.nu.nullpo.game.subsystem.mode
 
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.serializer
-import mu.nu.nullpo.game.component.BGM
-import mu.nu.nullpo.game.component.Controller
-import mu.nu.nullpo.game.component.Statistics
+import mu.nu.nullpo.game.component.*
+import mu.nu.nullpo.game.event.*
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
-import mu.nu.nullpo.game.event.Leaderboard
-import mu.nu.nullpo.game.event.Rankable
-import mu.nu.nullpo.game.event.ScoreEvent
 import mu.nu.nullpo.game.play.GameEngine
-import mu.nu.nullpo.game.subsystem.mode.menu.BooleanMenuItem
-import mu.nu.nullpo.game.subsystem.mode.menu.DelegateMenuItem
-import mu.nu.nullpo.game.subsystem.mode.menu.LevelGrandMenuItem
-import mu.nu.nullpo.game.subsystem.mode.menu.MenuList
+import mu.nu.nullpo.game.subsystem.mode.menu.*
 import mu.nu.nullpo.gui.common.BaseFont
 import mu.nu.nullpo.gui.common.BaseFont.FONT.*
 import mu.nu.nullpo.util.CustomProperties
 import mu.nu.nullpo.util.GeneralUtil.toInt
 import mu.nu.nullpo.util.GeneralUtil.toTimeStr
-import kotlin.math.ceil
-import kotlin.math.floor
-import kotlin.math.ln
+import kotlin.math.*
 
 /** SCORE ATTACK mode (Original from NullpoUE build 121909 by Zircean) */
 class GrandBasic:AbstractGrand() {
@@ -309,7 +300,8 @@ class GrandBasic:AbstractGrand() {
 			receiver.drawScore(engine, 1, 12, "300", NUM)
 
 			receiver.drawScore(engine, 0, 14, "Time", BASE, COLOR.BLUE)
-			receiver.drawScore(engine, 0, 15, engine.statistics.time.toTimeStr, NUM_T)
+			if(engine.ending!=2||rollTime/20%2==0||!engine.gameActive)
+				receiver.drawScore(engine, 0, 15, engine.statistics.time.toTimeStr, NUM_T)
 
 			if(engine.gameActive&&engine.ending==2) {
 				val time = maxOf(0, ROLLTIMELIMIT-rollTime)
@@ -319,7 +311,7 @@ class GrandBasic:AbstractGrand() {
 
 			// Section time
 			if(showST) {
-				val (x, x2) = if(receiver.nextDisplayType==2) 8 to 9 else 12 to 12
+				val (x, x2) = if(receiver.bigSideNext) 8 to 9 else 12 to 12
 
 				receiver.drawScore(engine, x-1, 2, "SECTION SCORE", BASE, COLOR.BLUE)
 
@@ -338,10 +330,7 @@ class GrandBasic:AbstractGrand() {
 						"%3d%s%s".format(i*100, if(i==sectionsDone) "+" else "-", sectionTime[i].toTimeStr),
 						NUM, sectionIsNewRecord[i])
 				receiver.drawScore(engine, x2, 14, "AVERAGE", BASE, COLOR.BLUE)
-				receiver.drawScore(
-					engine, x2, 15, (engine.statistics.time/(sectionsDone+if(engine.ending==0) 1 else 0)).toTimeStr,
-					NUM_T
-				)
+				receiver.drawScore(engine, x2, 15, sectionTime.filter {it>0}.average().toTimeStr, NUM_T)
 			}
 		}
 	}
@@ -507,11 +496,10 @@ class GrandBasic:AbstractGrand() {
 			receiver.drawMenu(engine, 0, 4, "%7d".format(engine.statistics.score), NUM, 1.9f)
 			drawResultStats(engine, receiver, 6, COLOR.GREEN, Statistic.LINES, Statistic.LEVEL_MANIA, Statistic.TIME)
 			drawResultRank(engine, receiver, 13, COLOR.GREEN, rankingRank)
-			if(secretGrade>4)
-				drawResult(
-					engine, receiver, 15, COLOR.GREEN, "S. GRADE",
-					"%10s".format(tableSecretGradeName[secretGrade-1])
-				)
+			if(secretGrade>4) {
+				receiver.drawMenu(engine, 0, 15, "SECRET GRADE", NANO, COLOR.BLUE, .75f)
+				receiver.drawMenu(engine, 6, 15, tableSecretGradeName[secretGrade-1], GRADE, 2f)
+			}
 		} else if(engine.statc[1]==1) {
 			receiver.drawMenu(engine, 0, 2, "SECTION", BASE, COLOR.GREEN)
 			receiver.drawMenu(engine, 0, 3, "Score", BASE, COLOR.GREEN)

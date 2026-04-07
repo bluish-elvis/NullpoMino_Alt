@@ -36,7 +36,7 @@ import mu.nu.nullpo.game.event.EventReceiver.COLOR
 interface BaseFont {
 	companion object {
 		const val SOLID = "\u0080"
-		const val ATMARK = "\u0081"
+		const val CMARK = "\u0081"
 		const val CURSOR = "\u0082"
 		const val CIRCLE_L = "\u0083"
 		const val CIRCLE_S = "\u0084"
@@ -76,7 +76,7 @@ interface BaseFont {
 	fun printFont(x:Float, y:Float, str:String, color:COLOR = COLOR.WHITE, scale:Float = 1f, alpha:Float = 1f,
 		rainbow:Int = rainbowCount)
 
-	fun printFont(x:Int, y:Int, str:String, color:COLOR = COLOR.WHITE, scale:Float = 1f, alpha:Float = 1f,
+	fun printFont(x:Number, y:Number, str:String, color:COLOR = COLOR.WHITE, scale:Float = 1f, alpha:Float = 1f,
 		rainbow:Int = rainbowCount) =
 		printFont(x.toFloat(), y.toFloat(), str, color, scale, alpha, rainbow)
 	/** flagThefalseIf it&#39;s the casefontColorTrue color, trueIf it&#39;s the
@@ -89,7 +89,7 @@ interface BaseFont {
 	 * @param fontColorTrue color when flag is true
 	 * @param scale Enlargement factor
 	 */
-	fun printFont(x:Int, y:Int, str:String, flag:Boolean, fontColorFalse:COLOR = COLOR.WHITE,
+	fun printFont(x:Number, y:Number, str:String, flag:Boolean, fontColorFalse:COLOR = COLOR.WHITE,
 		fontColorTrue:COLOR = COLOR.RAINBOW, scale:Float = 1f, alpha:Float = 1f,
 		rainbow:Int = rainbowCount) =
 		printFont(x, y, str, if(flag) fontColorTrue else fontColorFalse, scale, alpha, rainbow)
@@ -99,9 +99,9 @@ interface BaseFont {
 	 * @param fontStr String
 	 * @param fontColor Letter color
 	 */
-	fun printFontGrid(fontX:Int, fontY:Int, fontStr:String, fontColor:COLOR = COLOR.WHITE, scale:Float = 1f,
+	fun printFontGrid(fontX:Number, fontY:Number, fontStr:String, fontColor:COLOR = COLOR.WHITE, scale:Float = 1f,
 		alpha:Float = 1f, rainbow:Int = rainbowCount) =
-		printFont(fontX*16, fontY*16, fontStr, fontColor, scale, alpha, rainbow)
+		printFont(fontX.toFloat()*16, fontY.toFloat()*16, fontStr, fontColor, scale, alpha, rainbow)
 	/** flagThefalseIf it&#39;s the casefontColorTrue color, trueIf it&#39;s the
 	 * casefontColorTrue colorDraws the string in (16x16Grid units)
 	 * @param fontX X-coordinate
@@ -111,9 +111,9 @@ interface BaseFont {
 	 * @param fontColorFalse color when flag is false
 	 * @param fontColorTrue color when flag is true
 	 */
-	fun printFontGrid(fontX:Int, fontY:Int, fontStr:String, flag:Boolean,
+	fun printFontGrid(fontX:Number, fontY:Number, fontStr:String, flag:Boolean,
 		fontColorFalse:COLOR = COLOR.WHITE, fontColorTrue:COLOR = COLOR.RAINBOW, scale:Float = 1f,
 		alpha:Float = 1f, rainbow:Int = rainbowCount) =
-		printFont(fontX*16, fontY*16, fontStr, flag, fontColorFalse, fontColorTrue, scale, alpha, rainbow)
+		printFont(fontX.toFloat()*16, fontY.toFloat()*16, fontStr, flag, fontColorFalse, fontColorTrue, scale, alpha, rainbow)
 
 }

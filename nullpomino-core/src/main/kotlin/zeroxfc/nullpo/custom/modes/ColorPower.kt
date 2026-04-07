@@ -108,8 +108,8 @@ class ColorPower:MarathonModeBase() {
 	/** The good hard drop effect */
 	private var pCoordList:MutableList<IntArray>? = null
 	// Mode Name
-	override val name:String
-		get() = "COLOR POWER"
+	override val name = "COLOR POWER"
+	override val gameIntensity = 1
 	// Initialization
 	override val menu:MenuList = MenuList("colorpower", itemMode, itemLevel, itemRule, itemBig)
 	override fun playerInit(engine:GameEngine) {
@@ -367,7 +367,7 @@ class ColorPower:MarathonModeBase() {
 		)
 		if(engine.stat===Status.SETTING||engine.stat===Status.RESULT&&!owner.replayMode) {
 			if(!owner.replayMode&&!big&&engine.ai==null) {
-				val topY = if(receiver.nextDisplayType==2) 6 else 4
+				val topY = if(receiver.bigSideNext) 6 else 4
 				receiver.drawScore(engine, 3, topY-1, "SCORE  LINE TIME", BASE, COLOR.BLUE)
 				if(showPlayerStats) {
 					for(i in 0..<rankingMax) {

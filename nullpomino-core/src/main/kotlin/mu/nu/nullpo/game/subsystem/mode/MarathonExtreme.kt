@@ -30,19 +30,12 @@
  */
 package mu.nu.nullpo.game.subsystem.mode
 
-import mu.nu.nullpo.game.component.BGM
-import mu.nu.nullpo.game.component.Controller
-import mu.nu.nullpo.game.component.LevelData
+import mu.nu.nullpo.game.component.*
+import mu.nu.nullpo.game.event.*
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
-import mu.nu.nullpo.game.event.Leaderboard
-import mu.nu.nullpo.game.event.Rankable
-import mu.nu.nullpo.game.event.ScoreEvent
 import mu.nu.nullpo.game.net.NetUtil
 import mu.nu.nullpo.game.play.GameEngine
-import mu.nu.nullpo.game.subsystem.mode.menu.BooleanMenuItem
-import mu.nu.nullpo.game.subsystem.mode.menu.DelegateMenuItem
-import mu.nu.nullpo.game.subsystem.mode.menu.LevelMenuItem
-import mu.nu.nullpo.game.subsystem.mode.menu.MenuList
+import mu.nu.nullpo.game.subsystem.mode.menu.*
 import mu.nu.nullpo.gui.common.BaseFont.FONT.*
 import mu.nu.nullpo.util.CustomProperties
 import mu.nu.nullpo.util.GeneralUtil.toInt
@@ -191,7 +184,7 @@ class MarathonExtreme:NetDummyMode() {
 
 		if(engine.stat==GameEngine.Status.SETTING||engine.stat==GameEngine.Status.RESULT&&!owner.replayMode) {
 			if(!owner.replayMode&&!big&&engine.ai==null) {
-				val topY = if(receiver.nextDisplayType==2) 6 else 4
+				val topY = if(receiver.bigSideNext) 6 else 4
 				receiver.drawScore(engine, 2, topY-1, "SCORE LINE TIME", BASE, COLOR.RED)
 
 				ranking[endless.toInt()].forEachIndexed {i, it ->
@@ -227,7 +220,8 @@ class MarathonExtreme:NetDummyMode() {
 				)
 			}
 			receiver.drawScore(engine, 0, 8, "Time", BASE, COLOR.RED)
-			receiver.drawScore(engine, 0, 9, engine.statistics.time.toTimeStr, NUM_T)
+			if(engine.ending!=2||rollTime/10%2==0||!engine.gameActive)
+				receiver.drawScore(engine, 0, 9, engine.statistics.time.toTimeStr, NUM_T)
 		}
 
 		super.renderLast(engine)

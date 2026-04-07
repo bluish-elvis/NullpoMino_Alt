@@ -60,7 +60,8 @@ abstract class BaseMenuConfigState:BaseMenuChooseState() {
 	protected var pageHeight = 24
 	private val sbHeight get() = 16f*(pageHeight-1)-LINE_D
 
-	class Column(val show:()->String, val onChange:(change:Int)->Unit, val uiText:String = "", val rainbow:()->Int? = {null})
+	class Column(val show:()->String, val onChange:(change:Int)->Unit, val uiText:String = "",
+		val color:COLOR = COLOR.WHITE, val rainbow:()->Int? = {null})
 	/* Draw the screen */
 	override fun renderImpl(container:GameContainer, game:StateBasedGame, g:Graphics) {
 		// Background

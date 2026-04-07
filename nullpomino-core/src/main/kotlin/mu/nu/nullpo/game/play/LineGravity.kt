@@ -31,7 +31,6 @@
 
 package mu.nu.nullpo.game.play
 
-import mu.nu.nullpo.game.component.Block
 import mu.nu.nullpo.game.component.Block.ATTRIBUTE
 import mu.nu.nullpo.game.component.Field
 import mu.nu.nullpo.game.play.LineGravity.CASCADE.cascadeTime
@@ -57,7 +56,7 @@ interface LineGravity {
 		/** Check how many/much blocks can be fall
 		 * @return pair first: Number of lines can fall, second: Max Height of continuous lines */
 		override fun check(field:Field) = field.run {
-			(-hiddenHeight..<heightWithoutHurryupFloor).filter {getLineFlag(it)}
+			(allSpaceRows-lockedLines).filter {getLineFlag(it)}
 		}.let {l ->
 			l.size to (l.sorted().fold(mutableListOf<Set<Int>>()) {a, t ->
 				if(a.isEmpty()||a.last().maxOrNull()!=t-1) a += setOf(t)
@@ -67,7 +66,7 @@ interface LineGravity {
 		}
 
 		override fun fallInstant(field:Field):Int = field.run {
-			val lines = (-hiddenHeight..<heightWithoutHurryupFloor).filter {getLineFlag(it)}.toSet()
+			val lines = (allSpaceRows-lockedLines).filter {getLineFlag(it)}.toSet()
 //			log.debug("fallInstant: {}", lines.sorted())
 //			var bottomY = heightWithoutHurryupFloor-1
 //
@@ -76,7 +75,7 @@ interface LineGravity {
 			lines.sorted().forEach {bottomY ->
 				// Blockを1段上からコピー
 				for(y in bottomY downTo 1-hiddenHeight) for(x in 0..<width) {
-					setBlock(x, y, getBlock(x, y-1)?:Block())
+					setBlock(x, y, getBlock(x, y-1))
 					setLineFlag(y, getLineFlag(y-1))
 				}
 				// 一番上を空白にする
@@ -87,7 +86,7 @@ interface LineGravity {
 		}
 
 		override fun fallSingle(field:Field):Int = field.run {
-			val lines = (-hiddenHeight..<heightWithoutHurryupFloor).filter {getLineFlag(it)}
+			val lines = (allSpaceRows-lockedLines).filter {getLineFlag(it)}
 //			log.debug("fallSingle: {}", lines)
 			val y = lines.maxOrNull()?:return 0
 			// Blockを1段上からコピー
@@ -107,7 +106,7 @@ interface LineGravity {
 		fun Field.canCascade():Boolean = cascadeTime().first>0
 		/** @return pair first: Number of blocks can fall, second: Max Height of blocks that will */
 		fun Field.cascadeTime():Pair<Int, Int> =
-			(heightWithoutHurryupFloor-1 downTo -hiddenHeight).flatMap {y ->
+			(heightWoFloor-1 downTo -hiddenHeight).subtract(lockedLines).flatMap {y ->
 				getRow(y).filterNotNullIndexed().filter {(_, it) -> !it.isEmpty&&!it.getAttribute(ATTRIBUTE.ANTIGRAVITY)}
 					.mapNotNull {(x, blk) ->
 						checkBlockLink(x, y)
@@ -160,8 +159,8 @@ interface LineGravity {
 		protected fun Field.cascadeDown(dir:Int) {
 
 //			filterAttributeBlocks(ATTRIBUTE.TEMP_MARK).filter {!it.third.getAttribute(ATTRIBUTE.CASCADE_FALL)}
-			for(y in if(dir>=0) hiddenHeight*-1..<heightWithoutHurryupFloor
-			else heightWithoutHurryupFloor-1 downTo -hiddenHeight) for(x in 0..<width)
+			for(y in if(dir>=0) hiddenHeight*-1..<heightWoFloor
+			else heightWoFloor-1 downTo -hiddenHeight) for(x in 0..<width)
 				getBlock(x, y)?.let {bTemp ->
 					if(!bTemp.isEmpty&&isHoleBelow(x, y)&&getCoordAttribute(x, y+1)!=Field.Coord.WALL&&
 						bTemp.getAttribute(ATTRIBUTE.ANTIGRAVITY)

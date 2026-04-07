@@ -125,7 +125,8 @@ class RollTraining:MarathonModeBase() {
 			return raw
 		}
 	//      Mode name
-	override val name:String = "ROLL TRAINING"
+	override val name = "ROLL TRAINING"
+	override val gameIntensity = 1
 	override val menu = MenuList("rolltraining", itemMode, itemHide, itemGoal, itemLevel)
 	//     * Initialization
 	override val propRank
@@ -284,7 +285,7 @@ class RollTraining:MarathonModeBase() {
 		if(engine.stat===Status.SETTING||engine.stat===Status.RESULT&&!owner.replayMode) {
 			if(!owner.replayMode&&!big&&engine.ai==null) {
 				if(showPlayerStats) {
-					val topY = if(receiver.nextDisplayType==2) 6 else 4
+					val topY = if(receiver.bigSideNext) 6 else 4
 					receiver.drawScore(engine, 3, topY-1, "GRADE  LINE TIME", BASE, COLOR.BLUE)
 					for(i in 0..<rankingMax) {
 						receiver.drawScore(engine, 0, topY+i, "%2d".format(i+1), BASE, COLOR.YELLOW)
@@ -307,7 +308,7 @@ class RollTraining:MarathonModeBase() {
 						receiver.drawScore(engine, 0, topY+rankingMax+5, "F:SWITCH RANK SCREEN", BASE, COLOR.GREEN)
 					}
 				} else {
-					val topY = if(receiver.nextDisplayType==2) 6 else 4
+					val topY = if(receiver.bigSideNext) 6 else 4
 					receiver.drawScore(engine, 3, topY-1, "GRADE  LINE TIME", BASE, COLOR.BLUE)
 					for(i in 0..<rankingMax) {
 						receiver.drawScore(engine, 0, topY+i, "%2d".format(i+1), BASE, COLOR.YELLOW)

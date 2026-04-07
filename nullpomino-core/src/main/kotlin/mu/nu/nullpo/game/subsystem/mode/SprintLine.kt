@@ -147,7 +147,7 @@ Ready&Go screen disappears) */
 
 		if(engine.stat==GameEngine.Status.SETTING||engine.stat==GameEngine.Status.RESULT&&!owner.replayMode) {
 			if(!owner.replayMode&&!big&&engine.ai==null&&!netIsWatch) {
-				val topY = if(receiver.nextDisplayType==2) 6 else 4
+				val topY = if(receiver.bigSideNext) 6 else 4
 				receiver.drawScore(engine, 1, topY-1, "TIME   PIECE/sec", BASE, COLOR.BLUE)
 
 				ranking[goalType].forEachIndexed {i, it ->

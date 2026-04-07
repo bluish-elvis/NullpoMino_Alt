@@ -64,7 +64,7 @@ data class ColorStraight(var colorClearSize:Int = 4, var lineColorDiagonals:Bool
 			if(doErase) setAllAttribute(false, Block.ATTRIBUTE.ERASE)
 			val total = mutableSetOf<Triple<Int, Int, Block>>()
 			var blockColor:Int
-			for(i in -hiddenHeight..<heightWithoutHurryupFloor)
+			for(i in allSpaceRows)
 				for(j in 0..<width) {
 					val startColor = getBlockColor(j, i, gemSame)
 					if(startColor==Block.COLOR_NONE||startColor==Block.COLOR_INVALID) continue

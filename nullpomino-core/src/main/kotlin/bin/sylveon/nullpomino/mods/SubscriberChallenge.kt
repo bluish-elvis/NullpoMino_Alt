@@ -263,8 +263,8 @@ class SubscriberChallenge:NetDummyMode() {
 		)
 		if((engine.stat==Status.SETTING)||((engine.stat==Status.RESULT)&&!owner.replayMode)) {
 			if(!owner.replayMode&&!big&&(engine.ai==null)) {
-				val scale:Float = if((receiver.nextDisplayType==2)) 0.5f else 1.0f
-				val topY:Int = if((receiver.nextDisplayType==2)) 6 else 4
+				val scale:Float = if((receiver.bigSideNext)) 0.5f else 1.0f
+				val topY:Int = if((receiver.bigSideNext)) 6 else 4
 				receiver.drawScore(engine, 3, topY-1, "SCORE  LINE TIME", BASE, COLOR.BLUE, scale)
 				for(i in 0..<rankingMax) {
 					receiver.drawScore(engine, 0, topY+i, "%2d".format(i+1), GRADE, COLOR.YELLOW, scale)
@@ -568,15 +568,15 @@ class SubscriberChallenge:NetDummyMode() {
 
 	companion object {
 		/** Current version  */
-		const val CURRENT_VERSION = 2
+		private const val CURRENT_VERSION = 2
 		/** Fall velocity table (numerators)  */
-		val tableGravity = listOf(1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 465, 731, 1280, 1707, -1, -1, -1)
+		private val tableGravity = listOf(1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 465, 731, 1280, 1707, -1, -1, -1)
 		/** Fall velocity table (denominators)  */
-		val tableDenominator = listOf(63, 50, 39, 30, 22, 16, 12, 8, 6, 4, 3, 2, 1, 256, 256, 256, 256, 256, 256, 256)
+		private val tableDenominator = listOf(63, 50, 39, 30, 22, 16, 12, 8, 6, 4, 3, 2, 1, 256, 256, 256, 256, 256, 256, 256)
 		/** Line counts when BGM changes occur  */
-		val tableBGMChange = listOf(50, 100, 150, 200, -1)
+		private val tableBGMChange = listOf(50, 100, 150, 200, -1)
 		/** Line counts when game ending occurs  */
-		val tableGameClearLines = listOf(150, 200, -1)
+		private val tableGameClearLines = listOf(150, 200, -1)
 
 		/** Number of ranking types  */
 		private const val RANKING_TYPE = 3

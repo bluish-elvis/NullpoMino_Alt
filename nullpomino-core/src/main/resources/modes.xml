@@ -46,7 +46,7 @@
   <Mode class="Deltatris"/>
   <Mode class="ScoreTrial"/>
   <Mode class="Joker"/>
-  <Mode class="MissionMode"/>
+  <Mode class="MissionRush"/>
   <Mode class="RollTraining"/>
   <Mode class="Minesweeper"/>
   <Mode class="Collapse"/>
@@ -125,7 +125,7 @@
  <!-- zeroxfc.nullpo.custom.modes.Deltatris-->
  <!-- zeroxfc.nullpo.custom.modes.Joker-->
  <!-- zeroxfc.nullpo.custom.modes.Minesweeper-->
- <!-- zeroxfc.nullpo.custom.modes.MissionMode-->
+ <!-- zeroxfc.nullpo.custom.modes.MissionRush-->
  <!-- zeroxfc.nullpo.custom.modes.RollTraining-->
  <!-- zeroxfc.nullpo.custom.modes.ScoreTrial-->
  <!-- wtf.oshisaure.nullpomodshit.modes.MarathonZone-->

@@ -31,8 +31,7 @@
 package mu.nu.nullpo.game.subsystem.mode
 
 import mu.nu.nullpo.game.component.Block
-import mu.nu.nullpo.game.event.Leaderboard
-import mu.nu.nullpo.game.event.ScoreEvent
+import mu.nu.nullpo.game.event.*
 import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.game.play.GameEngine.GameStyle
 import mu.nu.nullpo.game.play.GameManager
@@ -55,9 +54,10 @@ interface GameMode {
 	/** @return Game style of this mode (0:Tetromino, 1:Avalanche, 2:Physician, 3:SPF)*/
 	val gameStyle:GameStyle
 	/** @return Game genre of this mode
-	 *  (-1:Retro/Puzzle, 0: Generic/Guideline,
+	 *  (-2:Retro, -1:Puzzle, 0: Generic/Guideline,
 	 *  1: Various Unique, 2:Rush Trial, 3:Grand 20G Challenge)*/
 	val gameIntensity:Int
+	val color:EventReceiver.COLOR
 	/** @return true if this is net-play only mode.*/
 	val isOnlineMode:Boolean
 	/** @return true if this is a multiplayer mode.*/
@@ -72,7 +72,7 @@ interface GameMode {
 	val propRank:rankMapType
 	/** Used by [loadRankingPlayer], [saveRankingPlayer]
 	 * get()= [AbstractMode.rankMapOf] (List<String to Score>)
-	 * @sample zeroxfc.nullpo.custom.modes.MissionMode.propPB  */
+	 * @sample zeroxfc.nullpo.custom.modes.MissionRush.propPB  */
 	val propPB:rankMapType
 	val ranking:List<Leaderboard<*>>
 
@@ -100,6 +100,7 @@ interface GameMode {
 	fun onReady(engine:GameEngine):Boolean
 	/** Piece movement screen.
 	 * This is where the player can move/spin/drop the current piece.
+	 * But in the first frame, The Current piece is still in the next queue.
 	 * @return true if you override everything of this screen (skips default behavior)*/
 	fun onMove(engine:GameEngine):Boolean
 	/** "Lock flash" screen. Certain rules may skip this screen.

@@ -133,17 +133,17 @@ class RendererSlick(
 	override fun drawBlockSpecific(x:Float, y:Float, sx:Int, sy:Int, sk:Int, size:Float, darkness:Float, alpha:Float) {
 		val g = graphics?:return
 		val img = when {
-			size*2<=BS -> resources.imgSmallBlockList[sk]
-			size>=BS*2 -> resources.imgBigBlockList[sk]
-			else -> resources.imgNormalBlockList[sk]
+			size*2<=BS -> if(sk<0) resources.imgItemBlock[0] else resources.imgSmallBlockList[sk]
+			size>=BS*2 -> if(sk<0) resources.imgItemBlock[2] else resources.imgBigBlockList[sk]
+			else -> if(sk<0) resources.imgItemBlock[1] else resources.imgNormalBlockList[sk]
 		}.res
 		val si = when {
 			size*2<=BS -> BS/2
 			size>=BS*2 -> BS*2
 			else -> BS
 		}.toFloat()
-		val isSticky = resources.getBlockIsSticky(sk)
-		val bone = (if(isSticky) sy else sx) in 9..17
+		val isSticky = sk>=0&&resources.getBlockIsSticky(sk)
+		val bone = sk>=0&&(if(isSticky) sy else sx) in 9..17
 		val filter = (1f-darkness).coerceIn(0f, 1f).let {Color(it, it, it, alpha)}
 
 		val imageWidth = img.width
@@ -173,6 +173,7 @@ class RendererSlick(
 			g.drawImage(img, x, y, (x+size), (y+size), shx*si, shy*si, (shx+1)*si, (shy+1)*si, shf)
 			g.setDrawMode(Graphics.MODE_NORMAL)
 		}
+
 	}
 
 	override fun drawLineSpecific(x:Float, y:Float, sx:Float, sy:Float, color:Int, alpha:Float, w:Float) {

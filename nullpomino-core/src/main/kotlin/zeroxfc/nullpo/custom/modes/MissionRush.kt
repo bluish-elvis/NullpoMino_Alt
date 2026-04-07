@@ -37,9 +37,7 @@
 
 package zeroxfc.nullpo.custom.modes
 
-import mu.nu.nullpo.game.component.BGM
-import mu.nu.nullpo.game.component.Controller
-import mu.nu.nullpo.game.component.Piece
+import mu.nu.nullpo.game.component.*
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
 import mu.nu.nullpo.game.event.ScoreEvent
 import mu.nu.nullpo.game.play.GameEngine
@@ -49,10 +47,10 @@ import mu.nu.nullpo.game.subsystem.mode.menu.StringsMenuItem
 import mu.nu.nullpo.gui.common.BaseFont.FONT.*
 import mu.nu.nullpo.util.CustomProperties
 import mu.nu.nullpo.util.GeneralUtil.toTimeStr
-import zeroxfc.nullpo.custom.modes.MissionMode.Companion.MissionType.*
+import zeroxfc.nullpo.custom.modes.MissionRush.Companion.MissionType.*
 import kotlin.random.Random
 
-class MissionMode:MarathonModeBase() {
+class MissionRush:MarathonModeBase() {
 	private var scgettime = 0
 	// Mission randomizer.
 	private var missionRandomizer:Random = Random.Default
@@ -88,6 +86,7 @@ class MissionMode:MarathonModeBase() {
 	override val menu = MenuList("missionrush", itemMode, itemLevel, itemBig)
 	override val name:String
 		get() = "Mission Rush"
+	override val gameIntensity:Int = 1
 
 	// Initialization
 	override fun playerInit(engine:GameEngine) {
@@ -231,7 +230,7 @@ class MissionMode:MarathonModeBase() {
 		else receiver.drawScore(engine, 0, 1, "(${tableGameClearMissions[goalType]} missions run)", BASE, COLOR.GREEN)
 		if(engine.stat===Status.SETTING||engine.stat===Status.RESULT&&!owner.replayMode) {
 			if(!owner.replayMode&&!big&&engine.ai==null) {
-				val topY = if(receiver.nextDisplayType==2) 6 else 4
+				val topY = if(receiver.bigSideNext) 6 else 4
 				receiver.drawScore(engine, 3, topY-1, "SCORE TIME", BASE, COLOR.BLUE)
 				if(showPlayerStats) {
 					for(i in 0..<rankingMax) {

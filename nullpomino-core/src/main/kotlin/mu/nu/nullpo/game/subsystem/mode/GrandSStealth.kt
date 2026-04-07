@@ -296,12 +296,13 @@ class GrandSStealth:AbstractGrand() {
 	/** Renders HUD (leaderboard or game statistics) */
 	override fun renderLast(engine:GameEngine) {
 		receiver.drawScore(engine, 0, 0, name, BASE, COLOR.WHITE)
+		receiver.drawScore(engine, 0, 1, "Sixth-Senth Stealth mode", BASE, COLOR.WHITE, .5f)
 
 		if(engine.stat==GameEngine.Status.SETTING||engine.stat==GameEngine.Status.RESULT&&!owner.replayMode) {
 			if(!owner.replayMode&&startLevel==0&&!big&&engine.ai==null)
 				if(!isShowBestSectionTime) {
 					// Leaderboard
-					val topY = if(receiver.nextDisplayType==2) 5 else 3
+					val topY = if(receiver.bigSideNext) 5 else 3
 					receiver.drawScore(engine, 0, topY-1, "GRADE LV TIME", BASE, COLOR.PURPLE)
 
 					ranking[0].forEachIndexed {i, it ->
@@ -356,7 +357,8 @@ class GrandSStealth:AbstractGrand() {
 			receiver.drawScore(engine, 1, 12, "%3d".format(nextSecLv), NUM)
 
 			receiver.drawScore(engine, 0, 14, "Time", BASE, COLOR.PURPLE)
-			receiver.drawScore(engine, 0, 15, engine.statistics.time.toTimeStr, NUM_T)
+			if(engine.ending!=2||rollTime/10%2==0||!engine.gameActive)
+				receiver.drawScore(engine, 0, 15, engine.statistics.time.toTimeStr, NUM_T)
 
 			if(engine.gameActive&&engine.ending==2) {
 				val time = maxOf(0, ROLLTIMELIMIT-rollTime)
@@ -377,8 +379,8 @@ class GrandSStealth:AbstractGrand() {
 			receiver.drawScore(engine, 7, 22, "%3d".format(engine.statistics.maxCombo), NUM)
 
 			if(showST&&sectionTime.isNotEmpty()) {
-				val x = if(receiver.nextDisplayType==2) 8 else 12
-				val x2 = if(receiver.nextDisplayType==2) 9 else 12
+				val x = if(receiver.bigSideNext) 8 else 12
+				val x2 = if(receiver.bigSideNext) 9 else 12
 
 				receiver.drawScore(engine, x, 2, "SECTION TIME", BASE, COLOR.PURPLE)
 
@@ -391,7 +393,7 @@ class GrandSStealth:AbstractGrand() {
 					)
 				}
 				receiver.drawScore(engine, x2, 17, "AVERAGE", BASE, COLOR.PURPLE)
-				receiver.drawScore(engine, x2, 18, (engine.statistics.time/(sectionsDone+1)).toTimeStr, NUM_T)
+				receiver.drawScore(engine, x2, 18, sectionTime.filter {it>0}.average().toTimeStr, NUM_T)
 			}
 		}
 	}
@@ -583,11 +585,10 @@ class GrandSStealth:AbstractGrand() {
 				engine, receiver, 4, COLOR.PURPLE, Statistic.SCORE, Statistic.LINES, Statistic.LEVEL_MANIA, Statistic.TIME
 			)
 			drawResultRank(engine, receiver, 12, COLOR.PURPLE, rankingRank)
-			if(secretGrade>4)
-				drawResult(
-					engine, receiver, 15, COLOR.PURPLE, "S. GRADE",
-					"%10s".format(tableSecretGradeName[secretGrade-1])
-				)
+			if(secretGrade>4) {
+				receiver.drawMenu(engine, 0, 15, "SECRET GRADE", NANO, COLOR.BLUE, .75f)
+				receiver.drawMenu(engine, 6, 15, tableSecretGradeName[secretGrade-1], GRADE, 2f)
+			}
 		} else if(engine.statc[1]==1) {
 			receiver.drawMenu(engine, 0, 2, "SECTION", BASE, COLOR.PURPLE)
 

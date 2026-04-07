@@ -153,7 +153,7 @@ class MarathonActual:AbstractMode() {
 				receiver.drawScore(engine, 0, 15, "TIME", BASE, 1f)
 				receiver.drawScore(engine, 0, 16, engine.statistics.time.toTimeStr, BASE)
 			} else if(!owner.replayMode&&!big&&engine.ai==null) {
-				topY = if(receiver.nextDisplayType==2) 6 else 4
+				topY = if(receiver.bigSideNext) 6 else 4
 				receiver.drawScore(engine, 3, topY-1, "TIME     PIECE PPS", BASE, COLOR.BLUE)
 				for(i in 0..9) {
 					receiver.drawScore(engine, 0, topY+i, "%2d".format(i+1), GRADE, COLOR.YELLOW)

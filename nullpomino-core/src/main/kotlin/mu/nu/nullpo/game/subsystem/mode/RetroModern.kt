@@ -82,6 +82,7 @@ class RetroModern:AbstractMode() {
 	}
 	/** Returns the name of this mode */
 	override val name = "Retro Modern.S"
+	override val gameIntensity = 1
 
 	/** This function will be called when the game enters the main game
 	 * screen. */
@@ -206,7 +207,7 @@ class RetroModern:AbstractMode() {
 		if(engine.stat==GameEngine.Status.SETTING||engine.stat==GameEngine.Status.RESULT&&!owner.replayMode) {
 			// Leaderboard
 			if(!owner.replayMode&&!big&&startLevel==0&&engine.ai==null) {
-				val topY = if(receiver.nextDisplayType==2) 6 else 4
+				val topY = if(receiver.bigSideNext) 6 else 4
 				receiver.drawScore(engine, 2, topY-1, "SCORE LINE LV TIME", BASE, color = COLOR.BLUE)
 
 				ranking[gameType.ordinal].forEachIndexed {i, it ->
@@ -252,7 +253,7 @@ class RetroModern:AbstractMode() {
 			receiver.drawScore(engine, 5, 13, "%02d.%02d".format(engine.statistics.level, lvDem), NUM, scale = 2f)
 
 			receiver.drawScore(engine, 0, 14, "Time", BASE, COLOR.BLUE)
-			receiver.drawScore(engine, 0, 15, engine.statistics.time.toTimeStr, NUM, scale = 2f)
+			receiver.drawScore(engine, 0, 15, engine.statistics.time.toTimeStr, NUM_T)
 
 			// Roll 残り time
 			if(rollTime>0) {

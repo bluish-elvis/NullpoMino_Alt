@@ -15,6 +15,7 @@ GrandM2
 GrandM3
 GrandS1
 GrandS2
+GrandS3
 VSBattle
 
 :Guidelines Games
@@ -36,18 +37,22 @@ SprintDig
 Practice
 MarathonSquare
 MarathonExtreme
+MissionRush
 ToolMapEditor
 
 :ModePile Extras
-MarathonZone
 ColorPower
 Deltatris
 Joker
 Minesweeper
-MissionMode
+MissionRush
 RollTraining
 ScoreTrial
-
+MarathonActual
+ScoreAtatckRun
+MarathonZone
+Sneaker
+SubscriberChallenge
 
 :Retrospective style
 RetroN
@@ -75,6 +80,7 @@ GrandRoads
 GrandS1
 GrandS2
 GrandSStealth
+GrandS3
 GrandZ
 
 

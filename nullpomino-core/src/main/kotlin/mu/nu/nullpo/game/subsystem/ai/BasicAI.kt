@@ -176,7 +176,7 @@ open class BasicAI:DummyAI(), Runnable {
 		val holdOK = engine.isHoldOK
 		var holdEmpty = false
 		var pieceHold = engine.holdPieceObject
-		val pieceNext = engine.getNextObject(engine.nextPieceCount)
+		val pieceNext = engine.getNextObject()
 		if(pieceHold==null) holdEmpty = true
 //		if(engine.field==null) return
 		val fld = Field(engine.field)
@@ -346,7 +346,7 @@ open class BasicAI:DummyAI(), Runnable {
 					}
 				}
 
-				if(pieceHold==null) pieceHold = engine.getNextObject(engine.nextPieceCount)
+				if(pieceHold==null) pieceHold = engine.getNextObject()
 				// Hold Piece
 				if(holdOK&&pieceHold!=null&&depth==0) {
 					val spawnX = engine.getSpawnPosX(pieceHold, engine.field)
@@ -359,7 +359,7 @@ open class BasicAI:DummyAI(), Runnable {
 						val y = pieceHold.getBottom(x, spawnY, rt, fld)
 
 						if(!pieceHold.checkCollision(x, y, rt, fld)) {
-							var pieceNext2 = engine.getNextObject(engine.nextPieceCount)
+							var pieceNext2 = engine.getNextObject()
 							if(holdEmpty) pieceNext2 = engine.getNextObject(engine.nextPieceCount+1)
 
 							val pts = thinkMain(engine, x, y, rt, -1, fld, pieceHold, pieceNext2, null, depth)

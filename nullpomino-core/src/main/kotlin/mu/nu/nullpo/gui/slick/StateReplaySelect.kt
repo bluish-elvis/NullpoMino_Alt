@@ -45,7 +45,7 @@ import org.newdawn.slick.Graphics
 import org.newdawn.slick.state.StateBasedGame
 import java.io.FileInputStream
 import java.io.IOException
-import java.util.zip.GZIPInputStream
+import java.util.zip.*
 
 /** リプレイ選択画面のステート */
 internal class StateReplaySelect:BaseMenuScrollState() {
@@ -53,8 +53,8 @@ internal class StateReplaySelect:BaseMenuScrollState() {
 	private var cursorHistory = mutableListOf<Int>()
 	private fun dirName(it:String) = modeManager[it]?.name?:it
 	private var listInternal:List<ReplayCol> = emptyList()
-	override var list:List<String>
-		get() = listInternal.map {(if(it.dir) dirName(it.name) else null)?:it.name}
+	override var list:List<Pair<String, COLOR>>
+		get() = listInternal.map {(if(it.dir) dirName(it.name) to COLOR.BLUE else null)?:it.name to COLOR.CYAN}
 		set(value) {}
 
 	private data class ReplayCol(val file:File, val name:String,

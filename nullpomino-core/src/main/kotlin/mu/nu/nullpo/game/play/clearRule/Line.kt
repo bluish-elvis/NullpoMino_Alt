@@ -142,16 +142,18 @@ data object Line:ClearType {
 			a
 		}.toSet()*/
 
-		val lines = (-hiddenHeight..<heightWithoutHurryupFloor).filter {y ->
-			getRow(y).filter {it?.getAttribute(Block.ATTRIBUTE.WALL)!=true}.all {
+		val lines = allSpaceRows.filter {y ->
+			!getLineFlag(y)&&getRow(y).filter {it?.getAttribute(Block.ATTRIBUTE.WALL)!=true}.all {
 				it?.isEmpty==false&&!it.getAttribute(Block.ATTRIBUTE.ERASE)
 			}
 		}.toSet()
 		if(flag) {
-			for(y in -hiddenHeight..<heightWithoutHurryupFloor) {
-				val fulled = lines.contains(y)
+			for(y in allSpaceRows) {
+				val fulled = lines.contains(y)||getLineFlag(y)&&lockedLines.contains(y)
 				setLineFlag(y, fulled)
-				getRow(y).forEach {it?.setAttribute(fulled, Block.ATTRIBUTE.ERASE)}
+				if(!lockedLines.contains(y)) getRow(y).filter {it?.hard==0}.forEach {
+					it?.setAttribute(fulled, Block.ATTRIBUTE.ERASE)
+				}
 			}
 		}
 //		if(lines.isNotEmpty()) log.debug("clearLines {}: {}", flag, lines)
@@ -166,10 +168,11 @@ data object Line:ClearType {
 		val lines = lastClearResult
 //		log.debug("clearLines: {} {}", lines.size, lines)
 		// field内
-		lines.linesY.subtract(lockedLines).forEach {y ->
+		(lines.linesY-lockedLines).forEach {y ->
 			getRow(y).filterNotNullIndexed().forEach {(x, b) ->
-				if(b.hard>0) {
-					b.hard--
+				if(b.hard!=0) {
+					if(b.hard>0) b.hard--
+					b.setAttribute(false, Block.ATTRIBUTE.ERASE)
 					setLineFlag(y, false)
 				} else delBlock(x, y)
 			}

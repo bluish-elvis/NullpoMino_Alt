@@ -762,8 +762,8 @@ internal abstract class NetDummyVSMode:NetDummyMode() {
 
 		// Room info box
 		if(pid==players-1) {
-			var x2 = if(receiver.nextDisplayType==2) 544 else 503
-			if(receiver.nextDisplayType==2&&netCurrentRoomInfo!!.maxPlayers==2) x2 = 321
+			var x2 = if(receiver.bigSideNext) 544 else 503
+			if(receiver.bigSideNext&&netCurrentRoomInfo!!.maxPlayers==2) x2 = 321
 			if(receiver.nextDisplayType!=2&&netCurrentRoomInfo!!.maxPlayers==2) x2 = 351
 
 			netVSDrawRoomInfoBox(x2, 286)

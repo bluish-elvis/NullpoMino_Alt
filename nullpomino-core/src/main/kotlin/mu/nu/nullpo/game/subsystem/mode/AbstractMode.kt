@@ -101,6 +101,15 @@ abstract class AbstractMode:GameMode {
 	override val players = 1
 	override val gameStyle = GameStyle.TETROMINO
 	override val gameIntensity = 0
+	override val color
+		get() = if(players>1) COLOR.ORANGE else when(gameIntensity) {
+			-1 -> COLOR.PINK
+			0 -> COLOR.GREEN
+			1 -> COLOR.BLUE
+			2 -> COLOR.CYAN
+			3 -> COLOR.RED
+			else -> COLOR.WHITE
+		}
 	override val isOnlineMode = false
 	override val isVSMode = false
 	/** Show Player profile */

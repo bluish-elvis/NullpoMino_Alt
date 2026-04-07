@@ -51,9 +51,9 @@ internal class StateSelectMode:BaseMenuScrollState() {
 	/** Current folder name */
 	internal var strCurrentFolder = ""
 	private var listInternal = emptyList<GameMode>()
-	override var list
-		get() = listInternal.map {it.name}.let {
-			if(isTopLevel) it+"[more...]" else it
+	override var list:List<Pair<String, COLOR>>
+		get() = listInternal.map {it.name to it.color}.let {
+			if(isTopLevel) it+("[more...]" to COLOR.WHITE) else it
 		}
 		set(value) {}
 	/** Constructor */
@@ -102,7 +102,7 @@ internal class StateSelectMode:BaseMenuScrollState() {
 	 * @return ID (-1 if not found)
 	 */
 	private fun getIDbyName(name:String?):Int =
-		if(name.isNullOrEmpty()||list.isEmpty()) -1 else list.indexOfFirst {it==name}
+		if(name.isNullOrEmpty()||list.isEmpty()) -1 else list.indexOfFirst {(it) -> it==name}
 
 	/** Get game mode description
 	 * @param str Mode name
@@ -135,26 +135,26 @@ internal class StateSelectMode:BaseMenuScrollState() {
 				if(strCurrentFolder.isNotEmpty()) ">${strCurrentFolder.uppercase()}" else ">[All modes]", COLOR.ORANGE, .5f
 			)
 
-		FontTTF.print(16, 440, getModeDesc(convModeName(list[cursor], false)))
+		FontTTF.print(16, 440, getModeDesc(convModeName(list[cursor].first, false)))
 	}
 
 	/* Decide */
 	override fun onDecide(container:GameContainer, game:StateBasedGame, delta:Int):Boolean {
 		if(isTopLevel&&cursor==list.lastIndex) {
 			// More...
-			pG.lastMode["_top"] = list[cursor]
+			pG.lastMode["_top"] = list[cursor].first
 			ResourceHolder.soundManager.play("decide1")
 			game.enterState(StateSelectModeFolder.ID)
 		} else {
-			pG.lastMode[if(isTopLevel) "_top" else strCurrentFolder.ifEmpty {"_all"}] = list[cursor]
+			pG.lastMode[if(isTopLevel) "_top" else strCurrentFolder.ifEmpty {"_all"}] = list[cursor].first
 			ResourceHolder.soundManager.play("decide2")
 
-			pG.lastMode[""] = list[cursor]
+			pG.lastMode[""] = list[cursor].first
 			//NullpoMinoSlick.saveConfig();
 			// Go to rule selector
 			game.enterState(
 				StateSelectRuleFromList.ID,
-				TransDecideMode(list[cursor], listInternal[cursor].gameStyle.ordinal),
+				TransDecideMode(list[cursor].first, listInternal[cursor].gameStyle.ordinal),
 				EmptyTransition()
 			)
 		}

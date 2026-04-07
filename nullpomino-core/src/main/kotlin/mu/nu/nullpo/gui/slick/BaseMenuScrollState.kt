@@ -34,10 +34,7 @@ package mu.nu.nullpo.gui.slick
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
 import mu.nu.nullpo.gui.common.BaseFont
 import mu.nu.nullpo.gui.slick.img.FontNormal
-import org.newdawn.slick.Color
-import org.newdawn.slick.GameContainer
-import org.newdawn.slick.Graphics
-import org.newdawn.slick.Input
+import org.newdawn.slick.*
 import org.newdawn.slick.state.StateBasedGame
 
 /** Dummy class for menus with a scroll bar */
@@ -49,7 +46,7 @@ abstract class BaseMenuScrollState:BaseMenuChooseState() {
 	protected var pageHeight = 0
 
 	/** List of entries */
-	protected open var list:List<String> = emptyList()
+	protected open var list:List<Pair<String, COLOR>> = emptyList()
 	override val numChoice:Int get() = list.size
 
 	protected var emptyError = ""
@@ -138,7 +135,7 @@ abstract class BaseMenuScrollState:BaseMenuChooseState() {
 		val maxEntry = minOf(minEntry+pageHeight-1, list.size)
 
 		for((y, i) in (minEntry..<maxEntry).withIndex()) {
-			FontNormal.printFontGrid(2, 3+y, list[i], cursor==i)
+			FontNormal.printFontGrid(2, 3+y, list[i].first, if(cursor==i) COLOR.RAINBOW else list[i].second)
 			if(cursor==i) FontNormal.printFontGrid(1, 3+y, BaseFont.CURSOR, COLOR.RAINBOW)
 		}
 

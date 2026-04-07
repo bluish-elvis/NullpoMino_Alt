@@ -81,7 +81,7 @@ sealed class BGM(
 
 	class GrandM(idx:Int = 0):BGM(9, idx, "Grand Marathon", "Lv 0", "Lv 500")
 	class GrandA(idx:Int = 0):BGM(
-		10, idx, "Grand Mania", "Lv 0", "Lv200", "Lv500", "Lv500 mRoll/SLv0",
+		10, idx, "Grand Mania/Speed", "Lv 0", "Lv200", "Lv500", "Lv500 mRoll/SLv0",
 		"Lv700/SLv300", "Lv700 with mRoll/SLv500", "Lv900/SLv800"
 	)
 
@@ -93,30 +93,35 @@ sealed class BGM(
 
 	class GrandTS(idx:Int = 0):BGM(
 		12, idx,
-		"Grand Lightning", "LLv0", "LLv500", "LLv700", "LLv 1000"
+		"Grand Storm", "Lv0", "Lv300", "Lv700", "Lv 1000"
+	)
+
+	class GrandR(idx:Int = 0):BGM(
+		13, idx,
+		"Grand Season", "Lv0", "Lv300", "Lv700", "Lv 1000", "Lv 1300"
 	)
 
 	class Menu(idx:Int = 0):BGM(
-		13, idx,
+		14, idx,
 		"Select BGM", "Title Menu/Replay", "Mode Select", "General Config",
 		"Mode Config(Retro/Puzzle)", "Mode Config(Generic)",
 		"Mode Config(Unique)", "Mode Config(Trial)", "Mode Config(Grand 20G)", hidden = true
 	)
 
 	class Ending(idx:Int = 0):BGM(
-		14, idx, "Ending Challenge",
-		"Marathon", "Mania (60sec)", "Mastery (55sec)", "Modern-Easy (200Sec)", "Modern-Medium (200Sec)", "Modern-Hard "+
-			"(200Sec)",
+		15, idx, "Ending Challenge",
+		"Marathon", "Mania (60sec)", "Mastery (55sec)", "Season (25+65sec)",
+		"Modern-Easy (200Sec)", "Modern-Medium (200Sec)", "Modern-Hard (200Sec)",
 		hidden = true
 	)
 
 	class Result(idx:Int = 0):BGM(
-		15, idx, "Play Result",
+		16, idx, "Play Result",
 		"Failure", "Done Sprint", "Done Enduro", "Cleared Game", hidden = true
 	)
 
-	class Finale(idx:Int = 0):BGM(16, idx, "Grand Finale", "Genuine", "Joker", "Further", hidden = true)
-	class Blitz(idx:Int = 0):BGM(17, idx, "Blitz", "3-min", "5-min", "3-min EXTREME", "5-min EXTREME", hidden = true)
+	class Finale(idx:Int = 0):BGM(17, idx, "Grand Finale", "Genuine", "Joker", "Further", hidden = true)
+	class Blitz(idx:Int = 0):BGM(18, idx, "Blitz", "3-min", "5-min", "3-min EXTREME", "5-min EXTREME", hidden = true)
 
 	//operator fun get(index: Int): BGM = if(this._idx)
 	companion object {

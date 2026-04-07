@@ -43,16 +43,12 @@ import mu.nu.nullpo.game.event.EventReceiver.COLOR
 import mu.nu.nullpo.game.event.ScoreEvent
 import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.game.play.GameEngine.Status
-import mu.nu.nullpo.game.subsystem.mode.menu.DelegateMenuItem
-import mu.nu.nullpo.game.subsystem.mode.menu.MenuList
-import mu.nu.nullpo.game.subsystem.mode.menu.StringsMenuItem
+import mu.nu.nullpo.game.subsystem.mode.menu.*
 import mu.nu.nullpo.gui.common.BaseFont.FONT.*
 import mu.nu.nullpo.gui.slick.img.ext.RendererExtension
 import mu.nu.nullpo.util.CustomProperties
 import mu.nu.nullpo.util.GeneralUtil.toTimeStr
-import zeroxfc.nullpo.custom.libs.GameTextUtilities
-import zeroxfc.nullpo.custom.libs.Interpolation
-import zeroxfc.nullpo.custom.libs.ShakingText
+import zeroxfc.nullpo.custom.libs.*
 import kotlin.math.ceil
 import kotlin.math.floor
 import kotlin.random.Random
@@ -84,7 +80,8 @@ class Deltatris:MarathonModeBase() {
 	 *
 	 * @return Mode name
 	 */
-	override val name:String get() = "DeltaTris"
+	override val name = "DeltaTris"
+	override val gameIntensity = 1
 	// help me I forgot how to make modes
 	// Initialization
 	override val menu:MenuList = MenuList("deltatris", itemMode, itemBig)
@@ -277,7 +274,7 @@ class Deltatris:MarathonModeBase() {
 		val pid = engine.playerID
 		if(engine.stat===Status.SETTING||engine.stat===Status.RESULT&&!owner.replayMode) {
 			if(!owner.replayMode&&!big&&engine.ai==null) {
-				val topY = if(receiver.nextDisplayType==2) 6 else 4
+				val topY = if(receiver.bigSideNext) 6 else 4
 				receiver.drawScore(engine, 3, topY-1, "SCORE  LINE TIME", BASE, COLOR.BLUE)
 				if(showPlayerStats) {
 					for(i in 0..<rankingMax) {

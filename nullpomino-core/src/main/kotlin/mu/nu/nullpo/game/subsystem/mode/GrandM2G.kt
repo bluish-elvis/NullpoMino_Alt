@@ -31,13 +31,10 @@
 package mu.nu.nullpo.game.subsystem.mode
 
 import kotlinx.serialization.serializer
-import mu.nu.nullpo.game.component.BGM
-import mu.nu.nullpo.game.component.Block
-import mu.nu.nullpo.game.component.Controller
+import mu.nu.nullpo.game.component.*
+import mu.nu.nullpo.game.event.*
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
-import mu.nu.nullpo.game.event.Leaderboard
 import mu.nu.nullpo.game.event.Rankable.GrandRow
-import mu.nu.nullpo.game.event.ScoreEvent
 import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.game.subsystem.mode.menu.BooleanMenuItem
 import mu.nu.nullpo.game.subsystem.mode.menu.DelegateMenuItem
@@ -114,6 +111,7 @@ class GrandM2G:AbstractGrand() {
 		garbageTotal = 0
 
 		rankingRank = -1
+		ranking.forEach {it.fill(Rankable.GrandRow())}
 		bestSectionTime.forEach {it.fill(-1)}
 
 		engine.speed.are = 23
@@ -346,8 +344,8 @@ class GrandM2G:AbstractGrand() {
 
 			// Time
 			receiver.drawScore(engine, 0, 14, "Time", BASE, headCol)
-			if(engine.ending!=2||rollTime/20%2==0)
-				receiver.drawScore(engine, 0, 15, engine.statistics.time.toTimeStr, NUM, g20, 2f)
+			if(engine.ending!=2||rollTime/20%2==0||!engine.gameActive)
+				receiver.drawScore(engine, 0, 15, engine.statistics.time.toTimeStr, NUM_T, g20)
 
 			// Roll 残り time
 			if(engine.gameActive&&engine.ending==2) {
@@ -358,8 +356,8 @@ class GrandM2G:AbstractGrand() {
 
 			// Section Time
 			if(showST&&sectionTime.isNotEmpty()) {
-				val x = if(receiver.nextDisplayType==2) 8 else 12
-				val x2 = if(receiver.nextDisplayType==2) 9 else 12
+				val x = if(receiver.bigSideNext) 8 else 12
+				val x2 = if(receiver.bigSideNext) 9 else 12
 
 				receiver.drawScore(engine, x, 2, "SECTION TIME", BASE, COLOR.BLUE)
 				val section = engine.statistics.level/100
@@ -612,11 +610,10 @@ class GrandM2G:AbstractGrand() {
 				)
 				drawResult(engine, receiver, 10, COLOR.BLUE, "GARBAGE", "%10d".format(garbageTotal))
 				drawResultRank(engine, receiver, 12, COLOR.BLUE, rankingRank)
-				if(secretGrade>4)
-					drawResult(
-						engine, receiver, 14, COLOR.BLUE, "S. GRADE",
-						"%10s".format(tableSecretGradeName[secretGrade-1])
-					)
+				if(secretGrade>4) {
+					receiver.drawMenu(engine, 0, 15, "SECRET GRADE", NANO, COLOR.BLUE, .75f)
+					receiver.drawMenu(engine, 6, 15, tableSecretGradeName[secretGrade-1], GRADE, 2f)
+				}
 			}
 			1 -> {
 				receiver.drawMenu(engine, 0, 2, "SECTION", BASE, COLOR.BLUE)

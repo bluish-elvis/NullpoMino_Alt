@@ -30,9 +30,7 @@
  */
 package mu.nu.nullpo.game.play
 
-import mu.nu.nullpo.game.component.BGMStatus
-import mu.nu.nullpo.game.component.BackgroundStatus
-import mu.nu.nullpo.game.component.Statistics
+import mu.nu.nullpo.game.component.*
 import mu.nu.nullpo.game.event.EventReceiver
 import mu.nu.nullpo.game.subsystem.mode.GameMode
 import mu.nu.nullpo.util.CustomProperties
@@ -188,7 +186,7 @@ class GameManager(
 		/** Major version */
 		const val versionMajor = 7.7f
 		/** Minor version */
-		const val versionMinor = 2026.03f
+		const val versionMinor = 2026.04f
 		/** Development-build flag (false:Release-build true:Dev-build) */
 		const val isDevBuild = true
 		/** Get minor version (For compatibility with old replays)

@@ -63,15 +63,21 @@ abstract class BaseFontGrade:BaseFont {
 							i++
 						} else cd = 9
 					0x6D, 0x4D ->//m|M
-						if(nX in 0x31..0x39) {
-							cd = 29+nX-0x31
+						cd = if(str.slice(i..minOf(str.length-1, i+5)).contains("master", true)) {
+							i += 5
+							41
+						} else if(nX in 0x31..0x39) {
 							i++
-						} else cd = if(cd==0x6D) 10 else 14
+							29+nX-0x31
+						} else if(cd==0x6D) 10 else 14
 					0x4B, 0x6B -> cd = 11//K
 					0x56, 0x76 -> cd = 12//V
 					0x4F, 0x6F -> cd = 13//O
 					0x47, 0x67 -> //G
-						cd = if(nX==0x6D||nX==0x4D) {
+						cd = if(str.slice(i..minOf(str.length-1, i+4)).contains("grand", true)) {
+							i += 4
+							40
+						} else if(nX==0x6D||nX==0x4D) {
 							i++
 							if(nX==0x6D) 38 else 39
 						} else 15
@@ -109,8 +115,14 @@ abstract class BaseFontGrade:BaseFont {
 					0x4B, 0x6B -> cd = 15//K
 					0x56, 0x76 -> cd = 16//V
 					0x30, 0x4F, 0x6F -> cd = 17//O
-					0x4D -> cd = 18//M
-					0x47, 67 -> cd = 19//G
+					0x4D -> {
+						cd = 18//M
+						if(str.slice(i..minOf(str.length, i+5)).contains("master", true)) i += 5
+					}
+					0x47, 67 -> {
+						cd = 19
+						if(str.slice(i..minOf(str.length, i+4)).contains("grand", true)) i += 4
+					}//G
 					else -> cd = -1
 				}
 				if(cd in 0..19) { // 文字出力

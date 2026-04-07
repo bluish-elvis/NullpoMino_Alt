@@ -104,7 +104,7 @@ class RetroN:AbstractMode() {
 	/** Returns the name of this mode */
 	override val name = "Retro Classic .N"
 
-	override val gameIntensity = -1
+	override val gameIntensity = -2
 
 	/** This function will be called when the game enters the main game
 	 * screen. */
@@ -235,7 +235,7 @@ class RetroN:AbstractMode() {
 	override fun onMove(engine:GameEngine):Boolean {
 		// 新規ピース出現時
 		if(engine.ending==0&&engine.statc[0]==0&&!engine.holdDisable)
-			if(engine.run {getNextObjectCopy(nextPieceCount)}?.shape!=Piece.Shape.I) drought++
+			if(engine.run {getNextObjectCopy()}?.shape!=Piece.Shape.I) drought++
 			else {
 				if(drought>7) droughts += drought
 				drought = 0

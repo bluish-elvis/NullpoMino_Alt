@@ -65,7 +65,7 @@ data object LineBomb:ClearType {
 	 */
 	fun Field.checkBombOnLine(ignite:Boolean):Int {
 		var ret = 0
-		for(i in -hiddenHeight..<heightWithoutHurryupFloor) {
+		for(i in allSpaceRows) {
 			val bil = ArrayList<Int>()
 			for(j in 0..<width) {
 				val b = getBlock(j, i)
@@ -91,7 +91,7 @@ data object LineBomb:ClearType {
 	 */
 	fun Field.checkBombIgnited():Int {
 		var ret = 0
-		for(i in -hiddenHeight..<heightWithoutHurryupFloor)
+		for(i in allSpaceRows)
 			for(j in 0..<width) {
 				val b = getBlock(j, i)?:continue
 				if(b.cint==Block.COLOR_GEM_RAINBOW&&b.getAttribute(ATTRIBUTE.ERASE))
@@ -122,7 +122,7 @@ data object LineBomb:ClearType {
 		val (w, h) = if(pow<0) 4 to 4 else
 			(pow.let {if(it<=4) it else (5+(it-5)/2).coerceAtMost(9)}-1).let {maxOf(3, it) to it}
 		//[3,0],[3,1],[3,2],[3,3],[4,4],[5,5],[5,5],[6,6],[6,6],[7,7]}
-		val my = heightWithoutHurryupFloor
+		val my = heightWoFloor
 		var blocks = 0
 		val r =
 			listOf(

@@ -141,13 +141,17 @@ Grand Mastery
 : プレイ次第で最高速度が大きく上がる、中～上級者向けモードです。\
 Grand Maniaに似ていますが、短時間でレベル100を達成するたびに段位や速度がさらに上昇します。
 
-Grand Storm
+Grand Speed
 : 落下速度が最大の状態からスタートする上級者向けモードです。\
 レベル500を短時間で突破すると、最高速度状態でレベル999までプレイできます。
 
-Grand Lightning
-: Grand Stormよりもさらに高速でブロックを積んでいく超上級者向けモードです。\
+Grand Storm
+: Grand Speedよりもさらに高速でブロックを積んでいく超上級者向けモードです。\
 一定時間内にレベル500を突破すると、ゲームが続行されるとともに何かが起こり始めます。
+
+Grand Season
+: Grand Stormにやや近い速度の中、様々な異変を突破していく超上級者向けモードです。
+4列消しや回転入れ消しなどでライン消し時のレベルアップ率が増えていきます。
 
 Grand Roads
 : できるだけ速く150ラインまたは200ライン消すことが目的のモードです。\
@@ -164,7 +168,7 @@ Grand Phantom
 
 Grand Finale
 : 過酷な条件下でプレイするモードです。\
-Grand LightningとGrand PhantomまたはGrand Roadsを完全クリアしたプレイヤー向けです。
+Grand StormとGrand PhantomまたはGrand Roadsを完全クリアしたプレイヤー向けです。
 
 ## Another Games
 

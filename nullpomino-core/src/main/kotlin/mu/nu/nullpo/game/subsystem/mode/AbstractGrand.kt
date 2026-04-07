@@ -49,7 +49,7 @@ abstract class AbstractGrand:AbstractMode() {
 	/** Combo bonus */
 	private var comboValue = 0
 
-	protected val itemGhost = BooleanMenuItem("alwaysghost", "FULL GHOST", COLOR.BLUE, false)
+	protected val itemGhost = BooleanMenuItem("alwaysghost", "FULL GHOST", COLOR.BLUE, true)
 	/** When true, always ghost ON */
 	protected var alwaysGhost:Boolean by DelegateMenuItem(itemGhost)
 
@@ -74,6 +74,7 @@ abstract class AbstractGrand:AbstractMode() {
 	/** 150個以上Blockがあるとtrue, 70個まで減らすとfalseになる */
 	protected var recoveryFlag = false
 
+
 	protected var medalRO get() = medals.RO; set(v) {; medals.RO = v}
 	/** rotationした合計 count (Maximum4個ずつ増える) */
 	protected var spinCount = 0
@@ -85,7 +86,9 @@ abstract class AbstractGrand:AbstractMode() {
 	private val medalCOChain = listOf(listOf(3, 4, 5), listOf(2, 3, 4))
 
 	/** TS medal conditions: Twister Line*/
-	protected var medalTS get() = medals.RO; set(v) {; medals.RO = v}
+	protected var medalTS get() = medals.TS; set(v) {; medals.TS = v}
+	/** SK medal conditions: Required Twists line */
+	open val medalTSLines = listOf(listOf(20, 40, 60), listOf(10, 20, 30))
 
 	/** Section Time in Current run */
 	protected val sectionTime by lazy {MutableList(sectionMax) {0}}
@@ -191,7 +194,7 @@ abstract class AbstractGrand:AbstractMode() {
 			}
 		}
 		// LV100到達でghost を消す
-		engine.ghost = (engine.speed.rank<1f)&&(engine.statistics.level<100||alwaysGhost)
+		engine.ghost = /*(engine.speed.rank<1f)&&*/(engine.statistics.level<100||alwaysGhost)
 	}
 
 	override fun onReady(engine:GameEngine):Boolean {
@@ -244,6 +247,13 @@ abstract class AbstractGrand:AbstractMode() {
 				if(engine.statistics.totalQuadruple>=qua) {
 					decTemp += 3+medalSK*2// 3 8 15
 					engine.playSE("medal${++medalSK}")
+				}
+			}
+			// TS medal
+			if(ev.twist) medalTSLines[engine.big.toInt()].getOrNull(medalTS)?.let {qua ->
+				if(engine.statistics.totalTwistsLine>=qua) {
+					decTemp += 3+medalSK*2// 3 8 15
+					engine.playSE("medal${++medalTS}")
 				}
 			}
 			// Calculate score

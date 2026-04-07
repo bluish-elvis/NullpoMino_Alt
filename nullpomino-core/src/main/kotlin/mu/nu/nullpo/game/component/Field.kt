@@ -100,7 +100,7 @@ class Field {
 	private var lineflagHidden = MutableList(hiddenHeight) {false}
 
 	val lineFlags
-		get()=(-hiddenHeight..<heightWithoutHurryupFloor).associateWith {getLineFlag(it)}
+		get() = allSpaceRows.associateWith {getLineFlag(it)}
 
 	/** HURRY UP地面のcount */
 	var hurryUpFloorLines = 0; private set
@@ -145,7 +145,7 @@ class Field {
 	/** 消えるLines countを数える
 	 * @return Lines count
 	 */
-	val lines get() = (-hiddenHeight..<heightWithoutHurryupFloor).count {getLineFlag(it)}
+	val lines get() = allSpaceRows.count {getLineFlag(it)}
 
 	/** All clearだったらtrue
 	 * @return All clearだったらtrue
@@ -156,35 +156,35 @@ class Field {
 	 * @return field内にあるBlockのcount
 	 */
 	val howManyBlocks
-		get() = (-hiddenHeight..<heightWithoutHurryupFloor).filter {!getLineFlag(it)}
+		get() = allSpaceRows.filter {!getLineFlag(it)}
 			.sumOf {getRow(it).count {b -> b?.isEmpty==false}}
 
 	/** 左から何個のBlockが並んでいるか調べる
 	 * @return 左から並んでいるBlockの総count
 	 */
 	val howManyBlocksFromLeft
-		get() = (-hiddenHeight..<heightWithoutHurryupFloor).filter {!getLineFlag(it)}
+		get() = allSpaceRows.filter {!getLineFlag(it)}
 			.sumOf {getRow(it).takeWhile {b -> b?.isEmpty==false}.size}
 
 	/** 右から何個のBlockが並んでいるか調べる
 	 * @return 右から並んでいるBlockの総count
 	 */
 	val howManyBlocksFromRight:Int
-		get() = (-hiddenHeight..<heightWithoutHurryupFloor).filter {!getLineFlag(it)}
+		get() = allSpaceRows.filter {!getLineFlag(it)}
 			.sumOf {getRow(it).takeLastWhile {b -> b?.isEmpty==false}.size}
 
 	/** 一番上にあるBlockのY-coordinateを取得
 	 * @return 一番上にあるBlockのY-coordinate
 	 */
 	val highestBlockY:Int
-		get() = (-hiddenHeight..<heightWithoutHurryupFloor).filter {!getLineFlag(it)}
+		get() = allSpaceRows.filter {!getLineFlag(it)}
 			.firstOrNull {getRow(it).filterNotNull().any {b -> !b.isEmpty}}?:height
 
 	/** garbage blockが最初に現れるY-coordinateを取得
 	 * @return garbage blockが最初に現れるY-coordinate
 	 */
 	val highestGarbageBlockY:Int
-		get() = (-hiddenHeight..<heightWithoutHurryupFloor).filter {!getLineFlag(it)}.firstOrNull {
+		get() = allSpaceRows.filter {!getLineFlag(it)}.firstOrNull {
 			getRow(it).filterNotNull().any {b ->
 				b.getAttribute(ATTRIBUTE.GARBAGE)
 			}
@@ -192,7 +192,7 @@ class Field {
 
 	val howManyBlocksCovered:Int
 		get() = (0..<width).sumOf {j ->
-			(getHighestBlockY(j)..<heightWithoutHurryupFloor).filter {!getLineFlag(it)}.count {getBlockEmpty(j, it)}
+			(getHighestBlockY(j)..<heightWoFloor).filter {!getLineFlag(it)}.count {getBlockEmpty(j, it)}
 		}
 
 	val danger get() = level>=3f/4
@@ -202,8 +202,8 @@ class Field {
 	val level
 		get() = ((0..<width).maxOf {x ->
 			height-2-(getHighestBlockY(x)+(width-minOf(x, width-x)*2))
-		}.coerceAtLeast(0)*1f/maxOf(1, heightWithoutHurryupFloor-2)).let {
-			(it*3+((howManyBlocks+howManyHoles*2+howManyLidAboveHoles)*1f/(width*heightWithoutHurryupFloor))*(2-it))/4
+		}.coerceAtLeast(0)*1f/maxOf(1, heightWoFloor-2)).let {
+			(it*3+((howManyBlocks+howManyHoles*2+howManyLidAboveHoles)*1f/(width*heightWoFloor))*(2-it))/4
 		}
 
 	/** field内の隙間のcountを調べる
@@ -217,7 +217,7 @@ class Field {
 			for(j in 0..<width) {
 				samehole = false
 
-				for(i in highestBlockY..<heightWithoutHurryupFloor) if(!getLineFlag(i)) when {
+				for(i in allPlacedRows) if(!getLineFlag(i)) when {
 					isHoleBelow(j, i) -> samehole = true
 					samehole&&getBlockEmpty(j, i) -> hole++
 					else -> samehole = false
@@ -237,7 +237,7 @@ class Field {
 			for(j in 0..<width) {
 				var count = 0
 
-				for(i in highestBlockY..<heightWithoutHurryupFloor-1) if(!getLineFlag(i)&&!getLineFlag(i+1)&&isHoleBelow(j, i)) {
+				for(i in allPlacedRows-1) if(!getLineFlag(i)&&!getLineFlag(i+1)&&isHoleBelow(j, i)) {
 					count++
 					blocks += count
 					count = 0
@@ -302,13 +302,13 @@ class Field {
 	 * @return 宝石Blockのcount
 	 */
 	val howManyGems:Int
-		get() = (-hiddenHeight..<heightWithoutHurryupFloor).sumOf {i -> getRow(i).filterNotNull().count {it.isGemBlock}}
+		get() = allSpaceRows.sumOf {i -> getRow(i).filterNotNull().count {it.isGemBlock}}
 
 	/** 宝石Blockがいくつ消えるか取得
 	 * @return 消える宝石Blockのcount
 	 */
 	val howManyGemClears:Int
-		get() = (-hiddenHeight..<heightWithoutHurryupFloor).filter {getLineFlag(it)}
+		get() = allSpaceRows.filter {getLineFlag(it)}
 			.sumOf {i -> getRow(i).filterNotNull().count {it.isGemBlock}}
 
 	/** Checks for item blocks cleared
@@ -317,7 +317,7 @@ class Field {
 	 */
 	val itemClears
 		get() = List(Block.MAX_ITEM+1) {item ->
-			(-hiddenHeight..<heightWithoutHurryupFloor).filter {getLineFlag(it)}.any {i -> getRow(i).any {b -> b?.iNum==item}}
+			allSpaceRows.filter {getLineFlag(it)}.any {i -> getRow(i).any {b -> b?.iNum==item}}
 		}
 
 	/** Garbageを含むラインがいくつ消えるか取得
@@ -325,7 +325,7 @@ class Field {
 	 */
 	// Check the lines we are clearing.
 	val howManyGarbageLineClears:Int
-		get() = (-hiddenHeight..<heightWithoutHurryupFloor).filter {getLineFlag(it)}.count {
+		get() = allSpaceRows.filter {getLineFlag(it)}.count {
 			getRow(it).filterNotNull().any {b -> b.getAttribute(ATTRIBUTE.GARBAGE)}
 		}
 
@@ -346,12 +346,13 @@ class Field {
 			listOf(y.sumOf {x -> x.values.count {it.isGoldSquareBlock}}, y.sumOf {x -> x.values.count {it.isSilverSquareBlock}})
 		}
 
-	/** HURRY UPの地面を除いたField heightを返す
-	 * @return HURRY UPの地面を除いたField height
-	 */
-	val heightWithoutHurryupFloor:Int
-		get() = height-hurryUpFloorLines
+	/** HURRY UPの地面を除いたField height*/
+	val heightWoFloor get() = height-hurryUpFloorLines
+	val bottomY get() = heightWoFloor-1
 
+	val allRows get() = -hiddenHeight..<height
+	val allSpaceRows get() = -hiddenHeight..bottomY
+	val allPlacedRows get() = highestBlockY..bottomY
 	/** Called at initialization */
 	fun reset() {
 		blockField = List(height) {MutableList(width) {null}}
@@ -414,6 +415,14 @@ class Field {
 	fun getCoordVaild(x:Int, y:Int, b:Boolean = false):Boolean =
 		getCoordAttribute(x, y).let {it==Coord.NORMAL||it==Coord.HIDDEN||(b&&it==Coord.VANISH)}&&(!b||getBlockEmpty(x, y))
 
+	fun filterBlocks(run:(it:Block, x:Int, y:Int)->Boolean) = allSpaceRows.flatMap {y ->
+		getRow(y).mapIndexedNotNull {x, b -> b?.takeIf {run(it, x, y)}?.let {Triple(it, x, y)}}
+	}
+
+	fun forEach(run:(it:Block, x:Int, y:Int)->Unit) = allSpaceRows.forEach {y ->
+		getRow(y).forEachIndexed {x, b -> b?.let {run(it, x, y)}}
+	}
+
 	/** @param y height of the row in the field
 	 * @return a reference to the row
 	 */
@@ -428,7 +437,7 @@ class Field {
 	/** Set block [blk] to [x],[y] location
 	 * @param x X-coordinate
 	 * @param y Y-coordinate
-	 * @param blk Block
+	 * @param blk Block, null to delete
 	 * @return true if successful, false if failed
 	 */
 	fun setBlock(x:Int, y:Int, blk:Block?):Boolean =
@@ -516,13 +525,6 @@ class Field {
 	fun howManyColor(c:Block.COLOR,t:Block.TYPE):Int =
 		(blockField+blockHidden).sum{it.count{it.color==c && it.type==t}}
 */
-	/** [y]座標のLine clear flagを取得
-	 * @param y Y-coordinate
-	 * @return 消える列ならtrue, そうでないなら (もしくは座標が範囲外なら)false
-	 */
-	fun getLineFlag(y:Int):Boolean = (if(y>=0) lineflagField.getOrNull(y)
-	else lineflagHidden.getOrNull(y*-1-1))?:false
-
 	/** [x],[y]座標にあるBlockが空白かどうか判定
 	 * @oaram ob 指定した座標が範囲外の場合の結果
 	 */
@@ -533,6 +535,14 @@ class Field {
 	 */
 	@Deprecated("overloaded", ReplaceWith("getBlockEmpty(x,y,false)"))
 	fun getBlockEmptyF(x:Int, y:Int):Boolean = getBlockEmpty(x, y, false)
+
+	operator fun get(x:Int, y:Int):Block? = getBlock(x, y)
+	/** [y]座標のLine clear flagを取得
+	 * @param y Y-coordinate
+	 * @return 消える列ならtrue, そうでないなら (もしくは座標が範囲外なら)false
+	 */
+	fun getLineFlag(y:Int):Boolean = (if(y>=0) lineflagField.getOrNull(y)
+	else lineflagHidden.getOrNull(y*-1-1))?:false
 
 	/** [y]座標のLine clear flagを[flag]に設定
 	 * @return true if successful, false if failed
@@ -625,7 +635,7 @@ class Field {
 	 * @return Twisterできそうな穴のcount
 	 */
 	fun getHowManyTSlot(big:Boolean):Int = (0..<width).sumOf {j ->
-		(0..<heightWithoutHurryupFloor-2).count {i ->
+		(0..<heightWoFloor-2).count {i ->
 			!getLineFlag(i)&&isTSlot(j, i, big)
 		}
 	}
@@ -649,14 +659,14 @@ class Field {
 	 * @return Twisterで消えるLines count(Twisterじゃない場合やminimumに満たないLinesなどは0)
 	 */
 	fun getTSlotLineClearAll(big:Boolean, minimum:Int = 0):Int = (0..<width).sumOf {j ->
-		(0..<heightWithoutHurryupFloor-2).filter {
+		(0..<heightWoFloor-2).filter {
 			getLineFlag(it)&&getTSlotLineClear(j, it, big)>=minimum
 		}.sumOf {getTSlotLineClear(j, it, big)}
 	}
 
 	/** [x]列にて一番上のBlockがあるY座標を取得 */
 	fun getHighestBlockY(x:Int):Int =
-		(-hiddenHeight..<heightWithoutHurryupFloor).firstOrNull {!getLineFlag(it)&&!getBlockEmpty(x, it)}?:height
+		allSpaceRows.firstOrNull {!getLineFlag(it)&&!getBlockEmpty(x, it)}?:height
 
 	/** [x],[y]座標の下に隙間があるか調べる
 	 * @return 指定した座標にブロックがあり、かつ下に隙間があればtrue
@@ -670,7 +680,7 @@ class Field {
 	fun getHoleBelow(x:Int, y:Int):Int =
 		(if(getBlockEmpty(x, y)) ((y downTo -hiddenHeight).firstOrNull {!getBlockEmpty(x, it)}?:y)+1
 		else y+1).let {startY ->
-			(startY..<heightWithoutHurryupFloor).takeWhile {getBlockEmpty(x, it, false)}.size
+			(startY..<heightWoFloor).takeWhile {getBlockEmpty(x, it, false)}.size
 		}
 
 	/** 谷 (■ ■になっている地形)の深さを調べる
@@ -678,7 +688,7 @@ class Field {
 	 * @return 谷の深さ (無かったら0)
 	 */
 	fun getValleyDepth(x:Int):Int = minOf(getHighestBlockY(x-1), getHighestBlockY(x), getHighestBlockY(x+1)).let {startY ->
-		(startY..<heightWithoutHurryupFloor).takeWhile {
+		(startY..<heightWoFloor).takeWhile {
 			!getBlockEmpty(x-1, it, false)&&getBlockEmpty(x, it, false)&&!getBlockEmpty(x+1, it, false)
 		}.size
 	}
@@ -688,7 +698,7 @@ class Field {
 	 */
 	fun pushUp(lines:Int = 1) {
 		for(k in 0..<lines) {
-			for(i in -hiddenHeight..<heightWithoutHurryupFloor-1)
+			for(i in allSpaceRows-1)
 			// Blockを1段下からコピー
 				for(j in 0..<width) {
 					setBlock(j, i, getBlock(j, i+1))
@@ -697,7 +707,7 @@ class Field {
 
 			// 一番下を空白にする
 			for(j in 0..<width) {
-				val y = heightWithoutHurryupFloor-1
+				val y = heightWoFloor-1
 				delBlock(j, y)
 				setLineFlag(y, false)
 			}
@@ -709,7 +719,7 @@ class Field {
 	 */
 	fun pushDown(lines:Int = 1) {
 		for(k in 0..<lines) {
-			for(i in heightWithoutHurryupFloor-1 downTo 1-hiddenHeight)
+			for(i in heightWoFloor-1 downTo 1-hiddenHeight)
 			// Blockを1段上からコピー
 				for(j in 0..<width) {
 					setBlock(j, i, getBlock(j, i-1))
@@ -756,7 +766,7 @@ class Field {
 	fun addSingleHoleGarbage(hole:Int, color:Block.COLOR, skin:Int, lines:Int) {
 		repeat(lines) {
 			pushUp(1)
-			setSingleHoleLine(hole, heightWithoutHurryupFloor-1, color, skin)
+			setSingleHoleLine(hole, heightWoFloor-1, color, skin)
 		}
 	}
 	/** Add a single hole garbage (Attributes are automatically set)
@@ -778,7 +788,7 @@ class Field {
 				}
 			}
 			pushUp(1)
-			setSingleHoleLine(x, heightWithoutHurryupFloor-1, color, skin)
+			setSingleHoleLine(x, heightWoFloor-1, color, skin)
 		}
 		return x
 	}
@@ -793,23 +803,23 @@ class Field {
 			pushUp(1)
 
 			for(j in 0..<width) if(!getBlockEmpty(j, height-2)) {
-				setBlock(j, heightWithoutHurryupFloor-1, Block(Block.COLOR.WHITE, skin, *attrs))
+				setBlock(j, heightWoFloor-1, Block(Block.COLOR.WHITE, skin, *attrs))
 			}
 		}
 	}
 
 	fun filterAttributeMap(vararg attr:ATTRIBUTE):Map<Int, Map<Int, Block>> =
-		(-hiddenHeight..<heightWithoutHurryupFloor).associateWith {y ->
+		allSpaceRows.associateWith {y ->
 			(getRow(y).mapIndexedNotNull {x, it -> if(it?.getAttribute(*attr)==true) x to it else null}.toMap())
-		}.filter {(_, it)-> it.isNotEmpty()}
+		}.filter {(_, it) -> it.isNotEmpty()}
 
 	fun filterAttributeIList(vararg attr:ATTRIBUTE):Iterable<IndexedValue<List<Block?>>> =
-		(-hiddenHeight..<heightWithoutHurryupFloor).map {i ->
+		allSpaceRows.map {i ->
 			IndexedValue(i, getRow(i).map {if(it?.getAttribute(*attr)==true) it else null})
-		}.filter {(_, it)-> it.isNotEmpty()}
+		}.filter {(_, it) -> it.isNotEmpty()}
 
 	fun filterAttributeBlocks(vararg attr:ATTRIBUTE):Set<Triple<Int, Int, Block>> =
-		(-hiddenHeight..<heightWithoutHurryupFloor).flatMap {y ->
+		allSpaceRows.flatMap {y ->
 			(0..<width).mapNotNull {x ->
 				getBlock(x, y)?.let {if(it.getAttribute(*attr)) Triple(x, y, it) else null}
 			}
@@ -820,7 +830,7 @@ class Field {
 	 * @param status 変更後 state
 	 */
 	fun setAllAttribute(status:Boolean, vararg attr:ATTRIBUTE) {
-		for(i in -hiddenHeight..<height) for(j in 0..<width) getBlock(j, i)?.setAttribute(status, *attr)
+		for(i in allRows) for(j in 0..<width) getBlock(j, i)?.setAttribute(status, *attr)
 
 	}
 
@@ -828,7 +838,7 @@ class Field {
 	 * @param skin 絵柄
 	 */
 	fun setAllSkin(skin:Int) {
-		for(i in -hiddenHeight..<height) for(j in 0..<width) getBlock(j, i)?.skin = skin
+		for(i in allRows) for(j in 0..<width) getBlock(j, i)?.skin = skin
 	}
 
 	/** Checks for 2x2 square formations of gem and
@@ -837,7 +847,7 @@ class Field {
 	 */
 	fun checkForBigBomb():Int {
 		// Check for big bomb
-		for(i in -hiddenHeight..<heightWithoutHurryupFloor-1) for(j in 0..<width-1) {
+		for(i in allSpaceRows-1) for(j in 0..<width-1) {
 			// rootBlk is the upper-left square
 			getBlock(j, i)?.let {rootBlk ->
 				var squareCheck = false          /* id is the color of the top-left square: if it is a
@@ -871,7 +881,7 @@ class Field {
 		val squares = intArrayOf(0, 0)
 
 		// Check for gold squares
-		for(i in -hiddenHeight..<heightWithoutHurryupFloor-3) for(j in 0..<width-3) {
+		for(i in allSpaceRows-3) for(j in 0..<width-3) {
 			// rootBlk is the upper-left square
 			val rootBlk = getBlock(j, i)
 			var squareCheck = false
@@ -919,7 +929,7 @@ class Field {
 			}
 		}
 		// Check for silver squares
-		for(i in -hiddenHeight..<heightWithoutHurryupFloor-3) for(j in 0..<width-3) {
+		for(i in allSpaceRows-3) for(j in 0..<width-3) {
 			val rootBlk = getBlock(j, i)
 			var squareCheck = false
 			// We don't have to check colors because this loop checks for
@@ -1048,7 +1058,7 @@ class Field {
 	/** Checks the color of all blocks in this Field and set the connection flags to each block. */
 	fun setBlockLinkByColor() {
 		setAllAttribute(false, ATTRIBUTE.TEMP_MARK)
-		for(i in -hiddenHeight..<heightWithoutHurryupFloor)
+		for(i in allSpaceRows)
 			for(j in (0..<width).filter {getBlock(it, i)?.getAttribute(ATTRIBUTE.TEMP_MARK)==false})
 			// まだTEMP_MARKがついていないBlockに対して
 			// 色を見て接続フラグを設定
@@ -1094,7 +1104,7 @@ class Field {
 
 			for(j in 0..<width) {
 				val blk = Block(Block.COLOR.BLACK, Block.TYPE.BLOCK, skin, ATTRIBUTE.WALL, ATTRIBUTE.GARBAGE, ATTRIBUTE.VISIBLE)
-				setBlock(j, heightWithoutHurryupFloor-1, blk)
+				setBlock(j, heightWoFloor-1, blk)
 			}
 
 			hurryUpFloorLines++
@@ -1285,7 +1295,7 @@ class Field {
 	override fun toString():String {
 		val str = StringBuilder("${javaClass.name}@${Integer.toHexString(hashCode())}\n")
 
-		for(i in -hiddenHeight..<height) {
+		for(i in allRows) {
 			str.append("%3d:".format(i))
 
 			for(j in 0..<width) {
@@ -1564,6 +1574,7 @@ class Field {
 			if(temp in 0..<maxX) setBlockColor(x, y, bC[temp])
 		}
 	}
+
 	/** Instant avalanche, skips intermediate (cascade falling animation) steps.
 	 * @return true if it affected the field at all, false otherwise.
 	 */
@@ -1588,7 +1599,7 @@ class Field {
 		return result
 	}
 
-	val delEvenRange get() = (highestBlockY..<height).filter {it and 1==0}
+	val delEvenRange get() = allPlacedRows.filter {it and 1==0}
 	fun delEven() {
 		for(y in delEvenRange) delLine(y)
 	}
@@ -1609,8 +1620,9 @@ class Field {
 	}
 
 	fun delLine(y:Int) {
-		for(x in 0..<width) {
-			getBlock(x, y)?.hard = 0
+		for(x in 0..<width) getBlock(x, y)?.apply {
+			hard = 0
+			setAttribute(true, ATTRIBUTE.ERASE)
 		}
 		setLineFlag(y, true)
 	}

@@ -11,20 +11,30 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v6
+      - name: Checkout
+        uses: actions/checkout@v6
       - name: Setup JDK
         uses: actions/setup-java@v5
         with:
-          java-version: '25'
+          java-version: '26'
           distribution: 'liberica'
           architecture: x64
           check-latest: true
           cache: maven
 
-      - name: Build
-        run: mvn -B -U package
+      - name: Build by maven wrapper
+        run: chmod +x ./mvnw; ./mvnw -B -U package
 
       - name: Upload a Build Artifact
         uses: actions/upload-artifact@v6
         with:
           path: ./target/install/*
+#  release:
+#    needs: build
+#    runs-on: ubuntu-latest
+#    if: startsWith(github.ref, 'refs/tags/')
+#
+#    steps:
+#      - name: Download Build Artifact
+#        uses: actions/download-artifact@v6
+#        with:

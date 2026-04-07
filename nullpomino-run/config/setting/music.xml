@@ -27,7 +27,7 @@
  <entry key="music.filename.Puzzle.0">res/bgm/dova/130_angoras.ogg</entry>
  <entry key="music.filename.Puzzle.1">res/bgm/dova/138_9Jack.ogg</entry>
  <entry key="music.filename.Puzzle.2">res/bgm/dova/145_TrickStyle.ogg</entry>
- <entry key="music.filename.Puzzle.3">res/bgm/steam/bztwist_puzzle0.ogg</entry>
+ <entry key="music.filename.Puzzle.3">res/bgm/beats/po4_110omegaremix.ogg</entry>
  <entry key="music.filename.Zen.0">res/bgm/dova/95_myosotis.ogg</entry>
  <entry key="music.filename.Zen.1">res/bgm/dova/102_natuiro.ogg</entry>
  <entry key="music.filename.Zen.2">res/bgm/dova/117_gardenfarm.ogg</entry>
@@ -62,10 +62,16 @@
  <entry key="music.filename.GrandT.6">res/bgm/ddp/speed_cyan5.ogg</entry>
  <entry key="music.filename.GrandT.7">res/bgm/ddp/finale_cyan.ogg</entry>
  <entry key="music.filename.GrandTS.0">res/bgm/ddp/speed_cyan1.ogg</entry>
- <entry key="music.filename.GrandTS.1">res/bgm/ddp/speed_blue.ogg</entry>
+ <entry key="music.filename.GrandTS.1">res/bgm/ddp/speed_cyan5.ogg</entry>
  <entry key="music.filename.GrandTS.2">res/bgm/ddp/sudden_cyan.ogg</entry>
  <entry key="music.filename.GrandTS.3">res/bgm/ddp/finale_blue.ogg</entry>
  <entry key="music.filename.Ending.2">res/bgm/blitz/gm3_roll_m.ogg</entry>
+ <entry key="music.filename.GrandR.0">res/bgm/retro/stgx68/play_red3.ogg</entry>
+ <entry key="music.filename.GrandR.1">res/bgm/retro/stgx68/speed_red0.ogg</entry>
+ <entry key="music.filename.GrandR.2">res/bgm/retro/stgx68/speed_red1.ogg</entry>
+ <entry key="music.filename.GrandR.3">res/bgm/retro/stgx68/sudden_red.ogg</entry>
+ <entry key="music.filename.GrandR.4">res/bgm/retro/stgx68/finale_red.ogg</entry>
+ <entry key="music.filename.Ending.3">res/bgm/blitz/gs3_eg_212omega12.ogg</entry>
 
  <entry key="music.filename.RetroN.0">res/bgm/retro/nes1.ogg</entry>
  <entry key="music.filename.RetroN.1">res/bgm/retro/nes2.ogg</entry>
@@ -83,13 +89,13 @@
  <entry key="music.filename.RetroS.3">res/bgm/retro/sega_Tetremix_mbm.ogg</entry>
  <entry key="music.filename.RetroS.4">res/bgm/retro/sega_3_Pliocene.ogg</entry>
  <entry key="music.filename.RetroS.5">res/bgm/retro/sega_4_crux.ogg</entry>
- <entry key="music.filename.Ending.3">res/bgm/blitz/fb_kaerezunochi.ogg</entry>
- <entry key="music.filename.Ending.4">res/bgm/blitz/fb_VillainVirus.ogg</entry>
- <entry key="music.filename.Ending.5">res/bgm/blitz/fb_HelloBPM2024.ogg</entry>
+ <entry key="music.filename.Ending.4">res/bgm/blitz/fb_kaerezunochi.ogg</entry>
+ <entry key="music.filename.Ending.5">res/bgm/blitz/fb_VillainVirus.ogg</entry>
+ <entry key="music.filename.Ending.6">res/bgm/blitz/fb_HelloBPM2024.ogg</entry>
 
  <entry key="music.filename.Finale.0">res/bgm/beats/po4_110omegaremix.ogg</entry>
- <entry key="music.filename.Finale.1">res/bgm/beats/po4_212omega-xii.ogg</entry>
- <entry key="music.filename.Finale.2">res/bgm/beats/po4_199helion.ogg</entry>
+ <entry key="music.filename.Finale.1">res/bgm/retro/stgx68/play_red3.ogg</entry>
+ <entry key="music.filename.Finale.2">res/bgm/retro/stgx68/finale_red.ogg</entry>
 
  <entry key="music.filename.Blitz.0">res/bgm/blitz/blitz3_octo.ogg</entry>
  <entry key="music.filename.Blitz.1">res/bgm/blitz/bztwist_blitz5.ogg</entry>

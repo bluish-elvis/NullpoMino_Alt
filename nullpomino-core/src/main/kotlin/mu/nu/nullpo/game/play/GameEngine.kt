@@ -394,7 +394,7 @@ class GameEngine(
 	var fieldHeight = -1
 	var fieldHiddenHeight = -1
 
-	/** Ending mode (0:During the normal game) */
+	/** Ending mode (0:During the normal game, 1:Queued ending stat, 2:In ending stat) */
 	var ending = 0
 
 	/** Enable Credits phase (Staffroll) after ending = 1 */
@@ -690,21 +690,14 @@ class GameEngine(
 	 * 2 = link by color but ignore links for cascade (Avalanche) */
 	var sticky = 0
 
-	/** Hanabi発生間隔 */
+	/** Hanabi発生予約 */
 	var tempHanabi = 0
+	/** Hanabi発生間隔 */
 	var intHanabi = 0; private set
 
 //	var explodSize = EXPLOD_SIZE_DEFAULT
 
-	internal val playerProp = ProfileProperties(
-		when(owner.mode?.gameIntensity) {
-			-1 -> COLOR.PINK
-			1 -> COLOR.GREEN
-			2 -> COLOR.YELLOW
-			3 -> COLOR.RED
-			else -> COLOR.BLUE
-		}
-	)
+	internal val playerProp = ProfileProperties(owner.mode?.color?:COLOR.WHITE)
 
 	internal var playerName = ""
 
@@ -802,7 +795,7 @@ class GameEngine(
 	val canARECancelSpin get() = if(owDelayCancel>=0) (owDelayCancel and 4)>0 else ruleOpt.areCancelSpin
 	val canLineCancelSpin get() = if(owDelayCancel>=0) (owDelayCancel and 8)>0 else ruleOpt.lineCancelSpin
 	val canARECancelHold get() = if(owDelayCancel>=0) (owDelayCancel and 16)>0 else ruleOpt.areCancelHold
-	val canLineCancelHold get() = if(owDelayCancel>=0) (owDelayCancel and 32)>0 else ruleOpt.lineCancelMove
+	val canLineCancelHold get() = if(owDelayCancel>=0) (owDelayCancel and 32)>0 else ruleOpt.lineCancelHold
 
 	/** READY前のInitialization */
 	fun init() {
@@ -1074,17 +1067,17 @@ class GameEngine(
 	fun stopSE(name:String) = receiver.stopSE(name)
 
 	/** @return NEXTピース[c]番目のID*/
-	fun getNextID(c:Int):Int =
-		if(nextPieceArrayObject.isEmpty()) Piece.PIECE_NONE else nextPieceArrayID[c%nextPieceArrayID.size]
+	fun getNextID(c:Int = nextPieceCount):Int =
+		if(nextPieceArrayObject.isEmpty()) Piece.PIECE_NONE else nextPieceArrayID[c.mod(nextPieceArrayID.size)]
 
 	/** @return NEXTピース[c]番目のオブジェクト */
-	fun getNextObject(c:Int):Piece? = try {
-		if(nextPieceArrayObject.isEmpty()) null else nextPieceArrayObject[c%nextPieceArrayObject.size]
+	fun getNextObject(c:Int = nextPieceCount):Piece? = try {
+		if(nextPieceArrayObject.isEmpty()) null else nextPieceArrayObject[c.mod(nextPieceArrayObject.size)]
 	} catch(_:Exception) {
 		null
 	}
 	/** NEXTピース[c]番目のオブジェクトコピーを取得*/
-	fun getNextObjectCopy(c:Int):Piece? = getNextObject(c)?.let {Piece(it)}
+	fun getNextObjectCopy(c:Int = nextPieceCount):Piece? = getNextObject(c)?.let {Piece(it)}
 
 	/** 見え／消えRoll 状態のfieldを通常状態に戻す */
 	fun resetFieldVisible() {
@@ -1253,78 +1246,60 @@ class GameEngine(
 		val outlineOnly =  // Show outline only flag
 			if(owBlockShowOutlineOnly>=0) owBlockShowOutlineOnly>0 else blockShowOutlineOnly
 
-		field.let {f ->
-			for(i in 0..<f.width)
-				for(j in f.hiddenHeight*-1..<f.height) {
-					f.getBlock(i, j)?.run {
-						if(elapsedFrames<0) {
+		field.forEach {b, i, j ->
+			b.run {
+				if(elapsedFrames<0) {
 //							if(!getAttribute(Block.ATTRIBUTE.GARBAGE)) darkness = 0f
-						} else if(elapsedFrames<ruleOpt.lockFlash) {
-							darkness = -.8f
-							if(outlineOnly) {
-								setAttribute(true, Block.ATTRIBUTE.OUTLINE)
-								setAttribute(false, Block.ATTRIBUTE.VISIBLE)
-								setAttribute(false, Block.ATTRIBUTE.BONE)
-							}
-						} else {
-							//after lockflash
-							darkness = .18f
-							setAttribute(true, Block.ATTRIBUTE.OUTLINE)
-							if(outlineOnly) {
-								setAttribute(false, Block.ATTRIBUTE.VISIBLE)
-								setAttribute(false, Block.ATTRIBUTE.BONE)
-							}
-						}
-
-						if(blockHidden!=-1&&elapsedFrames>=blockHidden-10&&gameActive) {
-							if(blockHiddenAnim) {
-								alpha -= .1f
-								if(alpha<0f) alpha = 0f
-							}
-
-							if(elapsedFrames>=blockHidden) {
-								alpha = 0f
-								setAttribute(false, Block.ATTRIBUTE.OUTLINE)
-								setAttribute(false, Block.ATTRIBUTE.VISIBLE)
-							}
-						}
-
-						if(elapsedFrames>=0) elapsedFrames++
+				} else if(elapsedFrames<ruleOpt.lockFlash) {
+					darkness = -.8f
+					if(outlineOnly) {
+						setAttribute(true, Block.ATTRIBUTE.OUTLINE)
+						setAttribute(false, Block.ATTRIBUTE.VISIBLE)
+						setAttribute(false, Block.ATTRIBUTE.BONE)
+					}
+				} else {
+					//after lockflash
+					darkness = .18f
+					setAttribute(true, Block.ATTRIBUTE.OUTLINE)
+					if(outlineOnly) {
+						setAttribute(false, Block.ATTRIBUTE.VISIBLE)
+						setAttribute(false, Block.ATTRIBUTE.BONE)
 					}
 				}
 
-			// X-RAY
-			if(gameActive) {
-				if(itemXRayEnable) {
-					for(i in 0..<f.width)
-						for(j in f.hiddenHeight*-1..<f.height) {
-							f.getBlock(i, j)?.apply {
-								setAttribute(itemXRayCount%36==i, Block.ATTRIBUTE.VISIBLE)
-								setAttribute(itemXRayCount%36==i, Block.ATTRIBUTE.OUTLINE)
-							}
-						}
-					itemXRayCount++
-				} else itemXRayCount = 0
+				if(blockHidden!=-1&&elapsedFrames>=blockHidden-10&&gameActive) {
+					if(blockHiddenAnim) {
+						alpha -= .1f
+						if(alpha<0f) alpha = 0f
+					}
 
-				// COLOR
-				if(itemColorEnable) {
-					for(i in 0..<f.width)
-						for(j in f.hiddenHeight*-1..<f.height) {
-							var bright = minOf(j, 10)
-							if(bright>=5) bright = 9-bright
-							bright = 40-((20-i+bright)*4+itemColorCount)%40
-							if(bright in ITEM_COLOR_BRIGHT_TABLE.indices) bright = 10-ITEM_COLOR_BRIGHT_TABLE[bright]
+					if(elapsedFrames>=blockHidden) {
+						alpha = 0f
+						setAttribute(false, Block.ATTRIBUTE.OUTLINE)
+						setAttribute(false, Block.ATTRIBUTE.VISIBLE)
+					}
+				}
 
-							f.getBlock(i, j)?.apply {
-								alpha = bright*.1f
-								setAttribute(false, Block.ATTRIBUTE.OUTLINE)
-								setAttribute(true, Block.ATTRIBUTE.VISIBLE)
-							}
-						}
-					itemColorCount++
-				} else itemColorCount = 0
+				if(elapsedFrames>=0) elapsedFrames++
+				if(gameActive) {
+					// X-RAY
+					if(itemXRayEnable) {
+						setAttribute(itemXRayCount%36==i, Block.ATTRIBUTE.VISIBLE)
+						setAttribute(itemXRayCount%36==i, Block.ATTRIBUTE.OUTLINE)
+					}
+					// COLOR
+					if(itemColorEnable) {
+						val bright = minOf(j, 10).let {if(it>=5) 9-it else it}.let {40-((20-i+it)*4+itemColorCount)%40}
+							.let {if(it in ITEM_COLOR_BRIGHT_TABLE.indices) 10-ITEM_COLOR_BRIGHT_TABLE[it] else it}
+						alpha = bright*.1f
+						setAttribute(false, Block.ATTRIBUTE.OUTLINE)
+						setAttribute(true, Block.ATTRIBUTE.VISIBLE)
+					}
+				}
 			}
 
+			if(itemXRayEnable) itemXRayCount++ else itemXRayCount = 0
+			if(itemColorEnable) itemColorCount++ else itemColorCount = 0
 			// ヘボHIDDEN
 			if(heboHiddenEnable) {
 				heboHiddenTimerNow++
@@ -1451,7 +1426,7 @@ class GameEngine(
 							aiHintPiece = null
 							if(a.bestHold) {
 								holdPieceObject?.also {aiHintPiece = Piece(it)}?:run {
-									getNextObjectCopy(nextPieceCount)?.also {
+									getNextObjectCopy()?.also {
 										if(!it.offsetApplied) it.applyOffsetArray(ruleOpt.pieceOffsetX[it.id], ruleOpt.pieceOffsetY[it.id])
 									}
 								}
@@ -1658,7 +1633,7 @@ class GameEngine(
 		else if(ruleOpt.dasRedirectInDelay) dasRedirect()
 
 		// Initialization
-		if(statc[0]==0) {
+		if(statc[0]==0&&!gameActive) {
 			if(!readyDone&&!owner.musMan.fadeSW&&owner.musMan.bgm.id<0&&
 				owner.musMan.bgm.id !in BGM.Finale(0).id..BGM.Finale(2).id
 			)
@@ -1728,7 +1703,7 @@ class GameEngine(
 		// READY音
 		if(statc[0]==readyStart) playSE("start0")
 
-		if(statc[0]==(readyStart+goStart)/2&&!isRetroSkin) getNextObject(nextPieceCount)?.let {
+		if(statc[0]==(readyStart+goStart)/2&&!isRetroSkin) getNextObject()?.let {
 			playSE(
 				"piece_${it.shape.name.lowercase(Locale.getDefault())}", 1f,
 				if((owner.mode?.players?:1)>1) 0.3f else 1f
@@ -1743,7 +1718,7 @@ class GameEngine(
 		// NEXTスキップ
 		if(statc[0] in 1..<goEnd&&holdButtonNextSkip&&isHoldOK&&ctrl.isPush(Controller.BUTTON_D)) {
 			if(frame!=Frame.SG) playSE("initialhold")
-			holdPieceObject = getNextObjectCopy(nextPieceCount)?.also {
+			holdPieceObject = getNextObjectCopy()?.also {
 				it.applyOffsetArray(ruleOpt.pieceOffsetX[it.id], ruleOpt.pieceOffsetY[it.id])
 			}
 			nextPieceCount++
@@ -1791,7 +1766,7 @@ class GameEngine(
 		if(statc[0]==0) {
 			if(statc[1]==0&&!initialHoldFlag) {
 				// 通常出現
-				nowPieceObject = getNextObjectCopy(nextPieceCount)
+				nowPieceObject = getNextObjectCopy()
 				nextPieceCount++
 				if(nextPieceCount<0) nextPieceCount = 0
 				holdDisable = false
@@ -1801,7 +1776,7 @@ class GameEngine(
 					// 先行ホールド
 					if(holdPieceObject==null) {
 						// 1回目
-						holdPieceObject = getNextObjectCopy(nextPieceCount)?.also {
+						holdPieceObject = getNextObjectCopy()?.also {
 							it.applyOffsetArray(ruleOpt.pieceOffsetX[it.id], ruleOpt.pieceOffsetY[it.id])
 						}
 						nextPieceCount++
@@ -1811,13 +1786,13 @@ class GameEngine(
 							it.setAttribute(bone, Block.ATTRIBUTE.BONE)
 							it.big = big
 						}
-						nowPieceObject = getNextObjectCopy(nextPieceCount)
+						nowPieceObject = getNextObjectCopy()
 						nextPieceCount++
 						if(nextPieceCount<0) nextPieceCount = 0
 					} else {
 						// 2回目以降
 						holdPieceObject.let {pieceTemp ->
-							holdPieceObject = getNextObjectCopy(nextPieceCount)?.also {
+							holdPieceObject = getNextObjectCopy()?.also {
 								it.applyOffsetArray(ruleOpt.pieceOffsetX[it.id], ruleOpt.pieceOffsetY[it.id])
 							}
 							nowPieceObject = pieceTemp
@@ -1829,7 +1804,7 @@ class GameEngine(
 					if(holdPieceObject==null) {
 						// 1回目
 						holdPieceObject = nowPieceObject
-						nowPieceObject = getNextObjectCopy(nextPieceCount)
+						nowPieceObject = getNextObjectCopy()
 
 						nextPieceCount++
 						if(nextPieceCount<0) nextPieceCount = 0
@@ -1844,7 +1819,8 @@ class GameEngine(
 				holdPieceObject?.let {
 					// Directionを戻す
 					if(ruleOpt.holdResetDirection&&ruleOpt.pieceDefaultDirection[it.id]<Piece.DIRECTION_COUNT) {
-						it.direction = ruleOpt.pieceDefaultDirection[it.id]
+						it.direction = getNextObject(nextPieceCount-1)?.direction
+							?:ruleOpt.pieceDefaultDirection[it.id]
 						it.updateConnectData()
 					}
 					nowPieceObject?.placeNum?.let {nNum ->
@@ -1861,7 +1837,7 @@ class GameEngine(
 				initialHoldFlag = false
 				holdDisable = true
 			}
-			if(!isRetroSkin&&!holdDisable) getNextObject(nextPieceCount)?.let {
+			if(!isRetroSkin&&!holdDisable) getNextObject()?.let {
 				playSE(
 					"piece_${it.shape.name.lowercase(Locale.getDefault())}", 1f,
 					if((owner.mode?.players?:1)>1) 0.3f else 1f
@@ -2465,7 +2441,7 @@ class GameEngine(
 			if(b2bCount<-1) b2bCount = -1
 
 			// Blockを消す演出を出す (まだ実際には消えていない)
-			if(clearMode===Line) (0..<field.height).filter {field.getLineFlag(it)}.let {
+			if(clearMode===Line) lastLinesY.flatten().let {
 				owner.mode?.lineClear(this, it)
 				receiver.lineClear(this, it)
 			}
@@ -2988,7 +2964,24 @@ class GameEngine(
 	}
 	/** Game style names */
 	enum class GameStyle {
-		TETROMINO, AVALANCHE, PHYSICIAN, SPF
+		TETROMINO, AVALANCHE, PHYSICIAN, SPF;
+
+		fun toColor() = when(this) {
+			TETROMINO -> COLOR.BLUE
+			AVALANCHE -> COLOR.PINK
+			PHYSICIAN -> COLOR.PURPLE
+			SPF -> COLOR.ORANGE
+		}
+
+		companion object {
+			fun intColor(i:Int) = when(i) {
+				0 -> COLOR.BLUE
+				1 -> COLOR.PINK
+				2 -> COLOR.PURPLE
+				3 -> COLOR.ORANGE
+				else -> COLOR.WHITE
+			}
+		}
 	}
 
 	enum class MeterColor(val color:Int) {

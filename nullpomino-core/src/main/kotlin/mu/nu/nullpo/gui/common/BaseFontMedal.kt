@@ -32,11 +32,15 @@
 package mu.nu.nullpo.gui.common
 
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
+import mu.nu.nullpo.game.event.EventReceiver.COLOR.*
+import mu.nu.nullpo.gui.slick.NullpoMinoSlick.Companion.rainbow
 
 abstract class BaseFontMedal:BaseFont {
 	companion object {
 		const val W = 9
 		const val H = 24
+
+		const val SC = 1f*H/BaseFontNormal.H
 		/** paddingLeft */
 		const val PL = 5
 		/** paddingTop */
@@ -47,7 +51,7 @@ abstract class BaseFontMedal:BaseFont {
 
 	protected fun processTxt(x:Float, y:Float, str:String, tier:Int, scale:Float,
 		draw:(x:Float, y:Float, dx:Float, dy:Float, sx:Int, sy:Int, sw:Int, sh:Int)->Unit) {
-		val sy = maxOf(0, 4-tier)*H
+		val sy = if(tier<0) rainbowCount.mod(5)*H else maxOf(0, 4-tier)*H
 		val ww = str.length*9
 		val bx = x-(ww+10)/2f*(1-scale)
 		val by = y-H/2f*(1-scale)
@@ -56,7 +60,7 @@ abstract class BaseFontMedal:BaseFont {
 		draw(bx-scale, by-PT*scale, bx+(1+ww)*scale, by+MB*scale, 4, sy, 6, sy+H)
 		draw(bx+(1+ww)*scale, by-PT*scale, bx+(5+ww)*scale, by+MB*scale, 6, sy, 10, sy+H)
 		str.forEachIndexed {i, c ->
-			val stringChar = c.code-0x41
+			val stringChar = c.uppercaseChar().code-0x41
 			if(stringChar in 0x00..0x1B) {// Character output
 				val dx = bx+i*9f
 				val sx = stringChar*9+10
@@ -64,7 +68,6 @@ abstract class BaseFontMedal:BaseFont {
 			}
 		}
 	}
-
 	/** 文字列を描画
 	 * @param x X-coordinate
 	 * @param y Y-coordinate
@@ -82,7 +85,7 @@ abstract class BaseFontMedal:BaseFont {
 			)
 		}
 
-	fun printFont(x:Int, y:Int, str:String, tier:Int, scale:Float = 1f, alpha:Float = if(tier==0) 0.5f else 1f,
+	fun printFont(x:Number, y:Number, str:String, tier:Int, scale:Float = 1f, alpha:Float = if(tier==0) 0.5f else 1f,
 		darkness:Float = 0f) =
 		printFont(x.toFloat(), y.toFloat(), str, tier, scale, alpha, darkness)
 	/** 文字列を描画
@@ -92,12 +95,13 @@ abstract class BaseFontMedal:BaseFont {
 	 * @param tier 文字色
 	 * @param scale 拡大率
 	 */
-	fun printFontGrid(x:Int, y:Int, str:String, tier:Int = 0, scale:Float = 1f, alpha:Float = if(tier==0) 0.5f else 1f,
-		darkness:Float = 0f) = printFont(x*16, y*16, str, tier, scale, alpha, darkness)
+	fun printFontGrid(x:Number, y:Number, str:String, tier:Int = 0, scale:Float = 1f, alpha:Float = if(tier==0) 0.5f else 1f,
+		darkness:Float = 0f) = printFont(x.toFloat()*16, y.toFloat()*16, str, tier, scale, alpha, darkness)
 
 	private fun col(color:COLOR) = when(color) {
-		COLOR.RED -> 2
-		else -> 1
+		GREEN -> 4; ORANGE -> 3
+		BLUE, CYAN, COBALT -> 2; RED, PINK -> 1
+		RAINBOW -> 1+rainbow.mod(4); else -> 0
 	}
 
 	override fun processTxt(x:Float, y:Float, str:String, color:COLOR, scale:Float, alpha:Float, rainbow:Int,

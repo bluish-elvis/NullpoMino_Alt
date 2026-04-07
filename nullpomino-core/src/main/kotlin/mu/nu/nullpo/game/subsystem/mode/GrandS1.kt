@@ -30,8 +30,7 @@
  */
 package mu.nu.nullpo.game.subsystem.mode
 
-import mu.nu.nullpo.game.component.BGM
-import mu.nu.nullpo.game.component.Controller
+import mu.nu.nullpo.game.component.*
 import mu.nu.nullpo.game.event.*
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
 import mu.nu.nullpo.game.play.GameEngine
@@ -39,7 +38,6 @@ import mu.nu.nullpo.game.subsystem.mode.menu.*
 import mu.nu.nullpo.gui.common.BaseFont
 import mu.nu.nullpo.gui.common.BaseFont.FONT.*
 import mu.nu.nullpo.util.CustomProperties
-import mu.nu.nullpo.util.GeneralUtil.toInt
 import mu.nu.nullpo.util.GeneralUtil.toTimeStr
 
 /** SPEED MANIA-DEATH Mode */
@@ -82,7 +80,7 @@ class GrandS1:AbstractGrand() {
 	/** Section Time記録 */
 	private val bestSectionTime = MutableList(sectionMax) {DEFAULT_SECTION_TIME}
 
-	override val name = "Grand Storm"
+	override val name = "Grand Speed"
 	override val gameIntensity = 3
 	override val menu = MenuList("speedmania1", itemLevel, itemQualify, itemAlert, itemST, itemBig)
 
@@ -109,6 +107,7 @@ class GrandS1:AbstractGrand() {
 		recoveryFlag = false
 
 		rankingRank = -1
+		ranking.forEach {it.fill(Rankable.GrandRow())}
 		bestSectionTime.fill(DEFAULT_SECTION_TIME)
 
 		engine.twistEnable = false
@@ -138,14 +137,8 @@ class GrandS1:AbstractGrand() {
 	 * @param engine GameEngine
 	 */
 	override fun setSpeed(engine:GameEngine) {
+		engine.speed.replace(tableLevel[minOf(engine.statistics.level/100, tableLevel.size-1)])
 		engine.speed.gravity = -1
-
-		val section = minOf(engine.statistics.level/100, tableARE.size-1)
-		engine.speed.are = tableARE[section]
-		engine.speed.areLine = tableARELine[section]
-		engine.speed.lineDelay = tableLineDelay[section]
-		engine.speed.lockDelay = tableLockDelay[section]
-		engine.speed.das = tableDAS[section]
 	}
 
 	/** ST medal check
@@ -209,7 +202,7 @@ class GrandS1:AbstractGrand() {
 			if(!owner.replayMode&&startLevel==0&&!big&&engine.ai==null)
 				if(!isShowBestSectionTime) {
 					// Rankings
-					val topY = if(receiver.nextDisplayType==2) 5 else 3
+					val topY = if(receiver.bigSideNext) 5 else 3
 					receiver.drawScore(engine, 2, topY-1, "LEVEL  TIME", BASE, COLOR.BLUE)
 
 					ranking[0].forEachIndexed {i, it ->
@@ -217,8 +210,8 @@ class GrandS1:AbstractGrand() {
 							engine, 0, topY+i, "%2d".format(i+1), GRADE,
 							if(rankingRank==i) COLOR.RAINBOW else COLOR.YELLOW
 						)
+						receiver.drawScore(engine, 5, topY+i, "%3d".format(it.lv), NUM, i==rankingRank)
 						receiver.drawScore(engine, 2, topY+i, tableGradeName[it.grade], GRADE, i==rankingRank)
-						receiver.drawScore(engine, 5, topY+i, "${it.lv}", NUM, i==rankingRank)
 						receiver.drawScore(engine, 8, topY+i, it.ti.toTimeStr, NUM, i==rankingRank)
 					}
 
@@ -247,10 +240,8 @@ class GrandS1:AbstractGrand() {
 			// 段位
 			if(grade>=1&&grade<tableGradeName.size)
 				receiver.drawScore(
-					engine, 0, 2, tableGradeName[grade], GRADE, if(engine.statistics.time%3==0)
-						COLOR.YELLOW
-					else
-						COLOR.ORANGE, 2f
+					engine, 0, 2, tableGradeName[grade], GRADE, if(engine.statistics.time%3==0) COLOR.YELLOW
+					else COLOR.ORANGE, 2f
 				)
 
 			// Score
@@ -267,10 +258,8 @@ class GrandS1:AbstractGrand() {
 
 			// Time
 			receiver.drawScore(engine, 0, 14, "Time", BASE, engine.statistics.time%3!=0)
-			if(engine.ending!=2||rollTime/20%2==0)
-				receiver.drawScore(
-					engine, 0, 15, engine.statistics.time.toTimeStr, NUM, engine.statistics.time%3!=0, 2f
-				)
+			if(engine.ending!=2||rollTime/20%2==0||!engine.gameActive)
+				receiver.drawScore(engine, 0, 15, engine.statistics.time.toTimeStr, NUM_T, engine.statistics.time%3!=0)
 
 			// Roll 残り time
 			if(engine.gameActive&&engine.ending==2) {
@@ -294,8 +283,8 @@ class GrandS1:AbstractGrand() {
 
 			// Section Time
 			if(showST&&sectionTime.isNotEmpty()) {
-				val x = if(receiver.nextDisplayType==2) 8 else 12
-				val x2 = if(receiver.nextDisplayType==2) 9 else 12
+				val x = if(receiver.bigSideNext) 8 else 12
+				val x2 = if(receiver.bigSideNext) 9 else 12
 
 				receiver.drawScore(engine, x, 2, "SECTION TIME", BASE, COLOR.BLUE)
 
@@ -308,10 +297,8 @@ class GrandS1:AbstractGrand() {
 					)
 				}
 				receiver.drawScore(engine, x2, 14, "AVERAGE", BASE, engine.statistics.time%3!=0)
-				receiver.drawScore(
-					engine, x2, 15, (engine.statistics.time/(sectionsDone+(engine.ending==0).toInt())).toTimeStr,
-					NUM_T, engine.statistics.time%3!=0
-				)
+				receiver.drawScore(engine, x2, 15, sectionTime.filter {it>0}.average().toTimeStr, NUM_T,
+					engine.statistics.time%3!=0)
 			}
 
 		}
@@ -389,8 +376,6 @@ class GrandS1:AbstractGrand() {
 				stMedalCheck(engine, sec)
 			} else if(engine.statistics.level>=nextSecLv) {
 				// Next Section
-				engine.playSE("levelup")
-
 				// Background切り替え
 				owner.bgMan.nextBg = nextSecLv/100
 
@@ -405,7 +390,9 @@ class GrandS1:AbstractGrand() {
 				if(nextSecLv==500) {
 					grade = 1
 					gradeFlash = 180
-				}
+					engine.playSE("grade4")
+					engine.playSE("levelup_section")
+				} else engine.playSE("levelup")
 
 				// Update level for next section
 				nextSecLv += 100
@@ -490,11 +477,10 @@ class GrandS1:AbstractGrand() {
 					engine, receiver, 4, COLOR.RED, Statistic.SCORE, Statistic.LINES, Statistic.LEVEL_MANIA, Statistic.TIME
 				)
 				drawResultRank(engine, receiver, 12, COLOR.RED, rankingRank)
-				if(secretGrade>4)
-					drawResult(
-						engine, receiver, 14, COLOR.RED, "S. GRADE",
-						"%10s".format(tableSecretGradeName[secretGrade-1])
-					)
+				if(secretGrade>4) {
+					receiver.drawMenu(engine, 0, 15, "SECRET GRADE", NANO, COLOR.BLUE, .75f)
+					receiver.drawMenu(engine, 6, 15, tableSecretGradeName[secretGrade-1], GRADE, 2f)
+				}
 			}
 			1 -> {
 				receiver.drawMenu(engine, 0, 2, "SECTION", BASE, COLOR.RED)
@@ -580,16 +566,17 @@ class GrandS1:AbstractGrand() {
 		/** Current version */
 		private const val CURRENT_VERSION = 3
 
-		/** ARE table */
-		private val tableARE = listOf(16, 12, 10, 8, 6, 4)
-		/** ARE after lines clear table */
-		private val tableARELine = listOf(12, 9, 7, 6, 5, 4)
-		/** Line clear times table */
-		private val tableLineDelay = listOf(12, 9, 7, 6, 5, 4)
-		/** 固定 times table */
-		private val tableLockDelay = listOf(30, 28, 26, 24, 22, 20)
-		/** DAS table */
-		private val tableDAS = listOf(12, 10, 8, 6, 5, 4)
+		/** GMを取るために必要なLV500到達時の最低スコア */
+		private const val GM_500_SCORE_REQUIRE = 60000
+		/** GMを取るために必要なLV500到達時の最低スコア */
+		private const val GM_999_SCORE_REQUIRE = 260000
+		/** GMを取るために必要なLV500到達時のTime */
+		private const val GM_500_TIME_REQUIRE = 12500
+		/** GMを取るために必要なLV999到達時のTime */
+		private const val GM_999_TIME_REQUIRE = 25200
+
+		private val tableLevel = LevelData(listOf(16, 12, 10, 8, 6, 4), listOf(12, 9, 7, 6, 5, 4), listOf(12, 9, 7, 6, 5, 4),
+			listOf(30, 28, 26, 24, 22, 20), listOf(12, 10, 8, 6, 5, 4))
 		/** BGM fadeout levels */
 		private val tableBGMFadeout = listOf(280, 480, -1)
 		/** BGM change levels */
@@ -606,6 +593,6 @@ class GrandS1:AbstractGrand() {
 		/** Number of sections */
 		private const val SECTION_MAX = 10
 		/** Default section time */
-		private const val DEFAULT_SECTION_TIME = 2520
+		private const val DEFAULT_SECTION_TIME = 3600
 	}
 }

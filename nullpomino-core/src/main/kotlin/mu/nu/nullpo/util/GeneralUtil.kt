@@ -105,6 +105,12 @@ object GeneralUtil {
 	/** Convert as play time into a String
 	 * @return String for play time
 	 */
+	val Double.toTimeStr
+		get() = if(this<=0) "--:--.--" else
+			"%02d:%02d.%02d".format(this.toInt()/3600, this.toInt()/60%60, (this%60*5f/3f).toInt())
+	/** Convert as play time into a String
+	 * @return String for play time
+	 */
 	val Float.toTimeStr
 		get() = if(this<=0) "--:--.--" else
 			"%02d:%02d.%02d".format(this.toInt()/3600, this.toInt()/60%60, (this%60*5f/3f).toInt())

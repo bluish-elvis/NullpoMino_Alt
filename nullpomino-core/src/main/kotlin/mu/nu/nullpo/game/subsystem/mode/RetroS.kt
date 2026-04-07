@@ -31,14 +31,10 @@
 package mu.nu.nullpo.game.subsystem.mode
 
 import kotlinx.serialization.Serializable
-import mu.nu.nullpo.game.component.BGM
+import mu.nu.nullpo.game.component.*
 import mu.nu.nullpo.game.component.Piece.Companion.createQueueFromIntStr
-import mu.nu.nullpo.game.component.RuleOptions
-import mu.nu.nullpo.game.component.Statistics
+import mu.nu.nullpo.game.event.*
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
-import mu.nu.nullpo.game.event.Leaderboard
-import mu.nu.nullpo.game.event.Rankable
-import mu.nu.nullpo.game.event.ScoreEvent
 import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.game.subsystem.mode.menu.*
 import mu.nu.nullpo.gui.common.BaseFont.FONT.*
@@ -87,7 +83,7 @@ class RetroS:AbstractMode() {
 	/** Returns the name of this mode */
 	override val name = "Retro Mania .S"
 
-	override val gameIntensity:Int = -1
+	override val gameIntensity:Int = -2
 	@Serializable
 	data class ScoreRow(override val st:Statistics = Statistics(),
 		val scMaxed:Int = -1, val liMaxed:Int = -1, val lvMaxed:Int = -1):Rankable, Comparable<Rankable> {
@@ -212,7 +208,7 @@ class RetroS:AbstractMode() {
 		if(engine.stat==GameEngine.Status.SETTING||engine.stat==GameEngine.Status.RESULT&&!owner.replayMode) {
 			// Leaderboard
 			if(!owner.replayMode&&!big&&startLevel==0&&engine.ai==null) {
-				val topY = if(receiver.nextDisplayType==2) 6 else 4
+				val topY = if(receiver.bigSideNext) 6 else 4
 				receiver.drawScore(engine, 0, topY-1, "SCORE LINE LV TIME", BASE, COLOR.BLUE)
 
 				ranking[gameType.ordinal].forEachIndexed {i, it ->

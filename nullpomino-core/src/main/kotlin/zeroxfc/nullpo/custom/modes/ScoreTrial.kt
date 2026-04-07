@@ -91,8 +91,8 @@ class ScoreTrial:MarathonModeBase() {
 	private val rankingLinesPlayer = List(MAX_DIFFICULTIES) {MutableList(rankingMax) {0}}
 	private val rankingTimePlayer = List(MAX_DIFFICULTIES) {MutableList(rankingMax) {0}}
 	// Mode name
-	override val name:String
-		get() = "SCORE TRIAL"
+	override val name = "SCORE TRIAL"
+	override val gameIntensity = 1
 	/*
      * Initialization
      */
@@ -347,7 +347,7 @@ class ScoreTrial:MarathonModeBase() {
 		receiver.drawScore(engine, 0, 1, "("+DIFFICULTY_NAMES[difficultySelected]+" TIER)", BASE, COLOR.GREEN)
 		if(engine.stat===Status.SETTING||engine.stat===Status.RESULT&&!owner.replayMode) {
 			if(!owner.replayMode&&!big&&engine.ai==null&&lifeOffset==0) {
-				val topY = if(receiver.nextDisplayType==2) 6 else 4
+				val topY = if(receiver.bigSideNext) 6 else 4
 				receiver.drawScore(engine, 3, topY-1, "SCORE  LINE TIME", BASE, COLOR.BLUE)
 				if(showPlayerStats) {
 					for(i in 0..<rankingMax) {

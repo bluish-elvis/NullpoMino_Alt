@@ -75,7 +75,7 @@ interface Rankable:Comparable<Rankable> {
 		@Suppress("PropertyName")
 		@Serializable
 		data class Medals(var ST:MutableList<Int> = MutableList(3) {0},
-			var SK:Int = 0, var AC:Int = 0, var CO:Int = 0, var RE:Int = 0, var RO:Int = 0) {
+			var SK:Int = 0, var AC:Int = 0, var CO:Int = 0, var RE:Int = 0, var RO:Int = 0, var TS:Int = 0) {
 			fun reset() {
 				ST.fill(0)
 				SK = 0
@@ -83,6 +83,7 @@ interface Rankable:Comparable<Rankable> {
 				CO = 0
 				RE = 0
 				RO = 0
+				TS = 0
 			}
 		}
 	}

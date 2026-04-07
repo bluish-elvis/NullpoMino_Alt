@@ -213,7 +213,7 @@ class GrandCleaner:AbstractMode() {
 		receiver.drawScoreBadges(engine, 5, -4, 100, decTemp)
 		if(engine.stat==GameEngine.Status.SETTING||engine.stat==GameEngine.Status.RESULT&&!owner.replayMode) {
 			if(!always20g&&engine.ai==null) {
-				val topY = if(receiver.nextDisplayType==2) 5 else 3
+				val topY = if(receiver.bigSideNext) 5 else 3
 
 				receiver.drawScore(engine, 2, topY-1, "CLEAR TIME LEVEL", BASE, COLOR.PINK)
 

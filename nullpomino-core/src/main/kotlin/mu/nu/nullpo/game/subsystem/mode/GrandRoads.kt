@@ -125,6 +125,7 @@ class GrandRoads:NetDummyMode() {
 	/* Initialization */
 	/** Returns the name of this mode */
 	override val name = "Grand Roads"
+	override val color = COLOR.WHITE
 	override val gameIntensity:Int
 		get() = when(nowCourse) {
 			Course.HARD, Course.CHALLENGE -> 1
@@ -378,8 +379,8 @@ class GrandRoads:NetDummyMode() {
 
 			// Section time
 			if(showST&&sectionTime.isNotEmpty()&&!netIsWatch) {
-				val x = if(receiver.nextDisplayType==2) 25 else 12
-				val y = if(receiver.nextDisplayType==2) 4 else 2
+				val x = if(receiver.bigSideNext) 25 else 12
+				val y = if(receiver.bigSideNext) 4 else 2
 
 				receiver.drawScore(engine, x, y, "SECTION TIME", BASE, COLOR.BLUE)
 

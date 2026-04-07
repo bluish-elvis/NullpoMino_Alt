@@ -50,10 +50,7 @@ import mu.nu.nullpo.gui.common.BaseFont.FONT.*
 import mu.nu.nullpo.util.CustomProperties
 import mu.nu.nullpo.util.GeneralUtil.toTimeStr
 
-/**
-MARATHON Mode
- */
-open class MarathonModeBase:NetDummyMode() {
+abstract class MarathonModeBase:NetDummyMode() {
 	/** Current BGM*/
 	@JvmField
 	var bgmLv = 0
@@ -87,9 +84,8 @@ open class MarathonModeBase:NetDummyMode() {
 			rankingLines.mapIndexed {a, x -> "$a.lines" to x}+
 			rankingTime.mapIndexed {a, x -> "$a.time" to x})
 	override val propPB:rankMapType get() = emptyMap()
-
-	override val name:String
-		get() = "marathonBase"
+	abstract override val name:String
+	abstract override val gameIntensity:Int
 	override val menu:MenuList by lazy {MenuList(id, itemMode, itemLevel, itemBig)}
 
 	override fun playerInit(engine:GameEngine) {
@@ -130,9 +126,6 @@ open class MarathonModeBase:NetDummyMode() {
 		engine.speed.areLine = 6
 		engine.speed.lineDelay = 10
 	}
-	/*
-     * Called at settings screen
-     */
 	override fun onSetting(engine:GameEngine):Boolean {
 		// NET: Net Ranking
 		if(netIsNetRankingDisplayMode) {

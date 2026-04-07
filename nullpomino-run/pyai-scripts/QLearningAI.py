@@ -296,7 +296,7 @@ class BasePvPAI(PyAI):
         #    return
         nowPiece = engine.nowPieceObject
         holdPiece = engine.holdPieceObject
-        nextPiece = engine.getNextObject(engine.nextPieceCount)
+        nextPiece = engine.getNextObject()
         holdChance = self.HOLD_EPSILON if holdPiece != None else 0
         nowState = self.computeState(engine.field, nowPiece, nextPiece)
         holdState = self.computeState(engine.field, holdPiece, nextPiece) if holdPiece != None else nowState

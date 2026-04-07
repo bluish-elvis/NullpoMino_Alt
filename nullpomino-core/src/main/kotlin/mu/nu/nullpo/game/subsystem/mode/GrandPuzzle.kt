@@ -727,7 +727,7 @@ class GrandPuzzle:AbstractMode() {
 		receiver.drawScoreBadges(engine, 5, -4, 100, decTemp)
 		if(engine.stat==Status.SETTING||engine.stat==Status.RESULT&&!owner.replayMode) {
 			if(startStage==0&&!always20g&&trainingType==0&&startNextc==0&&mapSet<0&&engine.ai==null) {
-				val topY = if(receiver.nextDisplayType==2) 5 else 3
+				val topY = if(receiver.bigSideNext) 5 else 3
 
 				receiver.drawScore(engine, 3, topY-1, "STAGE CLEAR TIME", BASE, COLOR.PINK)
 				val type = randomQueue.toInt()
@@ -801,8 +801,8 @@ class GrandPuzzle:AbstractMode() {
 
 			// Section Time
 			if(showST&&sectionTime.isNotEmpty()) {
-				val y = if(receiver.nextDisplayType==2) 4 else 2
-				val x = if(receiver.nextDisplayType==2) 22 else 10
+				val y = if(receiver.bigSideNext) 4 else 2
+				val x = if(receiver.bigSideNext) 22 else 10
 
 				receiver.drawScore(engine, x, y, "SECTION TIME", BASE, COLOR.PINK)
 
@@ -819,7 +819,7 @@ class GrandPuzzle:AbstractMode() {
 						if(pos>=0) receiver.drawScore(engine, x, y+1+pos, strSectionTime, BASE)
 					}
 
-				if(receiver.nextDisplayType==2) {
+				if(receiver.bigSideNext) {
 					receiver.drawScore(engine, 11, 19, "TOTAL", BASE, COLOR.PINK)
 					receiver.drawScore(engine, 11, 20, engine.statistics.time.toTimeStr, NUM_T)
 				} else {
@@ -1125,10 +1125,10 @@ class GrandPuzzle:AbstractMode() {
 			}
 
 			receiver.drawMenu(engine, 0, 13, "CLEAR TIME", BASE, COLOR.PINK)
-			receiver.drawMenu(engine, 1, 14, cleartime.toTimeStr, NUM, 1.5f)
+			receiver.drawMenu(engine, 1, 14, cleartime.toTimeStr, NUM_T)
 
 			receiver.drawMenu(engine, 0, 16, "TOTAL TIME", BASE, COLOR.PINK)
-			receiver.drawMenu(engine, 1, 17, engine.statistics.time.toTimeStr, NUM, 1.5f)
+			receiver.drawMenu(engine, 1, 17, engine.statistics.time.toTimeStr, NUM_T)
 		} else if(skipFlag) {
 			// スキップ
 			receiver.drawMenu(engine, 1, 4, "SKIPPED", BASE)
@@ -1151,14 +1151,14 @@ class GrandPuzzle:AbstractMode() {
 			}
 
 			receiver.drawMenu(engine, 0, 16, "TOTAL TIME", BASE, COLOR.PINK)
-			receiver.drawMenu(engine, 1, 17, engine.statistics.time.toTimeStr, NUM, 1.5f)
+			receiver.drawMenu(engine, 1, 17, engine.statistics.time.toTimeStr, NUM_T)
 		} else if(stagetimeNow<=0&&stagetimeStart>0) {
 			// Timeアップ
 			receiver.drawMenu(engine, 1, 0, "TIME OVER", BASE)
 			receiver.drawMenu(engine, 1, 5, "TRY NEXT", BASE)
 
 			receiver.drawMenu(engine, 0, 10, "LIMIT TIME", BASE, COLOR.PINK)
-			receiver.drawMenu(engine, 1, 11, limittimeNow.toTimeStr, NUM, 1.5f)
+			receiver.drawMenu(engine, 1, 11, limittimeNow.toTimeStr, NUM_T)
 
 			if(trainingType==0) {
 				receiver.drawMenu(engine, 0, 13, "CLEAR PER.", BASE, COLOR.PINK)
@@ -1166,7 +1166,7 @@ class GrandPuzzle:AbstractMode() {
 			}
 
 			receiver.drawMenu(engine, 0, 16, "TOTAL TIME", BASE, COLOR.PINK)
-			receiver.drawMenu(engine, 1, 17, engine.statistics.time.toTimeStr, NUM, 1.5f)
+			receiver.drawMenu(engine, 1, 17, engine.statistics.time.toTimeStr, NUM_T)
 		}
 	}
 

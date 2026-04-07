@@ -215,7 +215,7 @@ class ScoreAttackRun:AbstractMode() {
 			if(gametype!=0) receiver.drawScore(engine, 2, 1, "(${GAMETYPE_LABELS[gametype]} MODE)", BASE, 9f)
 
 			var colour:Int
-			val event:Int = if(receiver.nextDisplayType==2) 6 else 4
+			val event:Int = if(receiver.bigSideNext) 6 else 4
 			if(engine.stat==GameEngine.Status.SETTING||engine.stat==GameEngine.Status.RESULT&&!owner.replayMode) {
 				if(!owner.replayMode&&engine.ai==null) {
 					receiver.drawScore(engine, 1, event-1, "LV QS SCORE", BASE, COLOR.PURPLE)

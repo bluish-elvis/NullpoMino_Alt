@@ -1,0 +1,25 @@
+# Bitbucket Pipelines configuration for NullpoMino_Alt
+# This pipeline builds the project using Maven and uploads the build artifact
+
+image: bellsoft/liberica-openjdk-debian:26
+
+pipelines:
+  default:
+    - step:
+        name: Build and Upload
+        caches:
+          - maven
+        script:
+          - chmod +x ./mvnw; ./mvnw -B -U package
+        artifacts:
+          - target/install/**
+#    - step:
+#        name: Upload
+#        script:
+#          - zip -r nullpomino.zip target/install/**
+#          - pipe: atlassian/bitbucket-upload-file:0.7.5
+#            variables:
+#              ATLASSIAN_ACCOUNT_EMAIL: $ATLASSIAN_ACCOUNT_EMAIL
+#              ATLASSIAN_API_TOKEN: $ATLASSIAN_API_TOKEN
+#              FILENAME: nullpomino.zip
+

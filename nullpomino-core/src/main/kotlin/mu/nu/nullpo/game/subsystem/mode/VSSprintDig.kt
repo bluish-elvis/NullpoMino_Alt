@@ -418,7 +418,7 @@ class VSSprintDig:AbstractMode() {
 		}
 
 		// Big-side-next layout
-		if(owner.receiver.nextDisplayType==2) {
+		if(owner.receiver.bigSideNext) {
 			val fontColor2 = if(pid==0) COLOR.RED else COLOR.BLUE
 
 			if(!owner.replayMode) {

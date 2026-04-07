@@ -574,7 +574,7 @@ open class VSBattle:AbstractMode() {
 		// Status display
 		val pid = engine.playerID
 		if(pid==0) {
-			receiver.drawFont(232, 16, engine.statistics.time.toTimeStr, NUM, scale = 2f)
+			receiver.drawFont(232, 16, engine.statistics.time.toTimeStr, NUM_T)
 
 			if(hurryUpSeconds[pid]>=0&&engine.timerActive&&
 				engine.statistics.time>=hurryUpSeconds[pid]*60&&engine.statistics.time<(hurryUpSeconds[pid]+5)*60
@@ -620,7 +620,7 @@ open class VSBattle:AbstractMode() {
 				)
 			}
 
-//			if(owner.receiver.nextDisplayType==2) {
+//			if(owner.receiver.bigSideNext) {
 			val myCol = col(pid)
 
 			receiver.drawFont(x-32, y+24, "WINS", BASE, myCol, .5f)

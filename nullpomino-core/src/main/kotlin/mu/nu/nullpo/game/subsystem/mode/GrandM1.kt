@@ -132,6 +132,7 @@ class GrandM1:AbstractGrand() {
 		decTemp = 0
 
 		rankingRank = -1
+		ranking.forEach {it.fill(Rankable.GrandRow())}
 		bestSectionTime.fill(DEFAULT_SECTION_TIME)
 		bestSectionScore.fill(0)
 
@@ -287,14 +288,14 @@ class GrandM1:AbstractGrand() {
 							if(engine.playerID%2==0) COLOR.YELLOW else COLOR.ORANGE
 						else if(gr>=18) {
 							var gmP = 0
-							for(l in 1..<tablePier21GradeTime.size)
-								if(it.ti<tablePier21GradeTime[l]) gmP = l
-							tablePier21GradeColor[gmP]
+							for(l in 1..<tableGMTier.size)
+								if(it.ti<tableGMTier[l].first) gmP = l
+							tableGMTier[gmP].third
 						} else if(it.clear>0) COLOR.GREEN else COLOR.WHITE
 
 
 						if(gr>=0&&gr<tableGradeName.size)
-							receiver.drawScore(engine, 2, 3+i, tableGradeName[gr], GRADE, gc)
+							receiver.drawScore(engine, 2, 3+i, tableGMTier[gr].second, GRADE, gc)
 						receiver.drawScore(engine, 5, 3+i, it.ti.toTimeStr, NUM, i==rankingRank)
 						receiver.drawScore(engine, 12, 3+i, "%03d".format(it.lv), NUM, i==rankingRank)
 					}
@@ -318,11 +319,11 @@ class GrandM1:AbstractGrand() {
 					receiver.drawScore(engine, 0, 14, "TOTAL", BASE, color = COLOR.BLUE)
 					receiver.drawScore(engine, 0, 15, totalTime.toTimeStr, NUM_T)
 					receiver.drawScore(
-						engine, if(receiver.nextDisplayType==2) 0 else 12, if(receiver.nextDisplayType==2) 18 else 14,
+						engine, if(receiver.bigSideNext) 0 else 12, if(receiver.bigSideNext) 18 else 14,
 						"AVERAGE", BASE, color = COLOR.BLUE
 					)
 					receiver.drawScore(
-						engine, if(receiver.nextDisplayType==2) 0 else 12, if(receiver.nextDisplayType==2) 19 else 15,
+						engine, if(receiver.bigSideNext) 0 else 12, if(receiver.bigSideNext) 19 else 15,
 						(totalTime/sectionMax*1f).toTimeStr, NUM, scale = 2f
 					)
 
@@ -368,8 +369,8 @@ class GrandM1:AbstractGrand() {
 			receiver.drawScore(engine, 1, 12, "%3d".format(nextSecLv), NUM, g20)
 
 			receiver.drawScore(engine, 0, 14, "Time", BASE, if(g20) if(gm500) COLOR.YELLOW else COLOR.CYAN else COLOR.BLUE)
-			if(engine.ending!=2||rollTime/30%2==0)
-				receiver.drawScore(engine, 0, 15, engine.statistics.time.toTimeStr, NUM, g20, 2f)
+			if(engine.ending!=2||rollTime/30%2==0||!engine.gameActive)
+				receiver.drawScore(engine, 0, 15, engine.statistics.time.toTimeStr, NUM_T, g20)
 
 			if(engine.gameActive&&engine.ending==2) {
 				var time = ROLLTIMELIMIT-rollTime
@@ -380,7 +381,7 @@ class GrandM1:AbstractGrand() {
 
 			// Section Time
 			if(showST&&sectionTime.isNotEmpty()) {
-				val x = receiver.nextDisplayType==2
+				val x = receiver.bigSideNext
 				receiver.drawScore(engine, if(x) 8 else 10, 2, "SECTION TIME", BASE, COLOR.BLUE)
 				val section = engine.statistics.level/100
 				sectionTime.forEachIndexed {i, it ->
@@ -394,13 +395,7 @@ class GrandM1:AbstractGrand() {
 				}
 
 				receiver.drawScore(engine, if(x) 8 else 12, if(x) 11 else 14, "AVERAGE", BASE, COLOR.BLUE)
-				receiver.drawScore(
-					engine,
-					if(x) 8 else 12,
-					if(x) 12 else 15,
-					(engine.statistics.time/(sectionsDone+(engine.ending==0).toInt())).toTimeStr,
-					NUM_T
-				)
+				receiver.drawScore(engine, if(x) 8 else 12, if(x) 12 else 15, sectionTime.filter {it>0}.average().toTimeStr, NUM_T)
 			}
 			// medal
 			receiver.drawScoreMedal(engine, 0, 20, "AC", medalAC)
@@ -467,7 +462,7 @@ class GrandM1:AbstractGrand() {
 					engine.playSE("endingstart")
 					engine.playSE("grade4")
 
-					gmPier = tablePier21GradeTime.count {it>=engine.statistics.time}-1
+					gmPier = tableGMTier.count {(t) -> t>=engine.statistics.time}-1
 					grade = 18+(gmPier>3).toInt()
 					gradeFlash = ROLLTIMELIMIT
 
@@ -559,8 +554,8 @@ class GrandM1:AbstractGrand() {
 			secretGrade = engine.field.secretGrade
 			val time = engine.statistics.time
 			if(grade>=18)
-				for(i in 1..<tablePier21GradeTime.size)
-					if(time<tablePier21GradeTime[i]) decTemp++
+				for(i in 1..<tableGMTier.size)
+					if(time<tableGMTier[i].first) decTemp++
 
 			if(time<6000) decTemp -= 3
 			else {
@@ -598,21 +593,18 @@ class GrandM1:AbstractGrand() {
 		when(engine.statc[1]) {
 			0 -> {
 				receiver.drawMenu(engine, 0, 2, "GRADE", BASE, COLOR.BLUE)
-				var gc = COLOR.WHITE
-				if(grade>=18) {
-					gc = tablePier21GradeColor[gmPier]
-					receiver.drawMenu(engine, 0, 3, tablePier21GradeName[gmPier], BASE, gc)
-				}
+				val gc = if(grade>=18) tableGMTier[gmPier].third.also {
+					receiver.drawMenu(engine, 0, 3, tableGMTier[gmPier].second, BASE, it)
+				} else COLOR.WHITE
 				receiver.drawMenu(engine, 6, 1.66f, tableGradeName[grade], GRADE, gc, 2f)
 				drawResultStats(
 					engine, receiver, 4, COLOR.BLUE, Statistic.SCORE, Statistic.LINES, Statistic.LEVEL_MANIA, Statistic.TIME
 				)
 				drawResultRank(engine, receiver, 13, COLOR.BLUE, rankingRank)
-				if(secretGrade>4)
-					drawResult(
-						engine, receiver, 15, COLOR.BLUE, "S. GRADE",
-						"%10s".format(tableGradeName[secretGrade-1])
-					)
+				if(secretGrade>4) {
+					receiver.drawMenu(engine, 0, 15, "SECRET GRADE", NANO, COLOR.BLUE, .75f)
+					receiver.drawMenu(engine, 6, 15, tableGradeName[secretGrade-1], GRADE, gc, 2f)
+				}
 			}
 			1 -> {
 				receiver.drawMenu(engine, 0, 2, "SECTION", BASE, COLOR.BLUE)

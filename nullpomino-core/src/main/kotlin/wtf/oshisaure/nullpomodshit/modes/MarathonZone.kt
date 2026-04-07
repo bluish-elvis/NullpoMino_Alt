@@ -282,8 +282,8 @@ class MarathonZone:NetDummyMode() {
 		)
 		if((engine.stat===GameEngine.Status.SETTING)||((engine.stat===GameEngine.Status.RESULT)&&(!owner.replayMode))) {
 			if((!owner.replayMode)&&(engine.ai==null)) {
-				val scale:Float = if((receiver.nextDisplayType==2)) 0.5f else 1.0f
-				val topY = if((receiver.nextDisplayType==2)) 6 else 4
+				val scale:Float = if((receiver.bigSideNext)) 0.5f else 1.0f
+				val topY = if((receiver.bigSideNext)) 6 else 4
 				receiver.drawScore(engine, 2, topY-1, "SCORE    LINE TIME", BASE, hudcolor, scale)
 				for(i in 0..<rankingMax) {
 					receiver.drawScore(engine, -1, topY+i, "%2d".format(i+1), GRADE, COLOR.YELLOW, scale)

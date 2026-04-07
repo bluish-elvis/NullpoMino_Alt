@@ -81,7 +81,7 @@ data object LineSpark:ClearType {
 		val (w, h) = if(pow<0) 4 to 4 else
 			(pow.let {if(it<=4) it else (5+(it-5)/2).coerceAtMost(9)}-1).let {maxOf(3, it) to it}
 		//[3,0],[3,1],[3,2],[3,3],[4,4],[5,5],[5,5],[6,6],[6,6],[7,7]}
-		val my = heightWithoutHurryupFloor
+		val my = heightWoFloor
 		var blocks = 0
 		val r =
 			listOf(

@@ -95,8 +95,8 @@ class Joker:MarathonModeBase() {
 			)
 		}*/
 
-	override val name:String
-		get() = "JOKER"
+	override val name = "JOKER"
+	override val gameIntensity = 1
 	/*
      * Initialization
      */
@@ -326,7 +326,7 @@ class Joker:MarathonModeBase() {
 		receiver.drawScore(engine, 0, 0, name, BASE, COLOR.RED)
 		if(engine.stat===Status.SETTING||engine.stat===Status.RESULT&&!owner.replayMode) {
 			if(!owner.replayMode&&!big&&engine.ai==null&&startingStock==0) {
-				val topY = if(receiver.nextDisplayType==2) 6 else 4
+				val topY = if(receiver.bigSideNext) 6 else 4
 				receiver.drawScore(engine, 3, topY-1, "LEVEL  LINE TIME", BASE, COLOR.BLUE)
 				if(showPlayerStats) {
 					for(i in 0..<rankingMax) {

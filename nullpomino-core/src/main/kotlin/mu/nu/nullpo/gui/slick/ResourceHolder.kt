@@ -55,6 +55,8 @@ object ResourceHolder:mu.nu.nullpo.gui.common.ResourceHolder() {
 	}
 	override val imgSmallBlockList by lazy {super.imgSmallBlockList.map {ResourceImageSlick(it)}}
 	override val imgBigBlockList by lazy {super.imgBigBlockList.map {ResourceImageSlick(it)}}
+	override val imgItemBlock by lazy {super.imgItemBlock.map {ResourceImageSlick(it)}}
+	override val imgItemAnims by lazy {super.imgItemAnims.map {ResourceImageSlick(it)}}
 	override val imgBadges = ResourceImageSlick(super.imgBadges)
 
 	override val imgFont = super.imgFont.map {ResourceImageSlick(it)}

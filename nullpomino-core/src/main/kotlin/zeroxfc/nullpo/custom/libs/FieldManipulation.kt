@@ -352,7 +352,7 @@ Gets the number of empty blocks inside the field.
 @return Number of empty spaces inside (including in hidden height and clear queued lines)
  */
 val Field.getNumberOfEmptySpaces:Int
-	get() = (hiddenHeight*-1..<heightWithoutHurryupFloor).sumOf {
+	get() = (hiddenHeight*-1..<heightWoFloor).sumOf {
 		getRow(it).count {b -> b?.isEmpty?:true||getLineFlag(it)}
 	}
 /**

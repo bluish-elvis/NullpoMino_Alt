@@ -234,8 +234,8 @@ class MarathonSquare:AbstractMode() {
 
 		if(engine.stat==GameEngine.Status.SETTING||engine.stat==GameEngine.Status.RESULT&&!owner.replayMode) {
 			if(!owner.replayMode&&engine.ai==null) {
-				val scale = if(receiver.nextDisplayType==2&&gametype==0) .5f else 1f
-				val topY = if(receiver.nextDisplayType==2&&gametype==0) 6 else 4
+				val scale = if(receiver.bigSideNext&&gametype==0) .5f else 1f
+				val topY = if(receiver.bigSideNext&&gametype==0) 6 else 4
 
 				when(gametype) {
 					0 -> receiver.drawScore(engine, 3, topY-1, "SCORE SQUARE TIME", BASE, COLOR.BLUE, scale)
@@ -345,12 +345,11 @@ class MarathonSquare:AbstractMode() {
 	 * @param field Field
 	 */
 	private fun grayoutBrokenBlocks(field:Field) {
-		for(i in field.hiddenHeight*-1..<field.heightWithoutHurryupFloor)
-			for(j in 0..<field.width)
-				field.getBlock(j, i)?.run {
-					if(!isEmpty&&getAttribute(ATTRIBUTE.BROKEN))
-						color = Block.COLOR.WHITE
-				}
+		for(i in field.allSpaceRows) for(j in 0..<field.width)
+			field.getBlock(j, i)?.run {
+				if(!isEmpty&&getAttribute(ATTRIBUTE.BROKEN))
+					color = Block.COLOR.WHITE
+			}
 	}
 
 	/* Calculates lines-clear score
@@ -440,7 +439,7 @@ class MarathonSquare:AbstractMode() {
 	override fun lineClearEnd(engine:GameEngine):Boolean {
 		if(engine.lineGravityType==LineGravity.CASCADE&&engine.lineGravityTotalLines>0&&tntAvalanche) {
 			val field = engine.field
-			for(i in field.heightWithoutHurryupFloor-1 downTo field.hiddenHeight*-1)
+			for(i in field.allSpaceRows.toList().reversed())
 				if(field.isEmptyLine(i)) {
 					field.cutLine(i, 1)
 					engine.lineGravityTotalLines--

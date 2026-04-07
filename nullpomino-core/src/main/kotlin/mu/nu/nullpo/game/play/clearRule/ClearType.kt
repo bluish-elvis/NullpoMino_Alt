@@ -75,7 +75,7 @@ interface ClearType {
 		 * @param gemType 1 = Bomb,2 = Spark
 		 * @return Total number of blocks cleared.
 		 */
-		fun Field.clearProceed(gemType:Int = 0):ClearResult = (-hiddenHeight..<heightWithoutHurryupFloor).associateWith {y ->
+		fun Field.clearProceed(gemType:Int = 0):ClearResult = allSpaceRows.associateWith {y ->
 			getRow(y).withIndex().associate {(x, b) ->
 				x to if(b?.getAttribute(ATTRIBUTE.ERASE)==true) {
 					if(b.hard>0) {

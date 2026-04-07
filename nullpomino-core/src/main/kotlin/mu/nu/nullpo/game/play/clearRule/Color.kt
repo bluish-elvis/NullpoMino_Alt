@@ -146,7 +146,7 @@ data class Color(var colorClearSize:Int = 4, var garbageColorClear:Boolean = tru
 				colorClearExtraCount = 0
 				//				colorsCleared = 0
 			}
-			for(i in -hiddenHeight..<heightWithoutHurryupFloor)
+			for(i in allSpaceRows)
 				for(j in 0..<width) {
 					setAllAttribute(false, Block.ATTRIBUTE.TEMP_MARK)
 					val clear = clearColor(j, i, null, garbageClear, gemSame, ignoreHidden)

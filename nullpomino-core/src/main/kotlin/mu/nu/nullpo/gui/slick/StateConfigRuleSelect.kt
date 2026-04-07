@@ -32,6 +32,7 @@ package mu.nu.nullpo.gui.slick
 
 import mu.nu.nullpo.game.component.RuleOptions
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
+import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.gui.common.ConfigGlobal.RuleConf
 import mu.nu.nullpo.gui.slick.img.FontNormal
 import mu.nu.nullpo.util.GeneralUtil.Json
@@ -40,9 +41,8 @@ import org.newdawn.slick.Graphics
 import org.newdawn.slick.state.StateBasedGame
 import java.io.File
 import java.io.FileInputStream
-import java.util.LinkedList
-import java.util.zip.GZIPInputStream
-import java.util.zip.ZipException
+import java.util.*
+import java.util.zip.*
 
 /** Rule selector state */
 internal class StateConfigRuleSelect:BaseMenuScrollState() {
@@ -57,6 +57,8 @@ internal class StateConfigRuleSelect:BaseMenuScrollState() {
 	private var strRuleNameList:List<String> = emptyList()
 	/** Rule file list (for list display) */
 	private var strRuleFileList:List<String> = emptyList()
+	/** Rule file list (for list display) */
+	private var colorRuleList:List<COLOR> = emptyList()
 	/** Current Rule File name */
 	private var strCurrentFileName = ""
 	/** Current Rule name */
@@ -123,26 +125,16 @@ internal class StateConfigRuleSelect:BaseMenuScrollState() {
 		}
 	}
 
-	/** Get rule name list as String[]
-	 * @return Rule name list
-	 */
-	private fun extractRuleNameListFromRuleEntries():List<String> =
-		List(ruleEntries.size) {ruleEntries[it].name}
-
-	/** Get rule file name list as String[]
-	 * @return Rule name list
-	 */
-	private fun extractFileNameListFromRuleEntries():List<String> =
-		List(ruleEntries.size) {ruleEntries[it].file}
 
 	/* Called when entering this state */
 	override fun enter(container:GameContainer?, game:StateBasedGame?) {
 		super.enter(container, game)
 		strFileList = ruleFileList?:emptyArray()
 		createRuleEntries(strFileList, style)
-		strRuleNameList = extractRuleNameListFromRuleEntries()
-		strRuleFileList = extractFileNameListFromRuleEntries()
-		list = strRuleNameList
+		strRuleNameList = List(ruleEntries.size) {ruleEntries[it].name}
+		strRuleFileList = List(ruleEntries.size) {ruleEntries[it].file}
+		colorRuleList = List(ruleEntries.size) {GameEngine.GameStyle.intColor(ruleEntries[it].style)}
+		list = strRuleNameList.zip(colorRuleList)
 		NullpoMinoSlick.propGlobal.rule[player][style].let {
 			strCurrentFileName = it.file
 			strCurrentRuleName = it.name
@@ -193,7 +185,7 @@ internal class StateConfigRuleSelect:BaseMenuScrollState() {
 	/* D button */
 	override fun onPushButtonD(container:GameContainer, game:StateBasedGame, delta:Int):Boolean {
 		ResourceHolder.soundManager.play("change")
-		list = if(list==strRuleNameList) strRuleFileList else strRuleNameList
+		list = (if(list==strRuleNameList) strRuleFileList else strRuleNameList).zip(colorRuleList)
 		return false
 	}
 

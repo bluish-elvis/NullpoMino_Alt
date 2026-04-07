@@ -30,13 +30,11 @@
  */
 package mu.nu.nullpo.gui.slick
 
-import mu.nu.nullpo.game.event.EventReceiver
+import mu.nu.nullpo.game.event.EventReceiver.COLOR
 import mu.nu.nullpo.gui.common.BaseFont
 import mu.nu.nullpo.gui.common.GameKeyDummy
 import mu.nu.nullpo.gui.slick.img.FontNormal
-import org.newdawn.slick.GameContainer
-import org.newdawn.slick.Input
-import org.newdawn.slick.SlickException
+import org.newdawn.slick.*
 import org.newdawn.slick.state.StateBasedGame
 
 /** Dummy class for menus where the player picks from a list of options */
@@ -123,13 +121,14 @@ abstract class BaseMenuChooseState:BaseMenuState() {
 		return false
 	}
 
-	protected fun renderChoices(x:Int, choices:List<String>) =
-		renderChoices(x, minChoiceY, choices)
+	protected fun renderChoices(x:Int, y:Int = minChoiceY, choices:List<String>) =
+		renderChoices(x, minChoiceY, choices.map {it to COLOR.WHITE})
 
-	protected fun renderChoices(x:Int, y:Int = minChoiceY, choices:List<String>) {
-		FontNormal.printFontGrid(x-1, y+cursor, BaseFont.CURSOR, EventReceiver.COLOR.RAINBOW)
-		choices.forEachIndexed {i, z ->
-			FontNormal.printFontGrid(x, y+i, z, cursor==i)
+	@JvmName("renderChoicesWithColor")
+	protected fun renderChoices(x:Int, y:Int = minChoiceY, choices:List<Pair<String, COLOR>>) {
+		FontNormal.printFontGrid(x-1, y+cursor, BaseFont.CURSOR, COLOR.RAINBOW)
+		choices.forEachIndexed {i, (z, c) ->
+			FontNormal.printFontGrid(x, y+i, z, if(cursor==i) COLOR.RAINBOW else c)
 		}
 	}
 

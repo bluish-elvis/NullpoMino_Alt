@@ -235,8 +235,8 @@ class Avalanche1P:Avalanche1PDummyMode() {
 
 		if(engine.stat==GameEngine.Status.SETTING||engine.stat==GameEngine.Status.RESULT&&!owner.replayMode) {
 			if(!owner.replayMode&&engine.ai==null&&engine.colorClearSize==4) {
-				val scale = if(receiver.nextDisplayType==2&&gametype==0) .5f else 1f
-				val topY = if(receiver.nextDisplayType==2&&gametype==0) 6 else 4
+				val scale = if(receiver.bigSideNext&&gametype==0) .5f else 1f
+				val topY = if(receiver.bigSideNext&&gametype==0) 6 else 4
 
 				when(gametype) {
 					0 -> receiver.drawScore(engine, 3, topY-1, "SCORE      TIME", BASE, COLOR.BLUE, scale)

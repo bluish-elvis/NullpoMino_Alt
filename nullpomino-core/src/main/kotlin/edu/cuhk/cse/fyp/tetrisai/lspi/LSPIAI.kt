@@ -300,7 +300,7 @@ open class LSPIAI:DummyAI(), Runnable {
 		val holdOK = engine.isHoldOK
 		var holdEmpty = false
 		var pieceHold = engine.holdPieceObject
-		val pieceNext = engine.getNextObject(engine.nextPieceCount)
+		val pieceNext = engine.getNextObject()
 		val fld = Field(engine.field)
 		if(pieceHold==null) {
 			holdEmpty = true
@@ -494,7 +494,7 @@ open class LSPIAI:DummyAI(), Runnable {
 					}
 				}
 				if(pieceHold==null) {
-					pieceHold = engine.getNextObject(engine.nextPieceCount)
+					pieceHold = engine.getNextObject()
 				}
 				// Hold Peace
 				if(holdOK&&pieceHold!=null&&depth==0) {
@@ -506,7 +506,7 @@ open class LSPIAI:DummyAI(), Runnable {
 						fld.replace(engine.field)
 						val y = pieceHold.getBottom(x, spawnY, rt, fld)
 						if(!pieceHold.checkCollision(x, y, rt, fld)) {
-							var pieceNext2 = engine.getNextObject(engine.nextPieceCount)
+							var pieceNext2 = engine.getNextObject()
 							if(holdEmpty) pieceNext2 = engine.getNextObject(engine.nextPieceCount+1)
 							val pts = thinkMain(engine, x, y, rt, -1, fld, pieceHold, pieceNext2, null, depth)
 							if(pts>bestPtsD) {
@@ -557,7 +557,7 @@ open class LSPIAI:DummyAI(), Runnable {
 		val holdOK = engine.isHoldOK
 		var holdEmpty = false
 		var pieceHold = engine.holdPieceObject
-		val pieceNext = engine.getNextObject(engine.nextPieceCount)
+		val pieceNext = engine.getNextObject()
 		val fld = Field(engine.field)
 		if(pieceHold==null) {
 			holdEmpty = true
@@ -751,7 +751,7 @@ open class LSPIAI:DummyAI(), Runnable {
 					}
 				}
 				if(pieceHold==null) {
-					pieceHold = engine.getNextObject(engine.nextPieceCount)
+					pieceHold = engine.getNextObject()
 				}
 				// Hold Peace
 				if(holdOK&&pieceHold!=null&&depth==0) {
@@ -763,7 +763,7 @@ open class LSPIAI:DummyAI(), Runnable {
 						fld.replace(engine.field)
 						val y = pieceHold.getBottom(x, spawnY, rt, fld)
 						if(!pieceHold.checkCollision(x, y, rt, fld)) {
-							var pieceNext2 = engine.getNextObject(engine.nextPieceCount)
+							var pieceNext2 = engine.getNextObject()
 							if(holdEmpty) pieceNext2 = engine.getNextObject(engine.nextPieceCount+1)
 							val pts = thinkMainByLineStack(engine, x, y, rt, -1, fld, pieceHold, pieceNext2, null, depth)
 							if(pts>bestOppPts) {

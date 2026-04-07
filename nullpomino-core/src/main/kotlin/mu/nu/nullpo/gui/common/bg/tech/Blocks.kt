@@ -32,8 +32,7 @@
 package mu.nu.nullpo.gui.common.bg.tech
 
 import mu.nu.nullpo.game.component.Block.COLOR.Companion.COLOR_NUM
-import mu.nu.nullpo.gui.common.AbstractRenderer
-import mu.nu.nullpo.gui.common.ResourceImage
+import mu.nu.nullpo.gui.common.*
 import mu.nu.nullpo.gui.common.bg.AbstractBG
 import zeroxfc.nullpo.custom.libs.Vector
 import kotlin.random.Random
@@ -74,7 +73,7 @@ class Blocks(addBGFX:AbstractBG<*>? = null):AbstractBG<Nothing?>(ResourceImage.B
 					if(it<=3) COLOR_NUM+Random.nextInt(mu.nu.nullpo.game.component.Block.COLOR.GEM_NUM)
 					else Random.nextInt(COLOR_NUM)
 			}
-			skin = Random.nextInt()
+			skin = Random.nextInt(ResourceHolder.imgBlockListSize+1)-1
 		}
 	}
 

@@ -9,6 +9,7 @@ mu.nu.nullpo.game.subsystem.mode.SprintUltra
 mu.nu.nullpo.game.subsystem.mode.MarathonShuttle
 mu.nu.nullpo.game.subsystem.mode.MarathonSquare
 mu.nu.nullpo.game.subsystem.mode.MarathonDrill
+mu.nu.nullpo.game.subsystem.mode.MarathonBlizzard
 mu.nu.nullpo.game.subsystem.mode.RetroN
 mu.nu.nullpo.game.subsystem.mode.RetroA
 mu.nu.nullpo.game.subsystem.mode.RetroS
@@ -25,6 +26,7 @@ mu.nu.nullpo.game.subsystem.mode.GrandRoads
 mu.nu.nullpo.game.subsystem.mode.GrandS1
 mu.nu.nullpo.game.subsystem.mode.GrandS2
 mu.nu.nullpo.game.subsystem.mode.GrandSStealth
+mu.nu.nullpo.game.subsystem.mode.GrandS3
 mu.nu.nullpo.game.subsystem.mode.GrandZ
 mu.nu.nullpo.game.subsystem.mode.Practice
 mu.nu.nullpo.game.subsystem.mode.VSBattle
@@ -44,7 +46,7 @@ zeroxfc.nullpo.custom.modes.ColorPower
 zeroxfc.nullpo.custom.modes.Deltatris
 zeroxfc.nullpo.custom.modes.Joker
 zeroxfc.nullpo.custom.modes.Minesweeper
-zeroxfc.nullpo.custom.modes.MissionMode
+zeroxfc.nullpo.custom.modes.MissionRush
 zeroxfc.nullpo.custom.modes.RollTraining
 zeroxfc.nullpo.custom.modes.ScoreTrial
 wtf.oshisaure.nullpomodshit.modes.MarathonActual

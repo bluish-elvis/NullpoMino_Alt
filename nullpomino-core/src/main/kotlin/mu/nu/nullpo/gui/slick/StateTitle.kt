@@ -36,15 +36,13 @@ import mu.nu.nullpo.game.play.GameManager
 import mu.nu.nullpo.game.play.GameManager.Companion.buildTypeString
 import mu.nu.nullpo.game.play.GameManager.Companion.versionMajor
 import mu.nu.nullpo.game.play.GameManager.Companion.versionMinor
-import mu.nu.nullpo.gui.common.BaseStaffRoll
+import mu.nu.nullpo.gui.common.*
 import mu.nu.nullpo.gui.common.bg.tech.Blocks
 import mu.nu.nullpo.gui.net.UpdateChecker
 import mu.nu.nullpo.gui.slick.BaseMenuConfigState.Column
 import mu.nu.nullpo.gui.slick.img.*
 import org.apache.logging.log4j.LogManager
-import org.newdawn.slick.AppGameContainer
-import org.newdawn.slick.GameContainer
-import org.newdawn.slick.Graphics
+import org.newdawn.slick.*
 import org.newdawn.slick.state.StateBasedGame
 import org.newdawn.slick.state.transition.EmptyTransition
 import org.newdawn.slick.state.transition.HorizontalSplitTransition
@@ -59,7 +57,7 @@ internal class StateTitle:BaseMenuChooseState() {
 	private var rend:RendererSlick? = null
 
 	init {
-		minChoiceY = 20-list.size
+		minChoiceY = 20-list.size*3/2
 	}
 
 	/* Fetch this state's ID */
@@ -102,7 +100,13 @@ internal class StateTitle:BaseMenuChooseState() {
 		if(rollY>mY+150) rollY -= mY+480+150
 		bg.update()
 	}
+	private fun drawChoices(x:Int, y:Int = minChoiceY, choices:List<String>) {
 
+		FontNormal.printFontGrid(x-2, y+cursor*BaseFontMedal.SC-BaseFontMedal.PT/16f, BaseFont.CURSOR, COLOR.RAINBOW, 1.5f)
+		choices.forEachIndexed {i, z ->
+			FontMedal.printFontGrid(x, y+i*BaseFontMedal.SC, z, if(cursor==i) -1 else 4-i, alpha = 1f)
+		}
+	}
 	/* Draw the screen */
 	override fun renderImpl(container:GameContainer, game:StateBasedGame, g:Graphics) {
 		// Background
@@ -121,7 +125,7 @@ internal class StateTitle:BaseMenuChooseState() {
 			COLOR.WHITE, 0.5f
 		)
 
-		renderChoices(2, minChoiceY, list.map {it.show()})
+		drawChoices(2, minChoiceY, list.map {it.show()})
 
 		FontTTF.print(16, 432, NullpoMinoSlick.getUIText(list[cursor].uiText))
 

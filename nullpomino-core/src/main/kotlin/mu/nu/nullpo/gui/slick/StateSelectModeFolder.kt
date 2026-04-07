@@ -63,13 +63,13 @@ internal class StateSelectModeFolder:BaseMenuScrollState() {
 
 	/** Prepare folder list */
 	private fun prepareFolderList() {
-		list = List(listFolder.size) {
+		list = (List(listFolder.size) {
 			if(strCurrentFolder==listFolder[it]) {
 				cursor = it
 				emitGrid(cursor+minChoiceY)
 			}
 			listFolder[it]
-		}+"[ALL MODES]"
+		}+"[ALL MODES]").map {it to COLOR.WHITE}
 	}
 
 	/** Get folder description
@@ -86,13 +86,13 @@ internal class StateSelectModeFolder:BaseMenuScrollState() {
 	/* Render screen */
 	override fun onRenderSuccess(container:GameContainer, game:StateBasedGame, graphics:Graphics) {
 		FontNormal.printFontGrid(1, 1, "Pick a Modes Folder (${cursor+1}/${list.size})", COLOR.ORANGE)
-		FontTTF.print(16, 440, getFolderDesc(list[cursor]))
+		FontTTF.print(16, 440, getFolderDesc(list[cursor].first))
 	}
 
 	/* Decide */
 	override fun onDecide(container:GameContainer, game:StateBasedGame, delta:Int):Boolean {
 		ResourceHolder.soundManager.play("decide1")
-		strCurrentFolder = if(cursor==list.lastIndex) "" else list[cursor]
+		strCurrentFolder = if(cursor==list.lastIndex) "" else list[cursor].first
 		NullpoMinoSlick.propGlobal.lastModeFolder = strCurrentFolder
 //		NullpoMinoSlick.saveConfig()
 		game.enterState(StateSelectMode.ID, TransDecideFolder(strCurrentFolder), HorizontalSplitTransition())

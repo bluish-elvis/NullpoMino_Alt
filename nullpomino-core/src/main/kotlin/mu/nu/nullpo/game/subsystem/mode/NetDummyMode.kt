@@ -48,7 +48,7 @@ import mu.nu.nullpo.util.GeneralUtil.toTimeStr
 import org.apache.logging.log4j.LogManager
 import java.io.IOException
 import java.util.*
-import java.util.zip.Adler32
+import java.util.zip.*
 import mu.nu.nullpo.util.GeneralUtil as Util
 
 /** Special base class for netplay */
@@ -824,7 +824,7 @@ abstract class NetDummyMode:AbstractMode(), NetLobbyListener {
 			}
 
 			netLobby?.netPlayerClient?.send(
-				"game\tfield\t${engine.blkSkin}\t${engine.field.heightWithoutHurryupFloor}\t$strFieldData\t$isCompressed\n"
+				"game\tfield\t${engine.blkSkin}\t${engine.field.heightWoFloor}\t$strFieldData\t$isCompressed\n"
 			)
 		}
 	}

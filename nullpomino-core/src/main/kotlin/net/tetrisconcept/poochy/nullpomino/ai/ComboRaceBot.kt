@@ -109,7 +109,7 @@ class ComboRaceBot:DummyAI(), Runnable {
 		inARE = newInARE
 		if(inARE&&delay>=engine.aiMoveDelay) {
 			var input:UShort = 0u
-			var nextPiece = engine.getNextObject(engine.nextPieceCount)
+			var nextPiece = engine.getNextObject()
 			if(bestHold&&thinkComplete) {
 				input = input or Controller.BUTTON_BIT_D
 				nextPiece =

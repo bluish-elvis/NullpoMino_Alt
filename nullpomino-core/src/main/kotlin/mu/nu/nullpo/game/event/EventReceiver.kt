@@ -54,6 +54,8 @@ import kotlin.random.Random
 /** Drawing and event handling EventReceiver */
 open class EventReceiver {
 	var conf = VisualConf(); protected set
+	/** 回転・パーティクルなどの重い演出を使う
+	 * 1:Line clearエフェクト表示 2:背景のアニメとフェード 3:半透明パーティクル */
 	val heavyEffect get() = conf.heavyEffect
 	protected val random = Random.Default
 
@@ -62,13 +64,15 @@ open class EventReceiver {
 	/** Get type of piece preview
 	 * @return 0=Above 1=Side Small 2=Side Big
 	 */
-	var nextDisplayType:Int = 0; protected set
+	val nextDisplayType:Int get() = conf.nextDisplayType
 
 	/** Piece previews on sides */
-	protected val sideNext get() = nextDisplayType>0
+	val sideNext get() = nextDisplayType>0
 
+	/** Use small side previews */
+	val smallSideNext get() = nextDisplayType==1
 	/** Use bigger side previews */
-	protected val bigSideNext get() = nextDisplayType>1
+	val bigSideNext get() = nextDisplayType>1
 
 	/** @return True if you can use TTF font routines */
 	open val isTTFSupport get() = false
@@ -81,11 +85,11 @@ open class EventReceiver {
 	/** @return X position of field */
 	val GameEngine.fX
 		get() = if(owner.menuOnly) 0f else (owner.mode?.let {m ->
-			frameX+fieldXOffset+if(nextDisplayType==2) NEW_FIELD_OFFSET_X_BSP[m.gameStyle.ordinal][displaySize+1].let {
+			frameX+fieldXOffset+if(bigSideNext) NEW_FIELD_OFFSET_X_BSP[m.gameStyle.ordinal][displaySize+1].let {
 				it[minOf(it.lastIndex, playerID)]
 			}
 			else NEW_FIELD_OFFSET_X[m.gameStyle.ordinal][displaySize+1].let {
-				it[minOf(it.lastIndex, playerID)]+if(nextDisplayType==1) blockSize else 0
+				it[minOf(it.lastIndex, playerID)]+if(smallSideNext) blockSize else 0
 			}
 		})?:0f
 
@@ -97,7 +101,7 @@ open class EventReceiver {
 	/** @return Y position of field*/
 	val GameEngine.fY
 		get() = if(owner.menuOnly) 0f else (owner.mode?.let {m ->
-			frameY+if(nextDisplayType==2) NEW_FIELD_OFFSET_Y_BSP[m.gameStyle.ordinal][displaySize+1].let {
+			frameY+if(bigSideNext) NEW_FIELD_OFFSET_Y_BSP[m.gameStyle.ordinal][displaySize+1].let {
 				it[minOf(it.lastIndex, playerID)]
 			}
 			else NEW_FIELD_OFFSET_Y[m.gameStyle.ordinal][displaySize+1].let {it[minOf(it.lastIndex, playerID)]}+
@@ -110,7 +114,7 @@ open class EventReceiver {
 	val GameEngine.sX
 		get() = (if(owner.menuOnly) 0 else
 			owner.mode?.let {m ->
-				fieldXOffset+if(nextDisplayType==2) NEW_FIELD_OFFSET_X_BSP[m.gameStyle.ordinal][displaySize+1].let {
+				fieldXOffset+if(bigSideNext) NEW_FIELD_OFFSET_X_BSP[m.gameStyle.ordinal][displaySize+1].let {
 					it[minOf(it.lastIndex, playerID)]
 				}
 				else NEW_FIELD_OFFSET_X[m.gameStyle.ordinal][displaySize+1].let {it[minOf(it.lastIndex, playerID)]}
@@ -122,17 +126,14 @@ open class EventReceiver {
 	/** @return Y position of score display area */
 	val GameEngine.sY
 		get() = if(owner.menuOnly) 0 else owner.mode?.let {m ->
-			if(nextDisplayType==2) NEW_FIELD_OFFSET_Y_BSP[m.gameStyle.ordinal].let {it[minOf(it.lastIndex, displaySize+1)]}
+			if(bigSideNext) NEW_FIELD_OFFSET_Y_BSP[m.gameStyle.ordinal].let {it[minOf(it.lastIndex, displaySize+1)]}
 				.let {it[minOf(it.lastIndex, playerID)]}
 			else NEW_FIELD_OFFSET_Y[m.gameStyle.ordinal].let {it[minOf(it.lastIndex, displaySize+1)]}.let {
-				it[minOf(
-					it.lastIndex,
-					playerID
-				)]
+				it[minOf(it.lastIndex, playerID)]
 			}
 		}?:0
 
-	/** It will be called when a lines is cleared.*/
+	/** It will be called when a lines are cleared.*/
 	open fun lineClear(engine:GameEngine, y:Collection<Int>) {}
 
 	/** It will be called when score gained.
@@ -642,15 +643,15 @@ open class EventReceiver {
 	 * @param darkness 暗さもしくは明るさ
 	 */
 	@JvmOverloads
-	fun drawBlock(x:Number, y:Number, block:Block, darkness:Float = 0f, alpha:Float = 1f, scale:Float = 1f) =
-		drawBlock(
-			x, y, block.drawId, block.skin, block.getAttribute(Block.ATTRIBUTE.BONE), block.darkness+darkness,
-			block.alpha*alpha, scale, block.aint
-		)
+	fun drawBlock(x:Number, y:Number, block:Block, darkness:Float = 0f, alpha:Float = 1f, scale:Float = 1f) {
+		if(block.type==Block.TYPE.ITEM) drawBlock(x, y, block.iNum, -1, false, block.darkness+darkness,
+			block.alpha*alpha, scale, block.aint) else
+			drawBlock(x, y, block.drawId, block.skin, block.getAttribute(Block.ATTRIBUTE.BONE),
+				block.darkness+darkness, block.alpha*alpha, scale, block.aint)
+	}
 
 	@JvmOverloads fun drawBlockForceVisible(x:Number, y:Number, blk:Block, scale:Float = 1f) =
-		drawBlock(x, y, blk.drawId, blk.skin, blk.getAttribute(Block.ATTRIBUTE.BONE),
-			blk.darkness/2, .25f*blk.alpha+.25f, scale, blk.aint)
+		drawBlock(x, y, blk, blk.darkness/2, .25f*blk.alpha+.25f, scale)
 
 	/** Blockピースを描画 (暗さもしくは明るさの指定可能)
 	 * @param x X-coordinate
@@ -796,7 +797,7 @@ open class EventReceiver {
 	/** It will be called during the "Ready->Go" screen.*/
 	open fun onReady(engine:GameEngine) {}
 
-	/** It will be called during the piece movement.*/
+	/** It will be called during the piece movement. */
 	open fun onMove(engine:GameEngine) {}
 
 	/** It will be called during the "Lock flash".*/

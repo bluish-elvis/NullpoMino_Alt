@@ -818,7 +818,7 @@ class Collapse:AbstractMode() {
 		)
 		if(engine.stat===Status.SETTING||engine.stat===Status.RESULT&&!owner.replayMode) {
 			if(!owner.replayMode&&enableBombs&&engine.ai==null) {
-				val topY = if(receiver.nextDisplayType==2) 6 else 4
+				val topY = if(receiver.bigSideNext) 6 else 4
 				receiver.drawScore(engine, 3, topY-1, "SCORE    LEVEL", BASE, COLOR.BLUE)
 				if(showPlayerStats) {
 					for(i in 0..<MAX_RANKING) {

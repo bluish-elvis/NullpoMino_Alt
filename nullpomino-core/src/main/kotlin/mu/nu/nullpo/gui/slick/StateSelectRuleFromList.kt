@@ -33,6 +33,7 @@ package mu.nu.nullpo.gui.slick
 
 import mu.nu.nullpo.game.component.RuleOptions
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
+import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.gui.slick.img.FontNano
 import mu.nu.nullpo.gui.slick.img.FontNormal
 import mu.nu.nullpo.util.GeneralUtil.Json
@@ -42,12 +43,9 @@ import org.newdawn.slick.Graphics
 import org.newdawn.slick.state.GameState
 import org.newdawn.slick.state.StateBasedGame
 import org.newdawn.slick.state.transition.EmptyTransition
-import java.io.File
-import java.io.FileInputStream
-import java.io.FileReader
-import java.io.IOException
+import java.io.*
 import java.util.*
-import java.util.zip.GZIPInputStream
+import java.util.zip.*
 import mu.nu.nullpo.gui.slick.NullpoMinoSlick.Companion.propGlobal as pG
 
 /** Rule select (after mode selection) */
@@ -120,10 +118,13 @@ internal class StateSelectRuleFromList:BaseMenuScrollState() {
 		if(strCurrentMode.isEmpty()) strCurrentMode = pG.lastMode[""]?:""
 
 		val curRule = pG.rule[0][0].path
-		list = currentRuleList.map {it.name}.let {if(curRule.isNotEmpty()) it+STR_FB else it}
+		list = currentRuleList.map {it.name to GameEngine.GameStyle.intColor(it.mode)}.let {
+			if(curRule.isNotEmpty())
+				it+STR_FB else it
+		}
 
 		val strLastRule = pG.lastRule[strCurrentMode.lowercase(Locale.getDefault())]
-		val defaultCursor = list.indexOfFirst {it==strLastRule}
+		val defaultCursor = list.indexOfFirst {(it) -> it==strLastRule}
 		cursor = if(defaultCursor<0) list.size-1 else defaultCursor
 		emitGrid(cursor+minChoiceY)
 	}
@@ -144,7 +145,7 @@ internal class StateSelectRuleFromList:BaseMenuScrollState() {
 	override fun onDecide(container:GameContainer, game:StateBasedGame, delta:Int):Boolean {
 		ResourceHolder.soundManager.play("decide0")
 		pG.lastRule[strCurrentMode.lowercase(Locale.getDefault())] =
-			if(list[cursor]==STR_FB) list[cursor] else ""
+			if(list[cursor]==STR_FB) list[cursor].first else ""
 		NullpoMinoSlick.saveConfig()
 
 		val strRulePath = if(list[cursor]==STR_FB) null else currentRuleList.map {it.path}[cursor]
@@ -194,6 +195,6 @@ internal class StateSelectRuleFromList:BaseMenuScrollState() {
 		/** Number of rules in one page */
 		const val PAGE_HEIGHT = 24
 		/** String of Fallback Menu*/
-		const val STR_FB = "(Current Rule)"
+		val STR_FB = "(Current Rule)" to COLOR.WHITE
 	}
 }
