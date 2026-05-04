@@ -88,10 +88,10 @@ class BlockParticle(block:Block?, x:Float, y:Float, velocity:Vector, accelerate:
 	 */
 	class Mapper(engine:GameEngine, receiver:EventReceiver, blocks:Map<Int, Map<Int, Block>>, type:Type,
 		isFlashing:Boolean, maxVelocity:Float = 4f, rand:Random = Random.Default) {
-		constructor(engine:GameEngine, receiver:EventReceiver, blocks:Collection<Triple<Int, Int, Block>>, type:Type,
+		constructor(engine:GameEngine, receiver:EventReceiver, blocks:Collection<Triple<Block, Int, Int>>, type:Type,
 			isFlashing:Boolean, maxVelocity:Float = 4f, rand:Random = Random.Default):this(engine, receiver,
-			//blocks Collection<Triple<x:Int,y:Int, Block>> convert to Map<y:Int, Map<x:Int, Block>>
-			blocks.groupBy {(_, y)-> y}.mapValues {(_, it)-> it.associate {(x, _, b)-> x to b}},
+			//blocks Collection<Triple<Block, x:Int,y:Int>> convert to Map<y:Int, Map<x:Int, Block>>
+			blocks.groupBy {(_, _, y) -> y}.mapValues {(_, it) -> it.associate {(b, x, y) -> x to b}},
 			type, isFlashing, maxVelocity, rand)
 
 		val particles:MutableSet<Particle> = blocks.flatMap {(y, row) ->

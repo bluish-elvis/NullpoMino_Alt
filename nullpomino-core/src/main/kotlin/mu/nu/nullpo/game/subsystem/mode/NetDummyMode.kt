@@ -763,12 +763,11 @@ abstract class NetDummyMode:AbstractMode(), NetLobbyListener {
 			val pieceBig = message.size>11&&message[11].toBoolean()
 
 			engine.nowPieceObject = Piece(id).apply {
-				direction = pieceDir
 				setAttribute(true, Block.ATTRIBUTE.VISIBLE)
 				setColor(pieceColor)
 				setSkin(pieceSkin)
+				direction = pieceDir
 				big = pieceBig
-				updateConnectData()
 			}
 			engine.nowPieceX = pieceX
 			engine.nowPieceY = pieceY
@@ -919,10 +918,9 @@ abstract class NetDummyMode:AbstractMode(), NetLobbyListener {
 						engine.holdPieceObject = null
 					else {
 						engine.holdPieceObject = Piece(pieceID).apply {
-							direction = pieceDirection
 							setColor(pieceColor)
 							setSkin(netPlayerSkin)
-							updateConnectData()
+							direction = pieceDirection
 						}
 					}
 				} else {
@@ -930,10 +928,9 @@ abstract class NetDummyMode:AbstractMode(), NetLobbyListener {
 						engine.nextPieceArrayObject = List(maxNext) {
 							//engine.nextPieceArrayObject[i-1] =
 							Piece(pieceID).apply {
-								direction = pieceDirection
 								setColor(pieceColor)
 								setSkin(netPlayerSkin)
-								updateConnectData()
+								direction = pieceDirection
 							}
 						}
 				}

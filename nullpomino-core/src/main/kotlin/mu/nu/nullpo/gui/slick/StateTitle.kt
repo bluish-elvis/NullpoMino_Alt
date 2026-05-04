@@ -46,6 +46,9 @@ import org.newdawn.slick.*
 import org.newdawn.slick.state.StateBasedGame
 import org.newdawn.slick.state.transition.EmptyTransition
 import org.newdawn.slick.state.transition.HorizontalSplitTransition
+import zeroxfc.nullpo.custom.libs.Interpolation.cosStep
+import zeroxfc.nullpo.custom.libs.Interpolation.sineStep
+import zeroxfc.nullpo.custom.libs.Interpolation.smoothStep
 
 /** Title screen state */
 internal class StateTitle:BaseMenuChooseState() {
@@ -130,6 +133,12 @@ internal class StateTitle:BaseMenuChooseState() {
 		FontTTF.print(16, 432, NullpoMinoSlick.getUIText(list[cursor].uiText))
 
 		FontNano.printFont(500, 8, "$rollY")
+		val testEase = smoothStep(0f, 100f, (60-rollY.mod(60f))/60f, 16f)
+		val testSine = sineStep(0f, 100f, rollY.mod(60f)/60f)
+		val testCosi = cosStep(1300f, 0f, (1200-rollY.mod(1200f))/1200f).toInt()
+		FontNano.printFont(250+testEase, 8, "$testEase")
+		FontNano.printFont(250+testSine, 16, "$testSine")
+		FontNano.printFont(250+testCosi/10, 32, "$testCosi")
 		FontNano.printFont(500, 22, "${BaseStaffRoll.height}")
 		RenderStaffRoll.draw(500f-BaseStaffRoll.width, 0f, rollY, 480f, .8f)
 		super.renderImpl(container, game, g)

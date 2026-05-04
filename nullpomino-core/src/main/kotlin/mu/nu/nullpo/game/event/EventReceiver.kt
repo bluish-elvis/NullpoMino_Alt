@@ -183,6 +183,7 @@ open class EventReceiver {
 
 	open fun bravo(engine:GameEngine) {
 		playSE("bravo")
+		playSE("cheer")
 	}
 
 	/** Draw String to any location.
@@ -662,7 +663,7 @@ open class EventReceiver {
 	 */
 	@JvmOverloads
 	fun drawPiece(x:Float, y:Float, piece:Piece, scale:Float = 1f, darkness:Float = 0f, alpha:Float = 1f) =
-		piece.data[piece.direction].forEach {(bx, by, blk) ->
+		piece.data[piece.direction].forEach {(blk, bx, by) ->
 			val sc = scale*(1+piece.big.toInt())
 			val bs = BS*sc
 			drawBlock(x+(bx*bs), y+(by*bs), blk, darkness, alpha, sc)
@@ -847,8 +848,11 @@ open class EventReceiver {
 	/** It will be called during the piece movement. (For rendering)*/
 	open fun renderMove(engine:GameEngine) {}
 
-	/** It will be called during the "ARE". (For rendering)*/
+	/** It will be called during the spawn delay. (For rendering)*/
 	open fun renderARE(engine:GameEngine) {}
+
+	/** It will be called during the Rewinding.*/
+	open fun onUndo(engine:GameEngine, blocks:Collection<Triple<Block, Int, Int>>) {}
 
 	/** It will be called during the "Ending start" screen. (For rendering)*/
 	open fun renderEndingStart(engine:GameEngine) {}
@@ -873,17 +877,17 @@ open class EventReceiver {
 		val pid = engine.playerID
 		val x = 170*(pid+1)-110
 		val y = 464
-		val ctrl = engine.ctrl
-		drawFont(x+0*16, y, "<", BASE, pid, ctrl.isPress(Controller.BUTTON_LEFT))
-		drawFont(x+1*16, y, BaseFont.DOWN_S, BASE, pid, ctrl.isPress(Controller.BUTTON_DOWN))
-		drawFont(x+2*16, y, BaseFont.UP_S, BASE, pid, ctrl.isPress(Controller.BUTTON_UP))
-		drawFont(x+3*16, y, ">", BASE, pid, ctrl.isPress(Controller.BUTTON_RIGHT))
-		drawFont(x+4*16, y, "A", BASE, pid, ctrl.isPress(Controller.BUTTON_A))
-		drawFont(x+5*16, y, "B", BASE, pid, ctrl.isPress(Controller.BUTTON_B))
-		drawFont(x+6*16, y, "C", BASE, pid, ctrl.isPress(Controller.BUTTON_C))
-		drawFont(x+7*16, y, "D", BASE, pid, ctrl.isPress(Controller.BUTTON_D))
-		drawFont(x+8*16, y, "E", BASE, pid, ctrl.isPress(Controller.BUTTON_E))
-		drawFont(x+9*16, y, "F", BASE, pid, ctrl.isPress(Controller.BUTTON_F))
+		fun isPress(btn:Int) = engine.ctrl.isPress(btn)
+		drawFont(x+0*16, y, "<", BASE, pid, isPress(Controller.BUTTON_LEFT))
+		drawFont(x+1*16, y, BaseFont.DOWN_S, BASE, pid, isPress(Controller.BUTTON_DOWN))
+		drawFont(x+2*16, y, BaseFont.UP_S, BASE, pid, isPress(Controller.BUTTON_UP))
+		drawFont(x+3*16, y, ">", BASE, pid, isPress(Controller.BUTTON_RIGHT))
+		drawFont(x+4*16, y, "A", BASE, pid, isPress(Controller.BUTTON_A))
+		drawFont(x+5*16, y, "B", BASE, pid, isPress(Controller.BUTTON_B))
+		drawFont(x+6*16, y, "C", BASE, pid, isPress(Controller.BUTTON_C))
+		drawFont(x+7*16, y, "D", BASE, pid, isPress(Controller.BUTTON_D))
+		drawFont(x+8*16, y, "E", BASE, pid, isPress(Controller.BUTTON_E))
+		drawFont(x+9*16, y, "F", BASE, pid, isPress(Controller.BUTTON_F))
 		drawFont(x, y-7, "%1dP:%04d %2d".format(pid+1, engine.ctrl.buttonBit.toShort(), engine.getSpinOperation()), NANO,
 			getPlayerColor(pid), .5f)
 	}
@@ -906,9 +910,8 @@ open class EventReceiver {
 	 * @param x X-coordinate grid
 	 * @param y Y-coordinate grid
 	 */
-	fun blockBreak(engine:GameEngine, x:Int, y:Int, blk:Collection<Triple<Int, Int, Block>>) =
-		blockBreak(engine, blk.groupBy({(_, bY) -> bY+y}, {(bX, _, b) -> bX+x to b})
-			.mapValues {(_, it) -> it.toMap()})
+	fun blockBreak(engine:GameEngine, x:Int, y:Int, blk:Collection<Triple<Block, Int, Int>>) =
+		blockBreak(engine, blk.groupBy({(_, bY) -> bY+y}, {(b, bX) -> bX+x to b}).mapValues {(_, it) -> it.toMap()})
 
 	/** It will be called before a block is destroyed.
 	 * @param engine GameEngine

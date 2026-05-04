@@ -93,6 +93,7 @@ object Interpolation {
 			val np2 = FloatArray(points.size-1) {points[it+1]}// Get all points except first
 			val ny = bezier1DInterp(np1, t)
 			val nv2 = bezier1DInterp(np2, t) // Recursive call
+			val t = t.coerceIn(0f, 1f)
 			val nt = 1f-t // Inverse value
 			nt*ny+t*nv2
 		}
@@ -113,6 +114,7 @@ object Interpolation {
 			val np2 = Array(points.size-1) {points[it+1]}
 			val ny = bezier2DInterp(np1, t)
 			val nv2 = bezier2DInterp(np2, t)
+			val t = t.coerceIn(0f, 1f)
 			val nt = 1f-t
 			floatArrayOf(nt*ny[0]+t*nv2[0], nt*ny[1]+t*nv2[1])
 		}
@@ -132,6 +134,7 @@ object Interpolation {
 			val np2 = DoubleArray(points.size-1) {points[it+1]}// Get all points except first
 			val ny = bezier1DInterp(np1, t)
 			val nv2 = bezier1DInterp(np2, t) // Recursive call
+			val t = t.coerceIn(0.0, 1.0)
 			val nt = 1.0-t // Inverse value
 			nt*ny+t*nv2
 		}
@@ -152,6 +155,7 @@ object Interpolation {
 			val np2 = Array(points.size-1) {points[it+1]}
 			val ny = bezier2DInterp(np1, t)
 			val nv2 = bezier2DInterp(np2, t)
+			val t = t.coerceIn(0.0, 1.0)
 			val nt = 1.0-t
 			doubleArrayOf(nt*ny[0]+t*nv2[0], nt*ny[1]+t*nv2[1])
 		}
@@ -173,21 +177,22 @@ object Interpolation {
 			val np2 = Array(points.size-1) {points[it+1]}
 			val ny = bezierNDInterp(np1, t)
 			val nv2 = bezierNDInterp(np2, t)
+			val t = t.coerceIn(0.0, 1.0)
 			val nt = 1.0-t
 			DoubleArray(ny.size) {nt*ny[it]+t*nv2[it]}
 		}
 	}
 	/**
-	 * Smooth curve interpolation of two `float` values.
+	 * Ease-Out curve interpolation of two `float` values.
 	 *
 	 * @param s          Start point
 	 * @param e          End point
-	 * @param denominator Step ease scale (denominator > 2 where smaller = closer to linear)
 	 * @param interpVal   Proportion of point travelled (0 = start, 1 = end)
+	 * @param denominator Step ease scale (denominator > 2 where smaller = closer to linear)
 	 * @return Interpolated value as `Float`
 	 */
 	fun smoothStep(s:Float, e:Float, interpVal:Float, denominator:Float = 6f):Float {
-		val den = maxOf(1f, denominator)
+		val den = maxOf(2f, denominator)
 		val diff = e-s
 		val p1 = diff*(1f/den)
 		val p2 = diff-p1
@@ -195,19 +200,19 @@ object Interpolation {
 		// log.debug(Arrays.toString(new double[] { s, s + p1, s + p2, e }));
 		// log.debug(Arrays.toString(new double[] { p1, p2}));
 		// log.debug(lerpVal);
-		return bezier1DInterp(floatArrayOf(s, s+p1, s+p2, e), interpVal)
+		return bezier1DInterp(floatArrayOf(s, s+p1, s+p2, e), interpVal.coerceIn(0f, 1f))
 	}
 	/**
-	 * Smooth curve interpolation of two `double` values.
+	 * Ease-Out curve interpolation of two `double` values.
 	 *
 	 * @param s          Start point
 	 * @param e          End point
-	 * @param denominator Step ease scale (denominator > 2 where smaller = closer to linear)
 	 * @param interpVal   Proportion of point travelled (0 = start, 1 = end)
+	 * @param denominator Step ease scale (denominator > 2 where smaller = closer to linear)
 	 * @return Interpolated value as `double`
 	 */
 	fun smoothStep(s:Double, e:Double, interpVal:Double, denominator:Double = 6.0):Double {
-		val den = maxOf(1.0, denominator)
+		val den = maxOf(2.0, denominator)
 		val diff = e-s
 		val p1 = diff*(1.0/den)
 		val p2 = diff-p1
@@ -215,7 +220,7 @@ object Interpolation {
 		// log.debug(Arrays.toString(new double[] { s, s + p1, s + p2, e }));
 		// log.debug(Arrays.toString(new double[] { p1, p2}));
 		// log.debug(lerpVal);
-		return bezier1DInterp(doubleArrayOf(s, s+p1, s+p2, e), interpVal)
+		return bezier1DInterp(doubleArrayOf(s, s+p1, s+p2, e), interpVal.coerceIn(0.0, 1.0))
 	}
 	/**
 	 * Sine interpolation of two `float` values.
@@ -227,7 +232,7 @@ object Interpolation {
 	 */
 	fun sineStep(s:Float, e:Float, interpVal:Float):Float {
 		val ofs = (PI/2f).toFloat()
-		val t = (sin(-1f*ofs+interpVal*ofs*2)+1f)/2f
+		val t = (sin(-1f*ofs+interpVal.coerceIn(0f, 1f)*ofs*2)+1f)/2f
 		return (1f-t)*s+e*t
 	}
 	/**
@@ -240,7 +245,7 @@ object Interpolation {
 	 */
 	fun sineStep(s:Double, e:Double, interpVal:Double):Double {
 		val ofs = PI/2.0
-		val t = (sin(-1.0*ofs+interpVal*ofs*2)+1.0)/2.0
+		val t = (sin(-1.0*ofs+interpVal.coerceIn(0.0, 1.0)*ofs*2)+1.0)/2.0
 		return (1.0-t)*s+e*t
 	}
 	/**
@@ -248,7 +253,7 @@ object Interpolation {
 	 */
 	fun cosStep(s:Float, e:Float, interpVal:Float):Float {
 		val ofs = (PI/2f).toFloat()
-		val t = (cos(-1f*ofs+interpVal*ofs)+1f)/2f
+		val t = cos(-1f*ofs+interpVal.coerceIn(0f, 1f)*ofs)
 		return (1f-t)*s+e*t
 	}
 }

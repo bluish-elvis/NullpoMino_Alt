@@ -33,9 +33,8 @@ package mu.nu.nullpo.game.play
 import mu.nu.nullpo.game.component.*
 import mu.nu.nullpo.game.component.Piece.Shape
 import mu.nu.nullpo.game.component.SpeedParam.Companion.SDS_FIXED
+import mu.nu.nullpo.game.event.*
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
-import mu.nu.nullpo.game.event.ReplayData
-import mu.nu.nullpo.game.event.ScoreEvent
 import mu.nu.nullpo.game.event.ScoreEvent.Twister
 import mu.nu.nullpo.game.play.clearRule.*
 import mu.nu.nullpo.game.subsystem.ai.AIPlayer
@@ -1023,6 +1022,7 @@ class GameEngine(
 
 		startTime = 0
 		endTime = 0
+		undoStack.clear()
 
 		//  event 発生
 		owner.mode?.let {
@@ -1468,7 +1468,9 @@ class GameEngine(
 				Status.MOVE -> {
 					dasRepeat = true
 					dasInstant = false
-					while(dasRepeat) statMove()
+					do {
+						statMove()
+					} while(dasRepeat)
 				}
 				Status.LOCKFLASH -> statLockFlash()
 				Status.LINECLEAR -> statLineClear()
@@ -1662,9 +1664,6 @@ class GameEngine(
 			if(nextPieceArrayObject.isEmpty()) {
 				nextPieceArrayObject = List(nextPieceArrayID.size) {
 					Piece(nextPieceArrayID[it]).also {p ->
-						p.direction = ruleOpt.pieceDefaultDirection[p.id]
-						if(p.direction>=Piece.DIRECTION_COUNT)
-							p.direction = random.nextInt(Piece.DIRECTION_COUNT)
 						p.connectBlocks = connectBlocks
 						p.setColor(ruleOpt.pieceColor[p.id])
 						p.setDarkness(0f)
@@ -1673,6 +1672,9 @@ class GameEngine(
 						p.setAttribute(bone, Block.ATTRIBUTE.BONE)
 						p.placeNum = it
 						if(it<=1) p.big = big
+						p.direction = ruleOpt.pieceDefaultDirection[p.id].let {
+							if(it>=Piece.DIRECTION_COUNT) random.nextInt(Piece.DIRECTION_COUNT) else it
+						}
 						if(randomBlockColor) {
 							if(blockColors.size<numColors||numColors<1) numColors = blockColors.size
 							val size = p.maxBlock
@@ -1685,7 +1687,6 @@ class GameEngine(
 							if(random.nextFloat()>=0.1f)
 								p.block[random.nextInt(p.maxBlock)].type = Block.TYPE.GEM
 
-						p.updateConnectData()
 					}
 				}
 			}
@@ -1745,7 +1746,7 @@ class GameEngine(
 	/** Blockピースの出現・移動処理 */
 	private fun statMove() {
 		dasRepeat = false
-
+		if(statc[0]==0&&statc[1]==0&&!initialHoldFlag) pushUndoState()
 		//  event 発生
 		if(owner.mode?.onMove(this)==true) return
 		receiver.onMove(this)
@@ -1821,7 +1822,6 @@ class GameEngine(
 					if(ruleOpt.holdResetDirection&&ruleOpt.pieceDefaultDirection[it.id]<Piece.DIRECTION_COUNT) {
 						it.direction = getNextObject(nextPieceCount-1)?.direction
 							?:ruleOpt.pieceDefaultDirection[it.id]
-						it.updateConnectData()
 					}
 					nowPieceObject?.placeNum?.let {nNum ->
 						nowPieceObject?.placeNum = it.placeNum
@@ -2036,6 +2036,7 @@ class GameEngine(
 					// 死亡
 					if(it.checkCollision(nowPieceX, nowPieceY, field)&&!clutch) {
 						it.placeToField(nowPieceX, nowPieceY, field)
+						nowPieceObject?.setDarkness(0f)
 						nowPieceObject = null
 						stat = Status.GAMEOVER
 						stopSE("danger")
@@ -2251,6 +2252,8 @@ class GameEngine(
 					it.setDarkness(.5f)
 					val underRoof = nowPieceObject?.isUnderRoof(nowPieceX, nowPieceY, field)?:false
 					val put = it.placeToField(nowPieceX, nowPieceY, field)
+					replayData.piecePlacements += PiecePlacement(replayTimer, it, nowPieceX, nowPieceY, it.direction,
+						nowPieceSpinCount, nowPieceMoveCount, holdDisable)
 
 					if(ruleOpt.lockFlash>0) it.setDarkness(-.8f)
 
@@ -2348,8 +2351,9 @@ class GameEngine(
 							interruptItem!=null -> {
 								// 中断効果のあるアイテム処理
 								nowPieceObject?.let {b ->
+									b.setDarkness(0f)
 									receiver.blockBreak(this, nowPieceX, nowPieceY,
-										b.data[b.direction].filter {(_, _, blk) -> blk.type==Block.TYPE.ITEM})
+										b.data[b.direction].filter {(blk) -> blk.type==Block.TYPE.ITEM})
 								}
 								nowPieceObject = null
 								interruptItemPreviousStat = Status.MOVE
@@ -2471,7 +2475,7 @@ class GameEngine(
 			if(lineGravityType==LineGravity.CASCADE||lineGravityType==LineGravity.CASCADE_SLOW) // Cascade
 				if(statc[6]<cascadeDelay) {
 					statc[6]++
-					field.filterAttributeBlocks(Block.ATTRIBUTE.CASCADE_FALL).forEach {(_, _, b) ->
+					field.filterAttributeBlocks(Block.ATTRIBUTE.CASCADE_FALL).forEach {(b) ->
 						b.offsetY = statc[6]/cascadeDelay.toFloat()
 					}
 					return
@@ -2527,12 +2531,14 @@ class GameEngine(
 					}
 					interruptItem!=null -> {
 						// AREなし:中断効果のあるアイテム処理
+						nowPieceObject?.setDarkness(0f)
 						nowPieceObject = null
 						interruptItemPreviousStat = Status.MOVE
 						stat = Status.INTERRUPTITEM
 					}
 					else -> {
 						// AREなし
+						nowPieceObject?.setDarkness(0f)
 						nowPieceObject = null
 						stat = Status.MOVE
 					}
@@ -2605,12 +2611,11 @@ class GameEngine(
 			}
 		}
 	}
-
 	/** Ending突入処理 */
 	private fun statEndingStart() {
 		//  event 発生
 		val animInt = 6
-		statc[3] = field.height*6
+		statc[3] = field.height*animInt
 		if(owner.mode?.onEndingStart(this)==true) return
 		receiver.onEndingStart(this)
 
@@ -2915,6 +2920,67 @@ class GameEngine(
 			stat = interruptItemPreviousStat
 		}
 	}
+	/** 巻き戻し用の状態保存クラス */
+	data class UndoState(
+		val field:Field = Field(),
+		val nextPieceCount:Int = 0,
+		val holdPieceObject:Piece? = null,
+		val statistics:Statistics = Statistics(),
+		val time:Int = statistics.time,
+		var placedPiece:PiecePlacement? = null
+	)
+
+	val undoStack = ArrayDeque<UndoState>()
+	/** 状態を履歴に保存 */
+	private fun pushUndoState() {
+//		Log.debug("pushUndoState l${statistics.level} p#$nextPieceCount hold:${holdPieceObject?.id} time:${statistics.time}")
+		undoStack.addLast(
+			UndoState(Field(this@GameEngine.field), nextPieceCount, holdPieceObject?.let {Piece(it)}, Statistics(statistics))
+		)
+		// 履歴数制限（例:100件）
+//		if (undoStack.size > 100) undoStack.removeFirst()
+	}
+	/** 状態を巻き戻す */
+	fun undo(mode:String? = null):Boolean {
+
+		val state = if(stat==Status.MOVE) {
+			if(undoStack.size<2) return false
+			else undoStack.removeLast()
+			undoStack.removeLast()
+		} else {
+			if(undoStack.size<1) return false
+			else undoStack.removeLast()
+		}
+		playSE("cursor")
+		owner.mode?.onUndo(this)
+		receiver.onUndo(this, field.filterBlocks {b, _, _ -> b.getAttribute(Block.ATTRIBUTE.LAST_COMMIT)}+
+			(nowPieceObject.takeIf {stat==Status.MOVE}?.let {
+				it.data[it.direction].map {(b, x, y) -> Triple(b, x+nowPieceX, y+nowPieceY)}
+			}?:emptyList())
+		)
+		field.replace(state.field)
+		holdPieceObject = state.holdPieceObject?.let {Piece(it)}
+		holdDisable = false
+		nextPieceCount = state.nextPieceCount
+		initialHoldFlag = false
+		when(mode) {
+			"GrandS3" -> {
+				statistics.level = state.statistics.level
+				// timeは演出用にstate.statisticsTimeを参照、statistics.timeには反映しない
+			}
+			else -> {
+				// time以外全項目を復元
+				val prevTime = statistics.time
+				statistics.replace(state.statistics)
+				statistics.time = prevTime // timeは巻き戻し後も現状維持
+				resetStatc()
+				statc[1] = 60
+				stat = Status.ARE
+			}
+		}
+
+		return true
+	}
 
 	sealed class FrameSkin {
 		class COLOR(cid:Int):FrameSkin() {
@@ -2945,7 +3011,7 @@ class GameEngine(
 	/** Constants of main game status */
 	enum class Status {
 		NOTHING, SETTING, PROFILE, READY,
-		/**  Piece Spawned and while controlling */
+		/** Piece Spawned and while controlling */
 		MOVE,
 		/** Piece locked */
 		LOCKFLASH,

@@ -52,7 +52,12 @@ class Piece(var shape:Shape) {
 			resetOffsetArray()
 		}
 	/** Direction */
-	var direction = DIRECTION_UP; get() = field%DIRECTION_COUNT
+	var direction = DIRECTION_UP
+		get() = field.mod(DIRECTION_COUNT)
+		set(value) {
+			field = value.mod(DIRECTION_COUNT)
+			updateConnectData()
+		}
 	/** BigBlock */
 	var big = false
 	/** Connect blocks in this piece? */
@@ -80,8 +85,8 @@ class Piece(var shape:Shape) {
 	/** 相対X位置と相対Y位置の配列をオーバーライド (4Direction×nBlock×<x,y>) */
 	var overridePos:List<MutableList<Pair<Int, Int>>>? = null
 	val pos:List<List<Pair<Int, Int>>> get() = overridePos?:sp
-	val data:List<List<Triple<Int, Int, Block>>>
-		get() = pos.map {d -> d.zip(block).map {(pos, b) -> Triple(pos.first, pos.second, b)}}
+	val data:List<List<Triple<Block, Int, Int>>>
+		get() = pos.map {d -> d.zip(block).map {(pos, b) -> Triple(b, pos.first, pos.second)}}
 	/** 相対X位置 (4Direction×nBlock) */
 	val dataX:List<List<Int>> get() = pos.map {b -> b.map {(x) -> x}}
 	/** 相対Y位置 (4Direction×nBlock) */

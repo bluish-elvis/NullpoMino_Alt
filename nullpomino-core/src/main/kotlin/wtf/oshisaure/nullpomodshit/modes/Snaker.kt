@@ -38,6 +38,8 @@
 package wtf.oshisaure.nullpomodshit.modes
 
 import mu.nu.nullpo.game.component.Block
+import mu.nu.nullpo.game.component.Block.TYPE
+import mu.nu.nullpo.game.component.Field
 import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.game.subsystem.mode.AbstractMode
 
@@ -46,12 +48,13 @@ class Snaker:AbstractMode() {
 	private var lastmove = 0
 	private var movetimer = 0
 	private var movedelay = 0
-	private var snakepositionsX:IntArray = IntArray(5)
-	private var snakepositionsY:IntArray = IntArray(5)
+	private var snakepositionsX = IntArray(5)
+	private var snakepositionsY = IntArray(5)
 	private var snakelength = 0
 	private var bonusY = 0
 	private var bonusX = 0
-	override val name = "Sneaker"
+	override val name = "Snaker"
+	override val gameIntensity = 1
 
 	override fun playerInit(engine:GameEngine) {
 		snakelength = 5
@@ -104,26 +107,37 @@ class Snaker:AbstractMode() {
 		if(engine.ctrl.isPress(2)&&lastmove!=1) orientation = 3
 		try {
 			if(movetimer>=movedelay) {
-				if(checkBonusAhead()) {
-					moveForwardAndCatch(engine)
-				} else {
-					moveForward(engine)
+				if(!checkWallAhead(engine.field)) {
+					if(checkBonusAhead()) moveForwardAndCatch(engine) else moveForward(engine)
+					lastmove = orientation
 				}
-				lastmove = orientation
 				movetimer = 0
 			}
-		} catch(var4:NullPointerException) {
+		} catch(_:NullPointerException) {
 			engine.stat = GameEngine.Status.GAMEOVER
+			engine.playSE("dead_last")
 			engine.gameEnded()
 		}
 		if(blockInSnake(snakepositionsX[snakelength-1], snakepositionsY[snakelength-1])!=snakelength-1) {
 			engine.stat = GameEngine.Status.GAMEOVER
+			engine.playSE("dead_last")
 			engine.gameEnded()
 		}
 		++movetimer
 		return true
 	}
 
+	private fun checkWallAhead(f:Field):Boolean {
+		val x = snakepositionsX[snakelength-1]
+		val y = snakepositionsY[snakelength-1]
+		return when(orientation) {
+			0 -> y==0||!f.getCoordVaild(x, y-1, true)
+			1 -> x==f.width-1||!f.getCoordVaild(x+1, y, true)
+			2 -> y==f.height-1||!f.getCoordVaild(x, y+1, true)
+			3 -> x==0||!f.getCoordVaild(x-1, y, true)
+			else -> false
+		}
+	}
 	private fun checkBonusAhead():Boolean {
 		val x = snakepositionsX[snakelength-1]
 		val y = snakepositionsY[snakelength-1]
@@ -179,7 +193,7 @@ class Snaker:AbstractMode() {
 		}
 		engine.field.setBlock(
 			snakepositionsX[snakelength-1],
-			snakepositionsY[snakelength-1], Block(5, engine.blkSkin, headattr)
+			snakepositionsY[snakelength-1], Block(Block.COLOR.GREEN, TYPE.BLOCK, engine.blkSkin, headattr)
 		)
 		if(oldtailX>newtailX) newtail?.setAttribute(false, 64)
 		if(oldtailX<newtailX) newtail?.setAttribute(false, 32)
@@ -227,6 +241,8 @@ class Snaker:AbstractMode() {
 		snakepositionsX = newpositionsX
 		snakepositionsY = newpositionsY
 		moveBonus(engine)
+		engine.statistics.scoreBonus++
+		engine.playSE("gem")
 	}
 
 	private fun blockInSnake(x:Int, y:Int):Int {
@@ -239,7 +255,7 @@ class Snaker:AbstractMode() {
 			bonusX = engine.random.nextInt(engine.field.width)
 			bonusY = engine.random.nextInt(engine.field.height)
 		}
-		engine.field.setBlock(bonusX, bonusY, Block(35, engine.blkSkin, Block.ATTRIBUTE.VISIBLE))
+		engine.field.setBlock(bonusX, bonusY, Block(Block.COLOR.RAINBOW, TYPE.GEM, engine.blkSkin, Block.ATTRIBUTE.VISIBLE))
 	}
 
 	companion object {

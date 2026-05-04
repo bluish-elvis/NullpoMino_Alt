@@ -314,7 +314,8 @@ class GrandRoads:NetDummyMode() {
 			norm = (0..startLevel).reduceOrNull {acc, i -> acc+nowCourse.goalLines(i)}?:0
 			nextLv = (0..startLevel+1).reduce {acc, i -> acc+nowCourse.goalLines(i)}
 			setSpeed(engine)
-			bgmLv = maxOf(0, nowCourse.bgmChange.indexOfLast {it<=startLevel}.let {if(it<0) nowCourse.bgmChange.size-1 else it})
+			bgmLv = nowCourse.bgmChange.indexOfLast {startLevel>=it}.coerceIn(nowCourse.bgmList.indices)
+				.also {owner.musMan.bgm = nowCourse.bgmList[it]}
 		}
 		return false
 	}
@@ -849,7 +850,7 @@ class GrandRoads:NetDummyMode() {
 					HARD -> listOf(BGM.Puzzle(1), BGM.Puzzle(2), BGM.GrandA(1))
 					HARDEST -> listOf(BGM.GrandM(1), BGM.GrandA(1), BGM.GrandT(1))
 					SUPER -> listOf(BGM.GrandA(2), BGM.GrandT(2), BGM.GrandA(3))
-					XTREME -> listOf(BGM.GrandT(3), BGM.GrandT(4), BGM.GrandT(5))
+					XTREME -> listOf(BGM.GrandTS(1), BGM.GrandTS(2), BGM.GrandTS(3))
 					LONG -> listOf(BGM.Extra(1), BGM.GrandA(0), BGM.GrandT(0), BGM.Extra(0), BGM.GrandT(2))
 					SURVIVAL -> listOf(BGM.GrandT(2), BGM.GrandA(2), BGM.GrandT(3), BGM.GrandA(3), BGM.GrandT(4))
 					CHALLENGE -> listOf(BGM.Extra(2), BGM.GrandA(0), BGM.GrandM(1), BGM.GrandT(2), BGM.GrandA(3))

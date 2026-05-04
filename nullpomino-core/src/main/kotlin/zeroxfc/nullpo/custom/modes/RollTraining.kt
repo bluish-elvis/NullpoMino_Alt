@@ -43,7 +43,8 @@ import mu.nu.nullpo.game.event.ScoreEvent
 import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.game.play.GameEngine.Status
 import mu.nu.nullpo.game.subsystem.mode.menu.*
-import mu.nu.nullpo.gui.common.BaseFont.FONT.*
+import mu.nu.nullpo.gui.common.BaseFont.FONT.BASE
+import mu.nu.nullpo.gui.common.BaseFont.FONT.GRADE
 import mu.nu.nullpo.util.CustomProperties
 import mu.nu.nullpo.util.GeneralUtil.toInt
 import mu.nu.nullpo.util.GeneralUtil.toTimeStr
@@ -59,42 +60,19 @@ class RollTraining:MarathonModeBase() {
 		private const val SPEED_TI = 1
 		private const val SPEED_SETTING_COUNT = 2
 		private val SPEED_SETTINGS = arrayOf(
-			SpeedParam(), SpeedParam()
+			SpeedParam(-1, -1, 14, 8, 17, 6, 8),
+			SpeedParam(-1, -1, 6, 6, 15, 6, 8)
 		)
 		/** Note: M-roll uses the lock flash values. */
 		private const val FADING_FRAMES = 300
 		private val GRADE_INCREASES = arrayOf(
-			doubleArrayOf(
-				0.04, 0.08, 0.12, 0.26
-			), doubleArrayOf(
-				0.1, 0.2, 0.3, 1.0
-			)
+			floatArrayOf(0.04f, 0.08f, 0.12f, 0.26f),
+			floatArrayOf(0.1f, 0.2f, 0.3f, 1.0f)
 		)
-		private val CLEAR_GRADE_BONUS = doubleArrayOf(
-			0.5, 1.6
-		)
-		private val TIME_LIMITS = intArrayOf(
-			3694, 3238
-		)
+		private val CLEAR_GRADE_BONUS = floatArrayOf(0.5f, 1.6f)
+		private val TIME_LIMITS = intArrayOf(3694, 3238)
 		private val HEADER:COLOR = COLOR.RED
 
-		init {
-			// TAP settings
-			SPEED_SETTINGS[0].gravity = -1
-			SPEED_SETTINGS[0].are = 14
-			SPEED_SETTINGS[0].areLine = 8
-			SPEED_SETTINGS[0].lockDelay = 17
-			SPEED_SETTINGS[0].lineDelay = 6
-			SPEED_SETTINGS[0].das = 8
-
-			// TI settings
-			SPEED_SETTINGS[1].gravity = -1
-			SPEED_SETTINGS[1].are = 6
-			SPEED_SETTINGS[1].areLine = 6
-			SPEED_SETTINGS[1].lockDelay = 15
-			SPEED_SETTINGS[1].lineDelay = 6
-			SPEED_SETTINGS[1].das = 8
-		}
 	}
 
 	private val rankingGrade = List(RANKING_TYPE) {MutableList(rankingMax) {0}}
@@ -103,9 +81,8 @@ class RollTraining:MarathonModeBase() {
 
 	private val itemHide = BooleanMenuItem("useMRoll", "Stealth", COLOR.RED, false)
 	private var useMRoll:Boolean by DelegateMenuItem(itemHide)
-	override val itemMode:IntegerMenuItem =
-		StringsMenuItem("usedSpeed", "TYPE", COLOR.BLUE, SPEED_TI, listOf("TAP", "TI"), true)
-	private var usedSpeed:Int by DelegateMenuItem(itemMode)
+	private val itemMode by lazy {StringsMenuItem("usedSpeed", "TYPE", COLOR.BLUE, SPEED_TI, listOf("TAP", "TI"), true)}
+	var usedSpeed:Int by DelegateMenuItem(itemMode)
 	private val itemGoal = BooleanMenuItem("endless", "ENDLESS", COLOR.BLUE, false)
 	private var endless:Boolean by DelegateMenuItem(itemGoal)
 
@@ -124,6 +101,7 @@ class RollTraining:MarathonModeBase() {
 			if(!useMRoll) raw += 4
 			return raw
 		}
+	override val netGetGoalType:Int get() = rankIndex
 	//      Mode name
 	override val name = "ROLL TRAINING"
 	override val gameIntensity = 1
@@ -163,14 +141,13 @@ class RollTraining:MarathonModeBase() {
 		big = false
 		netPlayerInit(engine)
 		if(!owner.replayMode) version = CURRENT_VERSION else {
-			if(owner.replayProp.getProperty("rollTraining.endless", false)) goalType = 2
-
 			// NET: Load name
 			netPlayerName = engine.owner.replayProp.getProperty("${engine.playerID}.net.netPlayerName", "")
 		}
 		engine.owner.bgMan.bg = startLevel
 		engine.frame = if(usedSpeed==SPEED_TAP) GameEngine.Frame.GRAY else GameEngine.Frame.BLUE
 	}
+
 	/**
 	 * Set the gravity rate
 	 *
@@ -182,59 +159,12 @@ class RollTraining:MarathonModeBase() {
 	/*
      * Called at settings screen
      */
-	override fun onSetting(engine:GameEngine):Boolean {
-		// NET: Net Ranking
-		if(netIsNetRankingDisplayMode) {
-			netOnUpdateNetPlayRanking(engine, goalType)
-		} else if(!engine.owner.replayMode) {
-			// Configuration changes
-			val change = updateMenu(engine)
-			if(change!=0) {
-				engine.frame = if(usedSpeed==SPEED_TAP) GameEngine.Frame.GRAY else GameEngine.Frame.BLUE
-				engine.owner.bgMan.bg = startLevel
 
-				// NET: Signal options change
-				if(netIsNetPlay&&netNumSpectators>0) {
-					netSendOptions(engine)
-				}
-			}
-
-			// Confirm
-			if(engine.ctrl.isPush(Controller.BUTTON_A)&&engine.statc[3]>=5) {
-				engine.playSE("decide")
-				// NET: Signal start of the game
-				if(netIsNetPlay) netLobby?.netPlayerClient?.send("start1p\n")
-				return false
-			}
-
-			// Cancel
-			if(engine.ctrl.isPush(Controller.BUTTON_B)&&!netIsNetPlay) {
-				engine.quitFlag = true
-				engine.playerProp.reset()
-			}
-
-			// New acc
-			if(engine.ctrl.isPush(Controller.BUTTON_E)&&engine.ai==null) {
-				engine.playerProp.reset()
-				engine.playSE("decide")
-				engine.stat = Status.CUSTOM
-				engine.resetStatc()
-				return true
-			}
-
-			// NET: Netplay Ranking
-			if(engine.ctrl.isPush(Controller.BUTTON_D)&&netIsNetPlay&&startLevel==0&&!big&&engine.ai==null) {
-				netEnterNetPlayRankingScreen(goalType)
-			}
-			engine.statc[3]++
-		} else {
-			engine.statc[3]++
-			engine.statc[2] = -1
-			return engine.statc[3]<60
-		}
-		return true
+	override fun onSettingChanged(engine:GameEngine) {
+		super.onSettingChanged(engine)
+		engine.frame = if(usedSpeed==SPEED_TAP) GameEngine.Frame.GRAY else GameEngine.Frame.BLUE
+		engine.owner.bgMan.bg = startLevel
 	}
-
 	/*
      * Called for initialization during "Ready" screen
      */
@@ -405,9 +335,8 @@ class RollTraining:MarathonModeBase() {
 		if(cg>lastGrade) engine.playSE("grade1")
 
 		// Meter
-		var lt = timer
-		if(lt<0) lt = 0
-		if(!endless) engine.meterValue = lt*1f/TIME_LIMITS[usedSpeed] else 1f
+		val lt = maxOf(timer, 0)
+		engine.meterValue = if(!endless) lt*1f/TIME_LIMITS[usedSpeed] else 1f
 		engine.meterColor = GameEngine.METER_COLOR_LEVEL
 		if(engine.stat===Status.SETTING||engine.stat===Status.RESULT&&!owner.replayMode||engine.stat===Status.CUSTOM) {
 			// Show rank

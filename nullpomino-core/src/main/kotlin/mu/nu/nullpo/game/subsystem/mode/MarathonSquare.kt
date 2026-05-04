@@ -366,7 +366,6 @@ class MarathonSquare:AbstractMode() {
 
 		if(li>0) {
 			engine.lineGravityType = LineGravity.Native
-			if(engine.field.isEmpty) engine.playSE("bravo")
 
 			if(li>3) pts = 3+(li-3)*2
 

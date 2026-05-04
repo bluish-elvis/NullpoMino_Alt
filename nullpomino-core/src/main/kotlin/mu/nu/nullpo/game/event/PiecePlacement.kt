@@ -31,21 +31,27 @@
 
 package mu.nu.nullpo.game.event
 
+import kotlinx.serialization.Contextual
+import kotlinx.serialization.Serializable
 import mu.nu.nullpo.game.component.Piece
 
+@Serializable
 data class PiecePlacement(
-	val piece:Piece.Shape,
+	val time:Int = 0,
+	@Contextual val piece:Piece,
 	val x:Int,
 	val y:Int,
-	val direction:Int,
-	val time:Int = 0,
+	val direction:Int = piece.direction,
 	val rotations:Int = 0,
-	val moves:Int = 0) {
-
+	val moves:Int = 0,
+	val holdUsed:Boolean = false):Comparable<PiecePlacement> {
+	val shape get() = piece.shape
 	var framesDelta:Int = 0
 
 	override fun toString():String =
 		"[piece=$piece, x=$x, y=$y, direction=$direction, time=$time, rotations=$rotations, moves=$moves]"
 
-	val pieceAsString:String get() = piece.name
+	val pieceAsString:String get() = shape.name
+
+	override fun compareTo(other:PiecePlacement):Int = time.compareTo(other.time)
 }

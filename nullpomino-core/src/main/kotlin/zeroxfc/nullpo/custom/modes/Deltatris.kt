@@ -44,7 +44,8 @@ import mu.nu.nullpo.game.event.ScoreEvent
 import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.game.play.GameEngine.Status
 import mu.nu.nullpo.game.subsystem.mode.menu.*
-import mu.nu.nullpo.gui.common.BaseFont.FONT.*
+import mu.nu.nullpo.gui.common.BaseFont.FONT.BASE
+import mu.nu.nullpo.gui.common.BaseFont.FONT.NUM
 import mu.nu.nullpo.gui.slick.img.ext.RendererExtension
 import mu.nu.nullpo.util.CustomProperties
 import mu.nu.nullpo.util.GeneralUtil.toTimeStr
@@ -56,7 +57,7 @@ import kotlin.random.Random
 class Deltatris:MarathonModeBase() {
 	private var stext:ShakingText = ShakingText()
 
-	override val itemMode = StringsMenuItem("difficulty", "Difficulty", COLOR.RED, 1, difficultyName)
+	private val itemMode by lazy {StringsMenuItem("difficulty", "Difficulty", COLOR.RED, 1, difficultyName)}
 	private var difficulty:Int by DelegateMenuItem(itemMode)
 	private var multiplier = 1f
 	private var grav = 0.0
@@ -118,7 +119,6 @@ class Deltatris:MarathonModeBase() {
 		pCoordList = ArrayList()
 		netPlayerInit(engine)
 		if(!owner.replayMode) version = CURRENT_VERSION else {
-			if(version==0&&owner.replayProp.getProperty("deltatris.endless", false)) goalType = 2
 			// NET: Load name
 			netPlayerName = engine.owner.replayProp.getProperty("${engine.playerID}.net.netPlayerName", "")
 		}
@@ -165,59 +165,6 @@ class Deltatris:MarathonModeBase() {
 		).toInt()
 		engine.speed.denominator = GRAVITY_DENOMINATOR
 	}
-	/*
-     * Called at settings screen
-     */
-	override fun onSetting(engine:GameEngine):Boolean {
-		// NET: Net Ranking
-		if(netIsNetRankingDisplayMode) {
-			netOnUpdateNetPlayRanking(engine, goalType)
-		} else if(!engine.owner.replayMode) {
-			// Configuration changes
-			val change = updateMenu(engine)
-			if(change!=0) {
-				// NET: Signal options change
-				if(netIsNetPlay&&netNumSpectators>0) {
-					netSendOptions(engine)
-				}
-			}
-
-			// Confirm
-			if(engine.ctrl.isPush(Controller.BUTTON_A)&&engine.statc[3]>=5) {
-				engine.playSE("decide")
-				// NET: Signal start of the game
-				if(netIsNetPlay) netLobby!!.netPlayerClient!!.send("start1p\n")
-				return false
-			}
-
-			// Cancel
-			if(engine.ctrl.isPush(Controller.BUTTON_B)&&!netIsNetPlay) {
-				engine.quitFlag = true
-				engine.playerProp.reset()
-			}
-
-			// New acc
-			if(engine.ctrl.isPush(Controller.BUTTON_E)&&engine.ai==null&&!netIsNetPlay) {
-				engine.playerProp.reset()
-				engine.playSE("decide")
-				engine.stat = Status.CUSTOM
-				engine.resetStatc()
-				return true
-			}
-
-			// NET: Netplay Ranking
-			if(engine.ctrl.isPush(Controller.BUTTON_D)&&netIsNetPlay&&startLevel==0&&!big&&engine.ai==null) {
-				netEnterNetPlayRankingScreen(goalType)
-			}
-			engine.statc[3]++
-		} else {
-			engine.statc[3]++
-			engine.statc[2] = -1
-			return engine.statc[3]<60
-		}
-		return true
-	}
-
 	override fun onCustom(engine:GameEngine):Boolean {
 		showPlayerStats = false
 		engine.isInGame = true

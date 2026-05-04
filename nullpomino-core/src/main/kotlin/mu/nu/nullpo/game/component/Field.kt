@@ -409,7 +409,7 @@ class Field {
 	}
 
 	/** [x],[y]座標にBlockが置けるかを取得
-	 * @param b trueならCoord.VANISHに置けるが、[x],[y]座標にBlockがない場合に限る
+	 * @param b trueならCoord.VANISHに置けるが、[x],[y]座標にBlockがない場合に限る。falseではBlockの有無に関わらずCoord.VANISHには置けない。
 	 * @return Blockが置ける座標ならtrue
 	 */
 	fun getCoordVaild(x:Int, y:Int, b:Boolean = false):Boolean =
@@ -818,10 +818,10 @@ class Field {
 			IndexedValue(i, getRow(i).map {if(it?.getAttribute(*attr)==true) it else null})
 		}.filter {(_, it) -> it.isNotEmpty()}
 
-	fun filterAttributeBlocks(vararg attr:ATTRIBUTE):Set<Triple<Int, Int, Block>> =
+	fun filterAttributeBlocks(vararg attr:ATTRIBUTE):Set<Triple<Block, Int, Int>> =
 		allSpaceRows.flatMap {y ->
 			(0..<width).mapNotNull {x ->
-				getBlock(x, y)?.let {if(it.getAttribute(*attr)) Triple(x, y, it) else null}
+				getBlock(x, y)?.let {if(it.getAttribute(*attr)) Triple(it, x, y) else null}
 			}
 		}.toSet()
 

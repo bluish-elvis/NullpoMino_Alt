@@ -112,6 +112,8 @@ interface GameMode {
 	/** During ARE.
 	 * @return true if you override everything of this screen (skips default behavior)*/
 	fun onARE(engine:GameEngine):Boolean
+
+	fun onUndo(engine:GameEngine):Boolean
 	/** During ending-start sequence.
 	 * @return true if you override everything of this screen (skips default behavior)*/
 	fun onEndingStart(engine:GameEngine):Boolean
@@ -150,6 +152,7 @@ interface GameMode {
 	fun renderLineClear(engine:GameEngine)
 	/** Render ARE screen.*/
 	fun renderARE(engine:GameEngine)
+	fun renderRewind(engine:GameEngine)
 	/** Render "ending start sequence" screen.*/
 	fun renderEndingStart(engine:GameEngine)
 	/** Render "Custom" screen. */
@@ -170,7 +173,7 @@ interface GameMode {
 	 * @return if true, skip default behavior
 	 */
 	fun blockBreak(engine:GameEngine, blk:Map<Int, Map<Int, Block>>):Boolean
-	fun blockBreak(engine:GameEngine, blk:Collection<Triple<Int, Int, Block>>):Boolean
+	fun blockBreak(engine:GameEngine, blk:Collection<Triple<Block, Int, Int>>):Boolean
 
 	fun lineClear(gameEngine:GameEngine, i:Collection<Int>)
 

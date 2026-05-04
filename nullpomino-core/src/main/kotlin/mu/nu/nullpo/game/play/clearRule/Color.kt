@@ -78,7 +78,7 @@ data class Color(var colorClearSize:Int = 4, var garbageColorClear:Boolean = tru
 		private fun Field.checkColor(
 			x:Int, y:Int, targetColor:Int, flag:Boolean?, garbageClear:Boolean, gemSame:Boolean,
 			ignoreHidden:Boolean
-		):Set<Triple<Int, Int, Block>> = getBlockColor(x, y, gemSame).let {blockColor ->
+		):Set<Triple<Block, Int, Int>> = getBlockColor(x, y, gemSame).let {blockColor ->
 			when {
 				ignoreHidden&&y<0||!getCoordVaild(x, y) -> emptySet()
 				blockColor==Block.COLOR_INVALID||blockColor==Block.COLOR_NONE||blockColor!=targetColor -> emptySet()
@@ -89,7 +89,7 @@ data class Color(var colorClearSize:Int = 4, var garbageColorClear:Boolean = tru
 						b.setAttribute(true, if(flag==true) Block.ATTRIBUTE.ERASE else Block.ATTRIBUTE.TEMP_MARK)
 						if(garbageClear&&b.getAttribute(Block.ATTRIBUTE.GARBAGE)&&!b.getAttribute(Block.ATTRIBUTE.WALL))
 							if(flag==false) if(b.hard>0) b.hard-- else delBlock(x, y)
-						(setOf(Triple(x, y, if(flag==false) Block(b) else b))+
+						(setOf(Triple(if(flag==false) Block(b) else b, x, y))+
 							checkColor(x+1, y, targetColor, flag, garbageClear, gemSame, ignoreHidden)+
 							checkColor(x-1, y, targetColor, flag, garbageClear, gemSame, ignoreHidden)+
 							checkColor(x, y+1, targetColor, flag, garbageClear, gemSame, ignoreHidden)+
@@ -108,8 +108,8 @@ data class Color(var colorClearSize:Int = 4, var garbageColorClear:Boolean = tru
 		 */
 		fun Field.clearAll(size:Int, garbageClear:Boolean, gemSame:Boolean,
 			ignoreHidden:Boolean = false):ClearType.ClearResult {
-			val total = mutableSetOf<Triple<Int, Int, Block>>()
-			filterAttributeBlocks(Block.ATTRIBUTE.ERASE).forEach {(x, y, b) ->
+			val total = mutableSetOf<Triple<Block, Int, Int>>()
+			filterAttributeBlocks(Block.ATTRIBUTE.ERASE).forEach {(_, x, y) ->
 				val clear = clearColor(x, y, true, garbageClear, gemSame, ignoreHidden)
 				if(clear.size>=size) {
 					total += clear
@@ -125,7 +125,7 @@ data class Color(var colorClearSize:Int = 4, var garbageColorClear:Boolean = tru
 		 * @return The number of blocks cleared.
 		 */
 		fun Field.clearColor(x:Int, y:Int, flag:Boolean?, garbageClear:Boolean, gemSame:Boolean,
-			ignoreHidden:Boolean):Set<Triple<Int, Int, Block>> = getBlockColor(x, y, gemSame).let {blockColor ->
+			ignoreHidden:Boolean):Set<Triple<Block, Int, Int>> = getBlockColor(x, y, gemSame).let {blockColor ->
 			if(blockColor==Block.COLOR_NONE||blockColor==Block.COLOR_INVALID) return emptySet()
 			return if(getBlock(x, y)?.getAttribute(Block.ATTRIBUTE.GARBAGE)!=false) emptySet()
 			else {
@@ -140,7 +140,7 @@ data class Color(var colorClearSize:Int = 4, var garbageColorClear:Boolean = tru
 		 * */
 		fun Field.checkColor(size:Int, flag:Boolean, garbageClear:Boolean, gemSame:Boolean,
 			ignoreHidden:Boolean):ClearType.ClearResult {
-			val total = mutableSetOf<Triple<Int, Int, Block>>()
+			val total = mutableSetOf<Triple<Block, Int, Int>>()
 			if(flag) {
 				setAllAttribute(false, Block.ATTRIBUTE.ERASE)
 				colorClearExtraCount = 0
@@ -153,7 +153,7 @@ data class Color(var colorClearSize:Int = 4, var garbageColorClear:Boolean = tru
 					if(clear.size>=size) {
 						total += clear
 						if(flag) {
-							clear.forEach {(x, y, b) ->
+							clear.forEach {(b) ->
 								b.setAttribute(false, Block.ATTRIBUTE.TEMP_MARK)
 								b.setAttribute(true, Block.ATTRIBUTE.ERASE)
 							}

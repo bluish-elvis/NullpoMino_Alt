@@ -61,25 +61,14 @@ class PopupAward(x:Float, y:Float, val event:ScoreEvent, val moveTime:Int, val e
 		val y = y.toInt()
 		val strPieceName = ev.piece?.id?.let {Piece.Shape.names[it]}?:""
 
-		when {
-			ev.lines==1 -> r.drawFont(
-				x-48,
-				y,
-				"SINGLE",
-				BASE, color = if(ev.twistType==null) COLOR.COBALT else COLOR.BLUE,
-				alpha = alpha
-			)
-			ev.lines==2 -> {
-				if(!ev.split)
-					r.drawFont(x-48, y, "DOUBLE", BASE, color = if(ev.twistType==null) COLOR.BLUE else COLOR.CYAN, alpha = alpha)
-				else r.drawFont(x-80, y, "SPLIT TWIN", BASE, color = COLOR.PURPLE, alpha = alpha)
-			}
-			ev.lines==3 -> {
-				if(!ev.split)
-					r.drawFont(x-48, y, "TRIPLE", BASE, color = COLOR.GREEN, alpha = alpha)
-				else r.drawFont(x-80, y, "1.2.TRIPLE", BASE, color = COLOR.CYAN, alpha = alpha)
-			}
-			ev.lines>=4 -> r.drawFont(x-72, y, "QUADRUPLE", BASE, color = COLOR.getRainbowColor(ticks), alpha = alpha)
+		tuple(ev.lines, ev.split).let {
+			r.drawFont(x-it.length*8, y, it, BASE, color = when(ev.lines) {
+				1 -> if(ev.twistType==null) COLOR.COBALT else COLOR.BLUE
+				2 -> if(ev.twistType==null) if(ev.split) COLOR.PURPLE else COLOR.BLUE else COLOR.CYAN
+				3 -> if(ev.twistType==null) if(ev.split) COLOR.CYAN else COLOR.GREEN else
+					if((ticks/2)%2==0) COLOR.YELLOW else COLOR.GREEN
+				else -> COLOR.getRainbowColor(ticks)
+			}, alpha = alpha)
 		}
 		if(ev.twistType!=null) when {
 			ev.twistType.mini -> {
@@ -106,4 +95,21 @@ class PopupAward(x:Float, y:Float, val event:ScoreEvent, val moveTime:Int, val e
 		}
 	}
 
+	companion object {
+		//		private val log = mu.nu.nullpo.util.log.getLogger(PopupAward::class)
+		fun tuple(i:Int, s:Boolean = false) = when(i) {
+			1 -> "Single"
+			2 -> "Double"
+			3 -> "Triple"
+			4 -> if(!s) "QUADruple" else "SP. QUAD"
+			5 -> if(!s) "PENTuple" else "SP. QUINT"
+			6 -> if(!s) "HEXTuple" else "SP. HEXA"
+			12 -> "DOZEN"
+			13 -> "Baker's DOZEN"
+			20 -> "ViginTUPLE"
+			21 -> "UniginTUPLE"
+			22 -> "DUOLIUS"
+			else -> "$i-LINE"
+		}
+	}
 }

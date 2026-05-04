@@ -36,7 +36,7 @@ import java.io.BufferedReader
 import java.io.IOException
 
 /** Mode 管理クラス */
-class ModeManager {
+class ModeManager() {
 	/** Mode の動的配列 */
 	val list:MutableList<GameMode> = mutableListOf()
 
@@ -52,13 +52,10 @@ class ModeManager {
 	val allModeNames:List<String>
 		get() = List(size) {getName(it)}
 
-	/** Constructor */
-	constructor()
-
 	/** Copy constructor
 	 * @param m Copy source
 	 */
-	constructor(m:ModeManager) {
+	constructor(m:ModeManager):this() {
 		list.addAll(m.list)
 	}
 
@@ -83,6 +80,7 @@ class ModeManager {
 	fun getName(id:Int):String = try {
 		get(id)?.name?:"*INVALID MODE*"
 	} catch(e:Exception) {
+		log.warn("Mode no. $id not found", e)
 		"*INVALID MODE*"
 	}
 
@@ -93,6 +91,7 @@ class ModeManager {
 	fun getID(id:Int):String = try {
 		get(id)?.id?:"*INVALID MODE*"
 	} catch(e:Exception) {
+		log.warn("Mode no. $id not found", e)
 		"*INVALID MODE*"
 	}
 
@@ -122,6 +121,7 @@ class ModeManager {
 	operator fun get(name:String?):GameMode? = try {
 		name?.let {list.getOrNull(getNum(it))}
 	} catch(e:Exception) {
+		log.error("Mode class $name not found", e)
 		null
 	}
 
@@ -136,19 +136,16 @@ class ModeManager {
 
 		while(true) {
 			// クラス名を読み込み
-			val name = prop.getProperty("$count", null)?:return
-
-			val modeClass:Class<*>
-			val modeObject:GameMode
+			val name = prop.getProperty("$count", null)?:break
 
 			try {
-				modeClass = Class.forName(name)
-				modeObject = modeClass.getDeclaredConstructor().newInstance() as GameMode
+				val modeClass = Class.forName(name)
+				val modeObject = modeClass.getDeclaredConstructor().newInstance() as GameMode
 				list.add(modeObject)
 			} catch(e:ClassNotFoundException) {
-				log.warn("Mode class $name not found", e)
+				log.error("Mode class $name not found", e)
 			} catch(e:Exception) {
-				log.warn("Mode class $name load failed", e)
+				log.error("Mode class $name load failed", e)
 			}
 
 			count++
@@ -173,16 +170,14 @@ class ModeManager {
 			if(name.isEmpty()) return
 
 			if(!name.startsWith("#")) {
-				val modeClass:Class<*>
-				val modeObject:GameMode
 				try {
-					modeClass = Class.forName(name)
-					modeObject = modeClass.getDeclaredConstructor().newInstance() as GameMode
+					val modeClass:Class<*> = Class.forName(name)
+					val modeObject:GameMode = modeClass.getDeclaredConstructor().newInstance() as GameMode
 					list.add(modeObject)
 				} catch(e:ClassNotFoundException) {
-					log.warn("Mode class $name not found", e)
+					log.error("Mode class $name not found", e)
 				} catch(e:Exception) {
-					log.warn("Mode class $name load failed", e)
+					log.error("Mode class $name load failed", e)
 				}
 			}
 		}

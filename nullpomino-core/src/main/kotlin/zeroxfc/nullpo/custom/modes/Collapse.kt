@@ -37,9 +37,7 @@
 
 package zeroxfc.nullpo.custom.modes
 
-import mu.nu.nullpo.game.component.BGM
-import mu.nu.nullpo.game.component.Block
-import mu.nu.nullpo.game.component.Controller
+import mu.nu.nullpo.game.component.*
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
 import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.game.play.GameEngine.Status
@@ -395,7 +393,7 @@ class Collapse:AbstractMode() {
 			setNewLowerScore(engine)
 			if(engine.field.isEmpty) {
 				acTime = 0
-				engine.playSE("bravo")
+				engine.receiver.bravo(engine)
 				engine.statistics.scoreBonus += 100000*1.025.pow(engine.statistics.level.toDouble()).toInt()
 			}
 			engine.statistics.scoreLine += score

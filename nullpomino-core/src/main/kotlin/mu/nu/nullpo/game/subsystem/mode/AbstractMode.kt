@@ -232,6 +232,7 @@ abstract class AbstractMode:GameMode {
 	override fun onMove(engine:GameEngine):Boolean = false
 	override fun onLockFlash(engine:GameEngine):Boolean = false
 	override fun onLineClear(engine:GameEngine):Boolean = false
+	override fun onUndo(engine:GameEngine):Boolean = false
 	override fun onEndingStart(engine:GameEngine):Boolean = false
 	override fun onExcellent(engine:GameEngine):Boolean = false
 	override fun onGameOver(engine:GameEngine):Boolean = false
@@ -249,8 +250,8 @@ abstract class AbstractMode:GameMode {
 	override fun pieceLocked(engine:GameEngine, lines:Int, finesse:Boolean) {}
 	override fun lineClear(gameEngine:GameEngine, i:Collection<Int>) {}
 	override fun blockBreak(engine:GameEngine, blk:Map<Int, Map<Int, Block>>):Boolean = false
-	final override fun blockBreak(engine:GameEngine, blk:Collection<Triple<Int, Int, Block>>):Boolean =
-		blockBreak(engine, blk.groupBy {(_, y) -> y}.mapValues {(_, it) -> it.associate {(x, _, b) -> x to b}})
+	final override fun blockBreak(engine:GameEngine, blk:Collection<Triple<Block, Int, Int>>):Boolean =
+		blockBreak(engine, blk.groupBy {(_, _, y) -> y}.mapValues {(_, it) -> it.associate {(b, x) -> x to b}})
 
 	override fun lineClearEnd(engine:GameEngine):Boolean = false
 	/** Calculates lines-clear score
@@ -430,6 +431,7 @@ abstract class AbstractMode:GameMode {
 	}
 
 	override fun renderARE(engine:GameEngine) {}
+	override fun renderRewind(engine:GameEngine) {}
 	override fun renderMove(engine:GameEngine) {}
 	override fun renderLockFlash(engine:GameEngine) {}
 	override fun renderProfile(engine:GameEngine) {}

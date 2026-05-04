@@ -109,8 +109,8 @@ interface ClearType {
 			ClearResult(total.values.sumOf {it.size}, total)
 		}
 
-		internal fun setBlkToRes(total:Set<Triple<Int, Int, Block>>) =
-			ClearResult(total.size, total.groupBy {(_, y)-> y}.mapValues {it.value.associate {(x, _, b)-> x to b}})
+		internal fun setBlkToRes(total:Set<Triple<Block, Int, Int>>) =
+			ClearResult(total.size, total.groupBy {(_, _, y) -> y}.mapValues {it.value.associate {(b, x) -> x to b}})
 
 		fun valueOf(value:String):ClearType = when {
 			value=="Line" -> Line

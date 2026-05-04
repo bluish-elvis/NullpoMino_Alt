@@ -146,7 +146,7 @@ class GrandS1:AbstractGrand() {
 	 * @param section Section number
 	 */
 	private fun stMedalCheck(engine:GameEngine, section:Int) =
-		stMedalCheck(engine, section, sectionTime[section], bestSectionTime[section])
+		stMedalCheck(engine, section, sectionTime[section], bestSectionTime.let {it[section.coerceIn(it.indices)]})
 
 	/* Called at settings screen */
 	override fun onSetting(engine:GameEngine):Boolean {

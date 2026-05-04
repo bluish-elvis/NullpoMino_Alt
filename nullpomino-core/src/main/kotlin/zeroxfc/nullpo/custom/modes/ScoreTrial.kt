@@ -43,7 +43,9 @@ import mu.nu.nullpo.game.event.EventReceiver.COLOR
 import mu.nu.nullpo.game.event.ScoreEvent
 import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.game.play.GameEngine.Status
-import mu.nu.nullpo.gui.common.BaseFont.FONT.*
+import mu.nu.nullpo.game.subsystem.mode.menu.*
+import mu.nu.nullpo.gui.common.BaseFont.FONT.BASE
+import mu.nu.nullpo.gui.common.BaseFont.FONT.NUM
 import mu.nu.nullpo.gui.common.fx.particles.BlockParticle
 import mu.nu.nullpo.util.CustomProperties
 import mu.nu.nullpo.util.GeneralUtil.toTimeStr
@@ -57,22 +59,26 @@ class ScoreTrial:MarathonModeBase() {
 	private val rankingScore = List(MAX_DIFFICULTIES) {MutableList(rankingMax) {0L}}
 	private val rankingLines = List(MAX_DIFFICULTIES) {MutableList(rankingMax) {0}}
 	private val rankingTime = List(MAX_DIFFICULTIES) {MutableList(rankingMax) {-1}}
+
+	private val itemLife = IntegerMenuItem("life", "LIFE", COLOR.BLUE, STARTING_LIVES, 1..10, true)
 	// Lives added/removed
-	private var lifeOffset = 0
+	private var startLife:Int by DelegateMenuItem(itemLife)
 	// Score before increase;
 	private var scoreBeforeIncrease = 0L
+	private val itemAnim = StringsMenuItem(
+		"lineClearAnim", "LINE ANIM.", COLOR.BLUE, 0, BlockParticle.Type.entries.map {it.name}
+	)
 	// ANIMATION TYPE
-	private var lineClearAnimType = 0
+	private var lineClearAnimType:Int by DelegateMenuItem(itemAnim)
+	private val itemMode = StringsMenuItem("difficulty", "Difficulty", COLOR.RED, 0, DIFFICULTY_NAMES)
 	// Difficulty selector
-	private var difficultySelected = 0
+	private var difficultySelected:Int by DelegateMenuItem(itemMode)
 	// should use timer?
 	private var shouldUseTimer = false
 	// Local randomizer
 	private var localRandom:Random = Random.Default
 	// Goal lines
 	private var goalLine = 0
-	// Lives started with
-	private var livesStartedWith = 0
 	// Particle stuff
 //	private var blockParticles:Mapper? = null
 	// Flying congratulations text
@@ -93,6 +99,8 @@ class ScoreTrial:MarathonModeBase() {
 	// Mode name
 	override val name = "SCORE TRIAL"
 	override val gameIntensity = 1
+	// Initialization
+	override val menu:MenuList = MenuList("scoretrial", itemMode, itemLife, itemBig, itemAnim)
 	/*
      * Initialization
      */
@@ -100,7 +108,7 @@ class ScoreTrial:MarathonModeBase() {
 		super.playerInit(engine)
 		lastScore = 0
 		bgmLv = 0
-		lifeOffset = 0
+		startLife = 0
 		o = false
 		l = 0
 		scoreBeforeIncrease = 0
@@ -113,7 +121,6 @@ class ScoreTrial:MarathonModeBase() {
 		comboTextAward = null
 		comboTextNumber = null
 		mainTimer = 0
-		livesStartedWith = 0
 		rankingRank = -1
 		rankingScore.forEach {it.fill(0)}
 		rankingLines.forEach {it.fill(0)}
@@ -128,10 +135,7 @@ class ScoreTrial:MarathonModeBase() {
 		rankingTimePlayer.forEach {it.fill(0)}
 
 		netPlayerInit(engine)
-		if(!owner.replayMode) {
-			version = CURRENT_VERSION
-		} else {
-			if(version==0&&owner.replayProp.getProperty("scoretrial.endless", false)) goalType = 2
+		if(!owner.replayMode) version = CURRENT_VERSION else {
 
 			// NET: Load name
 			netPlayerName = engine.owner.replayProp.getProperty("${engine.playerID}.net.netPlayerName", "")
@@ -166,99 +170,6 @@ class ScoreTrial:MarathonModeBase() {
 			engine.speed.lockDelay = LOCK_TABLE[ldAreIndex]
 		}
 	}
-	/*
-		 * Called at settings screen
-		 */
-	override fun onSetting(engine:GameEngine):Boolean {
-		// NET: Net Ranking
-		if(netIsNetRankingDisplayMode) {
-			netOnUpdateNetPlayRanking(engine, goalType)
-		} else if(!engine.owner.replayMode) {
-			// Configuration changes
-			val change = updateCursor(engine, 3)
-			if(change!=0) {
-				engine.playSE("change")
-				when(engine.statc[2]) {
-					0 -> {
-						difficultySelected += change
-						if(difficultySelected>MAX_DIFFICULTIES-1) difficultySelected = 0
-						if(difficultySelected<0) difficultySelected = MAX_DIFFICULTIES-1
-					}
-					1 -> {
-						// if ((STARTING_LIVES + lifeOffset + change) >= 0 && (STARTING_LIVES + lifeOffset + change) <= 9) lifeOffset += change;
-						lifeOffset += change
-						if(STARTING_LIVES+lifeOffset<0) lifeOffset = 5
-						if(STARTING_LIVES+lifeOffset>9) lifeOffset = -4
-					}
-					2 -> big = !big
-					3 -> {
-						lineClearAnimType += change
-						if(lineClearAnimType>BlockParticle.ANIMATION_TYPES-1) lineClearAnimType = 0
-						if(lineClearAnimType<0) lineClearAnimType = BlockParticle.ANIMATION_TYPES-1
-					}
-				}
-
-				// NET: Signal options change
-				if(netIsNetPlay&&netNumSpectators>0) {
-					netSendOptions(engine)
-				}
-			}
-
-			// Confirm
-			if(engine.ctrl.isPush(Controller.BUTTON_A)&&engine.statc[3]>=5) {
-				engine.playSE("decide")
-
-				// NET: Signal start of the game
-				if(netIsNetPlay) netLobby!!.netPlayerClient!!.send("start1p\n")
-				return false
-			}
-
-			// Cancel
-			if(engine.ctrl.isPush(Controller.BUTTON_B)&&!netIsNetPlay) {
-				engine.quitFlag = true
-				engine.playerProp.reset()
-			}
-
-			// New acc
-			if(engine.ctrl.isPush(Controller.BUTTON_E)&&engine.ai==null&&!netIsNetPlay) {
-				engine.playerProp.reset()
-				engine.playSE("decide")
-				engine.stat = Status.CUSTOM
-				engine.resetStatc()
-				return true
-			}
-
-			// NET: Netplay Ranking
-			if(engine.ctrl.isPush(Controller.BUTTON_D)&&netIsNetPlay&&startLevel==0&&!big&&engine.ai==null) {
-				netEnterNetPlayRankingScreen(goalType)
-			}
-			engine.statc[3]++
-		} else {
-			engine.statc[3]++
-			engine.statc[2] = -1
-			return engine.statc[3]<60
-		}
-		return true
-	}
-	/*
-		 * Render the settings screen
-		 */
-	override fun renderSetting(engine:GameEngine) {
-		val lc = when(lineClearAnimType) {
-			0 -> "DTET"
-			1 -> "TGM"
-			else -> ""
-		}
-		if(netIsNetRankingDisplayMode) {
-			// NET: Netplay Ranking
-			netOnRenderNetPlayRanking(engine, receiver)
-		} else {
-			drawMenu(engine, receiver, 0, COLOR.RED, 0, "DIFFICULTY" to DIFFICULTY_NAMES[difficultySelected])
-			drawMenu(engine, receiver, 2, COLOR.GREEN, 1, "LIVES" to STARTING_LIVES+lifeOffset+1)
-			drawMenu(engine, receiver, 4, COLOR.BLUE, 2, "BIG" to big, "LINE ANIM." to lc)
-		}
-	}
-
 	override fun onReady(engine:GameEngine):Boolean {
 		mainTimer = STARTING_TIMER
 		goalLine = 8
@@ -267,8 +178,7 @@ class ScoreTrial:MarathonModeBase() {
 			1 -> mainTimer = HARD_50_TIMER
 			2 -> mainTimer = STARTING_TIMER
 		}
-		livesStartedWith = STARTING_LIVES+lifeOffset
-		engine.lives = STARTING_LIVES+lifeOffset
+		engine.lives = startLife
 		return false
 	}
 	/*
@@ -319,7 +229,7 @@ class ScoreTrial:MarathonModeBase() {
 		engine.speed.areLine = 15
 		engine.speed.lockDelay = 30
 		localRandom = Random(engine.randSeed)
-		l = STARTING_LIVES+lifeOffset+1
+		l = STARTING_LIVES+startLife+1
 		o = false
 		setSpeed(engine)
 		owner.musMan.bgm = tableBGM[difficultySelected][0]
@@ -346,7 +256,7 @@ class ScoreTrial:MarathonModeBase() {
 		receiver.drawScore(engine, 0, 0, name, BASE, COLOR.GREEN)
 		receiver.drawScore(engine, 0, 1, "("+DIFFICULTY_NAMES[difficultySelected]+" TIER)", BASE, COLOR.GREEN)
 		if(engine.stat===Status.SETTING||engine.stat===Status.RESULT&&!owner.replayMode) {
-			if(!owner.replayMode&&!big&&engine.ai==null&&lifeOffset==0) {
+			if(!owner.replayMode&&!big&&engine.ai==null&&startLife==0) {
 				val topY = if(receiver.bigSideNext) 6 else 4
 				receiver.drawScore(engine, 3, topY-1, "SCORE  LINE TIME", BASE, COLOR.BLUE)
 				if(showPlayerStats) {
@@ -478,12 +388,12 @@ class ScoreTrial:MarathonModeBase() {
 					engine.gameEnded()
 				} else {
 					// Ending
-					val baseBonus = (engine.statistics.score*((engine.lives+1).toFloat()/(livesStartedWith+1))).toInt()
+					val baseBonus = (engine.statistics.score*((engine.lives+1f)/startLife)).toInt()
 					engine.statistics.scoreBonus += baseBonus
 					lastScore = baseBonus
 					o = true
 					l = engine.lives+1
-					if(engine.lives==STARTING_LIVES+lifeOffset) {
+					if(engine.lives==STARTING_LIVES+startLife) {
 						val destinationX = 192
 						val destinationY = 224
 						congratulationsText = FlyInOutText(
@@ -687,7 +597,7 @@ class ScoreTrial:MarathonModeBase() {
 		}
 
 		// Update rankings
-		if(!owner.replayMode&&!big&&engine.ai==null&&lifeOffset==0) {
+		if(!owner.replayMode&&!big&&engine.ai==null&&startLife==0) {
 			return updateRanking(
 				engine.statistics.score, engine.statistics.lines, engine.statistics.time, difficultySelected,
 				engine.playerProp.isLoggedIn
@@ -797,17 +707,13 @@ class ScoreTrial:MarathonModeBase() {
 		private const val NORMAL_30_TIMER = 10800
 		private const val LEVEL_TIMEBONUS = 900
 		private const val TIMER_MAX = 18000
-		// Max difficulties
-		private const val MAX_DIFFICULTIES = 3
 		// Difficulty names
-		private val DIFFICULTY_NAMES = arrayOf(
-			"NORMAL",
-			"HARD",
-			"ADVANCE"
-		)
+		private val DIFFICULTY_NAMES = listOf("NORMAL", "HARD", "ADVANCE")
+		// Max difficulties
+		private val MAX_DIFFICULTIES = DIFFICULTY_NAMES.size
 		// Starting lives (4 here = 5 in play).
 		// - N.B. when timer runs out, simply make the lifecount 0 before triggering game over.
-		private const val STARTING_LIVES = 4
+		private const val STARTING_LIVES = 5
 		// BG changes every 5 levels until 50, then at 200.
 		// Level changes every 8 lines until lv 50, then every lines clear increases it by 1 until 200.
 		// 6f LD for NORMAL/HARD

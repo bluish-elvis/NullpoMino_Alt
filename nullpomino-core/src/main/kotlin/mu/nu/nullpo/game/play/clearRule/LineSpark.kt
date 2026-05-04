@@ -67,7 +67,7 @@ data object LineSpark:ClearType {
 	 * @return 破壊するブロックの個数
 	 */
 	fun Field.igniteSpark(pow:Int):Int {
-		return filterAttributeBlocks(ATTRIBUTE.ERASE).filter {it.third.isGemBlock}.sumOf {(x, y, b) ->
+		return filterAttributeBlocks(ATTRIBUTE.ERASE).filter {(b) -> b.isGemBlock}.sumOf {(b, x, y) ->
 			setLineFlag(y, false)
 			detonateSpark(x, y, if(b.getAttribute(ATTRIBUTE.BIG)) -1 else pow)
 		}

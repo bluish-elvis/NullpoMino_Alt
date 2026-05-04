@@ -54,7 +54,7 @@ data class ColorGem(var colorClearSize:Int = 2, var garbageColorClear:Boolean = 
 		fun Field.gemColorCheck(size:Int, flag:Boolean, garbageClear:Boolean, ignoreHidden:Boolean):ClearResult {
 			if(flag) setAllAttribute(false, Block.ATTRIBUTE.ERASE)
 
-			val total = mutableSetOf<Triple<Int, Int, Block>>()
+			val total = mutableSetOf<Triple<Block, Int, Int>>()
 
 			for(i in allSpaceRows) for(j in 0..<width) {
 				getBlock(j, i)?.let {b ->
@@ -77,7 +77,7 @@ data class ColorGem(var colorClearSize:Int = 2, var garbageColorClear:Boolean = 
 		 * @return Total number of blocks cleared.
 		 */
 		fun Field.gemClearColor(size:Int, garbageClear:Boolean, ignoreHidden:Boolean = false):ClearResult {
-			val total = mutableSetOf<Triple<Int, Int, Block>>()
+			val total = mutableSetOf<Triple<Block, Int, Int>>()
 
 			for(i in allSpaceRows)
 				for(j in 0..<width) {

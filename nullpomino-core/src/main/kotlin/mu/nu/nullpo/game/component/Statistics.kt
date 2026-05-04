@@ -35,6 +35,9 @@ import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.decodeFromJsonElement
 import mu.nu.nullpo.util.CustomProperties
 import mu.nu.nullpo.util.GeneralUtil.Json
+import org.apache.logging.log4j.LogManager
+import java.io.*
+import java.util.zip.*
 
 /** Scoreなどの情報 */
 @Serializable
@@ -154,11 +157,15 @@ class Statistics {
 	/** Total Twister (regardless Piece shape but w/o no-lines) count */
 	val totalTwistsLine
 		get() = totalTTwistsLine+totalTwistSingleMini+totalTwistSingle+
-			(totalTwistDoubleMini+totalTwistDouble+totalTwistSplitDouble)*2+(totalTwistTriple+totalTwistSplitTriple)*3
+			(totalTwistDoubleMini+totalTwistDouble+totalTwistSplitDouble)+(totalTwistTriple+totalTwistSplitTriple)
 
+	/** Total lines with Twister*/
 	val totalTwistLinesSum
 		get() = totalTwistsLine+totalTwistDoubleMini+totalTwistDouble+totalTwistSplitDouble+
 			(totalTwistTriple+totalTwistSplitTriple)*2
+
+	/** Total Splited line-clearing count */
+	val totalSplit get() = totalSplitDouble+totalSplitTriple+totalTwistSplitDouble+totalTwistSplitTriple+totalTTwistSplitDouble+totalTTwistTriple
 
 	/** Back to Backs by 4-lines clear */
 	var totalB2BQuad = 0
@@ -574,8 +581,26 @@ class Statistics {
 	fun exportString():String = Json.encodeToString(this)
 
 	override fun toString():String = exportString()
+	fun saveFile(file:String):Boolean {
+		try {
+			val repFolder = File(file).parentFile
+			if(!repFolder.exists())
+				if(repFolder.mkdirs()) log.info("Created folder: ${repFolder.name}")
+				else log.error("Couldn't create folder at ${repFolder.name}")
+			GZIPOutputStream(FileOutputStream(file)).bufferedWriter().use {
+				it.write(exportString())
+			}
+			log.debug("Saving statistics file to $file")
+		} catch(e:IOException) {
+			log.debug("Failed to save statistics file to $file", e)
+			return false
+		}
+		return true
+
+	}
 
 	companion object {
+		private val log = LogManager.getLogger()
 		const val HISTORY_MAX = 100
 	}
 }

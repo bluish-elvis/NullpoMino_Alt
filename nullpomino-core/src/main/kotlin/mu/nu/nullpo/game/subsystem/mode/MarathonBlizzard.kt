@@ -43,6 +43,7 @@ import mu.nu.nullpo.gui.common.AbstractRenderer
 import mu.nu.nullpo.gui.common.BaseFont.FONT.*
 import mu.nu.nullpo.gui.common.bg.tech.Snow
 import mu.nu.nullpo.util.CustomProperties
+import mu.nu.nullpo.util.GeneralUtil.times
 import mu.nu.nullpo.util.GeneralUtil.toInt
 import mu.nu.nullpo.util.GeneralUtil.toTimeStr
 
@@ -233,7 +234,12 @@ class MarathonBlizzard:NetDummyMode() {
 			val pow = calcPower(engine, ev, true)
 			val lv = engine.statistics.level
 			val iceBreak = getLineDownNorm(lv)*10
-			water += maxOf(iceBreak*(li>=4).toInt(), pow)+ices*11
+			water += iceBreak*(li>=4).toInt()+pow+engine.field.lastLinesCleared.values.let {llc ->
+				val fli = llc.count {it.any {(_, b) -> b?.hard!=0}}
+				val fbc = llc.sumOf {it.values.filter {b -> b?.hard!=0}.size}
+				5+fli*5+minOf(maxOf(fbc/2, minOf(fli*10, 20-(engine.field.highestBlockY*2-10).coerceIn(0, 20))), 20)
+				+ev.combo+ev.twist*10+ev.split*10+lv
+			}
 
 			var get = pts
 			while(water>=iceBreak) {

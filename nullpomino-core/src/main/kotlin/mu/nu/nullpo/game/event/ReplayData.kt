@@ -30,6 +30,7 @@
  */
 package mu.nu.nullpo.game.event
 
+import kotlinx.serialization.Contextual
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 import mu.nu.nullpo.game.component.Statistics
@@ -54,7 +55,8 @@ data class ReplayData(
 	fun reset() {
 		inputDataArray.clear()
 	}
-
+	@Contextual
+	val piecePlacements:MutableList<PiecePlacement> = mutableListOf()
 	/** 設定を[r]からコピー */
 	fun replace(r:ReplayData) {
 		reset()

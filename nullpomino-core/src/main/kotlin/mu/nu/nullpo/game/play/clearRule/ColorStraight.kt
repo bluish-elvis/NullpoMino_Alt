@@ -62,7 +62,7 @@ data class ColorStraight(var colorClearSize:Int = 4, var lineColorDiagonals:Bool
 		fun Field.checkConnectedColor(size:Int, doErase:Boolean, diagonals:Boolean, gemSame:Boolean):ClearType.ClearResult {
 			if(size<1) return ClearType.ClearResult()
 			if(doErase) setAllAttribute(false, Block.ATTRIBUTE.ERASE)
-			val total = mutableSetOf<Triple<Int, Int, Block>>()
+			val total = mutableSetOf<Triple<Block, Int, Int>>()
 			var blockColor:Int
 			for(i in allSpaceRows)
 				for(j in 0..<width) {
@@ -71,16 +71,16 @@ data class ColorStraight(var colorClearSize:Int = 4, var lineColorDiagonals:Bool
 					for(dir in 0..<if(diagonals) 3 else 2) {
 						var x = j
 						var y = i
-						val count = mutableSetOf<Triple<Int, Int, Block>>()
+						val count = mutableSetOf<Triple<Block, Int, Int>>()
 						do {
-							count += Triple(x, y, getBlock(x, y)?:break)
+							count += Triple(getBlock(x, y)?:break, x, y)
 							if(dir!=1) y++
 							if(dir!=0) x++
 							blockColor = getBlockColor(x, y, gemSame)
 						} while(startColor==blockColor)
 						if(count.size<size) continue
 						total += count
-						if(doErase) count.forEach {(x, y, b) ->
+						if(doErase) count.forEach {(b) ->
 							b.apply {
 								if(hard>0) hard--
 								else setAttribute(true, Block.ATTRIBUTE.ERASE)

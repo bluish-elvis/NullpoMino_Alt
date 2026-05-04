@@ -85,7 +85,7 @@ abstract class BaseFontGrade:BaseFont {
 				}
 				dx += if(cd in 0..41) { // 文字出力
 
-					val sz = if(cd<=15) 48 else if(cd>=40) 128 else 64
+					val sz = if(cd<=15) 48 else if(cd==40) 112 else if(cd>=41) 128 else 64
 					val sx = (if(cd<16) cd else (cd-16)%12)*sz
 					val sy = ((if(cd>=16) if(cd>=28) if(cd>=40) 3 else 2 else 1 else 0)+col*4)*48
 					val sc = scale/2
@@ -117,11 +117,11 @@ abstract class BaseFontGrade:BaseFont {
 					0x30, 0x4F, 0x6F -> cd = 17//O
 					0x4D -> {
 						cd = 18//M
-						if(str.slice(i..minOf(str.length, i+5)).contains("master", true)) i += 5
+						if(str.slice(i..minOf(str.length-1, i+5)).contains("master", true)) i += 5
 					}
 					0x47, 67 -> {
 						cd = 19
-						if(str.slice(i..minOf(str.length, i+4)).contains("grand", true)) i += 4
+						if(str.slice(i..minOf(str.length-1, i+4)).contains("grand", true)) i += 4
 					}//G
 					else -> cd = -1
 				}

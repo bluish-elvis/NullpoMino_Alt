@@ -45,6 +45,7 @@ import mu.nu.nullpo.game.component.BGM
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
 import mu.nu.nullpo.game.event.ScoreEvent
 import mu.nu.nullpo.game.play.GameEngine
+import mu.nu.nullpo.game.play.GameEngine.Frame
 import mu.nu.nullpo.game.subsystem.mode.AbstractMode
 import mu.nu.nullpo.game.subsystem.mode.menu.*
 import mu.nu.nullpo.gui.common.BaseFont.FONT.*
@@ -90,7 +91,7 @@ class MarathonActual:AbstractMode() {
 			version = 1
 		}
 		engine.owner.bgMan.bg = 0
-		engine.frameSkin = 0
+		engine.frame = Frame.METAL
 	}
 
 	override fun setSpeed(engine:GameEngine) {

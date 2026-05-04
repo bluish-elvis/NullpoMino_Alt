@@ -108,7 +108,7 @@ data object LineBomb:ClearType {
 	 * @return 破壊するブロックの個数
 	 */
 	fun Field.igniteBomb(pow:Int):Int {
-		return filterAttributeBlocks(ATTRIBUTE.ERASE).filter {it.third.isGemBlock}.sumOf {(x, y, b) ->
+		return filterAttributeBlocks(ATTRIBUTE.ERASE).filter {(b) -> b.isGemBlock}.sumOf {(b, x, y) ->
 			setLineFlag(y, false)
 			detonateBomb(x, y, if(b.getAttribute(ATTRIBUTE.BIG)) -1 else pow)
 		}

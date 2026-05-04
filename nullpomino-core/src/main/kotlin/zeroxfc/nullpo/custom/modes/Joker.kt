@@ -43,8 +43,9 @@ import mu.nu.nullpo.game.event.EventReceiver.COLOR
 import mu.nu.nullpo.game.event.ScoreEvent
 import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.game.play.GameEngine.Status
-import mu.nu.nullpo.gui.common.AbstractRenderer.FontBadge.Companion.b
-import mu.nu.nullpo.gui.common.BaseFont.FONT.*
+import mu.nu.nullpo.game.subsystem.mode.menu.*
+import mu.nu.nullpo.gui.common.BaseFont.FONT.BASE
+import mu.nu.nullpo.gui.common.BaseFont.FONT.NUM
 import mu.nu.nullpo.gui.common.fx.particles.BlockParticle
 import mu.nu.nullpo.util.CustomProperties
 import mu.nu.nullpo.util.GeneralUtil.toTimeStr
@@ -58,8 +59,6 @@ class Joker:MarathonModeBase() {
 	private var shouldUseTimer = false
 	// Tetris lines clear lifeline
 	private var stock = 0
-	// starting stock
-	private var startingStock = 0
 	// Ranking stuff
 	private val rankingLevel = intArrayOf()
 	private val rankingTime = intArrayOf()
@@ -70,8 +69,6 @@ class Joker:MarathonModeBase() {
 	private var localRandom:Random? = null
 	// Particle stuff
 //	private var blockParticles:Mapper? = null
-	// ANIMATION TYPE
-	private var lineClearAnimType = 0
 	// Warning texts
 	private var warningText:FlyInOutText? = null
 	private var warningTextSecondLine:FlyInOutText? = null
@@ -94,7 +91,15 @@ class Joker:MarathonModeBase() {
 				BackgroundDiagonalRipple(19, 8, 8, 60, 1f, 2f, false, false)
 			)
 		}*/
-
+	private val itemStock = IntegerMenuItem("stock", "ST. STOCK", COLOR.BLUE, 0, 0..25)
+	/** Level at start time */
+	private var startingStock:Int by DelegateMenuItem(itemStock)
+	private val itemAnim = StringsMenuItem(
+		"lineClearAnim", "LINE ANIM.", COLOR.BLUE, 0, BlockParticle.Type.entries.map {it.name}
+	)
+	// ANIMATION TYPE
+	private var lineClearAnimType:Int by DelegateMenuItem(itemAnim)
+	override val menu:MenuList by lazy {MenuList(id, itemStock, itemBig, itemAnim)}
 	override val name = "JOKER"
 	override val gameIntensity = 1
 	/*
@@ -126,10 +131,7 @@ class Joker:MarathonModeBase() {
 		rankingLinesPlayer.fill(0)
 		rankingTimePlayer.fill(0)
 		netPlayerInit(engine)
-		if(!owner.replayMode) {
-			version = CURRENT_VERSION
-		} else {
-			if(version==0&&owner.replayProp.getProperty("joker.endless", false)) goalType = 2
+		if(!owner.replayMode) version = CURRENT_VERSION else {
 
 			// NET: Load name
 			netPlayerName = engine.owner.replayProp.getProperty("${engine.playerID}.net.netPlayerName", "")
@@ -169,94 +171,8 @@ class Joker:MarathonModeBase() {
 
 	private fun calculateEfficiencyGrade(engine:GameEngine) {
 		efficiency = engine.statistics.lines.toFloat()/((engine.statistics.level-50)*4)
-		for(i in GRADE_BOUNDARIES.indices) {
-			if(efficiency>=GRADE_BOUNDARIES[i]) efficiencyGrade = i
-		}
+		for(i in GRADE_BOUNDARIES.indices) if(efficiency>=GRADE_BOUNDARIES[i]) efficiencyGrade = i
 	}
-	/*
-     * Called at settings screen
-     */
-	override fun onSetting(engine:GameEngine):Boolean {
-		// NET: Net Ranking
-		if(netIsNetRankingDisplayMode) {
-			netOnUpdateNetPlayRanking(engine, goalType)
-		} else if(!engine.owner.replayMode) {
-			// Configuration changes
-			val change = updateCursor(engine, 4)
-			if(change!=0) {
-				engine.playSE("change")
-				when(engine.statc[2]) {
-					0 -> {
-						startingStock += change
-						if(startingStock>25) startingStock = 0
-						if(startingStock<0) startingStock = 25
-					}
-					1 -> big = !big
-					2 -> {
-						lineClearAnimType += change
-						if(lineClearAnimType>BlockParticle.ANIMATION_TYPES-1) lineClearAnimType = 0
-						if(lineClearAnimType<0) lineClearAnimType = BlockParticle.ANIMATION_TYPES-1
-					}
-				}
-
-				// NET: Signal options change
-				if(netIsNetPlay&&netNumSpectators>0) {
-					netSendOptions(engine)
-				}
-			}
-
-			// Confirm
-			if(engine.ctrl.isPush(Controller.BUTTON_A)&&engine.statc[3]>=5) {
-				engine.playSE("decide")
-				// NET: Signal start of the game
-				if(netIsNetPlay) netLobby!!.netPlayerClient!!.send("start1p\n")
-				return false
-			}
-
-			// Cancel
-			if(engine.ctrl.isPush(Controller.BUTTON_B)&&!netIsNetPlay) {
-				engine.quitFlag = true
-			}
-
-			// New acc
-			if(engine.ctrl.isPush(Controller.BUTTON_E)&&engine.ai==null&&!netIsNetPlay) {
-				engine.playerProp.reset()
-				engine.playSE("decide")
-				engine.stat = Status.PROFILE
-				engine.resetStatc()
-				return true
-			}
-
-			// NET: Netplay Ranking
-			if(engine.ctrl.isPush(Controller.BUTTON_D)&&netIsNetPlay&&startLevel==0&&!big&&engine.ai==null) {
-				netEnterNetPlayRankingScreen(goalType)
-			}
-			engine.statc[3]++
-		} else {
-			engine.statc[3]++
-			engine.statc[2] = -1
-			return engine.statc[3]<60
-		}
-		return true
-	}
-	/*
-     * Render the settings screen
-     */
-	override fun renderSetting(engine:GameEngine) {
-		val lc = when(lineClearAnimType) {
-			0 -> "DTET"
-			1 -> "TGM"
-			else -> ""
-		}
-		if(netIsNetRankingDisplayMode) {
-			// NET: Netplay Ranking
-			netOnRenderNetPlayRanking(engine, receiver)
-		} else {
-			drawMenu(engine, receiver, 0, COLOR.RED, 0, "ST. STOCK" to startingStock)
-			drawMenu(engine, receiver, 2, COLOR.BLUE, 1, "BIG" to big, "LINE ANIM." to lc)
-		}
-	}
-
 	override fun onReady(engine:GameEngine):Boolean {
 		mainTimer = STARTING_TIMER
 		engine.statistics.level = 50
@@ -342,10 +258,7 @@ class Joker:MarathonModeBase() {
 						receiver.drawScore(engine, 15, topY+i, rankingTimePlayer[i].toTimeStr, BASE, i==rankingRankPlayer)
 					}
 					receiver.drawScore(engine, 0, topY+rankingMax+1, "PLAYER SCORES", BASE, COLOR.BLUE)
-					receiver.drawScore(
-						engine, 0, topY+rankingMax+2, engine.playerProp.nameDisplay, BASE, COLOR.WHITE,
-						2f
-					)
+					receiver.drawScore(engine, 0, topY+rankingMax+2, engine.playerProp.nameDisplay, BASE, COLOR.WHITE, 2f)
 					receiver.drawScore(engine, 0, topY+rankingMax+5, "F:SWITCH RANK SCREEN", BASE, COLOR.GREEN)
 				} else {
 					for(i in 0..<rankingMax) {
@@ -360,29 +273,25 @@ class Joker:MarathonModeBase() {
 						receiver.drawScore(engine, 15, topY+i, rankingTime[i].toTimeStr, BASE, i==rankingRank)
 					}
 					receiver.drawScore(engine, 0, topY+rankingMax+1, "LOCAL SCORES", BASE, COLOR.BLUE)
-					if(!engine.playerProp.isLoggedIn) receiver.drawScore(
-						engine, 0, topY+rankingMax+2, "(NOT LOGGED IN)\n(E:LOG IN)",
-						BASE)
-					if(engine.playerProp.isLoggedIn) receiver.drawScore(
-						engine, 0, topY+rankingMax+5, "F:SWITCH RANK SCREEN",
-						BASE,
-						COLOR.GREEN
-					)
+					if(!engine.playerProp.isLoggedIn)
+						receiver.drawScore(engine, 0, topY+rankingMax+2, "(NOT LOGGED IN)\n(E:LOG IN)", BASE)
+					if(engine.playerProp.isLoggedIn)
+						receiver.drawScore(engine, 0, topY+rankingMax+5, "F:SWITCH RANK SCREEN", BASE, COLOR.GREEN)
 				}
 			}
 		} else if(engine.stat===Status.CUSTOM) {
 			engine.playerProp.loginScreen.renderScreen(receiver, engine)
 		} else {
 			receiver.drawScore(engine, 0, 3, "TIME", BASE, COLOR.BLUE)
-			val strScore = "${timeScore.toTimeStr}(+${(engine.statistics.time-timeScore).toTimeStr})"
-			receiver.drawScore(engine, 0, 4, strScore, BASE)
+			val strScore = "${timeScore.toTimeStr} +${(engine.statistics.time-timeScore).toTimeStr}"
+			receiver.drawScore(engine, 0, 4, strScore, NUM)
 			receiver.drawScore(engine, 0, 6, "LINE", BASE, COLOR.BLUE)
-			receiver.drawScore(engine, 0, 7, "${engine.statistics.lines}", BASE)
+			receiver.drawScore(engine, 0, 7, "${engine.statistics.lines}", NUM)
 			receiver.drawScore(engine, 0, 9, "LEVEL", BASE, COLOR.BLUE)
-			receiver.drawScore(engine, 0, 10, "${engine.statistics.level}", BASE)
+			receiver.drawScore(engine, 0, 10, "${engine.statistics.level}", NUM)
 
 			receiver.drawScore(engine, 0, 12, "STOCK", BASE, COLOR.GREEN)
-			receiver.drawScore(engine, 0, 13, "$stock"+b, BASE, stock<=2)
+			receiver.drawScoreBadges(engine, 0, 13, 100, stock)
 			receiver.drawScore(engine, 0, 15, "EFFICIENCY", BASE, COLOR.GREEN)
 			receiver.drawScore(
 				engine, 0, 16, "%.2f%%".format(efficiency*100),
@@ -394,9 +303,7 @@ class Joker:MarathonModeBase() {
 				receiver.drawScore(engine, 0, 18, "PLAYER", BASE, COLOR.BLUE)
 				receiver.drawScore(
 					engine, 0, 19, if(owner.replayMode) engine.playerName else engine.playerProp.nameDisplay,
-					BASE,
-					COLOR.WHITE,
-					2f
+					BASE, COLOR.WHITE, 2f
 				)
 			}
 			if(shouldUseTimer) {

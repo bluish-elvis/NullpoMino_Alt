@@ -37,16 +37,16 @@
 
 package zeroxfc.nullpo.custom.modes
 
+import kotlinx.serialization.serializer
 import mu.nu.nullpo.game.component.BGM
-import mu.nu.nullpo.game.component.Controller
+import mu.nu.nullpo.game.event.*
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
-import mu.nu.nullpo.game.event.ScoreEvent
 import mu.nu.nullpo.game.net.NetUtil.urlEncode
 import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.game.subsystem.mode.NetDummyMode
 import mu.nu.nullpo.game.subsystem.mode.menu.*
 import mu.nu.nullpo.game.subsystem.mode.rankMapType
-import mu.nu.nullpo.gui.common.BaseFont.FONT.*
+import mu.nu.nullpo.gui.common.BaseFont.FONT.BASE
 import mu.nu.nullpo.util.CustomProperties
 import mu.nu.nullpo.util.GeneralUtil.toTimeStr
 
@@ -55,18 +55,6 @@ abstract class MarathonModeBase:NetDummyMode() {
 	@JvmField
 	var bgmLv = 0
 
-	val itemLevel = LevelMenuItem("startlevel", "LEVEL", COLOR.BLUE, 0, 0..19)
-	/** Level at start time */
-	var startLevel:Int by DelegateMenuItem(itemLevel)
-
-	open val itemMode:IntegerMenuItem = StringsMenuItem("goalType", "GOAL", COLOR.BLUE, 0,
-		List(GAMETYPE_MAX) {if(tableGameClearLines[it]<0) "ENDLESS" else "${tableGameClearLines[it]} LINES"})
-	/** Game type */
-	var goalType:Int by DelegateMenuItem(itemMode)
-
-	val itemBig = BooleanMenuItem("big", "BIG MODE", COLOR.WHITE, false, true)
-	/** Big*/
-	var big:Boolean by DelegateMenuItem(itemBig)
 	/** Version*/
 	@JvmField
 	var version = 0
@@ -86,8 +74,29 @@ abstract class MarathonModeBase:NetDummyMode() {
 	override val propPB:rankMapType get() = emptyMap()
 	abstract override val name:String
 	abstract override val gameIntensity:Int
-	override val menu:MenuList by lazy {MenuList(id, itemMode, itemLevel, itemBig)}
 
+	/**
+	 * NET: Get goal type
+	 */
+	override val netGetGoalType get() = 0
+	val itemLevel = LevelMenuItem("startlevel", "LEVEL", COLOR.BLUE, 0, 0..19)
+	/** Level at start time */
+	var startLevel:Int by DelegateMenuItem(itemLevel)
+
+//	open val itemMode:AbstractMenuItem<Int> by lazy {
+//		StringsMenuItem("goalType", "GOAL", COLOR.BLUE, 0,
+//			List(GAMETYPE_MAX) {if(tableGameClearLines[it]<0) "ENDLESS" else "${tableGameClearLines[it]} LINES"})
+//	}
+//	/** Game type */
+//	var goalType:Int by DelegateMenuItem(itemMode)/	}
+
+	val itemBig = BooleanMenuItem("big", "BIG MODE", COLOR.WHITE, false, true)
+	/** Big*/
+	var big:Boolean by DelegateMenuItem(itemBig)
+	override val menu:MenuList by lazy {MenuList(id, itemLevel, itemBig)}
+	override open val ranking:List<Leaderboard<Rankable.ScoreRow>> = List(1) {
+		Leaderboard(rankingMax, serializer<List<Rankable.ScoreRow>>()) {Rankable.ScoreRow()}
+	}
 	override fun playerInit(engine:GameEngine) {
 		super.playerInit(engine)
 		lastScore = 0
@@ -126,71 +135,6 @@ abstract class MarathonModeBase:NetDummyMode() {
 		engine.speed.areLine = 6
 		engine.speed.lineDelay = 10
 	}
-	override fun onSetting(engine:GameEngine):Boolean {
-		// NET: Net Ranking
-		if(netIsNetRankingDisplayMode) {
-			netOnUpdateNetPlayRanking(engine, goalType)
-		} else if(!engine.owner.replayMode) {
-			// Configuration changes
-			val change = updateCursor(engine, 7)
-			if(change!=0) {
-				engine.playSE("change")
-				when(engine.statc[2]) {
-					0 -> {
-						startLevel += change
-						if(tableGameClearLines[goalType]>=0) {
-							if(startLevel<0) startLevel = (tableGameClearLines[goalType]-1)/10
-							if(startLevel>(tableGameClearLines[goalType]-1)/10) startLevel = 0
-						} else {
-							if(startLevel<0) startLevel = 19
-							if(startLevel>19) startLevel = 0
-						}
-						engine.owner.bgMan.bg = startLevel
-					}
-					6 -> {
-						goalType += change
-						if(goalType<0) goalType = GAMETYPE_MAX-1
-						if(goalType>GAMETYPE_MAX-1) goalType = 0
-						if(startLevel>(tableGameClearLines[goalType]-1)/10&&tableGameClearLines[goalType]>=0) {
-							startLevel = (tableGameClearLines[goalType]-1)/10
-							engine.owner.bgMan.bg = startLevel
-						}
-					}
-					7 -> big = !big
-				}
-
-				// NET: Signal options change
-				if(netIsNetPlay&&netNumSpectators>0) {
-					netSendOptions(engine)
-				}
-			}
-
-			// Confirm
-			if(engine.ctrl.isPush(Controller.BUTTON_A)&&engine.statc[3]>=5) {
-				engine.playSE("decide")
-
-				// NET: Signal start of the game
-				if(netIsNetPlay) netLobby!!.netPlayerClient!!.send("start1p\n")
-				return false
-			}
-
-			// Cancel
-			if(engine.ctrl.isPush(Controller.BUTTON_B)&&!netIsNetPlay) {
-				engine.quitFlag = true
-			}
-
-			// NET: Netplay Ranking
-			if(engine.ctrl.isPush(Controller.BUTTON_D)&&netIsNetPlay&&startLevel==0&&!big&&engine.ai==null) {
-				netEnterNetPlayRankingScreen(goalType)
-			}
-			engine.statc[3]++
-		} else {
-			engine.statc[3]++
-			engine.statc[2] = -1
-			return engine.statc[3]<60
-		}
-		return true
-	}
 	/*
      * Called for initialization during "Ready" screen
      */
@@ -205,9 +149,7 @@ abstract class MarathonModeBase:NetDummyMode() {
 		engine.useAllSpinBonus = true
 		engine.twistEnableEZ = true
 		setSpeed(engine)
-		if(netIsWatch) {
 			owner.musMan.bgm = BGM.Silent
-		}
 	}
 	/*
      * Render score
@@ -271,47 +213,7 @@ abstract class MarathonModeBase:NetDummyMode() {
 
 		// Update rankings
 		return !owner.replayMode&&!big&&engine.ai==null&&
-			updateRanking(engine.statistics.score, engine.statistics.lines, engine.statistics.time, goalType)!=-1
-	}
-	/**
-	 * Update rankings
-	 *
-	 * @param sc   Score
-	 * @param li   Lines
-	 * @param time Time
-	 */
-	private fun updateRanking(sc:Long, li:Int, time:Int, type:Int):Int {
-		rankingRank = checkRanking(sc, li, time, type)
-		if(rankingRank!=-1) {
-			// Shift down ranking entries
-			for(i in rankingMax-1 downTo rankingRank+1) {
-				rankingScore[type][i] = rankingScore[type][i-1]
-				rankingLines[type][i] = rankingLines[type][i-1]
-				rankingTime[type][i] = rankingTime[type][i-1]
-			}
-
-			// Add new data
-			rankingScore[type][rankingRank] = sc
-			rankingLines[type][rankingRank] = li
-			rankingTime[type][rankingRank] = time
-		}
-		return rankingRank
-	}
-	/**
-	 * Calculate ranking position
-	 *
-	 * @param sc   Score
-	 * @param li   Lines
-	 * @param time Time
-	 * @return Position (-1 if unranked)
-	 */
-	private fun checkRanking(sc:Long, li:Int, time:Int, type:Int):Int {
-		for(i in 0..<rankingMax) {
-			if(sc>rankingScore[type][i]) return i
-			else if(sc==rankingScore[type][i]&&li>rankingLines[type][i]) return i
-			else if(sc==rankingScore[type][i]&&li==rankingLines[type][i]&&time<rankingTime[type][i]) return i
-		}
-		return -1
+			ranking[netGetGoalType].add(Rankable.ScoreRow(engine.statistics))!=-1
 	}
 
 	/** NET: Send various in-game stats of [engine] */
@@ -319,10 +221,9 @@ abstract class MarathonModeBase:NetDummyMode() {
 		val bg = if(engine.owner.bgMan.fadeSW) engine.owner.bgMan.nextBg else engine.owner.bgMan.bg
 		val msg = "game\tstats\t"+engine.run {
 			statistics.run {
-				"${scoreLine}\t${scoreSD}\t${scoreHD}\t${scoreBonus}\t"+
-					"${lines}\t${totalPieceLocked}\t"+
-					"${time}\t${level}\t"
-			}+"$goalType\t${engine.gameActive}\t${timerActive}\t$lastScore\t$scDisp\t${lastEvent}\t$bg\n"
+				"$scoreLine\t$scoreSD\t$scoreHD\t$scoreBonus\t"+
+					"$lines\t$totalPieceLocked\t$time\t$level\t"
+			}+"$netGetGoalType\t${engine.gameActive}\t$timerActive\t$lastScore\t$scDisp\t$lastEvent\t$bg\n"
 		}
 		netLobby?.netPlayerClient?.send(msg)
 	}
@@ -338,7 +239,7 @@ abstract class MarathonModeBase:NetDummyMode() {
 			{engine.statistics.totalPieceLocked = it.toInt()},
 			{engine.statistics.time = it.toInt()},
 			{engine.statistics.level = it.toInt()},
-			{goalType = it.toInt()},
+			{},
 			{engine.gameActive = it.toBoolean()},
 			{engine.timerActive = it.toBoolean()},
 			{lastScore = it.toInt()},
@@ -370,7 +271,7 @@ abstract class MarathonModeBase:NetDummyMode() {
 	 * @param engine GameEngine
 	 */
 	override fun netSendOptions(engine:GameEngine) {
-		val msg = "game\toption\t$startLevel\t$goalType\t$big\n"
+		val msg = "game\toption\t$startLevel\t$netGetGoalType\t$big\n"
 		netLobby?.netPlayerClient?.send(msg)
 	}
 	/**
@@ -378,13 +279,9 @@ abstract class MarathonModeBase:NetDummyMode() {
 	 */
 	override fun netRecvOptions(engine:GameEngine, message:List<String>) {
 		startLevel = message[4].toInt()
-		goalType = message[5].toInt()
+//		goalType = message[5].toInt()
 		big = java.lang.Boolean.parseBoolean(message[6])
 	}
-	/**
-	 * NET: Get goal type
-	 */
-	override val netGetGoalType get() = goalType
 	/**
 	 * NET: It returns true when the current settings don't prevent leaderboard screen from showing.
 	 */

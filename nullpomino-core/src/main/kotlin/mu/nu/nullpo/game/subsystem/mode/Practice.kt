@@ -30,10 +30,7 @@
  */
 package mu.nu.nullpo.game.subsystem.mode
 
-import mu.nu.nullpo.game.component.BGM
-import mu.nu.nullpo.game.component.Block
-import mu.nu.nullpo.game.component.Controller
-import mu.nu.nullpo.game.component.Field
+import mu.nu.nullpo.game.component.*
 import mu.nu.nullpo.game.component.Piece.Shape
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
 import mu.nu.nullpo.game.event.ScoreEvent
@@ -888,9 +885,7 @@ class Practice:AbstractGrand() {
 	/* Processing on the move */
 	override fun onMove(engine:GameEngine):Boolean {
 		// Occurrence new piece
-		if(leveltype==LEVELTYPE_MANIA||leveltype==LEVELTYPE_MANIAPLUS) {
-			super.onMove(engine)
-		}
+		val ret = if(leveltype==LEVELTYPE_MANIA||leveltype==LEVELTYPE_MANIAPLUS) super.onMove(engine) else false
 
 		// EndingStart
 		if(engine.ending==2&&!rollStarted) {
@@ -905,17 +900,19 @@ class Practice:AbstractGrand() {
 
 			owner.musMan.bgm = BGM.Ending(0)
 		}
+		if(engine.ctrl.isPush(Controller.BUTTON_F)) engine.undo().let {if(it) return true}
 
-		return false
+		return ret
 	}
 
 	/* AREProcessing during */
 	override fun onARE(engine:GameEngine):Boolean {
 		// Last frame
-		if(leveltype==LEVELTYPE_MANIA||leveltype==LEVELTYPE_MANIAPLUS)
-			return super.onARE(engine)
+		val ret = if(leveltype==LEVELTYPE_MANIA||leveltype==LEVELTYPE_MANIAPLUS) super.onARE(engine) else false
 
-		return false
+		if(engine.ctrl.isPush(Controller.BUTTON_F)) engine.undo().let {if(it) return true}
+
+		return ret
 	}
 
 	override fun levelUp(engine:GameEngine, lu:Int) {

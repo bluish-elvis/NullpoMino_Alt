@@ -39,6 +39,7 @@ import mu.nu.nullpo.game.event.EventReceiver.COLOR.*
 import mu.nu.nullpo.game.event.ScoreEvent
 import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.game.play.GameManager
+import mu.nu.nullpo.game.subsystem.mode.GrandM1
 import mu.nu.nullpo.gui.common.BaseFont.FONT
 import mu.nu.nullpo.gui.common.BaseFont.FONT.*
 import mu.nu.nullpo.gui.common.bg.AbstractBG
@@ -484,7 +485,7 @@ abstract class AbstractRenderer:EventReceiver() {
 		for(i in 0..engine.lives)
 			drawDia(
 				lX-.5f*s, bY-(1+i+.5f)*s, s*2f/3, s*2f/3,
-				engine.statc[0]/(14f-engine.speed.rank*10f), alpha = .75f,
+				engine.replayTimer/(14f-engine.speed.rank*10f), alpha = .75f,
 				outlineColor = getColorByID(COLOR.all.let {it[(i+1)%(it.size-1)]}), outlineW = 2f
 			)
 		if(engine.b2bCount>=0) {
@@ -519,8 +520,8 @@ abstract class AbstractRenderer:EventReceiver() {
 			//if(engine.harddropFall>0)g+=engine.harddropFall;
 			val dX = x+pX*blkSize
 			val dY = y+pY*blkSize+ys
-			p.data[p.direction].groupBy {(x) -> x}.map {(_, it) -> it.minBy {(_, y) -> y}}
-				.forEach {(x2, y2, blk) ->
+			p.data[p.direction].groupBy {(_, x) -> x}.map {(_, it) -> it.minBy {(_, _, y) -> y}}
+				.forEach {(blk, x2, y2) ->
 					val blk = Block(blk).apply {darkness = 0f}
 					for(z in 0..g/2) drawBlock(
 						x+(x2*bi+pX)*blkSize, y+((y2-z)*bi+pY)*blkSize, blk,
@@ -528,9 +529,9 @@ abstract class AbstractRenderer:EventReceiver() {
 					)
 				}
 			drawPiece(dX, dY, p, scale, -.25f)
-			val outline = if(engine.statc[0]%2==0||!engine.holdDisable) if(edgeBold) 2f else 1f else 0f
+			val outline = if(engine.replayTimer%2==0||!engine.holdDisable) if(edgeBold) 2f else 1f else 0f
 			if(outline>0) p.block.forEachIndexed {i, blk ->
-				val oColor = if(engine.statc[0]%2==1) 0xFFFFFF else
+				val oColor = if(engine.replayTimer%2!=0) 0xFFFFFF else
 					getColorByID(
 						engine.holdPieceObject?.block[i]?.run {if(getAttribute(ATTRIBUTE.BONE)) Block.COLOR.WHITE else color}
 							?:Block.COLOR.BLACK)
@@ -559,8 +560,8 @@ abstract class AbstractRenderer:EventReceiver() {
 			)*/
 			if(showCenter) drawDia(
 				dX+(p.spinCX+.5f)*ps, dY+(p.spinCY+.5f)*ps, ps*2/3, ps*2/3,
-				engine.statc[0]/(14f-engine.speed.rank*10f), alpha = .75f,
-				outlineColor = getColorByID(p.block[engine.statc[0]%p.block.size].run {
+				engine.replayTimer/(14f-engine.speed.rank*10f), alpha = .75f,
+				outlineColor = getColorByID(p.block[engine.replayTimer.mod(p.block.size)].run {
 					if(getAttribute(ATTRIBUTE.BONE)) Block.COLOR.WHITE else color
 				}), outlineW = 2f
 			)
@@ -694,8 +695,8 @@ abstract class AbstractRenderer:EventReceiver() {
 				drawPiece(x2, y2, it)
 				if(showCenter) drawDia(
 					x2+(it.spinCX+.5f)*fbs, y2+(it.spinCY+.5f)*fbs, fbs*2/3, fbs*2/3,
-					engine.statc[0]/(14f-engine.speed.rank*10f), alpha = .75f,
-					outlineColor = getColorByID(it.block[engine.statc[0]%it.block.size].run {
+					engine.replayTimer/(14f-engine.speed.rank*10f), alpha = .75f,
+					outlineColor = getColorByID(it.block[engine.replayTimer.mod(it.block.size)].run {
 						if(getAttribute(ATTRIBUTE.BONE)) Block.COLOR.WHITE else color
 					}), outlineW = 2f
 				)
@@ -909,10 +910,9 @@ abstract class AbstractRenderer:EventReceiver() {
 	private fun locusParticle(engine:GameEngine, fall:Int, alpha:Int = 225, lifetime:IntRange, vel:Float = alpha*0.0072f) {
 		if(particle&&!engine.isRetroSkin) engine.nowPieceObject?.let {p ->
 			val bi = if(p.big) 2 else 1
-			p.data[p.direction].filterNot {(_, _, blk) -> blk.getAttribute(ATTRIBUTE.BONE)}
-				.filterNot {(_, _, blk) -> blk.isEmpty}
-				.groupBy {(x) -> x}.map {(_, it) -> it.minBy {(_, y) -> y}}.let {
-					it.forEach {(bx, by, blk) ->
+			p.data[p.direction].filterNot {(blk) -> blk.isEmpty||blk.getAttribute(ATTRIBUTE.BONE)}
+				.groupBy {(_, x) -> x}.map {(_, it) -> it.maxBy {(_, _, y) -> y}}.let {
+					it.forEach {(blk, bx, by) ->
 						val col = Fireworks.colorBy(blk)
 						val x = engine.fX+(engine.nowPieceX+(bx+.5f)*bi)*engine.blockSize
 						for(z in 0..fall) {
@@ -947,11 +947,11 @@ abstract class AbstractRenderer:EventReceiver() {
 	override fun pieceFlicked(engine:GameEngine, pX:Int, pY:Int, p:Piece, slide:Boolean) {
 		val bi = if(p.big) 2 else 1
 		if(particle&&!engine.isRetroSkin) efxFG.addAll(
-			p.data[p.direction].filterNot {(_, _, blk) -> blk.isEmpty||blk.getAttribute(ATTRIBUTE.BONE)}
-				.groupBy {(x) -> x}.map {(_, it) -> it.maxBy {(_, y) -> y}}.filter {(x, y, _) ->
+			p.data[p.direction].filterNot {(blk) -> blk.isEmpty||blk.getAttribute(ATTRIBUTE.BONE)}
+				.groupBy {(_, x) -> x}.map {(_, it) -> it.maxBy {(_, _, y) -> y}}.filter {(_, x, y) ->
 					!engine.field.getBlockEmpty(pX+x*bi, pY+(y+1)*bi, pY+y*bi<engine.field.height-bi) // 盤面に接しているブロックのみ
 				}.let {
-					it.flatMap {(bx, by, blk) ->
+					it.flatMap {(blk, bx, by) ->
 						val col = Fireworks.colorBy(blk)
 						val px = engine.fX+(pX+bx*bi)*engine.blockSize
 						val prx = px+bi*engine.blockSize
@@ -965,10 +965,10 @@ abstract class AbstractRenderer:EventReceiver() {
 	override fun pieceLocked(engine:GameEngine, pX:Int, pY:Int, p:Piece, lines:Int, finesse:Boolean) {
 		val bi = if(p.big) 2 else 1
 		if(particle&&!engine.isRetroSkin) efxFG.addAll(
-			p.data[p.direction].filterNot {(_, _, blk) -> blk.isEmpty||blk.getAttribute(ATTRIBUTE.BONE)}
-				.groupBy {(x) -> x}.map {(_, it) -> it.maxBy {(_, y) -> y}}.let {
+			p.data[p.direction].filterNot {(blk) -> blk.isEmpty||blk.getAttribute(ATTRIBUTE.BONE)}
+				.groupBy {(_, x) -> x}.map {(_, it) -> it.maxBy {(_, _, y) -> y}}.let {
 					// 盤面に接しているブロックのみ
-					it.flatMap {(bx, by, blk) ->
+					it.flatMap {(blk, bx, by) ->
 						val x = engine.fX+(pX+(bx+.5f)*bi)*engine.blockSize
 						val y = engine.fY+(pY+(by+.5f)*bi)*engine.blockSize
 						val col = Fireworks.colorBy(blk)
@@ -1001,10 +1001,7 @@ abstract class AbstractRenderer:EventReceiver() {
 					val sy = engine.fY+y*s
 					if(particle) {
 						Fireworks.colorBy(blk).let {col ->
-							LandingParticles(
-								5, sx, sx+s, sy+s/2f, s*.5f, col[0], col[1], col[2],
-								235, 25, .44f, .66f
-							).let {
+							LandingParticles(5, sx, sx+s, sy+s/2f, s*.5f, col[0], col[1], col[2], 235, 25, .44f, .66f).let {
 								if(blk.getAttribute(ATTRIBUTE.BONE)||engine.isRetroSkin) it.set else (it.particles+
 									if(blk.type==Block.TYPE.GEM) setOf(Ripple(sx+s/2f, sy+s/2f, col[0], col[1], col[2], 255))
 									else
@@ -1027,7 +1024,7 @@ abstract class AbstractRenderer:EventReceiver() {
 				}
 			})
 			val btype = engine.frame==GameEngine.Frame.HEBO||(engine.owner.mode?.gameIntensity?:0)<0
-				||engine.owner.mode is mu.nu.nullpo.game.subsystem.mode.GrandM1
+				||engine.owner.mode is GrandM1
 			if(engine.frame!=GameEngine.Frame.GB&&engine.frame!=GameEngine.Frame.SG) efxBG.addAll(
 				BlockParticle.Mapper(
 					engine, this, blk, if(btype) BlockParticle.Type.TGM else BlockParticle.Type.DTET,
@@ -1037,6 +1034,19 @@ abstract class AbstractRenderer:EventReceiver() {
 		}
 	}
 
+	override fun onUndo(engine:GameEngine, blocks:Collection<Triple<Block, Int, Int>>) {
+		if(showLineEffect&&engine.displaySize!=-1) {
+			val s = engine.blockSize
+			if(particle) efxFG.addAll(blocks.flatMap {(blk, x, y) ->
+				val sx = engine.fX+x*s
+				val sy = engine.fY+y*s
+				Fireworks.colorBy(blk).let {col ->
+					LandingParticles(10, sx, sx+s, sy+s/2f, s*.5f, col[0], col[1], col[2], 235, 25, .44f, .66f).set
+				}
+			})
+			efxBG.addAll(BlockParticle.Mapper(engine, this, blocks, BlockParticle.Type.TGM, false, 4f).particles)
+		}
+	}
 	/* ラインを消す演出の処理 */
 	override fun calcScore(engine:GameEngine, event:ScoreEvent?) {
 		event?:return

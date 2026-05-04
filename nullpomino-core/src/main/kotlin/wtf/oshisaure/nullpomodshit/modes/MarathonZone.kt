@@ -44,10 +44,7 @@ import mu.nu.nullpo.game.event.ScoreEvent
 import mu.nu.nullpo.game.net.NetUtil
 import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.game.subsystem.mode.NetDummyMode
-import mu.nu.nullpo.game.subsystem.mode.menu.DelegateMenuItem
-import mu.nu.nullpo.game.subsystem.mode.menu.LevelMenuItem
-import mu.nu.nullpo.game.subsystem.mode.menu.MenuList
-import mu.nu.nullpo.game.subsystem.mode.menu.StringsMenuItem
+import mu.nu.nullpo.game.subsystem.mode.menu.*
 import mu.nu.nullpo.gui.common.BaseFont.FONT.*
 import mu.nu.nullpo.util.CustomProperties
 import mu.nu.nullpo.util.GeneralUtil.toTimeStr
@@ -119,7 +116,11 @@ class MarathonZone:NetDummyMode() {
 		if(lastzonelines>0) {
 			zonedisplayframes = 0
 			engine.playSE("erase3")
-			if(lastzonelines>=10) engine.playSE("bravo")
+			if(lastzonelines>=10) {
+				engine.playSE("bravo")
+				engine.playSE("cheer")
+			}
+
 		}
 		lastzonebonus = getZoneBonus3(lastzonelines, engine.statistics.level+1)
 		engine.statistics.scoreBonus += lastzonebonus
@@ -445,7 +446,6 @@ class MarathonZone:NetDummyMode() {
 
 		// All clear
 		if((li>=1)&&(engine.field.isEmpty)) {
-			engine.playSE("bravo")
 			pts += 180
 		}
 

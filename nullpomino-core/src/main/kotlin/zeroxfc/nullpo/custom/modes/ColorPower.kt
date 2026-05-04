@@ -95,6 +95,11 @@ class ColorPower:MarathonModeBase() {
 	/** Rankings' times */
 	private val rankingTimePlayer = List(2) {List(RANKING_TYPE) {MutableList(rankingMax) {-1}}}
 
+	private val itemMode =
+		StringsMenuItem("goalType", "GOAL", COLOR.BLUE, 0, tableGameClearLines.map {if(it<=0) "ENDLESS" else "$it LINES"})
+	/** Game type  */
+	private var goalType:Int by DelegateMenuItem(itemMode)
+
 	override val propRank
 		get() = rankMapOf(rankingScore.flatMapIndexed {a, x -> x.mapIndexed {b, y -> "$a.$b.score" to y}}+
 			rankingLines.flatMapIndexed {a, x -> x.mapIndexed {b, y -> "$a.$b.lines" to y}}+

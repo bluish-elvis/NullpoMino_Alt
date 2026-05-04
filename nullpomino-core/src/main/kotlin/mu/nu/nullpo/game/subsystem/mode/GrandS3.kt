@@ -42,7 +42,9 @@ import mu.nu.nullpo.gui.common.AbstractRenderer
 import mu.nu.nullpo.gui.common.BaseFont
 import mu.nu.nullpo.gui.common.BaseFont.FONT.*
 import mu.nu.nullpo.util.CustomProperties
+import mu.nu.nullpo.util.GeneralUtil.times
 import mu.nu.nullpo.util.GeneralUtil.toTimeStr
+import zeroxfc.nullpo.custom.libs.Interpolation.cosStep
 
 /** SPEED MANIAX Season Mode */
 class GrandS3:AbstractGrand() {
@@ -52,6 +54,7 @@ class GrandS3:AbstractGrand() {
 	/** 段位表示を光らせる残り frame count */
 	private var gradeFlash = 0
 
+	private var water = 0
 	/** Combo bonus */
 	private var comboValue = 0
 
@@ -64,7 +67,24 @@ class GrandS3:AbstractGrand() {
 	/** せり上がりカウント */
 	private var isFieldFrozen = false
 
-	private var endGame = -1
+	private var endGame = Triple(-1, -1, GameEngine.UndoState())
+	private var endGameLv
+		get() = endGame.first
+		set(value) {
+			endGame = Triple(value, endGame.second, endGame.third)
+		}
+	private var endGameStep
+		get() = endGame.second
+		set(value) {
+			endGame = Triple(endGame.first, value, endGame.third)
+		}
+	private var endGameStat
+		get() = endGame.third
+		set(value) {
+			endGame = Triple(endGame.first, endGame.second, value)
+		}
+
+	private var endGameTemp = 0
 	/** REGRET display time frame count */
 	private var regretDispFrame = 0
 
@@ -72,7 +92,7 @@ class GrandS3:AbstractGrand() {
 	private var secretGrade = 0
 
 	/** Section Time記録表示中ならtrue */
-	private var isShowBestSectionTime = false
+	private var isShowBestSectionTime = 0
 
 	/** Number of sections */
 	override val sectionMax = 26
@@ -80,7 +100,7 @@ class GrandS3:AbstractGrand() {
 	override val medalSKQuads = listOf(listOf(10, 20, 30, 40), listOf(1, 2, 4, 6))
 	override val medalTSLines = listOf(listOf(32, 64, 96, 128), listOf(1, 2, 4, 6))
 
-	private val itemLevel = LevelGrandMenuItem(COLOR.BLUE, sectionMax, false)
+	private val itemLevel = LevelGrandMenuItem(COLOR.BLUE, sectionMax-1, false)
 	/** Level at start */
 	private var startLevel:Int by DelegateMenuItem(itemLevel)
 
@@ -89,22 +109,23 @@ class GrandS3:AbstractGrand() {
 	private var gradeDisp:Boolean by DelegateMenuItem(itemGrade)
 
 	private val itemTemp = IntegerMenuItem("temperature", "Temperature", COLOR.CYAN, 0, 0, 50, true)
-	/** Level at start */
 	private var temperature:Int by DelegateMenuItem(itemTemp)
-	private val itemStep = IntegerMenuItem("temperature", "Steps", COLOR.CYAN, 0, 0, 70, true)
-	/** Level at start */
+	private val itemStep = IntegerMenuItem("steps", "Steps", COLOR.CYAN, 0, 0, 10, true)
 	private var steps:Int by DelegateMenuItem(itemStep)
 
+	private val itemMode = BooleanMenuItem("strict", "Strict", COLOR.RED, false, true)
+	private var strict:Boolean by DelegateMenuItem(itemMode)
+
 	/* Initialization */
-	override val menu = MenuList("speedmaniax", itemAlert, itemST, itemGrade, itemLevel, itemTemp, itemStep)
+	override val menu = MenuList("speedmaniax", itemMode, itemST, itemGrade, itemLevel, itemTemp, itemStep)
 
 	@Serializable
-	data class Token(var bravos:Int = 0, var quads:Int = 0, var twists:Int = 0, var frozens:Int = 0) {
-		constructor(it:Statistics):this(it.bravos, it.totalQuadruple, it.totalTwistsLine, 0)
+	data class Token(var bravos:Int = 0, var quads:Int = 0, var twists:Int = 0, var frozens:Int = 0, var ices:Int = 0) {
+		constructor(it:Statistics):this(it.bravos, it.totalQuadruple, it.totalTwistsLine)
 
 		fun apply(it:Statistics) {
-			quads = it.totalQuadruple
-			twists = it.totalTwistsLine/2
+			quads = it.totalQuadruple+it.totalB2BQuad+it.totalB2BSplit+it.totalB2BTwist
+			twists = it.totalTwistLinesSum+(it.totalTwistZero+it.totalTwistZeroMini)/2
 			bravos = it.bravos
 		}
 
@@ -113,11 +134,14 @@ class GrandS3:AbstractGrand() {
 			quads = 0
 			twists = 0
 			frozens = 0
+			ices = 0
 		}
 
-		val lvb:Int get() = (quads/10f+twists/16f+frozens/28f+bravos/6f).toInt()//quads/10+twists/16+frozens/28+bravos/6
-		val frz:Int get() = 2+quads+twists+frozens*3+bravos*5/2
-		val pt:Float get() = lvb+frz*.01f
+		var temperature = 0
+		var steps = 0
+		val cold get() = frozens+ices/3
+		val lvb:Int get() = (quads/10f+twists/16f+frozens/28f+bravos).toInt()+steps
+		val frz:Int get() = 2+quads+twists+(frozens+temperature)*3+ices+bravos*5/2
 	}
 
 	private val token = Token()
@@ -146,20 +170,26 @@ class GrandS3:AbstractGrand() {
 	private val showCenterOrig by lazy {owner.receiver.conf.showCenter}
 	override fun playerInit(engine:GameEngine) {
 		super.playerInit(engine)
+		secAlert = true
 		grade = 0
 		gradeFlash = 0
 		comboValue = 0
+		water = 0
 		lastScore = 0
 		rollTime = 0
 		rollStarted = false
 		regretDispFrame = 0
 		secretGrade = 0
 		token.reset()
-		endGame = -1
+		endGame = Triple(-1, -1, GameEngine.UndoState())
+		endGameTemp = 0
 		rankingRank = -1
 		ranking.forEach {it.fill(Rankable.GrandRow())}
 		owner.receiver.conf.showCenter = showCenterOrig
 		bestSectionTime.fill(3599)
+		if(sectionTime.size<=sectionMax) sectionTime.addLast(0)
+		if(sectionIsNewRecord.size<=sectionMax) sectionIsNewRecord.addLast(false)
+		engine.receiver.setBGSpd(engine.owner, 2f)
 		engine.twistEnable = true
 		engine.b2bEnable = true
 		engine.splitB2B = true
@@ -194,7 +224,8 @@ class GrandS3:AbstractGrand() {
 	 * @param section Section number
 	 */
 	private fun stMedalCheck(engine:GameEngine, section:Int) =
-		stMedalCheck(engine, section, sectionTime[section], bestSectionTime[section])
+		stMedalCheck(engine, section, sectionTime.getOrElse(section) {rollTime},
+			bestSectionTime.let {it[section.coerceIn(it.indices)]})
 
 	/* Called at settings screen */
 	override fun onSetting(engine:GameEngine):Boolean {
@@ -203,7 +234,7 @@ class GrandS3:AbstractGrand() {
 			// section time display切替
 			if(engine.ctrl.isPush(Controller.BUTTON_F)) {
 				engine.playSE("change")
-				isShowBestSectionTime = !isShowBestSectionTime
+				isShowBestSectionTime = (isShowBestSectionTime+1).mod(3)
 			}
 		}
 		return super.onSetting(engine)
@@ -216,8 +247,8 @@ class GrandS3:AbstractGrand() {
 
 		nextSecLv = (lv+100).coerceIn(100, 2600)
 		owner.bgMan.bg = -minOf(1+startLevel, 15)
-		token.frozens = temperature
-		token.quads = steps
+		token.temperature = temperature
+		token.steps = steps
 		setSpeed(engine)
 	}
 
@@ -233,12 +264,14 @@ class GrandS3:AbstractGrand() {
 		engine.nextPieceArrayObject.forEach {p ->
 			engine.random.nextInt(Piece.DIRECTION_COUNT*3).let {
 				if(it<Piece.DIRECTION_COUNT) p.direction = it
-			}; p.updateConnectData()
+			}
 		}
 	}
 	/* Called at game start */
 	override fun startGame(engine:GameEngine) {
-		owner.musMan.bgm = BGM.GrandR(calcBgmLv(startLevel*100))
+		if(endGameLv<=0) owner.musMan.bgm = BGM.GrandR(calcBgmLv(startLevel*100))
+		token.temperature = temperature
+		token.steps = steps
 	}
 
 	override fun renderFirst(engine:GameEngine) {
@@ -253,7 +286,7 @@ class GrandS3:AbstractGrand() {
 		receiver.drawScoreBadges(engine, 5, -4, 100, decTemp)
 		if(engine.stat==GameEngine.Status.SETTING||engine.stat==GameEngine.Status.RESULT&&!owner.replayMode) {
 			if(!owner.replayMode&&startLevel==0&&temperature<=0&&steps<=0&&engine.ai==null)
-				if(!isShowBestSectionTime) {
+				if(isShowBestSectionTime<=0) {
 					// Rankings
 					val topY = if(receiver.bigSideNext) 5 else 3
 					receiver.drawScore(engine, 0, topY-1, "GRADE LV TIME", BASE, COLOR.RED)
@@ -262,7 +295,7 @@ class GrandS3:AbstractGrand() {
 						receiver.drawScore(engine, 0, topY+i, "%02d".format(i+1), GRADE, COLOR.YELLOW)
 						receiver.drawScore(engine, 5, topY+i, "%03d".format(it.lv), NUM, i==rankingRank)
 						receiver.drawScore(
-							engine, 2, topY+i, tableGradeName[it.grade], GRADE,
+							engine, 2, topY+i, getShortGradeName(it.grade), GRADE,
 							when(it.clear) {
 								1 -> COLOR.GREEN; 2 -> COLOR.ORANGE; else -> COLOR.WHITE; }
 						)
@@ -273,35 +306,34 @@ class GrandS3:AbstractGrand() {
 				} else {
 					// Section Time
 					receiver.drawScore(engine, 0, 2, "SECTION TIME", BASE, COLOR.RED)
-
-					val totalTime = (0..<sectionMax).fold(0) {tt, i ->
+					val stt = (isShowBestSectionTime-1)*13
+					(stt..<(stt+14).coerceIn(bestSectionTime.indices)).forEachIndexed {y, i ->
 						val slv = i*100
 						receiver.drawScore(
-							engine, 0, 3+i, "%4d-%4d %s".format(slv, slv+99, bestSectionTime[i].toTimeStr),
-							NUM,
-							sectionIsNewRecord[i]
+							engine, 0, 3+y, "%4d-%4d %s".format(slv, slv+99, bestSectionTime[i].toTimeStr), NUM, sectionIsNewRecord[i]
 						)
-						tt+bestSectionTime[i]
 					}
+					val totalTime = bestSectionTime.filter {it<3599}.sum()
 
-					receiver.drawScore(engine, 0, 17, "TOTAL", BASE, COLOR.RED)
-					receiver.drawScore(engine, 0, 18, totalTime.toTimeStr, NUM_T)
-					receiver.drawScore(engine, 9, 17, "AVERAGE", BASE, COLOR.RED)
-					receiver.drawScore(engine, 9, 18, (totalTime/sectionMax).toTimeStr, NUM_T)
+					receiver.drawScore(engine, 0, 18, "TOTAL", BASE, COLOR.RED)
+					receiver.drawScore(engine, 0, 19, totalTime.toTimeStr, NUM_T)
+					receiver.drawScore(engine, 9, 18, "AVERAGE", BASE, COLOR.RED)
+					receiver.drawScore(engine, 9, 19, (totalTime/sectionMax).toTimeStr, NUM_T)
 
-					receiver.drawScore(engine, 0, 20, "F:VIEW RANKING", BASE, COLOR.GREEN)
+					receiver.drawScore(engine, 0, 21, "F:VIEW RANKING", BASE, COLOR.GREEN)
 				}
 		} else {
 			if(gradeDisp) {
 				// 段位
-				if(grade>=0&&grade<tableGradeName.size)
-					receiver.drawScore(engine, 0, 1, tableGradeName[grade], GRADE, gradeFlash>0&&gradeFlash%4==0, 2f)
+				if(grade>=0)
+					receiver.drawScore(engine, 0, 1, getGradeName(grade), GRADE, gradeFlash>0&&gradeFlash%4==0, 2f)
 
 				// Score
 				receiver.drawScore(engine, 0, 3, "Score", BASE, COLOR.RED)
 				receiver.drawScore(engine, 5, 3, "+$lastScore", NUM)
 				receiver.drawScore(engine, 0, 4, "$scDisp", NUM, 2f)
-				receiver.drawScoreNum(engine, 6, 9, token.pt, 6 to 3, scale = 2f)
+				receiver.drawScore(engine, 4, 10f, "+${token.lvb}", NUM_T)
+				receiver.drawScore(engine, 6, 9f, "+${token.frz}", NUM)
 			}
 
 			// medal
@@ -311,8 +343,8 @@ class GrandS3:AbstractGrand() {
 			receiver.drawScore(engine, 2, 7, "%3d".format(token.twists), NUM)
 			receiver.drawScoreMedal(engine, 5, 6, "AC", medalAC)
 			receiver.drawScore(engine, 7, 6, "%3d".format(token.bravos), NUM)
-			receiver.drawScoreMedal(engine, 5, 7, "FR", token.frozens*4/42)
-			receiver.drawScore(engine, 7, 7, "%3d".format(token.frozens), NUM)
+			receiver.drawScoreMedal(engine, 5, 7, "FR", token.cold*4/42)
+			receiver.drawScore(engine, 7, 7, "%3d".format(token.cold), NUM)
 
 			receiver.drawScoreMedal(engine, 5, 20, "ST", medalST)
 			receiver.drawScore(engine, 7, 20, medalsST.joinToString("."), NUM)
@@ -320,9 +352,9 @@ class GrandS3:AbstractGrand() {
 			receiver.drawScore(engine, 7, 21, "%3d".format(engine.statistics.maxCombo), NUM)
 			// level
 			receiver.drawScore(engine, 0, 9, "Level", BASE, COLOR.RED)
-			receiver.drawScore(engine, 1, 10, "%3d".format(maxOf(engine.statistics.level, 0)), NUM)
+			receiver.drawScore(engine, 1, 10, "%4d".format(maxOf(engine.statistics.level, 0)), NUM)
 			receiver.drawScoreSpeed(engine, 0, 11, if(engine.speed.gravity<0) 40 else engine.speed.gravity/128, 4)
-			if(endGame<0) receiver.drawScore(engine, 1, 12, "%3d".format(nextSecLv), NUM)
+			receiver.drawScore(engine, 1, 12, "%4d".format(if(endGameLv<0) nextSecLv else endGameLv), NUM)
 
 			// Time
 			receiver.drawScore(engine, 0, 14, "Time", BASE, COLOR.RED)
@@ -375,12 +407,12 @@ class GrandS3:AbstractGrand() {
 			engine.getNextObject()?.setAttribute(true, ATTRIBUTE.IGNORE_LINK)
 		}
 		/* 移動中の処理 */
-		if(engine.ending==2&&endGame>0&&!rollStarted) rollStarted = true
+		if(engine.ending==2&&endGameLv>0&&!rollStarted) rollStarted = true
 		return false
 	}
 
 	override fun onCustom(engine:GameEngine):Boolean {
-		if(engine.ending==0||endGame<=0) {
+		if(engine.ending==0||endGameLv<=0) {
 			engine.gameEnded()
 			engine.staffrollEnable = false
 			engine.ending = 1
@@ -389,29 +421,56 @@ class GrandS3:AbstractGrand() {
 			secretGrade = engine.field.secretGrade
 			return true
 		}
-
-		if(engine.tempHanabi<=0&&engine.statc[1]<=0) {
-			engine.statc[0]++
+		if(engine.tempHanabi>0) {
+			engine.resetStatc(); return true
+		}
+		engine.statc[0]++
+		if(engine.statc[1]<=0) {
+			if(engine.statc[0]==120) engine.playSE("excellent")
 			if(engine.statc[0]==240) owner.musMan.bgm = BGM.Ending(3)
 			if(engine.statc[0]>=400) {
 				engine.statc[0] = 0
 				engine.statc[1] = 1
 			}
 		} else if(engine.statc[1]==1) {
+			val step = if(engine.statc[0]==1200) endGameStep-engine.statc[2]
+			else cosStep(endGameStep.toFloat(), 0f, (1200-engine.statc[0])/1200f).toInt()
+			if(step-engine.statc[2]>0&&engine.statc[0]<=1200) {
+				repeat(step-engine.statc[2]) {
+					engine.undo("GrandS3")
+					engine.statc[2]++
+				}
+			}
 			if(engine.statc[0]>=1200) {
+				engine.field.replace(endGameStat.field)
+				engine.statistics.level = endGameLv
 				engine.field.filterBlocks {b, _, _ -> b.hard!=0||b.getAttribute(ATTRIBUTE.IGNORE_LINK)}.forEach {(b) ->
 					b.setAttribute(false, ATTRIBUTE.IGNORE_LINK)
 					b.hard = 0
 				}
 				engine.resetStatc()
 				engine.stat = GameEngine.Status.READY
-				engine.statc[0] = engine.readyStart
-				rollStarted = true
 				return true
 			}
 
 		}
 		return false
+	}
+
+	override fun renderCustom(engine:GameEngine) {
+		val col = COLOR.WHITE
+
+		val cY = (engine.fieldHeight-1)
+
+		if(engine.statc[2]<=0) {
+			if(engine.statc[1]>0||engine.statc[0]>=120) {
+				receiver.drawMenu(engine, 0f, cY/3f, "EXCELLENT!", BASE, COLOR.ORANGE, 1f)
+				receiver.drawMenu(engine, 2f, 8f, "BUT...", BASE, col)
+				receiver.drawMenu(engine, -.25f, 9f, "THIS IS NOT", BASE, col)
+				receiver.drawMenu(engine, .5f, 10f, "OVER YET!", BASE, col)
+			}
+		}
+		super.renderCustom(engine)
 	}
 	/** levelが上がったときの共通処理 */
 	override fun levelUp(engine:GameEngine, lu:Int) {
@@ -437,13 +496,32 @@ class GrandS3:AbstractGrand() {
 		// Calculate score
 		val pts = super.calcScore(engine, ev)
 
-		if(li>=1) if(engine.ending==0||(engine.ending==2&&endGame>0)) {
+		if(li>=1) if(engine.ending==0||(engine.ending==2&&endGameLv>0)) {
 			token.apply(engine.statistics)
 			if(isFieldFrozen) token.frozens += engine.lastLinesY.flatten().intersect(engine.field.lockedLines).size
 			// Level up
 			val levelb = engine.statistics.level
 			val section = levelb/100
-			if(section>=13&&li>=4) engine.field.delLine(engine.field.bottomY)
+			if(section>=13) {
+				if(!strict) engine.field.lastLinesCleared.values.let {llc ->
+					val fli = llc.count {it.any {(_, b) -> b?.hard!=0}}
+					val fbc = llc.sumOf {it.values.filter {b -> b?.hard!=0}.size}
+					water += (5+fli*5+minOf(
+						maxOf(fbc/2, minOf(fli*10, token.frz/12-8, 20-(engine.field.highestBlockY*2-10).coerceIn(0, 20))), 20)
+						+ev.combo+ev.twist*10+ev.split*10+token.lvb)
+				}
+
+				var dl = 0
+				if(li>=4) dl++
+				while(!strict&&water>=30) {
+					dl++; water -= 30
+				}
+				repeat(dl) {
+					engine.field.delLine(engine.field.bottomY-it)
+					token.ices++
+				}
+
+			}
 
 			levelUp(engine, li.let {it+maxOf(0, it-2)+token.lvb})
 			if(engine.statistics.level>=sectionMax*100) {
@@ -453,20 +531,22 @@ class GrandS3:AbstractGrand() {
 				engine.statistics.level = sectionMax*100
 				if(engine.ending==0) {
 					engine.statistics.rollClear = 1
-					if(engine.statistics.time>=ENDGAME_QUOTA||true) {
+					if(engine.statistics.time>=ENDGAME_QUOTA) {
 						//GM Torikan
 						engine.gameEnded()
 						engine.staffrollEnable = false
 						engine.ending = 1
 						engine.timerActive = false
 						secretGrade = engine.field.secretGrade
+						endGameLv = -1
 					} else {
-						engine.ending = 2
+						engine.ending = 1
 						engine.timerActive = false
-						engine.stat = GameEngine.Status.CUSTOM
-						endGame = levelb
+						endGame = engine.undoStack.withIndex().let {
+							it.filter {(_, it) -> it.time>=engine.statistics.time-ROLLTIMELIMIT}
+								.minByOrNull {(_, it) -> it.time}?:it.last()
+						}.let {(i, it) -> Triple(it.statistics.level, engine.undoStack.size-i, it)}
 						nextSecLv = sectionMax*100
-						//TODO: Rewind History in Engine.Field
 					}
 					engine.tempHanabi += 10
 					sectionsDone++
@@ -477,6 +557,7 @@ class GrandS3:AbstractGrand() {
 					// 段位上昇
 					grade = 2
 					gradeFlash = 180
+					endGameTemp = engine.field.filterBlocks {it, _, _ -> it.hard!=0}.size
 				} else {
 					// ST medal
 					stMedalCheck(engine, sectionMax)
@@ -486,7 +567,25 @@ class GrandS3:AbstractGrand() {
 					engine.ending = 1
 					engine.timerActive = false
 					engine.playSE("grade4")
-					grade = 3
+					engine.playSE("applause5")
+					engine.tempHanabi += 36
+					grade = (when {
+						endGameLv<=1300 -> 17//GMSM
+						endGameLv<=1350 -> 16//GMS13
+						endGameLv<=1400 -> 15//GMS12
+						endGameLv<=1450 -> 14//GMS11
+						endGameLv<=1500 -> 13//GMS10
+						endGameLv<=1550 -> 12
+						endGameLv<=1600 -> 11
+						endGameLv<=1650 -> 10//GMS7
+						endGameLv<=1700 -> 9//GMS6
+						endGameLv<=1800 -> 8//GMS5
+						endGameLv<=1900 -> 7
+						endGameLv<=2000 -> 6
+						endGameLv<=2100 -> 5//GMS2
+						endGameLv<=2300 -> 4//GMS1
+						else -> 3//GMS
+					}+maxOf(30-endGameTemp, (90-endGameTemp)/10, 0)).coerceIn(0, 17)
 					gradeFlash = 180
 				}
 
@@ -524,6 +623,16 @@ class GrandS3:AbstractGrand() {
 		return 0
 	}
 
+	override fun onEndingStart(engine:GameEngine):Boolean {
+		if(engine.staffrollEnable&&endGameLv>0&&!rollStarted) {
+
+			engine.stat = GameEngine.Status.CUSTOM
+			engine.ending = 2
+		return true
+	}
+		return false
+	}
+
 	override fun onARE(engine:GameEngine):Boolean {
 		if(engine.statc[0]==0&&isFieldFrozen) engine.field.lockedLines = freezeRange(engine)
 		return super.onARE(engine)
@@ -537,45 +646,46 @@ class GrandS3:AbstractGrand() {
 		// REGRET表示
 		if(regretDispFrame>0) regretDispFrame--
 
-		// Section Time増加
-		if(engine.gameActive&&engine.timerActive&&engine.stat!=GameEngine.Status.CUSTOM) {
+		if(engine.gameActive&&engine.stat!=GameEngine.Status.READY&&engine.stat!=GameEngine.Status.CUSTOM) {
 			val section = engine.statistics.level/100
-
-			if(section>=0&&section<sectionTime.size) sectionTime[section] =
+			// Section Time増加
+			if(engine.timerActive&&section in sectionTime.indices) sectionTime[section] =
 				engine.statistics.time-sectionTime.take(section).sum()
 
-			if(section>=13) {
-				engine.field.filterBlocks {it, _, _ ->
-					it.getAttribute(ATTRIBUTE.IGNORE_LINK)&&!it.getAttribute(ATTRIBUTE.ERASE)
-						&&it.elapsedFrames>=token.frz&&it.hard!=-1
-				}.forEach {(b) ->
+			if(section>=13) engine.field.filterBlocks {it, _, _ ->
+				it.getAttribute(ATTRIBUTE.IGNORE_LINK)&&!it.getAttribute(ATTRIBUTE.ERASE)&&it.hard!=-1
+			}.forEach {(b) ->
+				if(b.getAttribute(ATTRIBUTE.LAST_COMMIT))
+					b.elapsedFrames = minOf(b.elapsedFrames, engine.ruleOpt.lockFlash, token.frz-1)
+				else if(b.elapsedFrames>=token.frz) {
 					b.hard = -1
 					b.darkness = -.5f
 					b.color?.let {b.secondaryColor = it}
 				}
 			}
+
+			// Ending
+			if(rollStarted) {
+				rollTime++
+
+				// Time meter
+				val remainRollTime = ROLLTIMELIMIT-rollTime
+				engine.meterValue = remainRollTime*1f/ROLLTIMELIMIT
+				engine.meterColor = GameEngine.METER_COLOR_LIMIT
+
+				// Roll 終了
+				if(rollTime>=ROLLTIMELIMIT) {
+					secretGrade = engine.field.secretGrade
+					engine.statistics.rollClear = 1
+					engine.ending = 0
+					engine.lives = -1
+					engine.gameEnded()
+					engine.resetStatc()
+					engine.stat = GameEngine.Status.GAMEOVER
+				}
+			} else if(engine.statistics.level==nextSecLv-1)
+				engine.meterColor = if(engine.meterColor==-0x1) -0x10000 else -0x1
 		}
-
-		// Ending
-		if(engine.gameActive&&engine.stat!=GameEngine.Status.CUSTOM&&rollStarted) {
-			rollTime++
-
-			// Time meter
-			val remainRollTime = ROLLTIMELIMIT-rollTime
-			engine.meterValue = remainRollTime*1f/ROLLTIMELIMIT
-			engine.meterColor = GameEngine.METER_COLOR_LIMIT
-
-			// Roll 終了
-			if(rollTime>=ROLLTIMELIMIT) {
-				secretGrade = engine.field.secretGrade
-				engine.statistics.rollClear = 1
-				engine.lives = -1
-				engine.gameEnded()
-				engine.resetStatc()
-				engine.stat = GameEngine.Status.GAMEOVER
-			}
-		} else if(engine.statistics.level==nextSecLv-1)
-			engine.meterColor = if(engine.meterColor==-0x1) -0x10000 else -0x1
 	}
 
 	/* Called at game over */
@@ -613,7 +723,7 @@ class GrandS3:AbstractGrand() {
 					else -> COLOR.WHITE
 				}
 				receiver.drawMenu(engine, 0, 2, "GRADE", BASE, COLOR.RED)
-				receiver.drawMenu(engine, 0, 1.66f, tableGradeName[grade], GRADE, gcolor, 2f)
+				receiver.drawMenu(engine, 0, 1.66f, getShortGradeName(grade), GRADE, gcolor, 2f)
 
 				drawResultStats(
 					engine, receiver, 4, COLOR.RED, Statistic.SCORE, Statistic.LINES, Statistic.LEVEL_MANIA, Statistic.TIME
@@ -627,13 +737,13 @@ class GrandS3:AbstractGrand() {
 			1 -> {
 				receiver.drawMenu(engine, 0, 2, "SECTION", BASE, COLOR.RED)
 
-				for(i in sectionTime.indices)
-					if(sectionTime[i]>0)
-						receiver.drawMenu(engine, 2, 3+i, sectionTime[i].toTimeStr, BASE, sectionIsNewRecord[i])
-
+				val stt = (isShowBestSectionTime-1)*13
+				(stt..<(stt+10).coerceIn(bestSectionTime.indices)).takeWhile {sectionTime[it]>0}.forEachIndexed {y, i ->
+					receiver.drawMenu(engine, 2, 3+y, sectionTime[i].toTimeStr, NUM, sectionIsNewRecord[i])
+				}
 				if(sectionAvgTime>0) {
 					receiver.drawMenu(engine, 0, 16, "AVERAGE", BASE, COLOR.RED)
-					receiver.drawMenu(engine, 2, 17, sectionAvgTime.toTimeStr, BASE)
+					receiver.drawMenu(engine, 2, 17, sectionAvgTime.toTimeStr, NUM)
 				}
 			}
 			2 -> {
@@ -641,7 +751,7 @@ class GrandS3:AbstractGrand() {
 				receiver.drawMenuMedal(engine, 8, 1, "AC", medalAC)
 				receiver.drawMenuMedal(engine, 2, 2, "SK", medalSK)
 				receiver.drawMenuMedal(engine, 5, 2, "TS", medalTS)
-				receiver.drawMenuMedal(engine, 2, 2, "FR", token.frozens*4/42)
+				receiver.drawMenuMedal(engine, 2, 2, "FR", token.cold*4/42)
 				receiver.drawMenu(engine, 0, 4, "MEDAL", NANO, COLOR.RED, .5f)
 				receiver.drawMenuMedal(engine, 5, 4, "ST", medalST)
 				receiver.drawMenuMedal(engine, 1, 5, "RE", medalRE)
@@ -666,7 +776,7 @@ class GrandS3:AbstractGrand() {
 		}
 		// ページ切り替え
 		if(engine.ctrl.isMenuRepeatKey(Controller.BUTTON_UP)) {
-			engine.statc[1]--
+			engine.statc[1] = engine.statc[1]
 			if(engine.statc[1]<0) engine.statc[1] = 2
 			engine.playSE("change")
 		}
@@ -678,7 +788,7 @@ class GrandS3:AbstractGrand() {
 		// section time display切替
 		if(engine.ctrl.isPush(Controller.BUTTON_F)) {
 			engine.playSE("change")
-			isShowBestSectionTime = !isShowBestSectionTime
+			isShowBestSectionTime = (isShowBestSectionTime+1).mod(3)
 		}
 
 		return false
@@ -708,8 +818,9 @@ class GrandS3:AbstractGrand() {
 
 	companion object {
 
-		/** Default torikan time for ending */
-		private const val ENDGAME_QUOTA = 30000
+		/** Default torikan time for ending 87031 */
+		private const val ENDGAME_QUOTA = 50000 // 13:53.33
+		//30000 = 8:20
 		/** Ending time limit */
 		private const val ROLLTIMELIMIT = 4000
 
@@ -721,8 +832,8 @@ class GrandS3:AbstractGrand() {
 				listOf(+8, +7, +6, +6, +6, 5, 5, 5, 5, 5, 10),
 				listOf(+6, +5, +4, +4, +4, 3),
 				listOf(30, 28, 26, 25, 25, 25, 25, 24, 23, 22,
-					//10,11,12, 13-16
-					28, 27, 26, 25, 22),
+					//10,11,12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23
+					28, 26, 24, 32, 31, 30, 29, 28, 27, 26, 25),
 				listOf(12, 12, 11, 10, 10, 9, 9, 9, 8, 8,
 					8, 8, 8, 8, 4))
 
@@ -731,7 +842,17 @@ class GrandS3:AbstractGrand() {
 		/** BGM fadeout levels */
 		private val tableBGMFadeout = tableBGMChange.map {it-15}
 		/** 段位のName */
-		private val tableGradeName = listOf("", "Master", "GrandMaster", "GrandMaster")
+		private fun getGradeName(i:Int) = listOf("", "Master", "GrandMaster").let {
+			it[i.coerceIn(it.indices)]+when(i) {
+				in 3..16 -> "S${i-3}"; 17 -> "SMaster"; else -> ""
+			}
+		}
+
+		private fun getShortGradeName(i:Int) = listOf("", "M", "GM").let {
+			it[i.coerceIn(it.indices)]+when(i) {
+				in 3..16 -> "S${i-3}"; 17 -> "SM"; else -> ""
+			}
+		}
 
 		/** 裏段位のName */
 		private val tableSecretGradeName =

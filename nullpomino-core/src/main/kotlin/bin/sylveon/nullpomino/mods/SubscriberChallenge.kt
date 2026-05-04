@@ -358,7 +358,6 @@ class SubscriberChallenge:NetDummyMode() {
 
 		// All clear
 		if(li>=1&&engine.field.isEmpty) {
-			engine.playSE("bravo")
 			sub += subscriberRNG.nextInt(500)+10000
 		}
 

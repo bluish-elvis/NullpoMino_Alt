@@ -42,9 +42,9 @@ import mu.nu.nullpo.game.event.EventReceiver.COLOR
 import mu.nu.nullpo.game.event.ScoreEvent
 import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.game.play.GameEngine.Status
-import mu.nu.nullpo.game.subsystem.mode.menu.MenuList
-import mu.nu.nullpo.game.subsystem.mode.menu.StringsMenuItem
+import mu.nu.nullpo.game.subsystem.mode.menu.*
 import mu.nu.nullpo.gui.common.BaseFont.FONT.*
+import mu.nu.nullpo.gui.common.fx.PopupAward.Companion.tuple
 import mu.nu.nullpo.util.CustomProperties
 import mu.nu.nullpo.util.GeneralUtil.toTimeStr
 import zeroxfc.nullpo.custom.modes.MissionRush.Companion.MissionType.*
@@ -81,8 +81,12 @@ class MissionRush:MarathonModeBase() {
 		+rankingTimePlayer.mapIndexed {a, x -> "$a.time" to x})
 
 	/** Game type */
-	override val itemMode = StringsMenuItem("goalType", "COURSE", COLOR.BLUE, 0,
-		tableGameClearMissions.map {if(it<0) "ENDLESS" else "$it STAGEs"})
+	private val itemMode by lazy {
+		StringsMenuItem("goalType", "COURSE", COLOR.BLUE, 0,
+			tableGameClearMissions.map {if(it<0) "ENDLESS" else "$it STAGEs"})
+	}
+	/** Game type */
+	private var goalType:Int by DelegateMenuItem(itemMode)
 	override val menu = MenuList("missionrush", itemMode, itemLevel, itemBig)
 	override val name:String
 		get() = "Mission Rush"
@@ -260,7 +264,9 @@ class MissionRush:MarathonModeBase() {
 		} else if(engine.stat===Status.CUSTOM) {
 			engine.playerProp.loginScreen.renderScreen(receiver, engine)
 		} else {
-			val strScore = "${engine.statistics.score}/${(engine.statistics.level+1)*5}"
+			val strScore = "%3d".format(engine.statistics.score)+tableGameClearMissions[goalType].let {
+				if(it>0) "/${"%3d".format(it)}" else ""
+			}
 			receiver.drawScore(engine, 0, 3, strScore, NUM, 2f)
 			receiver.drawScore(engine, 0, 5, "Done", BASE, COLOR.BLUE)
 
@@ -269,7 +275,7 @@ class MissionRush:MarathonModeBase() {
 			receiver.drawScore(engine, 0, 9, "Time", BASE, COLOR.BLUE)
 			receiver.drawScore(engine, 0, 10, engine.statistics.time.toTimeStr, NUM_T)
 			receiver.drawScore(engine, 0, 12, "Objective", BASE, COLOR.GREEN)
-			receiver.drawScore(engine, 0, 13, "$missionProgress/$missionGoal", NUM, missionIsComplete)
+			receiver.drawScore(engine, 0, 13, "$missionProgress/$missionGoal", NUM_T, missionIsComplete)
 			if(!missionIsComplete) drawMissionStrings(engine, currentMissionText, 0, 15, 1.0f)
 			if(engine.playerProp.isLoggedIn||engine.playerName.isNotEmpty()) {
 				receiver.drawScore(engine, 0, 20, "PLAYER", BASE, COLOR.BLUE)
@@ -313,30 +319,34 @@ class MissionRush:MarathonModeBase() {
 
 		// Combo
 		if(incremented) {
-			missionProgress++
+			missionProgress += when(missionCategory) {
+				Combo -> maxOf(0, ev.combo-missionProgress)
+				Power -> pts
+				else -> 1
+			}
 			scgettime = 0
 			// Add to score
-			engine.statistics.scoreBonus++
-			// BGM fade-out effects and BGM changes
-			if(tableBGMChange[bgmLv]!=-1) {
-				if(engine.statistics.scoreBonus>=tableBGMChange[bgmLv]-1&&
-					(when(missionCategory) {
-						Clear, ClearWith -> missionProgress>=missionGoal-maxOf(2, 6-lineAmount)
-						Spin, SpinWith -> missionProgress>=missionGoal-2
-						else -> true
-					})) owner.musMan.fadeSW = true
-				if(engine.statistics.scoreBonus>=tableBGMChange[bgmLv]&&
-					(engine.statistics.scoreBonus<tableGameClearMissions[goalType]||tableGameClearMissions[goalType]<0)
-				) {
-					bgmLv++
-					owner.musMan.bgm = tableBGM[bgmLv]
-					owner.musMan.fadeSW = false
-				}
-			}
 
 			if(missionProgress>=missionGoal) {
 				missionIsComplete = true
 
+				engine.statistics.scoreBonus++
+				// BGM fade-out effects and BGM changes
+				if(tableBGMChange[bgmLv]!=-1) {
+					if(engine.statistics.scoreBonus>=tableBGMChange[bgmLv]-1&&
+						(when(missionCategory) {
+							Clear, ClearWith -> missionProgress>=missionGoal-maxOf(2, 6-lineAmount)
+							Spin, SpinWith -> missionProgress>=missionGoal-2
+							else -> true
+						})) owner.musMan.fadeSW = true
+					if(engine.statistics.scoreBonus>=tableBGMChange[bgmLv]&&
+						(engine.statistics.scoreBonus<tableGameClearMissions[goalType]||tableGameClearMissions[goalType]<0)
+					) {
+						bgmLv++
+						owner.musMan.bgm = tableBGM[bgmLv]
+						owner.musMan.fadeSW = false
+					}
+				}
 				// Meter
 				engine.meterValue = engine.statistics.scoreBonus%10/9f
 				engine.meterColor = GameEngine.METER_COLOR_LEVEL
@@ -473,7 +483,7 @@ class MissionRush:MarathonModeBase() {
 // CRAPPY MISSION GENERATION METHODS >_<
 // ------------------------------------------------------------------------------------------
 //I don't even know how these even are supposed to integrate into the rest of the mode, but we'll get there later.
-	private fun generateNewMission(engine:GameEngine, lastMission:Boolean) {
+	private fun generateNewMission(engine:GameEngine, lastMission:Boolean, prevMission:MissionType? = missionCategory) {
 		val classic:Boolean = engine.ruleOpt.strWallkick.contains("Classic")
 			||engine.ruleOpt.strWallkick.contains("GBC")||
 			engine.ruleOpt.strWallkick.contains("WallOnly")
@@ -482,17 +492,20 @@ class MissionRush:MarathonModeBase() {
 		fun missionLevel(max:Int):Int = minOf(max, 1+engine.statistics.scoreBonus)*max/tableGameClearMissions[goalType].let {
 			if(it<0) tableGameClearMissions.maxOrNull()?:50 else it
 		}
-
-		val missionTypeRd = missionRandomizer.nextInt(15)
-		val missionType = when {
-			missionTypeRd<5 -> Clear
-			missionTypeRd<8 -> ClearWith
-			missionTypeRd<10 -> Split
-			missionTypeRd<11 -> Spin
-			missionTypeRd<12 -> SpinWith
-			missionTypeRd<14 -> Power
-			else -> Combo
+		fun randomMission(prevMission:MissionType?):MissionType {
+			val missionTypeRd = missionRandomizer.nextInt(15)
+			return when {
+				missionTypeRd<5 -> Clear
+				missionTypeRd<8 -> ClearWith
+				missionTypeRd<9 -> Split
+				missionTypeRd<11 -> Spin
+				missionTypeRd<12 -> SpinWith
+				missionTypeRd<14 -> Power
+				else -> Combo
+			}.let {if(it==prevMission) randomMission(prevMission) else it}
 		}
+
+		val missionType = randomMission(prevMission)
 		missionCategory = missionType
 		missionIsComplete = false
 		when(missionType) {
@@ -551,7 +564,7 @@ class MissionRush:MarathonModeBase() {
 			}
 			Split -> {
 //				val lineClear = missionRandomizer.nextInt(if(classic) 2 else 3)
-				val amount = missionRandomizer.nextInt(MAX_MISSION_GOAL-1)+1
+				val amount = missionRandomizer.nextInt(MAX_MISSION_SPLIT)+1
 				missionGoal = amount
 				missionProgress = 0
 				//isSpecific = false;
@@ -742,21 +755,21 @@ class MissionRush:MarathonModeBase() {
 		private val MISSION_NEUTRAL = COLOR.WHITE
 		private val SPIN_MISSION_TABLE = arrayOf(
 			"-SPIN",
-			"-SPIN SINGLE",
-			"-SPIN DOUBLE",
-			"-SPIN QUAD"
+			"-SPIN ${tuple(1)}",
+			"-SPIN ${tuple(2)}",
+			"-SPIN ${tuple(3)}"
 		)
 		private val NON_SPECIFIC_SPIN_MISSION_TABLE = arrayOf(
 			"SPIN",
-			"SPIN SINGLE",
-			"SPIN DOUBLE",
-			"SPIN QUAD"
+			"SPIN ${tuple(1)}",
+			"SPIN ${tuple(2)}",
+			"SPIN ${tuple(3)}"
 		)
 		private val LINECLEAR_MISSION_TABLE = arrayOf(
-			"SINGLE",
-			"DOUBLE",
-			"TRIPLE",
-			"QUADRUPLE"
+			tuple(1),
+			tuple(2),
+			tuple(3),
+			tuple(4)
 		)
 		private val VALID_SPIN_PIECES = arrayOf(
 			"J", "L", "S", "T", "Z"
@@ -774,6 +787,7 @@ class MissionRush:MarathonModeBase() {
 			4, 3, 3, 2, 2, 2, 2
 		)
 		private const val MAX_MISSION_GOAL = 4
+		private const val MAX_MISSION_SPLIT = 2
 		private const val MAX_MISSION_COMBO = 5 // Add two. (3 because random...)
 		private const val MAX_MISSION_POWER = 15 // Add two. (3 because random...)
 		// private static final int MAX_MISSION_TYPES = 5;
