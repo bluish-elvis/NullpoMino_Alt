@@ -66,7 +66,20 @@ class RetroS:AbstractMode() {
 	/** PowerOn Pattern on/off */
 	private var powerOn:Boolean by DelegateMenuItem(itemPower)
 
-	override val menu = MenuList("retromania", itemMode, itemPower, itemLevel, itemBig)
+	/** せり上がりパターンの種類 (0=RANDOM 1=BLOXEED 2=TA SHIRASE) */
+	private val itemGarbage = EnumMenuItem("garbageType", "GARBAGE", COLOR.BLUE, HazardType.NONE, HazardType.entries)
+	/** Selected game type */
+	private var hazardType:HazardType by DelegateMenuItem(itemGarbage)
+
+	/** せり上がりパターン number */
+	private var garbagePos = 0
+	/** せり上がり usage counter (Linesを消さないと+1) */
+	private var garbageCount = 0
+	/** せり上がりした count */
+	private var garbageTotal = 0
+
+
+	override val menu = MenuList("retromania", itemMode, itemPower, itemGarbage,  itemLevel, itemBig)
 	/** Version of this mode */
 	private var version = 0
 
@@ -105,6 +118,10 @@ class RetroS:AbstractMode() {
 		lastScore = 0
 		levelTimer = 0
 		linesAfterLastLevelUp = 0
+		garbagePos = 0
+		garbageCount = 0
+		garbageTotal = 0
+
 		maxScoreTime = -1
 		maxLinesTime = -1
 		maxLevelTime = -1
@@ -161,12 +178,14 @@ class RetroS:AbstractMode() {
 	/** Main routine for game setup screen */
 	override fun onSettingChanged(engine:GameEngine) {
 		owner.bgMan.bg = startLevel/2
+		engine.big = big
+		if(hazardType!=HazardType.NONE) garbageCount = 13-startLevel
 		super.onSettingChanged(engine)
 	}
 
 	/** Ready */
 	override fun onReady(engine:GameEngine):Boolean {
-		if(engine.statc[0]==0) {
+		if(engine.stime==0) {
 			engine.ruleOpt.run {
 				lockResetMove = false
 				lockResetSpin = false
@@ -185,6 +204,8 @@ class RetroS:AbstractMode() {
 			}
 			if(powerOn)
 				engine.nextPieceArrayID = createQueueFromIntStr(STRING_POWERON_PATTERN)
+			if(hazardType==HazardType.RANDOM)
+				garbagePos = engine.random.nextInt(if(big) engine.field.width/2 else engine.field.width)
 		}
 		return false
 	}
@@ -205,7 +226,7 @@ class RetroS:AbstractMode() {
 		receiver.drawScore(engine, 0, 0, name, BASE, COLOR.GREEN)
 		receiver.drawScore(engine, 0, 1, "($gameType SPEED)", BASE, COLOR.GREEN)
 
-		if(engine.stat==GameEngine.Status.SETTING||engine.stat==GameEngine.Status.RESULT&&!owner.replayMode) {
+		if(engine.isShowRanking) {
 			// Leaderboard
 			if(!owner.replayMode&&!big&&startLevel==0&&engine.ai==null) {
 				val topY = if(receiver.bigSideNext) 6 else 4
@@ -275,7 +296,121 @@ class RetroS:AbstractMode() {
 			li>=4 -> 2000 // Quadruple
 			else -> 0
 		}*if(engine.field.isEmpty) 10 else 1  // Perfect clear bonus
+		if(li==0&&hazardType!=HazardType.NONE) {
+			// せり上がり
+			garbageCount--
 
+			if(garbageCount<=0) {
+				engine.playSE("garbage0")
+
+				val field = engine.field
+				val w = field.width
+				val h = field.height
+				if(big) {
+					when(hazardType) {
+						HazardType.RANDOM -> {
+							field.pushUp(2)
+							for(x in 0..<w/2)
+								if(x!=garbagePos)
+									for(j in 0..1)
+										for(k in 0..1)
+											field.setBlock(
+												x*2+k, h-1-j,
+												Block(Block.COLOR.WHITE, engine.blkSkin, Block.ATTRIBUTE.VISIBLE, Block.ATTRIBUTE.GARBAGE)
+											)
+
+							//int prevHole=garbagePos;do
+							garbagePos = engine.random.nextInt(w/2)
+						}
+						HazardType.PATTERN -> {
+							field.pushUp(2)
+							for(i in field.width/2-1 downTo 0) tableGarbagePatternBig[garbagePos].let {
+								if((it.first shr i) and 1!=0)
+									for(j in 0..1)
+										for(k in 0..1)
+											field.setBlock(
+												i*2+k, h-1-j,
+												Block(it.second, engine.blkSkin, Block.ATTRIBUTE.VISIBLE, Block.ATTRIBUTE.GARBAGE)
+											)
+							}
+							garbagePos++
+							field.addBottomCopyGarbage(
+								engine.blkSkin, 2, Block.ATTRIBUTE.GARBAGE, Block.ATTRIBUTE.VISIBLE,
+								Block.ATTRIBUTE.OUTLINE
+							)
+						}
+						else -> field.addBottomCopyGarbage(
+							engine.blkSkin, 2, Block.ATTRIBUTE.GARBAGE,
+							Block.ATTRIBUTE.VISIBLE, Block.ATTRIBUTE.OUTLINE
+						)
+					}//					while(garbagePos==prevHole);
+					// Set connections
+					if(receiver.isStickySkin(engine))
+						for(y in 1..1)
+							for(x in 0..<w)
+								if(x!=garbagePos) field.getBlock(x, h-y)?.run {
+									if(!field.getBlockEmpty(x-1, h-y))
+										setAttribute(true, Block.ATTRIBUTE.CONNECT_LEFT)
+									if(!field.getBlockEmpty(x+1, h-y))
+										setAttribute(true, Block.ATTRIBUTE.CONNECT_RIGHT)
+								}
+				} else {
+					when(hazardType) {
+						HazardType.RANDOM -> {
+							field.pushUp()
+							for(x in 0..<w)
+								if(x!=garbagePos)
+									field.setBlock(
+										x, h-1,
+										Block(Block.COLOR.WHITE, engine.blkSkin, Block.ATTRIBUTE.VISIBLE, Block.ATTRIBUTE.GARBAGE)
+									)
+							// Set connections
+							if(receiver.isStickySkin(engine))
+								for(x in 0..<w)
+									if(x!=garbagePos) field.getBlock(x, h-1)?.run {
+										if(!field.getBlockEmpty(x-1, h-1))
+											setAttribute(true, Block.ATTRIBUTE.CONNECT_LEFT)
+										if(!field.getBlockEmpty(x+1, h-1))
+											setAttribute(true, Block.ATTRIBUTE.CONNECT_RIGHT)
+									}
+							//int prevHole=garbagePos;do
+							garbagePos = engine.random.nextInt(w)
+						}
+						HazardType.PATTERN -> {
+							field.pushUp()
+							for(i in field.width-1 downTo 0)
+								tableGarbagePattern[garbagePos].let {
+									if((it.first shr i) and 1!=0) field.setBlock(
+											i, h-1,
+											Block(it.second, engine.blkSkin, Block.ATTRIBUTE.VISIBLE, Block.ATTRIBUTE.GARBAGE)
+										)
+								}
+							garbagePos++
+						}
+						else-> field.addBottomCopyGarbage(
+							engine.blkSkin, 1,
+							Block.ATTRIBUTE.GARBAGE, Block.ATTRIBUTE.VISIBLE, Block.ATTRIBUTE.OUTLINE
+						)
+					}//while(garbagePos==prevHole);
+					if(receiver.isStickySkin(engine))
+						for(x in 0..<w)
+							if(x!=garbagePos) field.getBlock(x, h-1)?.run {
+								if(!field.getBlockEmpty(x-1, h-1))
+									setAttribute(true, Block.ATTRIBUTE.CONNECT_LEFT)
+								if(!field.getBlockEmpty(x+1, h-1))
+									setAttribute(true, Block.ATTRIBUTE.CONNECT_RIGHT)
+							}
+				}
+
+				garbageTotal++
+
+				if(garbagePos>tableGarbagePatternBig.size-1&&big&&version>=3)
+					garbagePos = 0
+				else if(garbagePos>tableGarbagePattern.size-1) garbagePos = 0
+
+				garbageCount = 13-engine.statistics.level/100
+			}
+		}
 		// Add score
 		if(pts>0) {
 			lastScore = pts
@@ -403,5 +538,80 @@ class RetroS:AbstractMode() {
 
 		/** Max level */
 		private const val MAX_LEVEL = 99
+
+		/** Number of goal type */
+		private enum class HazardType {
+			NONE,
+			RANDOM,
+			PATTERN,
+			COPY
+		}
+		/** せり上がりパターン */
+		private val tableGarbagePattern = listOf(
+			0b0111111111 to Block.COLOR.RED,
+			0b0111111111 to Block.COLOR.RED,
+			0b0111111111 to Block.COLOR.RED,
+			0b0111111111 to Block.COLOR.RED,
+			0b0011111111 to Block.COLOR.BLUE,
+			0b0111111111 to Block.COLOR.BLUE,
+			0b0111111111 to Block.COLOR.BLUE,
+			0b1111111100 to Block.COLOR.ORANGE,
+			0b1111111110 to Block.COLOR.ORANGE,
+			0b1111111110 to Block.COLOR.ORANGE,
+			0b0011111111 to Block.COLOR.GREEN,
+			0b0111111111 to Block.COLOR.GREEN,
+			0b1100111111 to Block.COLOR.GREEN,
+			0b1101111111 to Block.COLOR.GREEN,
+			0b1111111100 to Block.COLOR.PURPLE,
+			0b1111111110 to Block.COLOR.PURPLE,
+			0b1111110011 to Block.COLOR.PURPLE,
+			0b1111111011 to Block.COLOR.PURPLE,
+			0b1111111110 to Block.COLOR.RED,
+			0b1111111110 to Block.COLOR.RED,
+			0b1111111110 to Block.COLOR.RED,
+			0b1111111110 to Block.COLOR.RED,
+			0b1111001111 to Block.COLOR.YELLOW,
+			0b1111001111 to Block.COLOR.YELLOW,
+			0b1111001111 to Block.COLOR.YELLOW,
+			0b1111001111 to Block.COLOR.YELLOW,
+			0b1111000111 to Block.COLOR.CYAN,
+			0b1111101111 to Block.COLOR.CYAN,
+			0b1000111111 to Block.COLOR.CYAN,
+			0b1101111111 to Block.COLOR.CYAN,
+		)
+
+		/** BIG用せり上がりパターン */
+		private val tableGarbagePatternBig = listOf(
+			0b01111 to Block.COLOR.RED,
+			0b01111 to Block.COLOR.RED,
+			0b01111 to Block.COLOR.RED,
+			0b01111 to Block.COLOR.RED,
+			0b00111 to Block.COLOR.BLUE,
+			0b01111 to Block.COLOR.BLUE,
+			0b01111 to Block.COLOR.BLUE,
+			0b11100 to Block.COLOR.ORANGE,
+			0b11110 to Block.COLOR.ORANGE,
+			0b11110 to Block.COLOR.ORANGE,
+			0b00111 to Block.COLOR.GREEN,
+			0b01111 to Block.COLOR.GREEN,
+			0b11001 to Block.COLOR.GREEN,
+			0b11011 to Block.COLOR.GREEN,
+			0b11100 to Block.COLOR.PURPLE,
+			0b11110 to Block.COLOR.PURPLE,
+			0b10011 to Block.COLOR.PURPLE,
+			0b11011 to Block.COLOR.PURPLE,
+			0b11110 to Block.COLOR.RED,
+			0b11110 to Block.COLOR.RED,
+			0b11110 to Block.COLOR.RED,
+			0b11110 to Block.COLOR.RED,
+			0b110011 to Block.COLOR.YELLOW,
+			0b110011 to Block.COLOR.YELLOW,
+			0b110011 to Block.COLOR.YELLOW,
+			0b110011 to Block.COLOR.YELLOW,
+			0b10001 to Block.COLOR.CYAN,
+			0b11011 to Block.COLOR.CYAN,
+			0b10001 to Block.COLOR.CYAN,
+			0b11011 to Block.COLOR.CYAN,
+		)
 	}
 }

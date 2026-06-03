@@ -193,8 +193,13 @@ internal class StateConfigGameTuning:BaseMenuConfigState() {
 			val imgBlock = ResourceHolder.imgNormalBlockList[sk]
 			if(ResourceHolder.blockStickyFlagList[sk]) {
 				for(j in 0..8) imgBlock.draw(
-					(160+j*16).toFloat(), 64f, (160+j*16+16).toFloat(), 80.toFloat(),
-					0f, (j*16).toFloat(), 16f, (j*16+16).toFloat()
+					160f+j*16, 64f, 176f+j*16, 80f,
+					0f, j*16f, 16f, j*16+16f
+				)
+				//bone
+				for(j in 0..2) imgBlock.draw(
+					368f+j*16, 48f, 384f+j*16, 64f,
+					0f, j*16+144f, 16f, j*16+160f
 				)
 				//gem
 				imgBlock.draw(304f, 64f, 416f, 80f, 0f, 288f, 112f, 304f)
@@ -209,6 +214,7 @@ internal class StateConfigGameTuning:BaseMenuConfigState() {
 			} else {
 				imgBlock.draw(160f, 64f, 304f, 80f, 0f, 0f, 144f, 16f)
 				imgBlock.draw(304f, 64f, 416f, 80f, 288f, 0f, 400f, 16f) //gem
+				imgBlock.draw(368f, 48f, 416f, 64f, 144f, 0f, 192f, 16f) //bone
 				//gold
 				imgBlock.draw(416f, 32f, 464f, 48f, 400f, 0f, 448f, 16f)
 				imgBlock.draw(416f, 48f, 464f, 64f, 448f, 0f, 496f, 16f)

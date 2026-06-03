@@ -64,7 +64,8 @@ data class Color(var colorClearSize:Int = 4, var garbageColorClear:Boolean = tru
 			}
 		}
 
-	override fun clear(field:Field) = field.clearProceed()//field.clearAll(colorClearSize, garbageColorClear, gemSameColor,
+	override fun clear(engine:GameEngine, field:Field) =
+		field.clearProceed()//field.clearAll(colorClearSize, garbageColorClear, gemSameColor,
 	// ignoreHidden)
 
 	companion object {

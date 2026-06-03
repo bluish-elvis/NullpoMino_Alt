@@ -31,13 +31,9 @@
 package mu.nu.nullpo.game.subsystem.mode
 
 import kotlinx.serialization.Serializable
-import mu.nu.nullpo.game.component.BGM
-import mu.nu.nullpo.game.component.Block
-import mu.nu.nullpo.game.component.Statistics
+import mu.nu.nullpo.game.component.*
+import mu.nu.nullpo.game.event.*
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
-import mu.nu.nullpo.game.event.Leaderboard
-import mu.nu.nullpo.game.event.Rankable
-import mu.nu.nullpo.game.event.ScoreEvent
 import mu.nu.nullpo.game.net.NetUtil
 import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.game.subsystem.mode.menu.*
@@ -199,7 +195,7 @@ class SprintCombo:NetDummyMode() {
 	}
 	/** Ready */
 	override fun onReady(engine:GameEngine):Boolean {
-		if(engine.statc[0]==0) {
+		if(engine.stime==0) {
 			engine.meterColor = GameEngine.METER_COLOR_GREEN
 			engine.meterValue = if(GOAL_TABLE[goalType]==-1) 0f else 1f
 		}
@@ -272,7 +268,7 @@ class SprintCombo:NetDummyMode() {
 				"(${GOAL_TABLE[goalType]-1}CHAIN Challenge)", BASE, COLOR.WHITE
 		)
 
-		if(engine.stat==GameEngine.Status.SETTING||engine.stat==GameEngine.Status.RESULT&&!owner.replayMode) {
+		if(engine.isShowRanking) {
 			if(!owner.replayMode&&!big&&engine.ai==null) {
 				receiver.drawScore(engine, 3, 3, "RECORD", BASE, COLOR.BLUE)
 

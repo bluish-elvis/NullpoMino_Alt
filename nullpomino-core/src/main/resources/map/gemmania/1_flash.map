@@ -1,9 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?><!DOCTYPE properties SYSTEM "http://java.sun.com/dtd/properties.dtd">
 <properties>
  <comment>application.properties</comment>
-
- <entry key="maps.regular">20</entry>
- <entry key="maps.extra">7</entry>
+ <entry key="map.maxMapNumber">27</entry>
+ <entry key="map.extra">7</entry>
  <entry key="0.field.map.0">_,_,_,_,_,_,_,_,_,_</entry>
  <entry key="0.field.map.1">_,_,_,_,_,_,_,_,_,_</entry>
  <entry key="0.field.map.2">_,_,_,_,_,_,_,_,_,_</entry>
@@ -14,16 +13,16 @@
  <entry key="0.field.map.7">_,_,_,_,_,_,_,_,_,_</entry>
  <entry key="0.field.map.8">_,_,_,_,_,_,_,_,_,_</entry>
  <entry key="0.field.map.9">_,_,_,_,_,_,_,_,_,_</entry>
- <entry key="0.field.map.10">_,_,_,_,_,_,_,_,_,_</entry>
- <entry key="0.field.map.11">_,_,_,_,_,_,_,_,_,_</entry>
- <entry key="0.field.map.12">_,_,_,_,_,_,_,_,_,_</entry>
- <entry key="0.field.map.13">_,_,_,_,_,_,_,_,_,_</entry>
- <entry key="0.field.map.14">_,_,_,_,_,_,_,_,_,_</entry>
- <entry key="0.field.map.15">_,_,_,_,_,_,_,_,_,_</entry>
- <entry key="0.field.map.16">_,_,_,_,_,_,_,_,_,_</entry>
- <entry key="0.field.map.17">_,_,A,9,_,_,F,8,_,_</entry>
- <entry key="0.field.map.18">_,C,6,6,6,6,6,6,B,_</entry>
- <entry key="0.field.map.19">_,D,4,4,4,4,4,4,E,_</entry>
+ <entry key="0.field.map.10">_,_,_,_,_,3,_,_,_,_,</entry>
+ <entry key="0.field.map.11">_,_,_,_,3,2,_,_,_,_,</entry>
+ <entry key="0.field.map.12">_,_,_,3,2,2,3,_,_,_,</entry>
+ <entry key="0.field.map.13">_,_,_,_,2,2,_,_,_,_,</entry>
+ <entry key="0.field.map.14">_,_,_,_,_,_,_,_,_,_,</entry>
+ <entry key="0.field.map.15">_,_,_,_,_,_,_,_,_,_,</entry>
+ <entry key="0.field.map.16">_,_,_,_,_,_,_,_,_,_,</entry>
+ <entry key="0.field.map.17">_,_,_,_,_,_,_,_,_,_,</entry>
+ <entry key="0.field.map.18">_,_,2,3,_,_,_,C,2,_,</entry>
+ <entry key="0.field.map.19">_,2,B,2,11,2,B,2,2,_,_,0F,02,0E,02,10,03,02,03,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_</entry>
  <entry key="0.gemmania.gimmickBig">0</entry>
  <entry key="0.gemmania.gimmickColor">0</entry>
  <entry key="0.gemmania.gimmickMirror">0</entry>

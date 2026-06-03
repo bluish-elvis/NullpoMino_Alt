@@ -37,7 +37,6 @@ import mu.nu.nullpo.gui.common.BaseFont
 import mu.nu.nullpo.gui.common.BaseFont.FONT.BASE
 import mu.nu.nullpo.gui.common.BaseFont.FONT.NUM
 import mu.nu.nullpo.util.CustomProperties
-import java.util.*
 import kotlin.random.Random
 import mu.nu.nullpo.game.component.Block.COLOR as BCOLOR
 import mu.nu.nullpo.game.event.EventReceiver.COLOR as ECOLOR
@@ -48,8 +47,16 @@ class ToolMapEditor:AbstractMode() {
 	private var propMap = CustomProperties()
 
 	/** Current MapAll contained in the filefield data */
-	private var listFields:LinkedList<Field>? = null
+	private val listFields = mutableListOf<Field>()
 
+	/*enum class TargetMode(val dir:String) {
+		VS("vsbattle"), GEM("gemmania"), Avalanche("avalanche")
+	}
+
+	*/
+	/** Current MapSetMode *//*
+	private var nowMapSetMode = 0
+	val curMode get() = TargetMode.entries[nowMapSetMode]*/
 	/** Current MapSetID */
 	private var nowMapSetID = 0
 
@@ -63,7 +70,7 @@ class ToolMapEditor:AbstractMode() {
 	override fun modeInit(manager:GameManager) {
 		super.modeInit(manager)
 		propMap = CustomProperties()
-		listFields = LinkedList()
+		listFields.clear()
 		nowMapSetID = 0
 		nowMapID = 0
 	}
@@ -89,13 +96,13 @@ class ToolMapEditor:AbstractMode() {
 	private fun loadAllMaps(setID:Int) {
 		propMap = receiver.loadProperties("config/map/vsbattle/$setID.map")?:CustomProperties()
 
-		listFields!!.clear()
+		listFields.clear()
 
 		val maxMap = propMap.getProperty("map.maxMapNumber", 0)
 		for(i in 0..<maxMap) {
 			val fld = Field()
 			loadMap(fld, propMap, i)
-			listFields!!.add(fld)
+			listFields += fld
 		}
 	}
 
@@ -105,12 +112,12 @@ class ToolMapEditor:AbstractMode() {
 	private fun saveAllMaps(setID:Int) {
 		propMap = CustomProperties()
 
-		val maxMap = listFields!!.size
+		val maxMap = listFields.size
 		propMap.setProperty("map.maxMapNumber", maxMap)
 
-		for(i in 0..<maxMap)
-			saveMap(listFields!![i], propMap, i)
-
+		listFields.forEachIndexed {i, field ->
+			saveMap(field, propMap, i)
+		}
 		propMap.save("config/map/vsbattle/$setID.map")
 	}
 
@@ -140,7 +147,7 @@ class ToolMapEditor:AbstractMode() {
 
 	/* Called at settings screen */
 	override fun onSetting(engine:GameEngine):Boolean {
-		owner.musMan.bgm = BGM.Menu(2)
+		if(engine.stime==0) owner.musMan.bgm = BGM.Menu(2)
 		// Configuration changes
 		val change = updateCursor(engine, 7)
 
@@ -150,13 +157,10 @@ class ToolMapEditor:AbstractMode() {
 			when(menuCursor) {
 				0, 1, 2 -> {
 				}
-				3, 4, 5 -> {
-					nowMapID += change
-					if(nowMapID<0) nowMapID = listFields!!.size
-					if(nowMapID>listFields!!.size) nowMapID = 0
-				}
+				3, 4, 5 -> nowMapID = rangeCursor(nowMapID+change, 0, listFields.size)
+
 				6, 7 -> {
-					nowMapSetID += change
+					nowMapSetID = rangeCursor(nowMapSetID+change, 0, 99)
 					if(nowMapSetID<0) nowMapSetID = 99
 					if(nowMapSetID>99) nowMapSetID = 0
 				}
@@ -167,42 +171,43 @@ class ToolMapEditor:AbstractMode() {
 		if(menuTime<5) menuTime++ else if(engine.ctrl.isPush(Controller.BUTTON_A)) {
 			engine.playSE("decide")
 
-			if(menuCursor==0)
-			// EDIT
-				engine.enterFieldEdit()
-			else if(menuCursor==1)
-			// WHITE->?
-				grayToRandomColor(engine.field)
-			else if(menuCursor==2)
-			// CLEAR
-				engine.field.reset()
-			else if(menuCursor==3) {
-				// SAVE
-				if(nowMapID>=0&&nowMapID<listFields!!.size)
-					listFields!![nowMapID].replace(engine.field)
-				else
-					listFields!!.add(Field(engine.field))
-			} else if(menuCursor==4) {
-				// LOAD
-				if(nowMapID>=0&&nowMapID<listFields!!.size) {
-					engine.field.replace(listFields!![nowMapID])
-					engine.field.setAllSkin(engine.blkSkin)
-				} else
-					engine.field.reset()
-			} else if(menuCursor==5) {
-				// DELETE
-				if(nowMapID>=0&&nowMapID<listFields!!.size) {
-					listFields!!.removeAt(nowMapID)
-					if(nowMapID>=listFields!!.size) nowMapID = listFields!!.size
+			when(menuCursor) {
+				// EDIT
+				0 -> engine.enterFieldEdit()
+				// WHITE->?
+				1 -> grayToRandomColor(engine.field)
+				// CLEAR
+				2 -> engine.field.reset()
+				3 -> {
+					// LOAD
+					if(nowMapID in listFields.indices) {
+						engine.field.replace(listFields[nowMapID])
+						engine.field.setAllSkin(engine.blkSkin)
+					} else
+						engine.field.reset()
 				}
-			} else if(menuCursor==6)
-			// WRITE
-				saveAllMaps(nowMapSetID)
-			else if(menuCursor==7) {
-				// READ
-				loadAllMaps(nowMapSetID)
-				nowMapID = 0
-				engine.field.reset()
+				4 -> {
+					// SAVE
+					if(nowMapID in listFields.indices)
+						listFields[nowMapID].replace(engine.field)
+					else
+						listFields += (Field(engine.field))
+				}
+				5 -> {
+					// DELETE
+					if(nowMapID>=0&&nowMapID<listFields.size) {
+						listFields.removeAt(nowMapID)
+						if(nowMapID>=listFields.size) nowMapID = listFields.size
+					}
+				}
+				6 -> {
+					// READ
+					loadAllMaps(nowMapSetID)
+					nowMapID = 0
+					engine.field.reset()
+				}
+				// WRITE
+				7 -> saveAllMaps(nowMapSetID)
 			}
 		} else if(engine.ctrl.isPress(Controller.BUTTON_D)&&engine.ctrl.isPress(Controller.BUTTON_E))
 		// 終了
@@ -220,33 +225,25 @@ class ToolMapEditor:AbstractMode() {
 		receiver.drawMenu(engine, 1, 3, "[WHITE->?]", BASE, menuCursor==1)
 		receiver.drawMenu(engine, 1, 4, "[CLEAR]", BASE, menuCursor==2)
 
-		receiver.drawMenu(engine, 0, 6, "MAP DATA", BASE, ECOLOR.COBALT)
-		if(listFields!!.size>0)
-			receiver.drawMenu(engine, 0, 7, "$nowMapID"+"/"+(listFields!!.size-1), NUM, menuCursor in 3..5)
+		receiver.drawMenu(engine, 0, 6, "MAP Data", BASE, ECOLOR.COBALT)
+		if(listFields.isNotEmpty())
+			receiver.drawMenu(engine, 0, 7, "$nowMapID/"+(listFields.size-1), NUM, menuCursor in 3..5)
 		else
 			receiver.drawMenu(engine, 0, 7, "NO MAPS", BASE, menuCursor in 3..5)
 		if(menuCursor in 3..5)
 			receiver.drawMenu(engine, 0, 8+menuCursor-3, BaseFont.CURSOR, BASE, ECOLOR.RED)
-		receiver.drawMenu(engine, 1, 8, "[SAVE]", BASE, menuCursor==3)
-		receiver.drawMenu(engine, 1, 9, "[LOAD]", BASE, menuCursor==4)
+		receiver.drawMenu(engine, 1, 8, "[LOAD]", BASE, menuCursor==3)
+		receiver.drawMenu(engine, 1, 9, "[SAVE]", BASE, menuCursor==4)
 		receiver.drawMenu(engine, 1, 10, "[DELETE]", BASE, menuCursor==5)
 
-		receiver.drawMenu(engine, 0, 12, "MAP FILE", BASE, ECOLOR.COBALT)
-		receiver.drawMenu(engine, 0, 13, "$nowMapSetID/99", NUM, menuCursor in 6..7)
+		receiver.drawMenu(engine, 0, 12, "Map Pack", BASE, ECOLOR.COBALT)
+		receiver.drawMenu(engine, 0, 14, "$nowMapSetID / 99", NUM, menuCursor in 6..7)
 		if(menuCursor in 6..7)
-			receiver.drawMenu(engine, 0, 14+menuCursor-6, BaseFont.CURSOR, BASE, ECOLOR.RED)
-		receiver.drawMenu(engine, 1, 14, "[WRITE]", BASE, menuCursor==6)
-		receiver.drawMenu(engine, 1, 15, "[READ]", BASE, menuCursor==7)
+			receiver.drawMenu(engine, 0, 15+menuCursor-7, BaseFont.CURSOR, BASE, ECOLOR.RED)
+		receiver.drawMenu(engine, 1, 15, "[READ]", BASE, menuCursor==6)
+		receiver.drawMenu(engine, 1, 16, "[WRITE]", BASE, menuCursor==7)
 
 		receiver.drawMenu(engine, 0, 19, "EXIT-> D+E", BASE, ECOLOR.ORANGE)
 	}
 
-	/* fieldEdit screen */
-	override fun renderFieldEdit(engine:GameEngine) {
-		receiver.drawScore(engine, 0, 2, "Position", BASE, ECOLOR.BLUE)
-		receiver.drawScore(engine, 0, 3, "X:", BASE, ECOLOR.BLUE)
-		receiver.drawScore(engine, 2, 3, ""+engine.mapEditX, NUM)
-		receiver.drawScore(engine, 0, 4, "Y:", BASE, ECOLOR.BLUE)
-		receiver.drawScore(engine, 2, 4, ""+engine.mapEditY, NUM)
-	}
 }

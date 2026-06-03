@@ -625,7 +625,7 @@ internal class NetVSBattle:NetDummyVSMode() {
 
 				if(engine.displaySize!=-1) {
 					var y2 = 21
-					if(engine.stat==GameEngine.Status.RESULT) y2 = 22
+					if(engine.stat is GameEngine.Status.RESULT) y2 = 22
 					owner.receiver.drawMenu(engine, 0, y2, strTemp, BASE, COLOR.WHITE)
 				} else
 					owner.receiver.drawFont(x+4, y+168, strTemp, BASE, COLOR.WHITE, .5f)

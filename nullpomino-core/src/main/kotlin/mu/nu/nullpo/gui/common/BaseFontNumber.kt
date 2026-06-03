@@ -37,6 +37,8 @@ abstract class BaseFontNumber:BaseFont {
 	companion object {
 		const val W:Int = 12
 		const val H:Int = 16
+		val listChar = listOf(0x20, 0x25, 0x2b, 0x3f)+(0x2d..0x2f).toList()+(0x30..0x3a).toList()
+		val String.isNumFont get() = all {!it.isTitleCase()&&it.code in listChar}
 	}
 
 	abstract override val rainbowCount:Int

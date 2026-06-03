@@ -60,7 +60,7 @@ class RetroN:AbstractMode() {
 	/** Selected game type */
 	private var gameType:GameType by DelegateMenuItem(itemGame)
 
-	private val itemSpeed = EnumMenuItem("speedtype", "DIFFICULTY", COLOR.BLUE, SpeedLevel.NTSC, SpeedLevel.entries)
+	private val itemSpeed = EnumMenuItem("speedtype", "DIFFICULTY", COLOR.BLUE, SpeedLevel.N_NTSC, SpeedLevel.entries)
 	/** Selected Speed Difficulty */
 	private var speedType:SpeedLevel by DelegateMenuItem(itemSpeed)
 
@@ -167,10 +167,12 @@ class RetroN:AbstractMode() {
 	 */
 	override fun setSpeed(engine:GameEngine) {
 		val lv = engine.statistics.level
-			.coerceIn(0, if(speedType!=SpeedLevel.NTSC) tableDenominatorHard.size-1 else tableDenominator.size-1)
-		engine.owSkin = if(speedType==SpeedLevel.PAL_RAW!=lv>=10) 8 else 9
-		if(speedType!=SpeedLevel.NTSC) {
-			engine.speed.gravity = if(speedType==SpeedLevel.PAL_RAW) 60000 else 50007
+//			.coerceIn(0, if(speedType!=SpeedLevel.N_NTSC) tableDenominatorHard.size-1 else tableDenominator.size-1)
+		engine.owSkin = if(speedType==SpeedLevel.N_PAL_RAW!=lv>=10) 8 else 9
+		engine.speed.replace(speedType.table[lv])
+		engine.owARR = speedType.owARR
+		/*if(speedType!=SpeedLevel.N_NTSC) {
+			engine.speed.gravity = if(speedType==SpeedLevel.N_PAL_RAW) 60000 else 50007
 			engine.speed.denominator = tableDenominatorHard[lv]*60000
 			engine.speed.das = 12
 			engine.owARR = 4
@@ -183,7 +185,7 @@ class RetroN:AbstractMode() {
 		if(gameType==GameType.C) {
 			engine.speed.das = 6
 			engine.owARR = 2
-		}
+		}*/
 		engine.speed.lockDelay = engine.speed.denominator/engine.speed.gravity
 	}
 
@@ -199,7 +201,7 @@ class RetroN:AbstractMode() {
 	}
 
 	override fun onReady(engine:GameEngine):Boolean {
-		if(engine.statc[0]==0) {
+		if(engine.stime==0) {
 			engine.run {
 				randomizer = NintendoRandomizer()
 				ruleOpt.run {
@@ -235,7 +237,7 @@ class RetroN:AbstractMode() {
 	override fun onMove(engine:GameEngine):Boolean {
 		// 新規ピース出現時
 		if(engine.ending==0&&engine.statc[0]==0&&!engine.holdDisable)
-			if(engine.run {getNextObjectCopy()}?.shape!=Piece.Shape.I) drought++
+			if(engine.getNextObjectCopy()?.shape!=Piece.Shape.I) drought++
 			else {
 				if(drought>7) droughts += drought
 				drought = 0
@@ -247,24 +249,21 @@ class RetroN:AbstractMode() {
 	/** Renders HUD (leaderboard or game statistics) */
 	override fun renderLast(engine:GameEngine) {
 		receiver.drawScore(engine, 0, 0, name, BASE, COLOR.GREEN)
-		receiver.drawScore(engine, 0, 1, "(${speedType} ${gameType})", BASE, COLOR.GREEN)
+		receiver.drawScore(engine, 0, 1, "(${speedType} ${gameType}Type)", BASE, COLOR.GREEN)
 
-		if(engine.stat==GameEngine.Status.SETTING||engine.stat==GameEngine.Status.RESULT&&!owner.replayMode) {
-			if(!owner.replayMode&&!big&&engine.ai==null) {
-				receiver.drawScore(engine, 3, 3, "SCORE    LINE LV.", BASE, COLOR.BLUE)
-
-				ranking[gameType.ordinal].forEachIndexed {i, it ->
-					receiver.drawScore(
-						engine, 0, 4+i, "%2d".format(i+1), GRADE, if(rankingRank==i) COLOR.RAINBOW else COLOR.YELLOW
-					)
-					receiver.drawScore(engine, 3, 4+i, GeneralUtil.capsNum(it.sc, 6), NUM, i==rankingRank)
-					receiver.drawScore(
-						engine, 12, 4+i, GeneralUtil.capsNum(it.li, 3), NUM, i==rankingRank
-					)
-					receiver.drawScore(engine, 17, 4+i, LEVEL_NAME[it.lv],
-						font = if(it.lv<30) NUM else BASE, flag = i==rankingRank
-					)
-				}
+		if(engine.isShowRanking&&!big) {
+			receiver.drawScore(engine, 3, 3, "SCORE    LINE LV.", BASE, COLOR.BLUE)
+			ranking[gameType.ordinal].forEachIndexed {i, it ->
+				receiver.drawScore(
+					engine, 0, 4+i, "%2d".format(i+1), GRADE, if(rankingRank==i) COLOR.RAINBOW else COLOR.YELLOW
+				)
+				receiver.drawScore(engine, 3, 4+i, GeneralUtil.capsNum(it.sc, 6), NUM, i==rankingRank)
+				receiver.drawScore(
+					engine, 12, 4+i, GeneralUtil.capsNum(it.li, 3), NUM, i==rankingRank
+				)
+				receiver.drawScore(engine, 17, 4+i, LEVEL_NAME[it.lv],
+					font = if(it.lv<30) NUM else BASE, flag = i==rankingRank
+				)
 			}
 		} else {
 			receiver.drawScore(engine, 0, 3, "SCORE${if(lastScore>0) "(+$lastScore)" else ""}", BASE, COLOR.BLUE)
@@ -309,12 +308,13 @@ class RetroN:AbstractMode() {
 		var pts = 0
 		// Level up
 		val li = ev.lines
-		when {
-			li==1 -> pts += 40*(engine.statistics.level+1) // Single
-			li==2 -> pts += 100*(engine.statistics.level+1) // Double
-			li==3 -> pts += 300*(engine.statistics.level+1) // Triple
-			li>=4 -> pts += 1200*(engine.statistics.level+1) // Quadruple
-		}
+		pts += when {
+			li==1 -> 40 // Single
+			li==2 -> 100 // Double
+			li==3 -> 300 // Triple
+			li>=4 -> 1200 // Quadruple
+			else -> 0
+		}*(engine.statistics.level+1)
 
 		// Add score to total
 		if(pts>0) {
@@ -339,8 +339,10 @@ class RetroN:AbstractMode() {
 
 			lvLines += if(engine.statistics.level==235) 810 else 10
 			lvLBegin = engine.statistics.lines
-			if(gameType!=GameType.C&&engine.statistics.level>255) engine.statistics.level = 0
-
+			if(gameType!=GameType.C&&engine.statistics.level>255) {
+				engine.statistics.level = 0
+				engine.playSE("levelup_section")
+			}
 			if((gameType!=GameType.C&&engine.statistics.level>=10||engine.statistics.lines>=130)
 				&&owner.musMan.bgm.idx!=BGM.RetroN(3).idx) owner.musMan.bgm = BGM.RetroN(3)
 			owner.bgMan.nextBg = engine.statistics.level
@@ -467,16 +469,20 @@ class RetroN:AbstractMode() {
 
 	companion object {
 
-		/** Denominator table (NTSC-U) */
-		private val tableDenominator = intArrayOf(
-			//	0  1  2  3  4  5  6  7  8  9    +xx
-			48, 43, 38, 33, 28, 23, 18, 13, 8, 6, // 00
-			5, 5, 5, 4, 4, 4, 3, 3, 3, 2, // 10
-			2, 2, 2, 2, 2, 2, 2, 2, 2, 1 // 20
-		)
-
-		/** Denominator table (Arrange) */
-		private val tableDenominatorHard = intArrayOf(
+		/*
+		* 		if(speedType!=SpeedLevel.NOA_NTSC) {
+			engine.speed.gravity = if(speedType==SpeedLevel.PAL_RAW) 60000 else 50007
+			engine.speed.denominator = tableDenominatorHard[lv]*60000
+			engine.speed.das = 12
+			engine.owARR = 4
+		} else {
+			engine.speed.gravity = 601
+			engine.speed.denominator = tableDenominator[lv]*600
+			engine.speed.das = 16
+			engine.owARR = 6
+		}*/
+		/** Denominator table (NOE_PAL) */
+		private val tableDenominatorHard = listOf(
 			//	0  1  2  3  4  5  6  7  8  9    +xx
 			36, 32, 29, 25, 22, 18, 15, 11, 7, 5, // 00
 			4, 4, 4, 3, 3, 3, 2, 2, 2, 1, // 10
@@ -495,9 +501,27 @@ class RetroN:AbstractMode() {
 		/** Number of game types */
 		private val GAMETYPE_MAX = GameType.entries.size
 
+		private fun pal(raw:Boolean):LevelData = ((if(raw) 60000 else 50007) to (listOf(
+			//	0  1  2  3  4  5  6  7  8  9    +xx
+			36, 32, 29, 25, 22, 18, 15, 11, 7, 5, // 00
+			4, 4, 4, 3, 3, 3, 2, 2, 2, 1, // 10
+		).map {it*60000})).let {(g, d) ->
+			LevelData(listOf(g), d, listOf(10), listOf(10), listOf(20), d.map {g/it}, listOf(12))
+		}
 		/** Speed types */
-		private enum class SpeedLevel(title:String? = null) {
-			NTSC, PAL, PAL_RAW("PAL HARD");
+		private enum class SpeedLevel(val table:LevelData, val owARR:Int = -1, title:String? = null) {
+			N_NTSC(listOf(
+				//	0  1  2  3  4  5  6  7  8  9    +xx
+				48, 43, 38, 33, 28, 23, 18, 13, 8, 6, // 00
+				5, 5, 5, 4, 4, 4, 3, 3, 3, 2, // 10
+				2, 2, 2, 2, 2, 2, 2, 2, 2, 1 // 20
+			).map {it*600}.let {LevelData(listOf(601), it, listOf(10), listOf(10), listOf(20), it.map {d -> 601/d}, listOf(16))},
+				6, "NOA-NTSC"),
+
+			N_PAL(pal(false), 4, "NOE-PAL"), N_PAL_RAW(pal(true), 4, "NOE-PAL HARD"),
+			BPS2(LevelData(listOf(1, 3, 5, 7, 9, 11, 13, 15, 17, 19, 23, 27, 31, 35, 39, 43, 47, 51, 55, 59,
+				69, 77, 85, 93, 101, 109, 117, 125, 133, 141, 152, 164, 175, 187, 198, 210, 221, 233, 244, 256), listOf(128),
+				8, 8, 16, 26, 12), 10, "BPS-S2");
 
 			val showName:String = title?:name
 			override fun toString() = showName

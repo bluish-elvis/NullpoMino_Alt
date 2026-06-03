@@ -233,7 +233,7 @@ class Avalanche1P:Avalanche1PDummyMode() {
 		receiver.drawScore(engine, 0, 0, "AVALANCHE ($modeStr)", BASE, COLOR.COBALT)
 		receiver.drawScore(engine, 0, 1, "(${SCORETYPE_NAME[scoreType]} $numColors COLORS)", BASE, COLOR.COBALT)
 
-		if(engine.stat==GameEngine.Status.SETTING||engine.stat==GameEngine.Status.RESULT&&!owner.replayMode) {
+		if(engine.isShowRanking) {
 			if(!owner.replayMode&&engine.ai==null&&engine.colorClearSize==4) {
 				val scale = if(receiver.bigSideNext&&gametype==0) .5f else 1f
 				val topY = if(receiver.bigSideNext&&gametype==0) 6 else 4

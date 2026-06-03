@@ -299,7 +299,7 @@ class Avalanche1PFever:Avalanche1PDummyMode() {
 			engine, 0, 1, "(${FEVER_MAPS[mapSet].uppercase()} $numColors COLORS)", BASE, COBALT
 		)
 
-		if(engine.stat==GameEngine.Status.SETTING||engine.stat==GameEngine.Status.RESULT&&!owner.replayMode) {
+		if(engine.isShowRanking) {
 			if(!owner.replayMode&&engine.ai==null) {
 				val topY = if(receiver.bigSideNext) 6 else 4
 
@@ -410,7 +410,7 @@ class Avalanche1PFever:Avalanche1PDummyMode() {
 		if(timeLimit<=300) engine.meterColor = GameEngine.METER_COLOR_RED
 
 		if(!fastinuse&&engine.ctrl.isPress(Controller.BUTTON_F)&&
-			(fastenable==2||engine.stat==GameEngine.Status.LINECLEAR&&fastenable==1)) {
+			(fastenable==2||engine.stat is GameEngine.Status.LINECLEAR&&fastenable==1)) {
 			fastinuse = true
 			for(i in 0..3)
 				engine.owner.updateAll()

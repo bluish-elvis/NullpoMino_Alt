@@ -27,7 +27,8 @@
 **/dbnavigator.xml
 
 # Gradle
-**/gradle.xml
+gradle.xml
+!runConfigurations/gradle.xml
 **/libraries
 
 # Gradle and Maven with auto-import
@@ -83,3 +84,4 @@ caches/build_file_checksums.ser
 /copilot/chatSessions
 /copilot.data.*.xml
 jsoninja.xml
+/copilotDiffState.xml

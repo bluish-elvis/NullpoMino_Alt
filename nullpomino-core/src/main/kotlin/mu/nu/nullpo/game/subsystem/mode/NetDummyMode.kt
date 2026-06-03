@@ -294,7 +294,7 @@ abstract class NetDummyMode:AbstractMode(), NetLobbyListener {
 	 * NetDummyMode will send field/next/stats/piece movements. */
 	override fun onMove(engine:GameEngine):Boolean {
 		// NET: Send field, next, and stats
-		if(engine.ending==0&&engine.statc[0]==0&&!engine.holdDisable&&
+		if(engine.ending==0&&engine.stime==0&&!engine.holdDisable&&
 			netIsNetPlay&&!netIsWatch&&(netNumSpectators>0||netForceSendMovements)) {
 			netSendField(engine)
 			netSendStats(engine)
@@ -319,7 +319,7 @@ abstract class NetDummyMode:AbstractMode(), NetLobbyListener {
 	/** NET: Line clear. NetDummyMode will send field and stats. */
 	override fun onLineClear(engine:GameEngine):Boolean {
 		// NET: Send field and stats
-		if(engine.statc[0]==1&&engine.ending==0&&netIsNetPlay&&!netIsWatch&&(netNumSpectators>0||netForceSendMovements)) {
+		if(engine.stime==1&&engine.ending==0&&netIsNetPlay&&!netIsWatch&&(netNumSpectators>0||netForceSendMovements)) {
 			netSendField(engine)
 			netSendStats(engine)
 		}
@@ -329,7 +329,7 @@ abstract class NetDummyMode:AbstractMode(), NetLobbyListener {
 	/** NET: ARE. NetDummyMode will send field, next and stats. */
 	override fun onARE(engine:GameEngine):Boolean {
 		// NET: Send field, next, and stats
-		if(engine.statc[0]==0&&engine.ending==0&&netIsNetPlay&&!netIsWatch&&(netNumSpectators>0||netForceSendMovements)) {
+		if(engine.stime==0&&engine.ending==0&&netIsNetPlay&&!netIsWatch&&(netNumSpectators>0||netForceSendMovements)) {
 			netSendField(engine)
 			netSendNextAndHold(engine)
 			netSendStats(engine)
@@ -352,7 +352,7 @@ abstract class NetDummyMode:AbstractMode(), NetLobbyListener {
 
 	/** NET: "Excellent!" screen */
 	override fun onExcellent(engine:GameEngine):Boolean {
-		if(engine.statc[0]==0)
+		if(engine.stime==0)
 		// NET: Send game completed messages
 			if(netIsNetPlay&&!netIsWatch&&(netNumSpectators>0||netForceSendMovements)) {
 				netSendField(engine)
@@ -544,7 +544,7 @@ abstract class NetDummyMode:AbstractMode(), NetLobbyListener {
 
 				// Move cursor
 				if(message[3]=="cursor")
-					if(engine.stat==Status.SETTING) {
+					if(engine.stat is Status.SETTING) {
 						menuCursor = message[4].toInt()
 						engine.playSE("cursor")
 					}
@@ -689,7 +689,7 @@ abstract class NetDummyMode:AbstractMode(), NetLobbyListener {
 			receiver.drawScore(engine, x, y, "SPECTATORS", BASE, fontcolor)
 			receiver.drawScore(engine, x, y+1, "$netNumSpectators", BASE, COLOR.WHITE)
 
-			if(engine.stat==Status.SETTING&&!netIsWatch&&netIsNetRankingViewOK(engine)) {
+			if(engine.stat is Status.SETTING&&!netIsWatch&&netIsNetRankingViewOK(engine)) {
 				var y2 = y+2
 				if(y2>24) y2 = 24
 				val strBtnD = owner.receiver.getKeyNameByButtonID(engine, Controller.BUTTON_D)
@@ -838,7 +838,7 @@ abstract class NetDummyMode:AbstractMode(), NetLobbyListener {
 			if(message.size>4) {
 				engine.nowPieceObject = null
 				engine.holdDisable = false
-				if(engine.stat==Status.SETTING) engine.stat = Status.MOVE
+				if(engine.stat is Status.SETTING) engine.stat = Status.MOVE
 				val skin = message[4].toInt()
 				netPlayerSkin = skin
 				if(message.size>6) {
@@ -852,7 +852,7 @@ abstract class NetDummyMode:AbstractMode(), NetLobbyListener {
 			if(message.size>5) {
 				engine.nowPieceObject = null
 				engine.holdDisable = false
-				if(engine.stat==Status.SETTING) engine.stat = Status.MOVE
+				if(engine.stat is Status.SETTING) engine.stat = Status.MOVE
 				val skin = message[4].toInt()
 				val highestWallY = message[5].toInt()
 				netPlayerSkin = skin

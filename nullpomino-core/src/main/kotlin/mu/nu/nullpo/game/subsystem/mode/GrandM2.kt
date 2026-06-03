@@ -32,9 +32,10 @@ package mu.nu.nullpo.game.subsystem.mode
 
 import mu.nu.nullpo.game.component.BGM
 import mu.nu.nullpo.game.component.Controller
-import mu.nu.nullpo.game.event.*
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
+import mu.nu.nullpo.game.event.Leaderboard
 import mu.nu.nullpo.game.event.Rankable.GrandRow
+import mu.nu.nullpo.game.event.ScoreEvent
 import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.game.subsystem.mode.menu.*
 import mu.nu.nullpo.gui.common.BaseFont
@@ -215,7 +216,7 @@ class GrandM2:AbstractGrand() {
 
 	private fun mRollTime(section:Int):Int = when {
 		section==6 -> (sectionTime.take(5).sum())/5+400
-		section>6 -> sectionTime[section-1]+(640-section*40)
+		section>6 -> sectionTime[section-1]+(640-section*20)
 		else -> 6500-section*500
 	}
 
@@ -252,7 +253,7 @@ class GrandM2:AbstractGrand() {
 			"BIG" to big)
 	}*/
 	override fun onReady(engine:GameEngine):Boolean {
-		if(engine.statc[0]==0) {
+		if(engine.stime==0) {
 			isShowBestSectionTime = false
 			owner.musMan.fadeSW = true
 		}
@@ -284,7 +285,7 @@ class GrandM2:AbstractGrand() {
 		receiver.drawScore(engine, -1, -4*2, "DECORATION", BASE, scale = .5f)
 		receiver.drawScoreBadges(engine, 0, -3, 100, owner.stats.decoration)
 		receiver.drawScoreBadges(engine, 5, -4, 100, decTemp)
-		if(engine.stat==GameEngine.Status.SETTING||engine.stat==GameEngine.Status.RESULT&&!owner.replayMode) {
+		if(engine.isShowRanking) {
 			if(!owner.replayMode&&startLevel==0&&!big&&!always20g&&engine.ai==null)
 				if(!isShowBestSectionTime) {
 					// Rankings
@@ -365,11 +366,19 @@ class GrandM2:AbstractGrand() {
 			receiver.drawScore(engine, 1, 10, "%3d".format(maxOf(engine.statistics.level, 0)), NUM, g20)
 			receiver.drawScoreSpeed(engine, 0, 11, if(g20) 1f else engine.speed.rank, 4f)
 			receiver.drawScore(engine, 1, 12, "%3d".format(nextSecLv), NUM, g20)
-
+			val section = engine.statistics.level/100
 			// Time
 			receiver.drawScore(engine, 0, 14, "Time", BASE, if(g20&&mRollSTime) COLOR.CYAN else COLOR.BLUE)
-			if(engine.ending!=2||rollTime/20%2==0||!engine.gameActive)
+			if(engine.ending!=2||rollTime/20%2==0||!engine.gameActive) {
 				receiver.drawScore(engine, 0, 15, engine.statistics.time.toTimeStr, NUM_T, g20&&mRollSTime)
+				(mRollTime(section) to sectionTime[section]).let {(x, y) ->
+					if(mRollSTime&&(x-y)>0) {
+						receiver.drawScore(engine, 0, 17f, (x-y).toTimeStr, NANO, .5f)
+						receiver.drawScoreSpeed(engine, 0, 17, y.toFloat()/x, 8f)
+						receiver.drawScoreSpeed(engine, 0, 17.25f, (engine.statistics.level%100)/100f, 8f)
+					}
+				}
+			}
 
 			// Roll 残り time
 			if(engine.gameActive&&engine.ending==2) {
@@ -395,7 +404,6 @@ class GrandM2:AbstractGrand() {
 			if(showST&&sectionTime.isNotEmpty()) {
 				val x = receiver.bigSideNext
 				receiver.drawScore(engine, if(x) 8 else 10, 2, "SECTION TIME", BASE, COLOR.BLUE)
-				val section = engine.statistics.level/100
 				sectionTime.forEachIndexed {i, it ->
 					if(it>0) {
 						receiver.drawScore(
@@ -626,7 +634,7 @@ class GrandM2:AbstractGrand() {
 
 	/* game over */
 	override fun onGameOver(engine:GameEngine):Boolean {
-		if(engine.statc[0]==0) {
+		if(engine.stime==0) {
 			val time = engine.statistics.time
 			if(time<6000)
 				decTemp -= 3
@@ -706,8 +714,8 @@ class GrandM2:AbstractGrand() {
 
 		if(grade>=19) {
 			col = when {
-				engine.statc[0]%4==0 -> COLOR.YELLOW
-				engine.statc[0]%2==0 -> col
+				engine.stime%4==0 -> COLOR.YELLOW
+				engine.stime%2==0 -> col
 				else -> COLOR.ORANGE
 			}
 			receiver.drawMenu(engine, .5f, 8f, "YOU ARE A", BASE, COLOR.WHITE, 1f)
@@ -715,8 +723,8 @@ class GrandM2:AbstractGrand() {
 			receiver.drawMenu(engine, .5f, 10.5f, "MASTER", BASE, col, 1.5f)
 			if(grade==19) {
 				col = when {
-					engine.statc[0]%4==0 -> COLOR.RED
-					engine.statc[0]%2==0 -> COLOR.YELLOW
+					engine.stime%4==0 -> COLOR.RED
+					engine.stime%2==0 -> COLOR.YELLOW
 					else -> COLOR.ORANGE
 				}
 				receiver.drawMenu(engine, 1, 12, "LET'S TRY", BASE, COLOR.BLUE, 1f)
@@ -727,8 +735,8 @@ class GrandM2:AbstractGrand() {
 			receiver.drawMenu(engine, 3.5f, 8.5f, "BUT...", BASE, COLOR.WHITE, 1f)
 			if(mRollSTime&&!mRollQuads) {
 				col = when {
-					engine.statc[0]%4==0 -> COLOR.RED
-					engine.statc[0]%2==0 -> COLOR.YELLOW
+					engine.stime%4==0 -> COLOR.RED
+					engine.stime%2==0 -> COLOR.YELLOW
 					else -> COLOR.ORANGE
 				}
 				receiver.drawMenu(engine, 1, 10, "CHALLENGE", BASE, COLOR.BLUE, 1f)
@@ -736,8 +744,8 @@ class GrandM2:AbstractGrand() {
 				receiver.drawMenu(engine, .5f, 12f, "NEXT TIME", BASE, COLOR.WHITE, 1f)
 			} else {
 				col = when {
-					engine.statc[0]%4==0 -> COLOR.CYAN
-					engine.statc[0]%2==0 -> col
+					engine.stime%4==0 -> COLOR.CYAN
+					engine.stime%2==0 -> col
 					else -> COLOR.BLUE
 				}
 				receiver.drawMenu(engine, .5f, 10f, "CHALLENGE", BASE, COLOR.BLUE, 1f)

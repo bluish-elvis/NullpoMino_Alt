@@ -32,9 +32,10 @@ package mu.nu.nullpo.game.subsystem.mode
 
 import mu.nu.nullpo.game.component.BGM
 import mu.nu.nullpo.game.component.Controller
-import mu.nu.nullpo.game.event.*
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
+import mu.nu.nullpo.game.event.Leaderboard
 import mu.nu.nullpo.game.event.Rankable.GrandRow
+import mu.nu.nullpo.game.event.ScoreEvent
 import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.game.subsystem.mode.menu.*
 import mu.nu.nullpo.gui.common.BaseFont
@@ -244,6 +245,7 @@ class GrandM3:AbstractGrand() {
 		secretGrade = 0
 		gradeFlash = 0
 		section70Time.fill(0)
+
 		regretSection.fill(false)
 		coolSection.fill(false)
 		mRollFlag = false
@@ -374,7 +376,9 @@ class GrandM3:AbstractGrand() {
 		val section = engine.statistics.level/100
 		// COOL check
 		if(engine.statistics.level%100>=70&&!coolChecked) {
-			val coolPrevTime = if(section>0&&coolSection.any()) section70Time[coolSection.indexOfLast {it}] else 0
+			val coolPrevTime = coolSection.indexOfLast {it}.let {
+				if(section>0&&coolSection.any()&&it in section70Time.indices) section70Time[coolSection.indexOfLast {it}] else 0
+			}
 
 			if(section70Time[section]<=tableTimeCool[section]&&
 				(!previousCool||section70Time[section]<=coolPrevTime+(200-section*9)))
@@ -471,7 +475,7 @@ class GrandM3:AbstractGrand() {
 		receiver.drawScore(engine, -1, -1.5f, "DECORATION", NANO, scale = .5f)
 		receiver.drawScoreBadges(engine, 0, -1, 100, owner.stats.decoration)
 		receiver.drawScoreBadges(engine, 6, -1, 100, decTemp)
-		if(engine.stat==GameEngine.Status.SETTING||engine.stat==GameEngine.Status.RESULT&&!owner.replayMode) {
+		if(engine.isShowRanking) {
 			if(startLevel==0&&!big&&!always20g&&!owner.replayMode&&engine.ai==null)
 				if(!isShowBestSectionTime) {
 					// Rankings
@@ -659,7 +663,7 @@ class GrandM3:AbstractGrand() {
 
 	/* Ready→Goの処理 */
 	override fun onReady(engine:GameEngine):Boolean {
-		if(!owner.replayMode&&engine.statc[0]==0) {
+		if(!owner.replayMode&&engine.stime==0) {
 			isShowBestSectionTime = false
 			sectionsDone = 0
 			if(!always20g&&!big&&enableExam) {
@@ -1025,7 +1029,7 @@ class GrandM3:AbstractGrand() {
 	/* game over */
 	override fun onGameOver(engine:GameEngine):Boolean {
 		// This code block will execute only once
-		if(engine.statc[0]==0) {
+		if(engine.stime==0) {
 			secretGrade = engine.field.secretGrade
 			val time = engine.statistics.time
 			if(time<6000) decTemp -= 3

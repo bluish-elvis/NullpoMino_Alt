@@ -31,12 +31,14 @@
 package mu.nu.nullpo.game.play
 
 import mu.nu.nullpo.game.component.*
+import mu.nu.nullpo.game.component.Block.ATTRIBUTE
 import mu.nu.nullpo.game.component.Piece.Shape
 import mu.nu.nullpo.game.component.SpeedParam.Companion.SDS_FIXED
 import mu.nu.nullpo.game.event.*
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
 import mu.nu.nullpo.game.event.ScoreEvent.Twister
 import mu.nu.nullpo.game.play.clearRule.*
+import mu.nu.nullpo.game.play.fallRule.*
 import mu.nu.nullpo.game.subsystem.ai.AIPlayer
 import mu.nu.nullpo.game.subsystem.wallkick.Wallkick
 import mu.nu.nullpo.gui.common.ConfigGlobal.AIConf
@@ -157,12 +159,26 @@ class GameEngine(
 
 	/** Current main game status */
 	var stat:Status = Status.NOTHING
+	/*set(value) {
+		field = value
+		val inPlay = value !is Status.SETTING&&value !is Status.PROFILE&&value !is Status.RESULT&&value !is Status.FIELDEDIT
+		if(isInGame!=inPlay) isInGame = inPlay
+	}*/
 	/** Free status counters */
 	val statc = MutableList(MAX_STATC) {0}
+	var stime
+		get() = stat.time
+		set(value) {
+			stat.time = value
+		}
 
 	/** True if game play, false if menu.
 	 * Used for alternate keyboard mappings. */
-	var isInGame = false
+	val isInGame
+		get() = stat !is Status.SETTING&&stat !is Status.RESULT&&
+			stat !is Status.FIELDEDIT&&stat !is Status.PROFILE&&!(stat is Status.CUSTOM&&!gameActive)
+	val isShowRanking
+		get() = (stat is Status.SETTING||stat is Status.RESULT)&&!owner.replayMode&&ai==null
 
 	/** True if the game is active */
 	var gameActive = false
@@ -221,7 +237,7 @@ class GameEngine(
 	var lineClearing = 0; internal set
 	var garbageClearing = 0; private set
 	/** Line gravity type (Native, Cascade, etc) */
-	var lineGravityType:LineGravity = LineGravity.Native
+	var lineGravityType:LineGravity = Native
 	/** Current number of chains */
 	var chain = 0; internal set
 
@@ -480,15 +496,28 @@ class GameEngine(
 	var isHoldVisible = false
 
 	/** Field edit screen: Cursor coord */
-	var mapEditX = 0; private set
+	var mapEditX
+		get() = (stat as? Status.FIELDEDIT)?.cursorX?:0
+		private set(value) {
+			if(stat is Status.FIELDEDIT) (stat as Status.FIELDEDIT).cursorX = value
+		}
 	/** Field edit screen: Cursor coord */
-	var mapEditY = 0; private set
+	var mapEditY
+		get() = (stat as? Status.FIELDEDIT)?.cursorY?:0
+		private set(value) {
+			if(stat is Status.FIELDEDIT) (stat as Status.FIELDEDIT).cursorY = value
+		}
 	/** Field edit screen: Selected color-int */
-	var mapEditColor = 0; private set
-	/** Field edit screen: Previous game status number */
-	var mapEditPreviousStat = Status.NOTHING; private set
-	/** Field edit screen: Frame counter */
-	var mapEditFrames = 0; private set
+	var mapEditColor
+		get() = (stat as? Status.FIELDEDIT)?.curColor?:0
+		private set(value) {
+			if(stat is Status.FIELDEDIT) (stat as Status.FIELDEDIT).curColor = value
+		}
+	var mapEditFrames
+		get() = (stat as? Status.FIELDEDIT)?.time?:0
+		private set(value) {
+			if(stat is Status.FIELDEDIT) (stat as Status.FIELDEDIT).time = value
+		}
 
 	/** Next-skip during Ready->Go */
 	var holdButtonNextSkip = false
@@ -546,7 +575,7 @@ class GameEngine(
 	var interruptItem:Item? = null
 
 	/** Post-status of interruptable item */
-	private var interruptItemPreviousStat:Status = Status.MOVE//; private set
+	private val interruptItemPreviousStat:Status get() = (stat as Status.INTERRUPTITEM).prevStatus//; private set
 
 	/**Overwriting Rule settings(should not change from gameMode)*/
 	var owTune = TuneConf()
@@ -666,10 +695,6 @@ class GameEngine(
 			field = value
 		}
 
-	/** Delay for each step in cascade animations */
-	var cascadeDelay = 0
-	/** Delay between landing and checking for clears in cascade */
-	var cascadeClearDelay = 0
 	/** If true, color clears will ignore hidden rows */
 	var ignoreHidden = false
 		set(value) {
@@ -700,11 +725,11 @@ class GameEngine(
 
 	internal var playerName = ""
 
-	/** Current AREの値を取得 (ルール設定も考慮)*/
+	/** Current Entry delayの値を取得 (ルール設定も考慮)*/
 	val are
 		get() = if(speed.are<ruleOpt.minARE&&ruleOpt.minARE>=0) ruleOpt.minARE
 		else if(speed.are>ruleOpt.maxARE&&ruleOpt.maxARE>=0) ruleOpt.maxARE else speed.are
-	/** Current ARE after lines clearの値を取得 (ルール設定も考慮)*/
+	/** Current Entry delay after lines clearの値を取得 (ルール設定も考慮)*/
 	val areLine
 		get() = if(speed.areLine<ruleOpt.minARELine&&ruleOpt.minARELine>=0) ruleOpt.minARELine
 		else if(speed.areLine>ruleOpt.maxARELine&&ruleOpt.maxARELine>=0) ruleOpt.maxARELine else speed.areLine
@@ -716,6 +741,16 @@ class GameEngine(
 	val lockDelay
 		get() = if(speed.lockDelay<ruleOpt.minLockDelay&&ruleOpt.minLockDelay>=0) ruleOpt.minLockDelay
 		else if(speed.lockDelay>ruleOpt.maxLockDelay&&ruleOpt.maxLockDelay>=0) ruleOpt.maxLockDelay else speed.lockDelay
+
+	/** Delay for each step in cascade animations */
+	var cascadeDelay = 1
+	/** Delay between landing and checking for clears in cascade */
+	var cascadeClearDelay = areLine
+		get() = areLine
+		set(value) {
+			speed.areLine = value
+			field = value
+		}
 
 	/** Current DASの値を取得 (ルール設定も考慮)*/
 	val das
@@ -854,7 +889,6 @@ class GameEngine(
 		lastEvent = null
 		lastClear = null
 
-		isInGame = false
 		gameActive = false
 		timerActive = false
 		gameStarted = false
@@ -878,7 +912,7 @@ class GameEngine(
 
 		lineClearing = 0
 		garbageClearing = 0
-		lineGravityType = LineGravity.Native
+		lineGravityType = Native
 		chain = 0
 		lineGravityTotalLines = 0
 
@@ -1018,6 +1052,7 @@ class GameEngine(
 
 		rainbowAnimate = false
 		depth = 0
+		fieldbg = 0
 		fieldbgY = 0f
 
 		startTime = 0
@@ -1051,6 +1086,7 @@ class GameEngine(
 	/** ステータス counterInitialization */
 	fun resetStatc() {
 		for(i in statc.indices) statc[i] = 0
+		stat.time = 0
 	}
 
 	/** Sound effect [name]を再生する (enableSEがtrueのときだけ)
@@ -1087,8 +1123,8 @@ class GameEngine(
 					if(color!=null) {
 						alpha = 1f
 						darkness = 0f
-						setAttribute(true, Block.ATTRIBUTE.VISIBLE)
-						setAttribute(true, Block.ATTRIBUTE.OUTLINE)
+						setAttribute(true, ATTRIBUTE.VISIBLE)
+						setAttribute(true, ATTRIBUTE.OUTLINE)
 					}
 				}
 		}
@@ -1248,24 +1284,23 @@ class GameEngine(
 
 		field.forEach {b, i, j ->
 			b.run {
-				if(elapsedFrames<0) {
-//							if(!getAttribute(Block.ATTRIBUTE.GARBAGE)) darkness = 0f
-				} else if(elapsedFrames<ruleOpt.lockFlash) {
-					darkness = -.8f
-					if(outlineOnly) {
-						setAttribute(true, Block.ATTRIBUTE.OUTLINE)
-						setAttribute(false, Block.ATTRIBUTE.VISIBLE)
-						setAttribute(false, Block.ATTRIBUTE.BONE)
+				if((stat is Status.LOCKFLASH||stat is Status.ARE||getAttribute(ATTRIBUTE.LAST_COMMIT))&&elapsedFrames>0)
+					if(elapsedFrames<ruleOpt.lockFlash) {
+						darkness = -.8f
+						if(outlineOnly) {
+							setAttribute(true, ATTRIBUTE.OUTLINE)
+							setAttribute(false, ATTRIBUTE.VISIBLE)
+							setAttribute(false, ATTRIBUTE.BONE)
+						}
+					} else {
+						//after lockflash
+						darkness = .18f
+						if(outlineOnly) {
+							setAttribute(true, ATTRIBUTE.OUTLINE)
+							setAttribute(false, ATTRIBUTE.VISIBLE)
+							setAttribute(false, ATTRIBUTE.BONE)
+						}
 					}
-				} else {
-					//after lockflash
-					darkness = .18f
-					setAttribute(true, Block.ATTRIBUTE.OUTLINE)
-					if(outlineOnly) {
-						setAttribute(false, Block.ATTRIBUTE.VISIBLE)
-						setAttribute(false, Block.ATTRIBUTE.BONE)
-					}
-				}
 
 				if(blockHidden!=-1&&elapsedFrames>=blockHidden-10&&gameActive) {
 					if(blockHiddenAnim) {
@@ -1275,8 +1310,8 @@ class GameEngine(
 
 					if(elapsedFrames>=blockHidden) {
 						alpha = 0f
-						setAttribute(false, Block.ATTRIBUTE.OUTLINE)
-						setAttribute(false, Block.ATTRIBUTE.VISIBLE)
+						setAttribute(false, ATTRIBUTE.OUTLINE)
+						setAttribute(false, ATTRIBUTE.VISIBLE)
 					}
 				}
 
@@ -1284,16 +1319,16 @@ class GameEngine(
 				if(gameActive) {
 					// X-RAY
 					if(itemXRayEnable) {
-						setAttribute(itemXRayCount%36==i, Block.ATTRIBUTE.VISIBLE)
-						setAttribute(itemXRayCount%36==i, Block.ATTRIBUTE.OUTLINE)
+						setAttribute(itemXRayCount%36==i, ATTRIBUTE.VISIBLE)
+						setAttribute(itemXRayCount%36==i, ATTRIBUTE.OUTLINE)
 					}
 					// COLOR
 					if(itemColorEnable) {
 						val bright = minOf(j, 10).let {if(it>=5) 9-it else it}.let {40-((20-i+it)*4+itemColorCount)%40}
 							.let {if(it in ITEM_COLOR_BRIGHT_TABLE.indices) 10-ITEM_COLOR_BRIGHT_TABLE[it] else it}
 						alpha = bright*.1f
-						setAttribute(false, Block.ATTRIBUTE.OUTLINE)
-						setAttribute(true, Block.ATTRIBUTE.VISIBLE)
+						setAttribute(false, ATTRIBUTE.OUTLINE)
+						setAttribute(true, ATTRIBUTE.VISIBLE)
 					}
 				}
 			}
@@ -1379,8 +1414,7 @@ class GameEngine(
 
 	/** fieldエディット画面に入る処理 */
 	fun enterFieldEdit() {
-		mapEditPreviousStat = stat
-		stat = Status.FIELDEDIT
+		stat = Status.FIELDEDIT(stat)
 		mapEditX = 0
 		mapEditY = 0
 		mapEditColor = Block.COLOR_WHITE
@@ -1390,13 +1424,13 @@ class GameEngine(
 	}
 
 	/** fieldをInitialization (まだ存在しない場合) */
-	fun createFieldIfNeeded():Field {
+	fun createFieldIfNeeded(field:Field = this.field):Field {
 		if(fieldWidth<0) fieldWidth = ruleOpt.fieldWidth
 		if(fieldHeight<0) fieldHeight = ruleOpt.fieldHeight
 		if(fieldHiddenHeight<0) fieldHiddenHeight = ruleOpt.fieldHiddenHeight
 		return if(field.width==fieldWidth&&field.height==fieldHeight&&field.hiddenHeight==fieldHiddenHeight&&
 			field.ceiling==ruleOpt.fieldCeiling) field
-		else Field(fieldWidth, fieldHeight, fieldHiddenHeight, ruleOpt.fieldCeiling).also {field = it}
+		else Field(fieldWidth, fieldHeight, fieldHiddenHeight, ruleOpt.fieldCeiling).also {this.field = it}
 
 	}
 
@@ -1408,7 +1442,7 @@ class GameEngine(
 		}
 		gameActive = false
 		timerActive = false
-		isInGame = false
+//		isInGame = false
 		ai?.also {it.shutdown()}
 	}
 
@@ -1460,48 +1494,54 @@ class GameEngine(
 		) ai?.onFirst(this, playerID)
 		fpf = 0
 		// 各ステータスの処理
-		if(!lagStop)
+		if(!lagStop) {
+			val fs = stat
 			when(stat) {
-				Status.SETTING -> statSetting()
-				Status.PROFILE -> statProfile()
-				Status.READY -> statReady()
-				Status.MOVE -> {
+				is Status.SETTING -> statSetting()
+				is Status.PROFILE -> statProfile()
+				is Status.READY -> statReady()
+				is Status.MOVE -> {
 					dasRepeat = true
 					dasInstant = false
 					do {
 						statMove()
+						if(dasRepeat) stime++
 					} while(dasRepeat)
 				}
-				Status.LOCKFLASH -> statLockFlash()
-				Status.LINECLEAR -> statLineClear()
-				Status.ARE -> statARE()
-				Status.ENDINGSTART -> statEndingStart()
-				Status.CUSTOM -> statCustom()
-				Status.EXCELLENT -> statExcellent()
-				Status.GAMEOVER -> statGameOver()
-				Status.RESULT -> statResult()
-				Status.FIELDEDIT -> statFieldEdit()
-				Status.INTERRUPTITEM -> statInterruptItem()
-				Status.NOTHING -> {
-				}
+				is Status.LOCKFLASH -> statLockFlash()
+				is Status.LINECLEAR -> statLineClear()
+				is Status.ARE -> statARE()
+				is Status.ENDINGSTART -> statEndingStart()
+				is Status.CUSTOM -> statCustom()
+				is Status.EXCELLENT -> statExcellent()
+				is Status.GAMEOVER -> statGameOver()
+				is Status.RESULT -> statResult()
+				is Status.FIELDEDIT -> statFieldEdit()
+				is Status.INTERRUPTITEM -> statInterruptItem()
+				is Status.NOTHING -> {}
+			}
+			if(stat==fs) {
+				if(stime>=0) stime++ else stime = 0
+			}
+			// fieldのBlock stateや統計情報を更新
+			fieldUpdate()
+			//if(ending==0||staffrollEnableStatistics) statistics.update()
+
+			if(intHanabi>0) intHanabi--
+			// 最後の処理
+
+			owner.mode?.onLast(this)
+			receiver.onLast(this)
+			ai?.also {if(!owner.replayMode||owner.replayRerecord) it.onLast(this, playerID)}
+
+			// Timer増加
+			if(gameActive&&timerActive) statistics.time++
+			if(tempHanabi>0&&intHanabi<=0) {
+				receiver.shootFireworks(this)
+				tempHanabi--
+				intHanabi += HANABI_INTERVAL
 			}
 
-		// fieldのBlock stateや統計情報を更新
-		fieldUpdate()
-		//if(ending==0||staffrollEnableStatistics) statistics.update()
-
-		// 最後の処理
-		if(intHanabi>0) intHanabi--
-		owner.mode?.onLast(this)
-		receiver.onLast(this)
-		ai?.also {if(!owner.replayMode||owner.replayRerecord) it.onLast(this, playerID)}
-
-		// Timer増加
-		if(gameActive&&timerActive) statistics.time++
-		if(tempHanabi>0&&intHanabi<=0) {
-			receiver.shootFireworks(this)
-			tempHanabi--
-			intHanabi += HANABI_INTERVAL
 		}
 
 		/* if(startTime > 0 && endTime == 0) {
@@ -1519,67 +1559,51 @@ class GameEngine(
 
 		// 各ステータスの処理
 		when(stat) {
-			Status.NOTHING -> {
+			Status.NOTHING -> {}
+			is Status.SETTING -> {
+				receiver.renderSetting(this); owner.mode?.renderSetting(this)
 			}
-			Status.SETTING -> {
-				receiver.renderSetting(this)
-				owner.mode?.renderSetting(this)
+			is Status.PROFILE -> {
+				receiver.renderProfile(this); owner.mode?.renderProfile(this)
 			}
-			Status.PROFILE -> {
-				receiver.renderProfile(this)
-				owner.mode?.renderProfile(this)
+			is Status.READY -> {
+				receiver.renderReady(this); owner.mode?.renderReady(this)
 			}
-			Status.READY -> {
-				receiver.renderReady(this)
-				owner.mode?.renderReady(this)
+			is Status.MOVE -> {
+				receiver.renderMove(this); owner.mode?.renderMove(this)
 			}
-			Status.MOVE -> {
-				receiver.renderMove(this)
-				owner.mode?.renderMove(this)
+			is Status.LOCKFLASH -> {
+				receiver.renderLockFlash(this); owner.mode?.renderLockFlash(this)
 			}
-			Status.LOCKFLASH -> {
-				receiver.renderLockFlash(this)
-				owner.mode?.renderLockFlash(this)
+			is Status.LINECLEAR -> {
+				receiver.renderLineClear(this); owner.mode?.renderLineClear(this)
 			}
-			Status.LINECLEAR -> {
-				receiver.renderLineClear(this)
-				owner.mode?.renderLineClear(this)
+			is Status.ARE -> {
+				receiver.renderARE(this); owner.mode?.renderARE(this)
 			}
-			Status.ARE -> {
-				receiver.renderARE(this)
-				owner.mode?.renderARE(this)
+			is Status.ENDINGSTART -> {
+				receiver.renderEndingStart(this); owner.mode?.renderEndingStart(this)
 			}
-			Status.ENDINGSTART -> {
-				receiver.renderEndingStart(this)
-				owner.mode?.renderEndingStart(this)
+			is Status.CUSTOM -> {
+				receiver.renderCustom(this); owner.mode?.renderCustom(this)
 			}
-			Status.CUSTOM -> {
-				receiver.renderCustom(this)
-				owner.mode?.renderCustom(this)
+			is Status.EXCELLENT -> {
+				receiver.renderExcellent(this); owner.mode?.renderExcellent(this)
 			}
-			Status.EXCELLENT -> {
-				receiver.renderExcellent(this)
-				owner.mode?.renderExcellent(this)
+			is Status.GAMEOVER -> {
+				receiver.renderGameOver(this); owner.mode?.renderGameOver(this)
 			}
-			Status.GAMEOVER -> {
-				receiver.renderGameOver(this)
-				owner.mode?.renderGameOver(this)
+			is Status.RESULT -> {
+				receiver.renderResult(this); owner.mode?.renderResult(this)
 			}
-			Status.RESULT -> {
-				receiver.renderResult(this)
-				owner.mode?.renderResult(this)
+			is Status.FIELDEDIT -> {
+				receiver.renderFieldEdit(this); owner.mode?.renderFieldEdit(this)
 			}
-			Status.FIELDEDIT -> {
-				receiver.renderFieldEdit(this)
-				owner.mode?.renderFieldEdit(this)
-			}
-			Status.INTERRUPTITEM -> {
-			}
+			is Status.INTERRUPTITEM -> {}
 		}
 
 		if(owner.showInput) {
-			receiver.renderInput(this)
-			owner.mode?.renderInput(this)
+			receiver.renderInput(this); owner.mode?.renderInput(this)
 		}
 		ai?.also {
 			if(gameActive&&aiShowState) it.renderState(this, playerID)
@@ -1595,7 +1619,7 @@ class GameEngine(
 	private fun statSetting() {
 		//  event 発生
 		owner.musMan.fadeSW = false
-		if(statc[0]==0)
+		if(stime==0)
 			owner.mode?.onSettingChanged(this)
 		if(owner.mode?.onSetting(this)==true) return
 		receiver.onSetting(this)
@@ -1629,36 +1653,37 @@ class GameEngine(
 		//  event 発生
 		if(owner.mode?.onReady(this)==true) return
 		receiver.onReady(this)
-
 		// 横溜め
 		if(ruleOpt.dasInReady&&gameActive) padRepeat()
 		else if(ruleOpt.dasRedirectInDelay) dasRedirect()
 
 		// Initialization
-		if(statc[0]==0&&!gameActive) {
-			if(!readyDone&&!owner.musMan.fadeSW&&owner.musMan.bgm.id<0&&
-				owner.musMan.bgm.id !in BGM.Finale(0).id..BGM.Finale(2).id
-			)
-				owner.musMan.fadeSW = true
-			// fieldInitialization
-			createFieldIfNeeded()
-			// NEXTピース作成
-			if(nextPieceArrayID.isEmpty()) {
-				if(owner.replayMode) {
-					randSeed = owner.replayProp.getProperty("$playerID.replay.randSeed", 16L)
-					nextPieceArrayID = emptyList()
-					nextPieceArrayObject = emptyList()
+		if(stime==0) {
+			if(!gameActive) {
+				if(!readyDone&&!owner.musMan.fadeSW&&owner.musMan.bgm.id<0&&
+					owner.musMan.bgm.id !in BGM.Finale(0).id..BGM.Finale(2).id
+				)
+					owner.musMan.fadeSW = true
+				// fieldInitialization
+				createFieldIfNeeded()
+				// NEXTピース作成
+				if(nextPieceArrayID.isEmpty()) {
+					if(owner.replayMode) {
+						randSeed = owner.replayProp.getProperty("$playerID.replay.randSeed", 16L)
+						nextPieceArrayID = emptyList()
+						nextPieceArrayObject = emptyList()
+					}
+					// 出現可能なピースが1つもない場合は全て出現できるようにする
+					if(nextPieceEnable.isEmpty()) nextPieceEnable = Shape.all.toSet()
+
+					nextPieceCount = 0
+					// NEXTピースの出現順を作成
+					random = Random(randSeed)
+					randomizer.setState(nextPieceEnable, randSeed)
+
+					nextPieceArrayID = List(nextPieceArraySize) {randomizer.next()}
+					statistics.randSeed = randSeed
 				}
-				// 出現可能なピースが1つもない場合は全て出現できるようにする
-				if(nextPieceEnable.isEmpty()) nextPieceEnable = Shape.all.toSet()
-
-				nextPieceCount = 0
-				// NEXTピースの出現順を作成
-				random = Random(randSeed)
-				randomizer.setState(nextPieceEnable, randSeed)
-
-				nextPieceArrayID = List(nextPieceArraySize) {randomizer.next()}
-				statistics.randSeed = randSeed
 			}
 			// NEXTピースのオブジェクトを作成
 			if(nextPieceArrayObject.isEmpty()) {
@@ -1668,12 +1693,12 @@ class GameEngine(
 						p.setColor(ruleOpt.pieceColor[p.id])
 						p.setDarkness(0f)
 						p.setSkin(blkSkin)
-						p.setAttribute(true, Block.ATTRIBUTE.VISIBLE)
-						p.setAttribute(bone, Block.ATTRIBUTE.BONE)
+						p.setAttribute(true, ATTRIBUTE.VISIBLE)
+						p.setAttribute(bone, ATTRIBUTE.BONE)
 						p.placeNum = it
 						if(it<=1) p.big = big
-						p.direction = ruleOpt.pieceDefaultDirection[p.id].let {
-							if(it>=Piece.DIRECTION_COUNT) random.nextInt(Piece.DIRECTION_COUNT) else it
+						p.direction = ruleOpt.pieceDefaultDirection[p.id].let {dir ->
+							if(dir>=Piece.DIRECTION_COUNT) random.nextInt(Piece.DIRECTION_COUNT) else dir
 						}
 						if(randomBlockColor) {
 							if(blockColors.size<numColors||numColors<1) numColors = blockColors.size
@@ -1697,14 +1722,13 @@ class GameEngine(
 				// ゲーム中 flagON
 				gameActive = true
 				gameStarted = true
-				isInGame = true
 			}
 		}
 
 		// READY音
-		if(statc[0]==readyStart) playSE("start0")
+		if(stime==readyStart) playSE("start0")
 
-		if(statc[0]==(readyStart+goStart)/2&&!isRetroSkin) getNextObject()?.let {
+		if(stime==(readyStart+goStart)/2&&!isRetroSkin) getNextObject()?.let {
 			playSE(
 				"piece_${it.shape.name.lowercase(Locale.getDefault())}", 1f,
 				if((owner.mode?.players?:1)>1) 0.3f else 1f
@@ -1713,11 +1737,11 @@ class GameEngine(
 		}
 
 		// GO音
-		if(statc[0]==goStart) {
+		if(stime==goStart) {
 			playSE("start1")
 		}
 		// NEXTスキップ
-		if(statc[0] in 1..<goEnd&&holdButtonNextSkip&&isHoldOK&&ctrl.isPush(Controller.BUTTON_D)) {
+		if(stime in 1..<goEnd&&holdButtonNextSkip&&isHoldOK&&ctrl.isPush(Controller.BUTTON_D)) {
 			if(frame!=Frame.SG) playSE("initialhold")
 			holdPieceObject = getNextObjectCopy()?.also {
 				it.applyOffsetArray(ruleOpt.pieceOffsetX[it.id], ruleOpt.pieceOffsetY[it.id])
@@ -1727,7 +1751,7 @@ class GameEngine(
 		}
 
 		// 開始
-		if(statc[0]>=goEnd) {
+		if(stime>=goEnd) {
 			owner.mode?.startGame(this)
 			receiver.startGame(this)
 			owner.musMan.fadeSW = false
@@ -1740,7 +1764,7 @@ class GameEngine(
 			return
 		}
 
-		statc[0]++
+		statc[0] = stime+1
 	}
 
 	/** Blockピースの出現・移動処理 */
@@ -1784,7 +1808,7 @@ class GameEngine(
 						if(nextPieceCount<0) nextPieceCount = 0
 
 						getNextObject(nextPieceCount+ruleOpt.nextDisplay-1)?.let {
-							it.setAttribute(bone, Block.ATTRIBUTE.BONE)
+							it.setAttribute(bone, ATTRIBUTE.BONE)
 							it.big = big
 						}
 						nowPieceObject = getNextObjectCopy()
@@ -1883,7 +1907,7 @@ class GameEngine(
 
 			getNextObject(nextPieceCount+ruleOpt.nextDisplay-1)?.run {
 				setDarkness(0f)
-				setAttribute(bone, Block.ATTRIBUTE.BONE)
+				setAttribute(bone, ATTRIBUTE.BONE)
 				updateConnectData()
 			}
 
@@ -2100,7 +2124,7 @@ class GameEngine(
 									lastMove = if(onGroundBeforeMove) {
 										//it.updateConnectData(nowPieceX, nowPieceY, field)
 										receiver.pieceFlicked(this, nowPieceX, nowPieceY, it, true)
-										extendedMoveCount++
+										if(dasCount==0&&!dasInstant) extendedMoveCount++
 										LastMove.SLIDE_GROUND
 									} else LastMove.SLIDE_AIR
 									if(!dasInstant&&frame!=Frame.SG)
@@ -2246,7 +2270,7 @@ class GameEngine(
 					if(lastMove==LastMove.SPIN_GROUND&&twistEnable)
 						twistType = checkTwisted(nowPieceX, nowPieceY, it, field, useAllSpinBonus)
 
-					it.setAttribute(true, Block.ATTRIBUTE.SELF_PLACED)
+					it.setAttribute(true, ATTRIBUTE.SELF_PLACED)
 
 					val partialLockOut = it.isPartialLockOut(nowPieceX, nowPieceY)
 					it.setDarkness(.5f)
@@ -2326,15 +2350,17 @@ class GameEngine(
 								stopSE("danger")
 								if(ending==2&&staffrollNoDeath) stat = Status.NOTHING
 							}
-							(lineGravityType==LineGravity.CASCADE||lineGravityType==LineGravity.CASCADE_SLOW)&&!connectBlocks -> {
+							(lineGravityType==Cascade)&&!connectBlocks -> {
 								stat = Status.LINECLEAR
-								statc[0] = lineDelay
+								stime = lineDelay
 								statLineClear()
+								stime++
 							}
 							clearNow.size>0&&(ruleOpt.lockFlash<=0||!ruleOpt.lockFlashBeforeLineClear) -> {
 								// Line clear
 								stat = Status.LINECLEAR
 								statLineClear()
+								stime++
 							}
 							(are>0||lagARE||ruleOpt.lockFlashBeforeLineClear)&&
 								ruleOpt.lockFlash>1||(ruleOpt.lockFlash==1&&ruleOpt.lockFlashOnlyFrame)
@@ -2346,7 +2372,7 @@ class GameEngine(
 							are>0||lagARE -> {
 								// AREあり (光なし)
 								statc[1] = are
-								stat = Status.ARE
+								stat = Status.ARE(are)
 							}
 							interruptItem!=null -> {
 								// 中断効果のあるアイテム処理
@@ -2356,8 +2382,7 @@ class GameEngine(
 										b.data[b.direction].filter {(blk) -> blk.type==Block.TYPE.ITEM})
 								}
 								nowPieceObject = null
-								interruptItemPreviousStat = Status.MOVE
-								stat = Status.INTERRUPTITEM
+								stat = Status.INTERRUPTITEM(Status.MOVE)
 							}
 							else -> {
 								// AREなし
@@ -2383,7 +2408,7 @@ class GameEngine(
 		//  event 発生
 		if(owner.mode?.onLockFlash(this)==true) return
 		receiver.onLockFlash(this)
-		statc[0]++
+		statc[0] = stime+1
 		checkDropContinuousUse()
 
 		// 横溜め
@@ -2392,23 +2417,29 @@ class GameEngine(
 		else if(ruleOpt.dasRedirectInDelay) dasRedirect()
 
 		// Next ステータス
-		if(statc[0]>=ruleOpt.lockFlash) {
+		if(stime+1>=ruleOpt.lockFlash) {
 			resetStatc()
 
 			if(lineClearing>0) {
 				// Line clear
 				stat = Status.LINECLEAR
 				statLineClear()
+				stime++
 			} else {
 				// ARE
 				statc[1] = are
-				stat = Status.ARE
+				stat = Status.ARE(are)
 			}
 			return
 		}
 	}
 
-	/** Line clear処理 */
+	/** Line clear処理
+	 * - [statc].0: frames @deprecated: replace to stime
+	 * - [statc].1: clearMode Buffer, Bomb/Spark: 連鎖爆発数
+	 * - [statc].2: clearMode Buffer, Bomb/Spark: 揃えたラインによる爆発威力
+	 * - [statc].3: 残り消去対象Block
+	 * */
 	private fun statLineClear() {
 		//  event 発生
 		if(owner.mode?.onLineClear(this)==true) return
@@ -2419,12 +2450,12 @@ class GameEngine(
 		else if(ruleOpt.dasRedirectInDelay) dasRedirect()
 
 		// 最初の frame
-		if(statc[0]==0) {
+		if(stime==0) {
 			val check = clearMode.flag(this, field)
-			lastClear = check
+			lastClear = if(statc[1]==0) check else check+lastClear
+
 			val li = check.size
 
-			if(check.gemCleared>0) playSE("gem")
 			val ev = ScoreEvent(nowPieceObject, li, b2bCount, combo, twistType, split)
 			lastEvent = ev
 			// All clear
@@ -2433,90 +2464,45 @@ class GameEngine(
 				receiver.bravo(this)
 				tempHanabi += 6
 			}
-			// Calculate score
-			owner.mode?.calcScore(this, ev)?.let {
-				if(it>0) {
-					receiver.addScore(this,
-						nowPieceX, check.linesYfolded.maxBy {i -> i.size}.average().toInt(), it)
-				}
-			}
-			receiver.calcScore(this, ev)
 
-			if(b2bCount<-1) b2bCount = -1
-
-			// Blockを消す演出を出す (まだ実際には消えていない)
-			if(clearMode===Line) lastLinesY.flatten().let {
-				owner.mode?.lineClear(this, it)
-				receiver.lineClear(this, it)
-			}
-			field.filterAttributeMap(Block.ATTRIBUTE.ERASE).let {
+			// Blockを消す
+//			field.filterAttributeMap(Block.ATTRIBUTE.ERASE)
+			clearMode.clear(this, field).blocksCleared.let {
+				// Blockを消す演出を出す (まだ実際には消えていない)
 				if(owner.mode?.blockBreak(this, it)!=true)
 					receiver.blockBreak(this, it)
 			}
-			// Blockを消す
-			clearMode.clear(field)
-		}
-
-		val (fc1, fc2) = lineGravityType.check(field)
-		statc[7] = fc1
-		statc[8] = fc2
-// Linesを1段落とす
-		if(lineGravityType==LineGravity.Native&&ruleOpt.lineFallAnim&&statc[0]>=lineDelay-(fc1-1).coerceAtLeast
-				(0)) {
-			lineGravityType.fallSingle(field)//field.downFloatingBlocksSingleLine()
-			depth++
-		}
-		delayCancel = cancelCheck(Status.LINECLEAR)
-
-		if(statc[0]<lineDelay&&delayCancel) statc[0] = lineDelay
-
-// Next ステータス
-		if(statc[0]>=lineDelay) {
-			if(lineGravityType==LineGravity.CASCADE||lineGravityType==LineGravity.CASCADE_SLOW) // Cascade
-				if(statc[6]<cascadeDelay) {
-					statc[6]++
-					field.filterAttributeBlocks(Block.ATTRIBUTE.CASCADE_FALL).forEach {(b) ->
-						b.offsetY = statc[6]/cascadeDelay.toFloat()
+			statc[3] = clearMode.recheck(this, field).size
+			if(statc[3]<=0) {
+				// Calculate score
+				owner.mode?.calcScore(this, ev)?.let {
+					if(it>0) {
+						receiver.addScore(this,
+							nowPieceX, check.linesYfolded.maxBy {i -> i.size}.average().toInt(), it)
 					}
-					return
-				} else if(fc1>0) {
-					statc[9] = lineGravityType.fallSingle(field)
-					statc[6] = 0
-					if(!isRetroSkin) playSE("softdrop")
-					return
-				} else if(statc[6]<cascadeClearDelay) {
-					statc[6]++
-					return
-				} else if(clearMode.check(field).size>0) {
-					twistType = null
-					chain++
-					if(chain>statistics.maxChain) statistics.maxChain = chain
-					statc[0] = 0
-					statc[6] = 0
-					return
 				}
+				receiver.calcScore(this, ev)
+				if(b2bCount<-1) b2bCount = -1
+			}
+		}
 
+		if(stime==lineDelay&&statc[3]>0) {
+			stime = -1
+			statc[1]++
+		}
+		delayCancel = cancelCheck(stat)
+		val done = lineGravityType.statLineClear(this)
+		if(stime<lineDelay&&delayCancel) stime = lineDelay
+		//if(stime==lineDelay) clearMode.check(field)
+		if(stime>=lineDelay&&done) {
+// Next ステータス
 			val skip = owner.mode?.lineClearEnd(this)?:false
 			receiver.lineClearEnd(this)
 			if(sticky>0) field.setBlockLinkByColor()
-			if(sticky==2) field.setAllAttribute(true, Block.ATTRIBUTE.IGNORE_LINK)
+			if(sticky==2) field.setAllAttribute(true, ATTRIBUTE.IGNORE_LINK)
 
 			if(!skip) {
-				if(lineGravityType==LineGravity.Native) lineGravityType.fallInstant(field).also {
-					depth += it
-				}
-				lastLinesY.filter {it.max()>=field.highestBlockY}.distinctBy {it.size>=3}.forEach {
-					playSE(
-						when {
-							frame==Frame.GB -> "linefallold"
-							it.size>=4 -> "linefall1"
-							it.size<=1 -> "linefall"
-							else -> "linefall0"
-						},
-						maxOf(0.8f, 1.2f-it.max()/3f/fieldHeight),
-						minOf(1f, 0.4f+speed.lineDelay*0.1f)
-					)
-				}
+				lineGravityType.lineClearEnd(this)
 //				field.lineColorsCleared = emptyList()
 
 				resetStatc()
@@ -2524,17 +2510,15 @@ class GameEngine(
 					ending==1 -> stat = Status.ENDINGSTART// Ending
 					areLine>0||lagARE -> {
 						// AREあり
-						statc[0] = 0
 						statc[1] = areLine
 						statc[2] = 1
-						stat = Status.ARE
+						stat = Status.ARE(areLine)
 					}
 					interruptItem!=null -> {
 						// AREなし:中断効果のあるアイテム処理
 						nowPieceObject?.setDarkness(0f)
 						nowPieceObject = null
-						interruptItemPreviousStat = Status.MOVE
-						stat = Status.INTERRUPTITEM
+						stat = Status.INTERRUPTITEM(Status.MOVE)
 					}
 					else -> {
 						// AREなし
@@ -2544,30 +2528,33 @@ class GameEngine(
 					}
 				}
 			}
-		} else statc[0]++
+		} else statc[0] = stime+1
 	}
 
 	private fun cancelCheck(status:Status):Boolean {
 		delayCancelMoveLeft = ctrl.isPush(Controller.BUTTON_LEFT)
 		delayCancelMoveRight = ctrl.isPush(Controller.BUTTON_RIGHT)
 
-		val moveCancel = (if(status==Status.LINECLEAR) canLineCancelMove else canARECancelMove)
+		val moveCancel = (if(status is Status.LINECLEAR) canLineCancelMove else canARECancelMove)
 			&&(ctrl.isPush(up)||ctrl.isPush(down)||delayCancelMoveLeft||delayCancelMoveRight)
-		val spinCancel = (if(status==Status.LINECLEAR) canLineCancelSpin else canARECancelSpin)
+		val spinCancel = (if(status is Status.LINECLEAR) canLineCancelSpin else canARECancelSpin)
 			&&(ctrl.isPush(Controller.BUTTON_A)||ctrl.isPush(Controller.BUTTON_B)
 			||ctrl.isPush(Controller.BUTTON_C)||ctrl.isPush(Controller.BUTTON_E)||ctrl.isPush(Controller.BUTTON_F))
-		val holdCancel = (if(status==Status.LINECLEAR) canLineCancelHold else canARECancelHold)
+		val holdCancel = (if(status is Status.LINECLEAR) canLineCancelHold else canARECancelHold)
 			&&ctrl.isPush(Controller.BUTTON_D)
 		return moveCancel||spinCancel||holdCancel
 	}
 
-	/** ARE中の処理 */
+	/** ARE中の処理
+	 * - [statc].0 : frames
+	 * - [statc].1 : max Frames
+	 *  */
 	private fun statARE() {
 		//  event 発生
 		if(owner.mode?.onARE(this)==true) return
-
 		receiver.onARE(this)
-		if(statc[0]==0) {
+
+		if(stime==0) {
 			fieldbg = (field.level*4).toInt()
 			if(field.danger) {
 				loopSE("danger")
@@ -2577,16 +2564,15 @@ class GameEngine(
 				if(field.safety) recoveryFlag = false
 			}
 		}
-		statc[0]++
-
+		statc[0] = ++stime
 		checkDropContinuousUse()
 
-		delayCancel = cancelCheck(Status.ARE)
+		delayCancel = cancelCheck(stat)
 
-		if(statc[0]<statc[1]&&delayCancel) statc[0] = statc[1]
+		if(stime<statc[1]&&delayCancel) stime = statc[1]
 
 		// 横溜め
-		if(ruleOpt.dasInARE&&(statc[0]<statc[1]-1||ruleOpt.dasInARELastFrame)) {
+		if(ruleOpt.dasInARE&&(stime<statc[1]-1||ruleOpt.dasInARELastFrame)) {
 			padRepeat()
 			if(ruleOpt.dasChargeOnBlockedMove) {
 				dasCount = das
@@ -2595,21 +2581,20 @@ class GameEngine(
 		} else if(ruleOpt.dasRedirectInDelay) dasRedirect()
 
 		// Next ステータス
-		if(statc[0]>=statc[1]&&!lagARE) {
+		if(stime>=statc[1]&&!lagARE) {
+			owner.mode?.outARE(this)
 			nowPieceObject = null
 			resetStatc()
 			lockDelayNow = 0
-
 			if(interruptItem!=null) {
 				// 中断効果のあるアイテム処理
-				interruptItemPreviousStat = Status.MOVE
-				stat = Status.INTERRUPTITEM
+				stat = Status.INTERRUPTITEM(Status.MOVE)
 			} else {
 				// Blockピース移動処理
 				initialSpin()
 				stat = Status.MOVE
 			}
-		}
+		} else stime--
 	}
 	/** Ending突入処理 */
 	private fun statEndingStart() {
@@ -2651,7 +2636,7 @@ class GameEngine(
 			ending = 2
 			resetStatc()
 
-			if(staffrollEnable&&gameActive&&isInGame) {
+			if(staffrollEnable&&gameActive) {
 				field.reset()
 				nowPieceObject = null
 				stat = Status.MOVE
@@ -2666,13 +2651,15 @@ class GameEngine(
 		receiver.onCustom(this)
 	}
 
-	/** Ending画面 */
+	/** Ending画面
+	 * - [statc].1: 1以上だとスキップ不可
+	 *  */
 	private fun statExcellent() {
 		//  event 発生
 		if(owner.mode?.onExcellent(this)==true) return
 		receiver.onExcellent(this)
 
-		if(statc[0]==0) {
+		if(stime==0) {
 			stopSE("danger")
 			gameEnded()
 			owner.musMan.fadeSW = true
@@ -2680,20 +2667,24 @@ class GameEngine(
 			tempHanabi += 24
 			playSE("excellent")
 		}
+		val maxOf = maxOf(600, field.height+1+180)
+		if(stime>=120&&statc[1]<=0&&ctrl.isPush(Controller.BUTTON_A)) stime = maxOf
 
-		if(statc[0]>=120&&statc[1]<=0&&ctrl.isPush(Controller.BUTTON_A)) statc[0] = 600
-		if(statc[0]>=600) {
+		if(stime>=maxOf) {
+			if(owner.mode?.outExcellent(this)==true) return
 			resetStatc()
 			stat = Status.GAMEOVER
-		} else statc[0]++
+		} else statc[0] = stime+1
 	}
 
-	/** game overの処理 */
+	/** game overの処理
+	 * - [statc].1 maxTime of field animation]
+	 * - [statc].2 0:in the Game Play, 1: already cleared / safe-Staff roll */
 	private fun statGameOver() {
 		//  event 発生
 		if(owner.mode?.onGameOver(this)==true) return
 		receiver.onGameOver(this)
-		if(statc[0]==0) {
+		if(stime==0) {
 			//死亡時はgameActive中にStatus.GAMEOVERになる
 			statc[2] = if(gameActive&&!staffrollNoDeath) 0 else 1
 			stopSE("danger")
@@ -2704,7 +2695,7 @@ class GameEngine(
 				// もう復活できないとき
 				val animInt = 6
 				statc[1] = animInt*(field.height+1)
-				if(statc[0]==0) {
+				if(stime==0) {
 					if(topOut) {
 						playSE("dead_last")
 						lives = -1
@@ -2713,7 +2704,7 @@ class GameEngine(
 					blockShowOutlineOnly = false
 					if(!owner.isGameActive) owner.musMan.fadeSW = true
 
-					if(field.isEmpty) statc[0] = statc[1]
+					if(field.isEmpty) stime = statc[1]
 					else {
 						resetFieldVisible()
 						if(ending==2&&lives>=0) playSE("gamewon")
@@ -2721,29 +2712,28 @@ class GameEngine(
 					}
 				}
 				when {
-					statc[0]<statc[1] -> {
+					stime<statc[1] -> {
 						for(x in 0..<field.width)
-							field.getBlock(x, field.height-statc[0]/animInt)?.apply {
+							field.getBlock(x, field.height-stime/animInt)?.apply {
 								if(ending==2&&!topOut) {
-									if(statc[0]%animInt==0) {
-										setAttribute(false, Block.ATTRIBUTE.OUTLINE)
+									if(stime%animInt==0) {
+										setAttribute(false, ATTRIBUTE.OUTLINE)
 										darkness = -.1f
 										elapsedFrames = -1
 									}
-									alpha = 1f-(1+statc[0]%animInt)*1f/animInt
-								} else if(statc[0]%animInt==0) {
-									if(!getAttribute(Block.ATTRIBUTE.GARBAGE)) {
+									alpha = 1f-(1+stime%animInt)*1f/animInt
+								} else if(stime%animInt==0) {
+									if(!getAttribute(ATTRIBUTE.GARBAGE)) {
 										cint = Block.COLOR_WHITE
-										setAttribute(true, Block.ATTRIBUTE.GARBAGE)
+										setAttribute(true, ATTRIBUTE.GARBAGE)
 									}
 									darkness = .3f
 									elapsedFrames = -1
 								}
 							}
-
-						statc[0]++
+						statc[0] = stime+1
 					}
-					statc[0]==statc[1] -> {
+					stime==statc[1] -> {
 						if(ending==2&&!topOut) {
 							playSE("applause${
 								when(owner.mode?.gameIntensity) {
@@ -2754,11 +2744,11 @@ class GameEngine(
 							}")
 //							playJingle(if(owner.mode?.gameIntensity==2)"gamewin" else "gm")
 						} else playSE("gamelost")
-						statc[0]++
+						statc[0] = stime+1
 					}
-					statc[0]<statc[1]+180 -> {
-						if(statc[0]>=statc[1]+60&&ctrl.isPush(Controller.BUTTON_A)) statc[0] = statc[1]+180
-						statc[0]++
+					stime<statc[1]+180 -> {
+						if(stime>=statc[1]+60&&ctrl.isPush(Controller.BUTTON_A)) stime = statc[1]+180
+						statc[0] = stime+1
 					}
 					else -> {
 						if(!owner.replayMode||owner.replayRerecord) owner.saveReplay()
@@ -2773,19 +2763,19 @@ class GameEngine(
 				}
 			} else {
 				// 復活できるとき
-				if(statc[0]==0) {
+				if(stime==0) {
 					/*if(topOut) */playSE("dead")
 					//blockShowOutlineOnly=false
 					resetFieldVisible()
 					for(i in field.hiddenHeight*-1..<field.height)
 						for(j in 0..<field.width)
 							field.getBlock(j, i)?.apply {color = Block.COLOR.BLACK}
-					statc[0] = 1
+					statc[0] = stime+1
 				}
 				if(!field.isEmpty) {
 					for(y in field.highestBlockY..<field.height) {
 						field.getRow(y).mapIndexedNotNull {my, b ->
-							b?.let {if(it.getAttribute(Block.ATTRIBUTE.ERASE)) my to it else null}
+							b?.let {if(it.getAttribute(ATTRIBUTE.ERASE)) my to it else null}
 						}.associate {it}.let {
 							field.delBlocks(mapOf(y to it)).let {b ->
 								if(owner.mode?.blockBreak(this, b)!=true) receiver.blockBreak(this, b)
@@ -2802,7 +2792,8 @@ class GameEngine(
 		}
 	}
 
-	/** Results screen */
+	/** Results screen
+	 * - [statc].0 cursor */
 	private fun statResult() {
 		// Event
 		owner.musMan.fadeSW = false
@@ -2820,7 +2811,6 @@ class GameEngine(
 		// Turn-off in-game flags
 		gameActive = false
 		timerActive = false
-		isInGame = false
 
 		// Cursor movement
 		if(ctrl.isMenuRepeatKey(Controller.BUTTON_LEFT)||ctrl.isMenuRepeatKey(Controller.BUTTON_RIGHT)) {
@@ -2843,7 +2833,7 @@ class GameEngine(
 		if(owner.mode?.onFieldEdit(this)==true) return
 		receiver.onFieldEdit(this)
 
-		mapEditFrames++
+//		mapEditFrames++
 
 		// Cursor movement
 		if(ctrl.isMenuRepeatKey(Controller.BUTTON_LEFT, false)&&!ctrl.isPress(Controller.BUTTON_C)) {
@@ -2886,7 +2876,7 @@ class GameEngine(
 					if(field.getBlock(mapEditX, mapEditY)?.cint!=mapEditColor) {
 						field.setBlock(
 							mapEditX, mapEditY,
-							Block(mapEditColor, blkSkin, Block.ATTRIBUTE.VISIBLE, Block.ATTRIBUTE.OUTLINE)
+							Block(mapEditColor, blkSkin, ATTRIBUTE.VISIBLE, ATTRIBUTE.OUTLINE)
 						)
 						playSE("change")
 					}
@@ -2903,7 +2893,7 @@ class GameEngine(
 		}
 		// 終了
 		if(ctrl.isPush(Controller.BUTTON_B)&&mapEditFrames>10) {
-			stat = mapEditPreviousStat
+			stat = (stat as Status.FIELDEDIT).prevStatus
 			owner.mode?.fieldEditExit(this)
 			receiver.fieldEditExit(this)
 		}
@@ -2953,7 +2943,7 @@ class GameEngine(
 		}
 		playSE("cursor")
 		owner.mode?.onUndo(this)
-		receiver.onUndo(this, field.filterBlocks {b, _, _ -> b.getAttribute(Block.ATTRIBUTE.LAST_COMMIT)}+
+		receiver.onUndo(this, field.filterBlocks {b, _, _ -> b.getAttribute(ATTRIBUTE.LAST_COMMIT)}+
 			(nowPieceObject.takeIf {stat==Status.MOVE}?.let {
 				it.data[it.direction].map {(b, x, y) -> Triple(b, x+nowPieceX, y+nowPieceY)}
 			}?:emptyList())
@@ -2975,7 +2965,7 @@ class GameEngine(
 				statistics.time = prevTime // timeは巻き戻し後も現状維持
 				resetStatc()
 				statc[1] = 60
-				stat = Status.ARE
+				stat = Status.ARE(60)
 			}
 		}
 
@@ -3009,20 +2999,61 @@ class GameEngine(
 	}
 
 	/** Constants of main game status */
-	enum class Status {
-		NOTHING, SETTING, PROFILE, READY,
+	sealed class Status(var time:Int = 0) {
+		data object NOTHING:Status()
+		data object SETTING:Status()
+		data object PROFILE:Status()
+		data object READY:Status()
 		/** Piece Spawned and while controlling */
-		MOVE,
+		data object MOVE:Status()
 		/** Piece locked */
-		LOCKFLASH,
+		data object LOCKFLASH:Status()
 		/** Line detected and clear, */
-		LINECLEAR,
-		/** End Piece's Turn and wait for next Piece*/
-		ARE,
+		data object LINECLEAR:Status()
+		/** End Piece's Turn and wait for next Piece
+		 * @param maxTime*/
+		data class ARE(var maxTime:Int = 0):Status()
 		/** */
-		ENDINGSTART, CUSTOM, EXCELLENT,
-		GAMEOVER,
-		RESULT, FIELDEDIT, INTERRUPTITEM
+		data object ENDINGSTART:Status()
+		data object CUSTOM:Status()
+		data object EXCELLENT:Status()
+		data object GAMEOVER:Status()
+		data object RESULT:Status()
+		data class FIELDEDIT(val prevStatus:Status = NOTHING):Status() {
+			var cursorX = 0
+			var cursorY = 0
+			var curColor = Block.COLOR_WHITE
+		}
+
+		data class INTERRUPTITEM(val prevStatus:Status = NOTHING, val item:Item? = null):Status()
+		companion object {
+			fun values():Array<Status> {
+				return arrayOf(NOTHING, SETTING, PROFILE, READY, MOVE, LOCKFLASH, LINECLEAR, ARE(), ENDINGSTART, CUSTOM, EXCELLENT,
+					GAMEOVER, RESULT, FIELDEDIT(), INTERRUPTITEM())
+			}
+
+			fun valueOf(value:String):Status {
+				return when(value) {
+					"NOTHING" -> NOTHING
+					"SETTING" -> SETTING
+					"PROFILE" -> PROFILE
+					"READY" -> READY
+					"MOVE" -> MOVE
+					"LOCKFLASH" -> LOCKFLASH
+					"LINECLEAR" -> LINECLEAR
+					"ARE" -> ARE()
+					"ENDINGSTART" -> ENDINGSTART
+					"CUSTOM" -> CUSTOM
+					"EXCELLENT" -> EXCELLENT
+					"GAMEOVER" -> GAMEOVER
+					"RESULT" -> RESULT
+					"FIELDEDIT" -> FIELDEDIT()
+					"INTERRUPTITEM" -> INTERRUPTITEM()
+					else -> throw IllegalArgumentException("No object mu.nu.nullpo.game.play.GameEngine.Status.$value")
+				}
+			}
+		}
+
 	}
 	/** Constants of last successful movements */
 	enum class LastMove {

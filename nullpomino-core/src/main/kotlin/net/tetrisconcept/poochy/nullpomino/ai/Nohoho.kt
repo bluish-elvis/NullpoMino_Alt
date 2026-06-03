@@ -117,7 +117,7 @@ class Nohoho:DummyAI(), Runnable {
 	override fun onFirst(engine:GameEngine, playerID:Int) {
 		if(engine.aiPreThink&&engine.speed.are>0&&engine.speed.areLine>0) {
 			inputARE = 0u
-			val newInARE = engine.stat===GameEngine.Status.ARE||engine.stat===GameEngine.Status.READY
+			val newInARE = engine.stat is GameEngine.Status.ARE||engine.stat is GameEngine.Status.READY
 			if(newInARE&&!inARE||!thinking&&!thinkSuccess) {
 				if(DEBUG_ALL) log.debug("Begin pre-think of next piece.")
 				thinkComplete = false
@@ -129,7 +129,7 @@ class Nohoho:DummyAI(), Runnable {
 
 	/* Set button input states */
 	override fun setControl(engine:GameEngine, playerID:Int, ctrl:Controller):UShort {
-		if(engine.nowPieceObject!=null&&engine.stat===GameEngine.Status.MOVE&&
+		if(engine.nowPieceObject!=null&&engine.stat is GameEngine.Status.MOVE&&
 			delay>=engine.aiMoveDelay&&engine.statc[0]>0&&
 			(!engine.aiUseThread||threadRunning&&!thinking&&thinkCurrentPieceNo<=thinkLastPieceNo)
 		) {

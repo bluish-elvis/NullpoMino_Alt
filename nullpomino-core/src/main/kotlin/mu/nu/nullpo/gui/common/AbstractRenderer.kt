@@ -38,6 +38,7 @@ import mu.nu.nullpo.game.event.EventReceiver
 import mu.nu.nullpo.game.event.EventReceiver.COLOR.*
 import mu.nu.nullpo.game.event.ScoreEvent
 import mu.nu.nullpo.game.play.GameEngine
+import mu.nu.nullpo.game.play.GameEngine.Status
 import mu.nu.nullpo.game.play.GameManager
 import mu.nu.nullpo.game.subsystem.mode.GrandM1
 import mu.nu.nullpo.gui.common.BaseFont.FONT
@@ -423,7 +424,7 @@ abstract class AbstractRenderer:EventReceiver() {
 			fillRectSpecific(smX, smY, mW, mH, 0)
 
 			when(engine.stat) {
-				GameEngine.Status.MOVE -> {
+				Status.MOVE -> {
 					if(engine.lockDelay>0) {
 						val value = maxOf(0f, mW-engine.lockDelayNow*mW/engine.lockDelay)
 						fillRectSpecific(smX+(mW-value)/2f, smY, value, mH, if(engine.lockDelayNow>0) 0xFFFF00 else 0x00FF00)
@@ -439,18 +440,18 @@ abstract class AbstractRenderer:EventReceiver() {
 						}
 					}
 				}
-				GameEngine.Status.LOCKFLASH -> {
+				Status.LOCKFLASH -> {
 					fillRectSpecific(smX, smY, mW, mH, 0xFFFFFF)
 					if(engine.ruleOpt.lockFlash>0) {
 						val value = engine.statc[0]*mW/engine.ruleOpt.lockFlash
 						fillRectSpecific(smX+(mW-value)/2f, smY, value, mH, 0x808080)
 					}
 				}
-				GameEngine.Status.LINECLEAR -> if(engine.lineDelay>0) {
+				Status.LINECLEAR -> if(engine.lineDelay>0) {
 					val value = mW-engine.statc[0]*mW/engine.lineDelay
 					fillRectSpecific(smX+(mW-value)/2f, smY, value, mH, 0x00FFFF)
 				}
-				GameEngine.Status.ARE -> if(engine.statc[1]>0) {
+				is Status.ARE -> if(engine.statc[1]>0) {
 					fillRectSpecific(
 						smX, smY, mW, mH,
 						if(engine.ruleOpt.areCancelMove||engine.ruleOpt.areCancelSpin||engine.ruleOpt.areCancelHold) 0xFF8000 else 0xFFFF00
@@ -868,11 +869,11 @@ abstract class AbstractRenderer:EventReceiver() {
 		if(!engine.allowTextRenderByReceiver) return
 		//if(engine.isVisible == false) return;
 
-		if(engine.statc[0]>0) {
+		if(engine.stime>0) {
 			val cy = (engine.fieldHeight-2)/2
-			if(engine.statc[0] in engine.readyStart..<engine.readyEnd)
+			if(engine.stime in engine.readyStart..<engine.readyEnd)
 				drawMenu(engine, 0, cy, "READY", BASE, 2f)
-			else if(engine.statc[0] in engine.goStart..<engine.goEnd)
+			else if(engine.stime in engine.goStart..<engine.goEnd)
 				drawMenu(engine, 2, cy, "GO!", BASE, 2f)
 
 			drawMenu(engine, 0f, cy+2.25f, "Today Seeds:", NANO)
@@ -989,9 +990,49 @@ abstract class AbstractRenderer:EventReceiver() {
 
 	override fun lineClear(engine:GameEngine, y:Collection<Int>) {
 		val s = engine.blockSize
-		efxFG.addAll(y.map {Beam(engine.fX, engine.fY+it*s, s*engine.fieldWidth, s, if(particle) .5f else 1f)})
+		efxFG.addAll(y.map {Beam.H(engine.fX, engine.fY+it*s, s*engine.fieldWidth, s, if(particle) .5f else 1f)})
 	}
 
+	override fun bombExplod(engine:GameEngine, blk:Map<Int, Map<Int, Pair<Block, Pair<Int, Int>>>>) {
+		if(showLineEffect&&engine.displaySize!=-1) {
+			val s = engine.blockSize
+			efxFG.addAll(blk.flatMap {(y, row) ->
+				row.flatMap a@{(x, it) ->
+					val (blk, range) = it
+					val (rx, ry) = range
+					val sx = engine.fX+x*s
+					val sy = engine.fY+y*s
+					val bx = sx-rx*s to (rx*2+1)*s
+					val by = sy-ry*s to (ry*2+1)*s
+					val cint = blk.color?.fxInt?:0
+					val r = resources
+					setOf(
+						FragAnim(ANIM.HANABI, sx+s/2f, sy+s/2f, (cint-1).mod(r.hanabiMax), lineEffectSpeed, bx.second/192f),
+						Hitbox(bx.first, by.first, bx.second, by.second),
+					)
+				}
+			})
+		}
+	}
+
+	override fun sparkExplod(engine:GameEngine, blk:Map<Int, Map<Int, Pair<Block, Int>>>) {
+		if(showLineEffect&&engine.displaySize!=-1) {
+			val s = engine.blockSize
+			efxFG.addAll(blk.flatMap {(y, row) ->
+				row.flatMap a@{(x, it) ->
+					val (blk, range) = it
+					val sx = engine.fX+x*s
+					val sy = engine.fY+y*s
+					val l = (range)*s
+					val cint = blk.color?.fxInt?:0
+					val r = resources
+					setOf(Hitbox(sx+s, sy, l, s), Hitbox(sx-l, sy, l, s), Hitbox(sx, sy+s, s, l), Hitbox(sx, sy-l, s, l),
+						FragAnim(ANIM.GEM, sx+s/2f, sy+s/2f, (cint-1).mod(r.pEraseMax), lineEffectSpeed),
+						Beam.V(sx, sy+s, s, l), Beam.V(sx, sy-l, s, l, 180f))
+				}
+			})
+		}
+	}
 	override fun blockBreak(engine:GameEngine, blk:Map<Int, Map<Int, Block>>) {
 		if(showLineEffect&&engine.displaySize!=-1) {
 			val s = engine.blockSize
@@ -1129,6 +1170,8 @@ abstract class AbstractRenderer:EventReceiver() {
 
 	/* fieldエディット画面の描画処理 */
 	override fun renderFieldEdit(engine:GameEngine) {
+		super.renderFieldEdit(engine)
+
 		val bs = engine.blockSize
 		val x = engine.fX+engine.mapEditX*bs
 		val y = engine.fY+engine.mapEditY*bs
@@ -1151,9 +1194,13 @@ abstract class AbstractRenderer:EventReceiver() {
 			val offsetY = engine.fY
 
 			drawFrame(offsetX, offsetY, engine, inside)
+			printFontSpecific(offsetX-30, offsetY-8, engine.stat::class.java.simpleName, NANO, WHITE, .5f, .5f)
+			"%d".format(engine.stime).let {s ->
+				printFontSpecific(offsetX-s.length*6, offsetY, s, NANO, WHITE, .5f, .5f)
+			}
 			engine.statc.forEachIndexed {i, it ->
 				"%3d".format(it).let {s ->
-					printFontSpecific(offsetX-s.length*8, offsetY+i*8, s, NANO, WHITE, .5f, .5f)
+					printFontSpecific(offsetX-s.length*6, offsetY+10+i*7, s, NANO, WHITE, .5f, .5f)
 				}
 			}
 			efxBG.forEachIndexed {i, it -> it.draw(i, this)}

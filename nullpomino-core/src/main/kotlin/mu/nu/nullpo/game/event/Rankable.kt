@@ -69,7 +69,7 @@ interface Rankable:Comparable<Rankable> {
 
 		override operator fun compareTo(other:Rankable):Int =
 			if(other is GrandRow)
-				compareValuesBy(this, other, {it.grade}, {it.lv}, {it.clear}, {-it.ti}, {it.sc}, {it.lives}, {it.rp})
+				compareValuesBy(this, other, {it.grade}, {it.clear}, {it.lv}, {-it.ti}, {it.sc}, {it.lives}, {it.rp})
 			else super.compareTo(other)
 
 		@Suppress("PropertyName")

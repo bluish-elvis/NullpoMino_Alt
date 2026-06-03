@@ -213,7 +213,7 @@ open class RanksAI:DummyAI(), Runnable {
 	override fun onLast(engine:GameEngine, playerID:Int) {}
 
 	override fun setControl(engine:GameEngine, playerID:Int, ctrl:Controller):UShort {
-		if(engine.nowPieceObject!=null&&engine.stat==GameEngine.Status.MOVE&&delay>=engine.aiMoveDelay&&engine.statc[0]>0&&
+		if(engine.nowPieceObject!=null&&engine.stat is GameEngine.Status.MOVE&&delay>=engine.aiMoveDelay&&engine.statc[0]>0&&
 			(!engine.aiUseThread||threadRunning&&!thinking&&thinkCurrentPieceNo<=thinkLastPieceNo)
 		) {
 			val totalPieceLocked = engine.statistics.totalPieceLocked+1

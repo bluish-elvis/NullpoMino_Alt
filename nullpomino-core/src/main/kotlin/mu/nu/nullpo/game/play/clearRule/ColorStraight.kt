@@ -48,7 +48,7 @@ data class ColorStraight(var colorClearSize:Int = 4, var lineColorDiagonals:Bool
 			engine.playSE("erase0")
 		}
 
-	override fun clear(field:Field) = field.clearProceed(0)
+	override fun clear(engine:GameEngine, field:Field) = field.clearProceed(0)
 
 	companion object {
 		/** Check for clears of Color Connected straight.

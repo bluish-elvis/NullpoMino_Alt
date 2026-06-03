@@ -182,7 +182,7 @@ class MarathonExtreme:NetDummyMode() {
 
 		receiver.drawScore(engine, 0, 0, "EXTREME MARATHON!", BASE, COLOR.RED)
 
-		if(engine.stat==GameEngine.Status.SETTING||engine.stat==GameEngine.Status.RESULT&&!owner.replayMode) {
+		if(engine.isShowRanking) {
 			if(!owner.replayMode&&!big&&engine.ai==null) {
 				val topY = if(receiver.bigSideNext) 6 else 4
 				receiver.drawScore(engine, 2, topY-1, "SCORE LINE TIME", BASE, COLOR.RED)
@@ -464,10 +464,9 @@ class MarathonExtreme:NetDummyMode() {
 		)
 
 		/** Line counts when BGM changes occur */
-		private val tableBGMChange = listOf(20, 40, 60, 80, 110, 140, 170)
+		private val tableBGMChange = listOf(20, 50, 80, 110, 150, 200)
 		private val tableBGM = listOf(
-			BGM.Rush(0), BGM.Generic(6), BGM.Generic(7), BGM.Rush(1), BGM.Generic(8),
-			BGM.Generic(9), BGM.Rush(2), BGM.Rush(3)
+			BGM.Rush(0),  BGM.Rush(1), BGM.Generic(6), BGM.Zen(6), BGM.Rush(2), BGM.Rush(3), BGM.Rush(3)
 		)
 
 		/** Number of ranking types */

@@ -190,18 +190,16 @@ class MissionRush:MarathonModeBase() {
 
 	override fun onCustom(engine:GameEngine):Boolean {
 		showPlayerStats = false
-		engine.isInGame = true
 		val s:Boolean = engine.playerProp.loginScreen.updateScreen(engine)
 		if(engine.playerProp.isLoggedIn) {
 			loadRankingPlayer(engine.playerProp)
 			loadSetting(engine, engine.playerProp.propProfile)
 		}
-		if(engine.stat===Status.SETTING) engine.isInGame = false
 		return s
 	}
 
 	override fun onReady(engine:GameEngine):Boolean {
-		if(engine.statc[0]==0) {
+		if(engine.stime==0) {
 			missionRandomizer = Random(engine.randSeed)
 			generateNewMission(engine, false)
 		}
@@ -214,7 +212,7 @@ class MissionRush:MarathonModeBase() {
 			generateNewMission(engine, engine.statistics.scoreBonus==tableGameClearMissions[goalType]-1)
 			scgettime = 0
 		}
-		if(engine.stat===Status.SETTING||engine.stat===Status.RESULT&&!owner.replayMode||engine.stat===Status.CUSTOM) {
+		if(engine.isShowRanking||engine.stat is Status.CUSTOM) {
 			// Show rank
 			if(engine.ctrl.isPush(Controller.BUTTON_F)&&engine.playerProp.isLoggedIn&&engine.stat!==Status.CUSTOM) {
 				showPlayerStats = !showPlayerStats
@@ -232,7 +230,7 @@ class MissionRush:MarathonModeBase() {
 		if(tableGameClearMissions[goalType]<0)
 			receiver.drawScore(engine, 0, 1, "(Endless run)", BASE, COLOR.GREEN)
 		else receiver.drawScore(engine, 0, 1, "(${tableGameClearMissions[goalType]} missions run)", BASE, COLOR.GREEN)
-		if(engine.stat===Status.SETTING||engine.stat===Status.RESULT&&!owner.replayMode) {
+		if(engine.isShowRanking) {
 			if(!owner.replayMode&&!big&&engine.ai==null) {
 				val topY = if(receiver.bigSideNext) 6 else 4
 				receiver.drawScore(engine, 3, topY-1, "SCORE TIME", BASE, COLOR.BLUE)
@@ -261,7 +259,7 @@ class MissionRush:MarathonModeBase() {
 						receiver.drawScore(engine, 0, topY+rankingMax+5, "F:SWITCH RANK SCREEN", BASE, COLOR.GREEN)
 				}
 			}
-		} else if(engine.stat===Status.CUSTOM) {
+		} else if(engine.stat is Status.CUSTOM) {
 			engine.playerProp.loginScreen.renderScreen(receiver, engine)
 		} else {
 			val strScore = "%3d".format(engine.statistics.score)+tableGameClearMissions[goalType].let {

@@ -33,13 +33,15 @@ package mu.nu.nullpo.game.subsystem.mode.another
 import mu.nu.nullpo.game.component.*
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
 import mu.nu.nullpo.game.event.ScoreEvent
-import mu.nu.nullpo.game.play.*
+import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.game.play.GameEngine.GameStyle
 import mu.nu.nullpo.game.play.GameEngine.Status
-import mu.nu.nullpo.game.play.LineGravity.CASCADE.canCascade
+import mu.nu.nullpo.game.play.GameManager
 import mu.nu.nullpo.game.play.clearRule.Color
+import mu.nu.nullpo.game.play.fallRule.Cascade
+import mu.nu.nullpo.game.play.fallRule.Cascade.canCascade
 import mu.nu.nullpo.game.subsystem.mode.AbstractMode
-import mu.nu.nullpo.gui.common.BaseFont.FONT.*
+import mu.nu.nullpo.gui.common.BaseFont.FONT.BASE
 import mu.nu.nullpo.gui.common.GameKeyDummy.Companion.MAX_PLAYERS
 import mu.nu.nullpo.util.CustomProperties
 import mu.nu.nullpo.util.GeneralUtil.toTimeStr
@@ -403,7 +405,7 @@ abstract class AvalancheVSDummyMode:AbstractMode() {
 		engine.clearMode = Color(4, true, true, true)
 		engine.ignoreHidden = true
 		engine.garbageColorClear = true
-		engine.lineGravityType = LineGravity.CASCADE
+		engine.lineGravityType = Cascade
 		engine.nextPieceEnable = PIECE_ENABLE
 		engine.blockColors = BLOCK_COLORS
 		engine.randomBlockColor = true
@@ -424,13 +426,13 @@ abstract class AvalancheVSDummyMode:AbstractMode() {
 
 	/* Called for initialization during Ready (before initialization) */
 	override fun onReady(engine:GameEngine):Boolean =
-		if(engine.statc[0]==0) readyInit(engine) else false
+		if(engine.stime==0) readyInit(engine) else false
 
 	open fun readyInit(engine:GameEngine):Boolean {
 		val playerID = engine.playerID
 		engine.numColors = numColors[playerID]
-		engine.lineGravityType =
-			if(cascadeSlow[playerID]) LineGravity.CASCADE_SLOW else LineGravity.CASCADE
+		engine.lineGravityType = Cascade
+		engine.cascadeDelay = if(cascadeSlow[playerID]) 2 else 0
 		engine.displaySize = if(bigDisplay) 1 else 0
 		engine.sticky = 2
 

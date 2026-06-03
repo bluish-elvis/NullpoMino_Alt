@@ -41,6 +41,7 @@ import mu.nu.nullpo.gui.common.BaseStaffRoll
 import mu.nu.nullpo.gui.common.ConfigGlobal.VisualConf
 import mu.nu.nullpo.gui.common.fx.Effect
 import mu.nu.nullpo.gui.common.fx.PopupCombo
+import mu.nu.nullpo.gui.slick.GameKey
 import mu.nu.nullpo.util.CustomProperties
 import mu.nu.nullpo.util.GeneralUtil.toInt
 import mu.nu.nullpo.util.GeneralUtil.toReplayFilename
@@ -737,6 +738,10 @@ open class EventReceiver {
 			val file = GZIPInputStream(FileInputStream(filename))
 			prop.load(file)
 			file.close()
+		} catch(e:ZipException) {
+			val file = FileInputStream(filename)
+			prop.load(file)
+			file.close()
 		} catch(e:IOException) {
 			log.debug("Failed to load custom property file from $filename", e)
 			return null
@@ -870,7 +875,20 @@ open class EventReceiver {
 	open fun renderResult(engine:GameEngine) {}
 
 	/** It will be called during the field editor screen. (For rendering)*/
-	open fun renderFieldEdit(engine:GameEngine) {}
+	open fun renderFieldEdit(engine:GameEngine) {
+		drawScore(engine, 0, 2, "Position", BASE, COLOR.BLUE)
+		drawScore(engine, 0, 3, "X:", BASE, COLOR.BLUE)
+		drawScore(engine, 2, 3, ""+engine.mapEditX, NUM)
+		drawScore(engine, 0, 4, "Y:", BASE, COLOR.BLUE)
+		drawScore(engine, 2, 4, ""+engine.mapEditY, NUM)
+
+		drawScore(engine, 0, 10, "A", BASE)
+		drawScore(engine, 1, 10, "/${GameKey.getKeyName(engine.playerID, false, Controller.BUTTON_A)} = Place block", NANO)
+		drawScore(engine, 0, 11, "D", BASE)
+		drawScore(engine, 1, 11, "/${GameKey.getKeyName(engine.playerID, false, Controller.BUTTON_D)} = Remove block", NANO)
+		drawScore(engine, 0, 13, "B", BASE)
+		drawScore(engine, 1, 13, "/${GameKey.getKeyName(engine.playerID, false, Controller.BUTTON_B)} = Exit edit mode", NANO)
+	}
 
 	/** It will be called if the player's input is being displayed. (For rendering)*/
 	open fun renderInput(engine:GameEngine) {
@@ -904,6 +922,10 @@ open class EventReceiver {
 	 */
 	open fun blockBreak(engine:GameEngine, blk:Map<Int, Map<Int, Block>>) {}
 
+	/** It will be called when a bombs are ignited. (ClearType.LineBomb)*/
+	open fun bombExplod(engine:GameEngine, blk:Map<Int, Map<Int, Pair<Block, Pair<Int, Int>>>>) {}
+	/** It will be called when a bombs are ignited. (ClearType.LineSpark)*/
+	open fun sparkExplod(engine:GameEngine, blk:Map<Int, Map<Int, Pair<Block, Int>>>) {}
 	/** It will be called before a block is destroyed.
 	 * @param engine GameEngine
 	 * @param blk Indexed Iterable (listOf(x,y, Block))

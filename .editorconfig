@@ -564,7 +564,7 @@ ij_typescript_while_brace_force=never
 ij_typescript_while_on_new_line=false
 ij_typescript_wrap_comments=false
 
-[{*.bash,*.sh,*.zsh}]
+[{*.bash,*.sh,*.zsh,gradlew,mvnw}]
 indent_style=space
 end_of_line=lf
 ij_visual_guides=

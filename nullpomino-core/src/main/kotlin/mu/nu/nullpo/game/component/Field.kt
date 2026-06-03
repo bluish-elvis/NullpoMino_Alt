@@ -32,10 +32,10 @@ package mu.nu.nullpo.game.component
 
 import mu.nu.nullpo.game.component.Block.ATTRIBUTE
 import mu.nu.nullpo.game.play.GameEngine
-import mu.nu.nullpo.game.play.LineGravity
 import mu.nu.nullpo.game.play.clearRule.ClearType.ClearResult
 import mu.nu.nullpo.game.play.clearRule.Line.checkLines
 import mu.nu.nullpo.game.play.clearRule.Line.clearLines
+import mu.nu.nullpo.game.play.fallRule.Native
 import mu.nu.nullpo.util.CustomProperties
 import mu.nu.nullpo.util.GeneralUtil.aNum
 import mu.nu.nullpo.util.GeneralUtil.toInt
@@ -116,6 +116,10 @@ class Field {
 
 	/** Number of garbage blocks cleared in last color clear */
 	var garbageCleared = 0; private set
+
+	/*val filledLine get()=(lineFlags.filterValues {it}.keys-lockedLines).let{
+		ClearResult(it.size, it.associateWith {y -> getRow(y).filterNotNullIndexed().associate {(x, b) -> x to b}}.toMap())
+	}*/
 
 	/** List of colors of lines cleared in most recent lines color clear */
 	var lineColorsCleared = emptyList<Int>()
@@ -271,7 +275,7 @@ class Field {
 	// commit to the field.
 	val lastLinesAsTGMAttack
 		get() = lastLinesCleared.map {(y, r) ->
-			y to r.map {(x, b) -> x to if(b?.getAttribute(ATTRIBUTE.LAST_COMMIT)!=false) null else b}.toMap()
+			y to r.map {(x, b) -> x to if(b.getAttribute(ATTRIBUTE.LAST_COMMIT)!=false) null else b}.toMap()
 		}.toMap()
 
 	/** 裏段位を取得 (from NullpoMino Unofficial Expansion build 091309)
@@ -457,9 +461,9 @@ class Field {
 	 */
 	fun delBlock(x:Int, y:Int):Block? = if(getCoordVaild(x, y)) try {
 		(getBlock(x, y))?.let {
-			it.reset(true)
 			if(y<0) blockHidden[y*-1-1][x] = null
 			else blockField[y][x] = null
+//			it.reset(true)
 			it
 		}
 	} catch(e:Throwable) {
@@ -576,10 +580,10 @@ class Field {
 	/** 上にあったBlockをすべて下まで下ろす
 	 * @return 消えていたLines count
 	 */
-	fun downFloatingBlocks() = LineGravity.Native.fallInstant(this)
+	fun downFloatingBlocks() = Native.fallInstant(this)
 
 	/** 上にあったBlockを1段だけ下ろす */
-	fun downFloatingBlocksSingleLine() = LineGravity.Native.fallSingle(this)
+	fun downFloatingBlocksSingleLine() = Native.fallSingle(this)
 
 	/** Check if specified lines is completely empty
 	 * @param y Y coord
@@ -988,26 +992,6 @@ class Field {
 		}
 		return total
 	}
-
-	fun doCascadeGravity(type:LineGravity):Boolean {
-		setAllAttribute(false, ATTRIBUTE.LAST_COMMIT)
-		return when(type) {
-			LineGravity.CASCADE_SLOW -> doCascadeSlow()
-			LineGravity.CASCADE -> doCascadeGravity()
-			else -> false
-		}
-	}
-
-	/**
-	 * Main routine for cascade gravity.
-	 * @return `true` if something falls. `false` if nothing falls.
-	 */
-	private fun doCascadeGravity():Boolean = LineGravity.CASCADE.fallInstant(this)>0
-	/**
-	 * Routine for cascade gravity which checks from the top down for a slower fall animation.
-	 * @return `true` if something falls. `false` if nothing falls.
-	 */
-	private fun doCascadeSlow():Boolean = LineGravity.CASCADE.fallSingle(this)>0
 
 	/** Checks the connection of blocks and set "mark" to each block.
 	 * @param x X coord

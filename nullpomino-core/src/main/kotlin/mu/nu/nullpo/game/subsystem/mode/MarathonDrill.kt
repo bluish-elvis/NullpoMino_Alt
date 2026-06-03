@@ -171,12 +171,12 @@ class MarathonDrill:NetDummyMode() {
 	}
 
 	override fun onReady(engine:GameEngine):Boolean {
-		if(engine.statc[0]<=1) {
+		if(engine.stime<=1) {
 			engine.goStart = maxOf(50, 40+garbageHeight*5)
 			engine.readyEnd = engine.goStart-1
 			engine.goEnd = engine.goStart+50
 		}
-		if(garbageHeight>0&&engine.statc[0] in 30..<30+garbageHeight*5&&engine.statc[0]%5==0) addGarbage(engine)
+		if(garbageHeight>0&&engine.stime in 30..<30+garbageHeight*5&&engine.stime%5==0) addGarbage(engine)
 		return false
 	}
 
@@ -188,7 +188,7 @@ class MarathonDrill:NetDummyMode() {
 		receiver.drawScore(engine, 0, 0, name, BASE, color = COLOR.GREEN)
 		receiver.drawScore(engine, 0, 1, if(goalType==0) "(NORMAL RUN)" else "(REALTIME RUN)", BASE, COLOR.GREEN)
 
-		if(engine.stat==GameEngine.Status.SETTING||engine.stat==GameEngine.Status.RESULT&&!owner.replayMode) {
+		if(engine.isShowRanking) {
 			if(!owner.replayMode&&startLevel==0) {
 				val topY = if(receiver.bigSideNext) 6 else 4
 				receiver.drawScore(engine, 0, topY-1, "SCORE LINE DEPTH", BASE, COLOR.BLUE)
@@ -262,7 +262,7 @@ class MarathonDrill:NetDummyMode() {
 						if(netIsNetPlay&&!netIsWatch&&netNumSpectators>0) netSendField(engine)
 
 
-						if(engine.stat==GameEngine.Status.MOVE) engine.nowPieceObject?.let {nowPieceObject ->
+						if(engine.stat is GameEngine.Status.MOVE) engine.nowPieceObject?.let {nowPieceObject ->
 							if(nowPieceObject.checkCollision(engine.nowPieceX, engine.nowPieceY, it)) {
 								// Push up the current piece
 								while(nowPieceObject.checkCollision(engine.nowPieceX, engine.nowPieceY, it)) engine.nowPieceY--

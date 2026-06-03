@@ -183,7 +183,7 @@ class SprintUltra:NetDummyMode() {
 		if(is20g) receiver.drawScore(engine, 0, 1, "(${(tableLength[goalType])} Minutes Rush)", BASE, COLOR.PINK)
 		else receiver.drawScore(engine, 0, 1, "(${(tableLength[goalType])} Minutes sprint)", BASE, COLOR.CYAN)
 
-		if(engine.stat==GameEngine.Status.SETTING||engine.stat==GameEngine.Status.RESULT&&!owner.replayMode) {
+		if(engine.isShowRanking) {
 			val gt = goalType(engine.speed)
 			val col1 = if(is20g) COLOR.RED else COLOR.BLUE
 			val col2 = if(is20g) COLOR.YELLOW else COLOR.GREEN

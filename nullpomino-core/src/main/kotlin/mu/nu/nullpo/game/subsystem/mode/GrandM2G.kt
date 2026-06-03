@@ -36,8 +36,7 @@ import mu.nu.nullpo.game.event.*
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
 import mu.nu.nullpo.game.event.Rankable.GrandRow
 import mu.nu.nullpo.game.play.GameEngine
-import mu.nu.nullpo.game.subsystem.mode.menu.BooleanMenuItem
-import mu.nu.nullpo.game.subsystem.mode.menu.DelegateMenuItem
+import mu.nu.nullpo.game.subsystem.mode.menu.*
 import mu.nu.nullpo.gui.common.BaseFont
 import mu.nu.nullpo.gui.common.BaseFont.FONT.*
 import mu.nu.nullpo.util.CustomProperties
@@ -69,13 +68,19 @@ class GrandM2G:AbstractGrand() {
 	private var isShowBestSectionTime = false
 
 	/** せり上がりパターンの種類 (0=RANDOM 1=TGM+ 2=TA SHIRASE) */
-	private var goalType = 0
+	private val itemGarbage = EnumMenuItem("garbageType", "GARBAGE", COLOR.BLUE, HazardType.PATTERN, HazardType.entries)
+	/** Selected game type */
+	private var hazardType:HazardType by DelegateMenuItem(itemGarbage)
+	private val goalType get() = hazardType.ordinal
 
-	/** Level at start */
-	private var startLevel = 0
+	private val itemLevel = LevelMenuItem("startLevel", "LEVEL", COLOR.BLUE, 0, 0..15)
+	/** Selected starting level */
+	private var startLevel:Int by DelegateMenuItem(itemLevel)
 
-	/** When true, always 20G */
-	private var always20g = false
+
+	private val item20g = BooleanMenuItem("always20g", "20G MODE", COLOR.RED, false)
+	/** Always 20G */
+	private var always20g:Boolean by DelegateMenuItem(item20g)
 
 	private val itemBig = BooleanMenuItem("big", "BIG", COLOR.ORANGE, false)
 	/** BigMode */
@@ -88,13 +93,14 @@ class GrandM2G:AbstractGrand() {
 	private var rankingRank = 0
 
 	/** Section Time記録 */
-	private val bestSectionTime:List<MutableList<Int>> = List(sectionMax) {MutableList(GOALTYPE_MAX) {DEFAULT_SECTION_TIME}}
+	private val bestSectionTime:List<MutableList<Int>> = List(sectionMax) {MutableList(HAZARDTYPE_MAX) {DEFAULT_SECTION_TIME}}
 
 	/* Mode name */
 	override val name = "Grand Mountain"
+	override val menu = MenuList("garbagemania", itemGarbage, itemLevel, itemGhost, item20g, itemAlert, itemST, itemBig)
 	override val gameIntensity = 1
 	override val ranking =
-		List(GOALTYPE_MAX) {Leaderboard(rankingMax, serializer<List<GrandRow>>())}
+		List(HAZARDTYPE_MAX) {Leaderboard(rankingMax, serializer<List<GrandRow>>())}
 	override val propRank
 		get() = rankMapOf(
 			bestSectionTime.mapIndexed {a, x -> "$a.section.time" to x})
@@ -102,7 +108,6 @@ class GrandM2G:AbstractGrand() {
 	/* Initialization */
 	override fun playerInit(engine:GameEngine) {
 		super.playerInit(engine)
-		goalType = 0
 		rollTime = 0
 		secretGrade = 0
 		bgmLv = 0
@@ -120,9 +125,9 @@ class GrandM2G:AbstractGrand() {
 		engine.speed.lockDelay = 31
 		engine.speed.das = 15
 
-		engine.twistEnable = false
-		engine.b2bEnable = false
-		engine.splitB2B = false
+		engine.twistEnable = true
+		engine.b2bEnable = true
+		engine.splitB2B = true
 		engine.comboType = GameEngine.COMBO_TYPE_DOUBLE
 		engine.bigHalf = true
 		engine.bigMove = true
@@ -134,26 +139,6 @@ class GrandM2G:AbstractGrand() {
 
 		owner.bgMan.bg = startLevel
 		setSpeed(engine)
-	}
-
-	override fun loadSetting(engine:GameEngine, prop:CustomProperties, ruleName:String, playerID:Int) {
-		goalType = prop.getProperty("garbagemania.goalType", GOALTYPE_PATTERN)
-		startLevel = prop.getProperty("garbagemania.startLevel", 0)
-		alwaysGhost = prop.getProperty("garbagemania.alwaysghost", true)
-		always20g = prop.getProperty("garbagemania.always20g", false)
-		secAlert = prop.getProperty("garbagemania.lvstopse", true)
-		showST = prop.getProperty("garbagemania.showsectiontime", true)
-		big = prop.getProperty("garbagemania.big", false)
-	}
-
-	override fun saveSetting(engine:GameEngine, prop:CustomProperties, ruleName:String, playerID:Int) {
-		prop.setProperty("garbagemania.goalType", goalType)
-		prop.setProperty("garbagemania.startLevel", startLevel)
-		prop.setProperty("garbagemania.alwaysghost", alwaysGhost)
-		prop.setProperty("garbagemania.always20g", always20g)
-		prop.setProperty("garbagemania.lvstopse", secAlert)
-		prop.setProperty("garbagemania.showsectiontime", showST)
-		prop.setProperty("garbagemania.big", big)
 	}
 
 	/** Set BGM at start of game
@@ -183,71 +168,14 @@ class GrandM2G:AbstractGrand() {
 	/* Called at settings screen */
 	override fun onSetting(engine:GameEngine):Boolean {
 		// Menu
-		if(!owner.replayMode) {
-			// Configuration changes
-			val change = updateCursor(engine, 6)
-
-			if(change!=0) {
-				engine.playSE("change")
-
-				when(menuCursor) {
-					0 -> {
-						goalType += change
-						if(goalType<0) goalType = GOALTYPE_MAX-1
-						if(goalType>GOALTYPE_MAX-1) goalType = 0
-					}
-					1 -> {
-						startLevel += change
-						if(startLevel<0) startLevel = 9
-						if(startLevel>9) startLevel = 0
-						owner.bgMan.bg = startLevel
-					}
-					2 -> alwaysGhost = !alwaysGhost
-					3 -> always20g = !always20g
-					4 -> secAlert = !secAlert
-					5 -> showST = !showST
-					6 -> big = !big
-				}
-			}
-
-			//  section time display切替
+		if(!engine.owner.replayMode) {
+			// section time display切替
 			if(engine.ctrl.isPush(Controller.BUTTON_F)) {
 				engine.playSE("change")
 				isShowBestSectionTime = !isShowBestSectionTime
 			}
-
-			// 決定
-			if(menuTime<5) menuTime++ else if(engine.ctrl.isPush(Controller.BUTTON_A)) {
-				engine.playSE("decide")
-				isShowBestSectionTime = false
-				return false
-			}
-
-			// Cancel
-			if(engine.ctrl.isPush(Controller.BUTTON_B)) engine.quitFlag = true
-		} else {
-			menuTime++
-			menuCursor = -1
-
-			return menuTime<60
 		}
-
-		return true
-	}
-
-	/* Render the settings screen */
-	override fun renderSetting(engine:GameEngine) {
-		drawMenu(
-			engine, receiver, 0, COLOR.BLUE, 0,
-			"PATTERN" to when(goalType) {
-				GOALTYPE_RANDOM -> "RANDOM"
-				GOALTYPE_PATTERN -> "PATTERN"
-				else -> "COPY"
-			},
-			"Level" to (startLevel*100),
-			"FULL GHOST" to alwaysGhost,
-			"FULL 20G" to always20g, "LVSTOPSE" to secAlert, "SHOW STIME" to showST, "BIG" to big,
-		)
+		return super.onSetting(engine)
 	}
 
 	override fun onSettingChanged(engine:GameEngine) {
@@ -256,11 +184,18 @@ class GrandM2G:AbstractGrand() {
 		owner.bgMan.bg = engine.statistics.level/100
 		garbageCount = 13-engine.statistics.level/100
 		engine.big = big
-		if(goalType==GOALTYPE_RANDOM)
-			garbagePos = engine.random.nextInt(if(big) engine.field.width/2 else engine.field.width)
 		setSpeed(engine)
 		super.onSettingChanged(engine)
 	}
+	/** Ready */
+	override fun onReady(engine:GameEngine):Boolean {
+		if(engine.stime==0) {
+			if(hazardType==HazardType.RANDOM)
+				garbagePos = engine.random.nextInt(if(big) engine.field.width/2 else engine.field.width)
+		}
+		return false
+	}
+
 	/* Called at game start */
 	override fun startGame(engine:GameEngine) {
 		setStartBgmlv(engine)
@@ -276,7 +211,7 @@ class GrandM2G:AbstractGrand() {
 		receiver.drawScore(engine, -1, -4*2, "DECORATION", BASE, scale = .5f)
 		receiver.drawScoreBadges(engine, 0, -3, 100, owner.stats.decoration)
 		receiver.drawScoreBadges(engine, 5, -4, 100, decTemp)
-		if(engine.stat==GameEngine.Status.SETTING||engine.stat==GameEngine.Status.RESULT&&!owner.replayMode) {
+		if(engine.isShowRanking) {
 			if(!owner.replayMode&&startLevel==0&&!big&&!always20g
 				&&engine.ai==null
 			)
@@ -319,8 +254,8 @@ class GrandM2G:AbstractGrand() {
 			val g20 = engine.speed.gravity<0
 			receiver.drawScore(
 				engine, 0, 2, "GARBAGE\n${
-					when(goalType) {
-						GOALTYPE_COPY -> ""; GOALTYPE_PATTERN -> "#$garbagePos"; else -> "NEXT: $garbagePos"
+					when(hazardType) {
+						HazardType.COPY -> ""; HazardType.PATTERN ->  "#$garbagePos"; else -> "NEXT: $garbagePos"
 					}
 				}", BASE, COLOR.BLUE
 			)
@@ -407,8 +342,8 @@ class GrandM2G:AbstractGrand() {
 				val w = field.width
 				val h = field.height
 				if(big&&version>=3) {
-					when(goalType) {
-						GOALTYPE_RANDOM -> {
+					when(hazardType) {
+						HazardType.RANDOM -> {
 							field.pushUp(2)
 							for(x in 0..<w/2)
 								if(x!=garbagePos)
@@ -422,10 +357,10 @@ class GrandM2G:AbstractGrand() {
 							//int prevHole=garbagePos;do
 							garbagePos = engine.random.nextInt(w/2)
 						}
-						GOALTYPE_PATTERN -> {
+						HazardType.PATTERN -> {
 							field.pushUp(2)
-							for(i in tableGarbagePatternBig[garbagePos].indices)
-								if(tableGarbagePatternBig[garbagePos][i]!=0)
+							for(i in field.width/2-1 downTo 0)
+								if((tableGarbagePattern[garbagePos] shr i) and 1!=0)
 									for(j in 0..1)
 										for(k in 0..1)
 											field.setBlock(
@@ -438,7 +373,7 @@ class GrandM2G:AbstractGrand() {
 								Block.ATTRIBUTE.OUTLINE
 							)
 						}
-						GOALTYPE_COPY -> field.addBottomCopyGarbage(
+						HazardType.COPY -> field.addBottomCopyGarbage(
 							engine.blkSkin, 2, Block.ATTRIBUTE.GARBAGE,
 							Block.ATTRIBUTE.VISIBLE, Block.ATTRIBUTE.OUTLINE
 						)
@@ -454,8 +389,8 @@ class GrandM2G:AbstractGrand() {
 										setAttribute(true, Block.ATTRIBUTE.CONNECT_RIGHT)
 								}
 				} else {
-					when(goalType) {
-						GOALTYPE_RANDOM -> {
+					when(hazardType) {
+						HazardType.RANDOM -> {
 							field.pushUp()
 							for(x in 0..<w)
 								if(x!=garbagePos)
@@ -475,17 +410,17 @@ class GrandM2G:AbstractGrand() {
 							//int prevHole=garbagePos;do
 							garbagePos = engine.random.nextInt(w)
 						}
-						GOALTYPE_PATTERN -> {
+						HazardType.PATTERN -> {
 							field.pushUp()
-							for(i in tableGarbagePattern[garbagePos].indices)
-								if(tableGarbagePattern[garbagePos][i]!=0)
+							for(i in field.width-1 downTo 0)
+								if((tableGarbagePattern[garbagePos] shr i) and 1!=0)
 									field.setBlock(
 										i, h-1,
 										Block(Block.COLOR.WHITE, engine.blkSkin, Block.ATTRIBUTE.VISIBLE, Block.ATTRIBUTE.GARBAGE)
 									)
 							garbagePos++
 						}
-						GOALTYPE_COPY -> field.addBottomCopyGarbage(
+						HazardType.COPY -> field.addBottomCopyGarbage(
 							engine.blkSkin, 1,
 							Block.ATTRIBUTE.GARBAGE, Block.ATTRIBUTE.VISIBLE, Block.ATTRIBUTE.OUTLINE
 						)
@@ -566,10 +501,7 @@ class GrandM2G:AbstractGrand() {
 
 		// Ending
 		if(engine.gameActive&&engine.ending==2) {
-			rollTime += if(version>=1&&engine.ctrl.isPress(Controller.BUTTON_F))
-				5
-			else
-				1
+			rollTime += if(version>=1&&engine.ctrl.isPress(Controller.BUTTON_F)) 5 else 1
 
 			// Time meter
 			val remainRollTime = ROLLTIMELIMIT-rollTime
@@ -587,7 +519,7 @@ class GrandM2G:AbstractGrand() {
 
 	/* Called at game over */
 	override fun onGameOver(engine:GameEngine):Boolean {
-		if(engine.statc[0]==0) secretGrade = engine.field.secretGrade
+		if(engine.stime==0) secretGrade = engine.field.secretGrade
 
 		return false
 	}
@@ -682,12 +614,9 @@ class GrandM2G:AbstractGrand() {
 		private const val CURRENT_VERSION = 3
 
 		/** Number of goal type */
-		private const val GOALTYPE_MAX = 3
+		private val HAZARDTYPE_MAX = HazardType.entries.size
 
-		/** Goal type constants */
-		private const val GOALTYPE_RANDOM = 0
-		private const val GOALTYPE_PATTERN = 1
-		private const val GOALTYPE_COPY = 2
+		private enum class HazardType { RANDOM, PATTERN, COPY }
 
 		/** 落下速度 table */
 		private val tableGravityValue = listOf(
@@ -725,30 +654,58 @@ class GrandM2G:AbstractGrand() {
 
 		/** せり上がりパターン */
 		private val tableGarbagePattern = listOf(
-			listOf(0, 1, 1, 1, 1, 1, 1, 1, 1, 1),
-			listOf(0, 1, 1, 1, 1, 1, 1, 1, 1, 1), listOf(0, 1, 1, 1, 1, 1, 1, 1, 1, 1),
-			listOf(0, 1, 1, 1, 1, 1, 1, 1, 1, 1), listOf(1, 1, 1, 1, 1, 1, 1, 1, 1, 0),
-			listOf(1, 1, 1, 1, 1, 1, 1, 1, 1, 0), listOf(1, 1, 1, 1, 1, 1, 1, 1, 1, 0),
-			listOf(1, 1, 1, 1, 1, 1, 1, 1, 1, 0), listOf(0, 0, 1, 1, 1, 1, 1, 1, 1, 1),
-			listOf(0, 1, 1, 1, 1, 1, 1, 1, 1, 1), listOf(0, 1, 1, 1, 1, 1, 1, 1, 1, 1),
-			listOf(1, 1, 1, 1, 1, 1, 1, 1, 0, 0), listOf(1, 1, 1, 1, 1, 1, 1, 1, 1, 0),
-			listOf(1, 1, 1, 1, 1, 1, 1, 1, 1, 0), listOf(1, 1, 0, 1, 1, 1, 1, 1, 1, 1),
-			listOf(1, 0, 0, 1, 1, 1, 1, 1, 1, 1), listOf(1, 0, 1, 1, 1, 1, 1, 1, 1, 1),
-			listOf(1, 1, 1, 1, 1, 1, 1, 0, 1, 1), listOf(1, 1, 1, 1, 1, 1, 1, 0, 0, 1),
-			listOf(1, 1, 1, 1, 1, 1, 1, 1, 0, 1), listOf(1, 1, 1, 1, 0, 0, 1, 1, 1, 1),
-			listOf(1, 1, 1, 1, 0, 0, 1, 1, 1, 1), listOf(1, 1, 1, 1, 0, 1, 1, 1, 1, 1),
-			listOf(1, 1, 1, 0, 0, 0, 1, 1, 1, 1)
+			0b0111111111,
+			0b0111111111,
+			0b0111111111,
+			0b0111111111,
+			0b1111111110,
+			0b1111111110,
+			0b1111111110,
+			0b1111111110,
+			0b0011111111,
+			0b0111111111,
+			0b0111111111,
+			0b1111111100,
+			0b1111111110,
+			0b1111111110,
+			0b1101111111,
+			0b1001111111,
+			0b1011111111,
+			0b1111111011,
+			0b1111111001,
+			0b1111111101,
+			0b1111001111,
+			0b1111001111,
+			0b1111011111,
+			0b1110001111,
 		)
 
 		/** BIG用せり上がりパターン */
 		private val tableGarbagePatternBig = listOf(
-			listOf(0, 1, 1, 1, 1), listOf(0, 1, 1, 1, 1),
-			listOf(0, 1, 1, 1, 1), listOf(0, 1, 1, 1, 1), listOf(1, 1, 1, 1, 0), listOf(1, 1, 1, 1, 0),
-			listOf(1, 1, 1, 1, 0), listOf(1, 1, 1, 1, 0), listOf(0, 0, 1, 1, 1), listOf(0, 1, 1, 1, 1),
-			listOf(0, 1, 1, 1, 1), listOf(1, 1, 1, 0, 0), listOf(1, 1, 1, 1, 0), listOf(1, 1, 1, 1, 0),
-			listOf(1, 1, 0, 1, 1), listOf(1, 0, 0, 1, 1), listOf(1, 0, 1, 1, 1), listOf(1, 1, 0, 1, 1),
-			listOf(1, 1, 0, 0, 1), listOf(1, 1, 1, 0, 1), listOf(1, 0, 0, 1, 1), listOf(1, 0, 0, 1, 1),
-			listOf(1, 1, 0, 1, 1), listOf(1, 0, 0, 0, 1)
+			0b01111,
+			0b01111,
+			0b01111,
+			0b01111,
+			0b11110,
+			0b11110,
+			0b11110,
+			0b11110,
+			0b00111,
+			0b01111,
+			0b01111,
+			0b11100,
+			0b11110,
+			0b11110,
+			0b11011,
+			0b10011,
+			0b10111,
+			0b11011,
+			0b11001,
+			0b11101,
+			0b10011,
+			0b10011,
+			0b11011,
+			0b10001
 		)
 	}
 }

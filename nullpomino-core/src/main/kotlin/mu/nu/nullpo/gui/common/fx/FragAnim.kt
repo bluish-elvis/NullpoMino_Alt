@@ -85,10 +85,10 @@ class FragAnim(val type:ANIM, x:Float, y:Float, val color:Int, val spd:Int = 0, 
 		HANABI -> 192
 	}
 
-	override val dx:Float get() = x-offset.x
-	override val dy:Float get() = y-offset.y
-	override val dx2:Float get() = dx+sq
-	override val dy2:Float get() = dy+sq
+	override val dx:Float get() = x-offset.x*scale
+	override val dy:Float get() = y-offset.y*scale
+	override val dx2:Float get() = dx+sq*scale
+	override val dy2:Float get() = dy+sq*scale
 	override val srcX:Int get() = (ticks-1)%table.first*sq
 	override val srcY:Int get() = (ticks-1)/table.second*sq
 	override val srcX2:Int get() = srcX+sq

@@ -48,7 +48,7 @@ data class ColorGem(var colorClearSize:Int = 2, var garbageColorClear:Boolean = 
 			engine.playSE("erase0")
 		}
 
-	override fun clear(field:Field) = field.gemClearColor(colorClearSize, garbageColorClear, ignoreHidden)
+	override fun clear(engine:GameEngine, field:Field) = field.gemClearColor(colorClearSize, garbageColorClear, ignoreHidden)
 
 	companion object {
 		fun Field.gemColorCheck(size:Int, flag:Boolean, garbageClear:Boolean, ignoreHidden:Boolean):ClearResult {

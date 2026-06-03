@@ -1,15 +1,20 @@
 {
-  "version": "0.1.0",
+  "version": "2.0.0",
   "command": "mvn",
-  "isShellCommand": true,
   "tasks": [
     {
-      "taskName": "compile",
-      "args": ["compile -f nullpomino-parent/pom.xml"],
-      "isBuildCommand": true,
+      "label": "compile",
+      "type": "shell",
+      "command": "mvn",
+      "args": [
+        "compile",
+        "compile -f pom.xml"
+      ],
       "problemMatcher": {
         "owner": "java",
-        "fileLocation": ["absolute"],
+        "fileLocation": [
+          "absolute"
+        ],
         "pattern": {
           "regexp": "^\\[(WARNING|ERROR)\\] (.+):\\[(\\d+),(\\d+)\\] (.+)$",
           "file": 2,
@@ -18,16 +23,25 @@
           "severity": 1,
           "message": 5
         }
+      },
+      "group": {
+        "_id": "build",
+        "isDefault": false
       }
     },
     {
-      "taskName": "install",
-      "args": ["install -f nullpomino-parent/pom.xml"],
-      "isTestCommand": true,
-      "isWatching": false,
+      "label": "install",
+      "type": "shell",
+      "command": "mvn",
+      "args": [
+        "install",
+        "install -f pom.xml"
+      ],
       "problemMatcher": {
         "owner": "java",
-        "fileLocation": ["absolute"],
+        "fileLocation": [
+          "absolute"
+        ],
         "pattern": {
           "regexp": "^\\[(WARNING|ERROR)\\] (.+):\\[(\\d+),(\\d+)\\] (.+)$",
           "file": 2,
@@ -36,6 +50,10 @@
           "severity": 1,
           "message": 5
         }
+      },
+      "group": {
+        "_id": "test",
+        "isDefault": false
       }
     }
   ]

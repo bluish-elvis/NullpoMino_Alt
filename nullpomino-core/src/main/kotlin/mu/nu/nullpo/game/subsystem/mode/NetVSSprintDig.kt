@@ -161,7 +161,7 @@ internal class NetVSSprintDig:NetDummyVSMode() {
 		super.onReady(engine)
 		val playerID = engine.playerID
 
-		if(engine.statc[0]==0&&netVSPlayerExist[playerID])
+		if(engine.stime==0&&netVSPlayerExist[playerID])
 			if(netCurrentRoomInfo==null||!netCurrentRoomInfo!!.useMap) {
 				// Fill the field with garbage
 				engine.createFieldIfNeeded()

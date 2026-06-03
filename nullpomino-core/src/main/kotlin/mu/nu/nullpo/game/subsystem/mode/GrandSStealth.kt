@@ -298,7 +298,7 @@ class GrandSStealth:AbstractGrand() {
 		receiver.drawScore(engine, 0, 0, name, BASE, COLOR.WHITE)
 		receiver.drawScore(engine, 0, 1, "Sixth-Senth Stealth mode", BASE, COLOR.WHITE, .5f)
 
-		if(engine.stat==GameEngine.Status.SETTING||engine.stat==GameEngine.Status.RESULT&&!owner.replayMode) {
+		if(engine.isShowRanking) {
 			if(!owner.replayMode&&startLevel==0&&!big&&engine.ai==null)
 				if(!isShowBestSectionTime) {
 					// Leaderboard
@@ -563,7 +563,7 @@ class GrandSStealth:AbstractGrand() {
 
 	/** This function will be called when the player tops out */
 	override fun onGameOver(engine:GameEngine):Boolean {
-		if(engine.statc[0]==0) secretGrade = engine.field.secretGrade
+		if(engine.stime==0) secretGrade = engine.field.secretGrade
 		return false
 	}
 

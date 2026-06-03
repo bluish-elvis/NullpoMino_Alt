@@ -42,7 +42,7 @@ import mu.nu.nullpo.game.event.EventReceiver.COLOR
 import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.game.play.GameEngine.Status
 import mu.nu.nullpo.game.subsystem.mode.AbstractMode
-import mu.nu.nullpo.gui.common.BaseFont.FONT.*
+import mu.nu.nullpo.gui.common.BaseFont.FONT.BASE
 import mu.nu.nullpo.gui.slick.MouseInput
 import mu.nu.nullpo.gui.slick.NullpoMinoSlick
 import mu.nu.nullpo.util.CustomProperties
@@ -226,7 +226,7 @@ class Collapse:AbstractMode() {
 		}
 
 		// Initialization
-		if(engine.statc[0]==0) {
+		if(engine.stime==0) {
 			engine.ruleOpt.fieldWidth = 12
 			engine.ruleOpt.fieldHeight = 16
 			engine.ruleOpt.fieldHiddenHeight = 1
@@ -251,18 +251,17 @@ class Collapse:AbstractMode() {
 				// ゲーム中 flagON
 				engine.gameActive = true
 				engine.gameStarted = true
-				engine.isInGame = true
 			}
 		}
 
 		// READY音
-		if(engine.statc[0]==engine.readyStart) engine.playSE("ready")
+		if(engine.stime==engine.readyStart) engine.playSE("ready")
 
 		// GO音
-		if(engine.statc[0]==engine.goStart) engine.playSE("go")
+		if(engine.stime==engine.goStart) engine.playSE("go")
 
 		// 開始
-		if(engine.statc[0]>=engine.goEnd) {
+		if(engine.stime>=engine.goEnd) {
 			if(!engine.readyDone) engine.owner.musMan.bgm = BGM.Silent
 			startGame(engine)
 			engine.owner.receiver.startGame(engine)
@@ -287,7 +286,6 @@ class Collapse:AbstractMode() {
 			engine.readyDone = true
 			return true
 		}
-		engine.statc[0]++
 		return true
 	}
 
@@ -328,13 +326,11 @@ class Collapse:AbstractMode() {
 			true
 		} else {
 			showPlayerStats = false
-			engine.isInGame = true
 			engine.playerProp.loginScreen.updateScreen(engine)
 			if(engine.playerProp.isLoggedIn) {
 				loadRankingPlayer(engine.playerProp)
 				loadSetting(engine, engine.playerProp.propProfile)
 			}
-			if(engine.stat===Status.SETTING) engine.isInGame = false
 			true
 		}
 	}
@@ -797,7 +793,7 @@ class Collapse:AbstractMode() {
 			updateSTextArr()
 			if(acTime in 0..119) acTime++ else acTime = -1
 		}
-		if(engine.stat===Status.SETTING||engine.stat===Status.RESULT&&!owner.replayMode||engine.stat===Status.CUSTOM) {
+		if(engine.isShowRanking||engine.stat is Status.CUSTOM) {
 			// Show rank
 			if(engine.ctrl.isPush(Controller.BUTTON_F)&&
 				engine.playerProp.isLoggedIn&&engine.stat!==Status.CUSTOM
@@ -814,7 +810,7 @@ class Collapse:AbstractMode() {
 		receiver.drawScore(
 			engine, 0, 1, "("+DIFFICULTY_NAMES[difficulty]+" DIFFICULTY)", BASE, COLOR.ORANGE
 		)
-		if(engine.stat===Status.SETTING||engine.stat===Status.RESULT&&!owner.replayMode) {
+		if(engine.isShowRanking) {
 			if(!owner.replayMode&&enableBombs&&engine.ai==null) {
 				val topY = if(receiver.bigSideNext) 6 else 4
 				receiver.drawScore(engine, 3, topY-1, "SCORE    LEVEL", BASE, COLOR.BLUE)
@@ -840,7 +836,7 @@ class Collapse:AbstractMode() {
 						receiver.drawScore(engine, 0, topY+MAX_RANKING+5, "F:SWITCH RANK SCREEN", BASE, COLOR.GREEN)
 				}
 			}
-		} else if(!engine.gameActive&&engine.stat===Status.CUSTOM) {
+		} else if(!engine.gameActive&&engine.stat is Status.CUSTOM) {
 			engine.playerProp.loginScreen.renderScreen(receiver, engine)
 		} else {
 			receiver.drawScore(engine, 0, 3, "SCORE", BASE, COLOR.BLUE)

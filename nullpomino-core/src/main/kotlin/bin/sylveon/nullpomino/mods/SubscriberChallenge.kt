@@ -45,7 +45,8 @@ import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.game.play.GameEngine.Status
 import mu.nu.nullpo.game.subsystem.mode.NetDummyMode
 import mu.nu.nullpo.game.subsystem.mode.menu.*
-import mu.nu.nullpo.gui.common.BaseFont.FONT.*
+import mu.nu.nullpo.gui.common.BaseFont.FONT.BASE
+import mu.nu.nullpo.gui.common.BaseFont.FONT.GRADE
 import mu.nu.nullpo.util.CustomProperties
 import mu.nu.nullpo.util.GeneralUtil.toInt
 import mu.nu.nullpo.util.GeneralUtil.toTimeStr
@@ -261,7 +262,7 @@ class SubscriberChallenge:NetDummyMode() {
 			BASE,
 			COLOR.GREEN
 		)
-		if((engine.stat==Status.SETTING)||((engine.stat==Status.RESULT)&&!owner.replayMode)) {
+		if((engine.stat is Status.SETTING)||((engine.stat is Status.RESULT)&&!owner.replayMode)) {
 			if(!owner.replayMode&&!big&&(engine.ai==null)) {
 				val scale:Float = if((receiver.bigSideNext)) 0.5f else 1.0f
 				val topY:Int = if((receiver.bigSideNext)) 6 else 4
@@ -307,7 +308,7 @@ class SubscriberChallenge:NetDummyMode() {
 	 */
 	override fun onLast(engine:GameEngine) {
 		super.onLast(engine)
-		if(engine.gameStarted&&(engine.stat==Status.ARE||engine.stat==Status.LINECLEAR))
+		if(engine.gameStarted&&(engine.stat is Status.ARE||engine.stat is Status.LINECLEAR))
 			for(i in 0..<engine.field.width) for(j in engine.field.hiddenHeight*-1..<engine.field.height)
 				engine.field.getBlock(i, j)?.let {
 					it.skin++

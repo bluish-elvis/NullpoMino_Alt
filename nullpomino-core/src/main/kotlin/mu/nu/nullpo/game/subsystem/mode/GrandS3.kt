@@ -67,21 +67,17 @@ class GrandS3:AbstractGrand() {
 	/** せり上がりカウント */
 	private var isFieldFrozen = false
 
-	private var endGame = Triple(-1, -1, GameEngine.UndoState())
-	private var endGameLv
+	private var endGame = -1 to GameEngine.UndoState()
+	private var endGameLv = -1
+	private var endGameStep
 		get() = endGame.first
 		set(value) {
-			endGame = Triple(value, endGame.second, endGame.third)
-		}
-	private var endGameStep
-		get() = endGame.second
-		set(value) {
-			endGame = Triple(endGame.first, value, endGame.third)
+			endGame = value to endGame.second
 		}
 	private var endGameStat
-		get() = endGame.third
+		get() = endGame.second
 		set(value) {
-			endGame = Triple(endGame.first, endGame.second, value)
+			endGame = endGame.first to value
 		}
 
 	private var endGameTemp = 0
@@ -124,7 +120,8 @@ class GrandS3:AbstractGrand() {
 		constructor(it:Statistics):this(it.bravos, it.totalQuadruple, it.totalTwistsLine)
 
 		fun apply(it:Statistics) {
-			quads = it.totalQuadruple+it.totalB2BQuad+it.totalB2BSplit+it.totalB2BTwist
+			quads = it.totalQuadruple+it.totalB2BQuad+it.totalSplit+it.totalB2BSplit+it.totalB2BTwist+
+				(it.totalTriple*3+it.totalDouble*2)/6
 			twists = it.totalTwistLinesSum+(it.totalTwistZero+it.totalTwistZeroMini)/2
 			bravos = it.bravos
 		}
@@ -140,7 +137,7 @@ class GrandS3:AbstractGrand() {
 		var temperature = 0
 		var steps = 0
 		val cold get() = frozens+ices/3
-		val lvb:Int get() = (quads/10f+twists/16f+frozens/28f+bravos).toInt()+steps
+		val lvb:Int get() = (quads/10f+twists/16f+frozens/28f+ices/40f+bravos).toInt()+steps
 		val frz:Int get() = 2+quads+twists+(frozens+temperature)*3+ices+bravos*5/2
 	}
 
@@ -181,7 +178,8 @@ class GrandS3:AbstractGrand() {
 		regretDispFrame = 0
 		secretGrade = 0
 		token.reset()
-		endGame = Triple(-1, -1, GameEngine.UndoState())
+		endGame = -1 to GameEngine.UndoState()
+		endGameLv = -1
 		endGameTemp = 0
 		rankingRank = -1
 		ranking.forEach {it.fill(Rankable.GrandRow())}
@@ -284,22 +282,22 @@ class GrandS3:AbstractGrand() {
 		receiver.drawScore(engine, -1, -4*2, "DECORATION", BASE, scale = .5f)
 		receiver.drawScoreBadges(engine, 0, -3, 100, owner.stats.decoration)
 		receiver.drawScoreBadges(engine, 5, -4, 100, decTemp)
-		if(engine.stat==GameEngine.Status.SETTING||engine.stat==GameEngine.Status.RESULT&&!owner.replayMode) {
+		if(engine.isShowRanking) {
 			if(!owner.replayMode&&startLevel==0&&temperature<=0&&steps<=0&&engine.ai==null)
 				if(isShowBestSectionTime<=0) {
 					// Rankings
 					val topY = if(receiver.bigSideNext) 5 else 3
-					receiver.drawScore(engine, 0, topY-1, "GRADE LV TIME", BASE, COLOR.RED)
+					receiver.drawScore(engine, 0, topY-1, "GRADE  LV TIME", BASE, COLOR.RED)
 
 					ranking[0].forEachIndexed {i, it ->
 						receiver.drawScore(engine, 0, topY+i, "%02d".format(i+1), GRADE, COLOR.YELLOW)
-						receiver.drawScore(engine, 5, topY+i, "%03d".format(it.lv), NUM, i==rankingRank)
 						receiver.drawScore(
 							engine, 2, topY+i, getShortGradeName(it.grade), GRADE,
 							when(it.clear) {
 								1 -> COLOR.GREEN; 2 -> COLOR.ORANGE; else -> COLOR.WHITE; }
 						)
-						receiver.drawScore(engine, 8, topY+i, it.ti.toTimeStr, NUM, i==rankingRank)
+						receiver.drawScore(engine, 6, topY+i, "%03d".format(it.lv), NUM, i==rankingRank)
+						receiver.drawScore(engine, 9, topY+i, it.ti.toTimeStr, NUM, i==rankingRank)
 					}
 
 					receiver.drawScore(engine, 0, 20, "F:VIEW SECTION TIME", BASE, COLOR.GREEN)
@@ -403,7 +401,7 @@ class GrandS3:AbstractGrand() {
 	/* 移動中の処理 */
 	override fun onMove(engine:GameEngine):Boolean {
 		super.onMove(engine)
-		if(engine.statc[0]==0&&engine.statistics.level>=1300) {
+		if(engine.stime==0&&engine.statistics.level>=1300) {
 			engine.getNextObject()?.setAttribute(true, ATTRIBUTE.IGNORE_LINK)
 		}
 		/* 移動中の処理 */
@@ -443,13 +441,13 @@ class GrandS3:AbstractGrand() {
 			}
 			if(engine.statc[0]>=1200) {
 				engine.field.replace(endGameStat.field)
-				engine.statistics.level = endGameLv
+				engine.statistics.level = endGame.second.statistics.level
 				engine.field.filterBlocks {b, _, _ -> b.hard!=0||b.getAttribute(ATTRIBUTE.IGNORE_LINK)}.forEach {(b) ->
 					b.setAttribute(false, ATTRIBUTE.IGNORE_LINK)
 					b.hard = 0
 				}
-				engine.resetStatc()
 				engine.stat = GameEngine.Status.READY
+				engine.resetStatc()
 				return true
 			}
 
@@ -477,6 +475,7 @@ class GrandS3:AbstractGrand() {
 		val lb = engine.statistics.level
 
 		super.levelUp(engine, lu)
+		token.apply(engine.statistics)
 		val lA = engine.statistics.level
 
 		if(lu<=0) return
@@ -497,15 +496,14 @@ class GrandS3:AbstractGrand() {
 		val pts = super.calcScore(engine, ev)
 
 		if(li>=1) if(engine.ending==0||(engine.ending==2&&endGameLv>0)) {
-			token.apply(engine.statistics)
 			if(isFieldFrozen) token.frozens += engine.lastLinesY.flatten().intersect(engine.field.lockedLines).size
 			// Level up
 			val levelb = engine.statistics.level
 			val section = levelb/100
 			if(section>=13) {
 				if(!strict) engine.field.lastLinesCleared.values.let {llc ->
-					val fli = llc.count {it.any {(_, b) -> b?.hard!=0}}
-					val fbc = llc.sumOf {it.values.filter {b -> b?.hard!=0}.size}
+					val fli = llc.count {it.any {(_, b) -> b.hard!=0}}
+					val fbc = llc.sumOf {it.values.filter {b -> b.hard!=0}.size}
 					water += (5+fli*5+minOf(
 						maxOf(fbc/2, minOf(fli*10, token.frz/12-8, 20-(engine.field.highestBlockY*2-10).coerceIn(0, 20))), 20)
 						+ev.combo+ev.twist*10+ev.split*10+token.lvb)
@@ -543,9 +541,13 @@ class GrandS3:AbstractGrand() {
 						engine.ending = 1
 						engine.timerActive = false
 						endGame = engine.undoStack.withIndex().let {
+							it.filter {(_, it) -> it.time>=engine.statistics.time-if(strict) ROLLTIMELIMIT else ROLLTIMEREWIND}
+								.minByOrNull {(_, it) -> it.time}?:it.last()
+						}.let {(i, it) -> engine.undoStack.size-i to it}
+						endGameLv = if(strict) endGameStat.statistics.level else engine.undoStack.withIndex().let {
 							it.filter {(_, it) -> it.time>=engine.statistics.time-ROLLTIMELIMIT}
 								.minByOrNull {(_, it) -> it.time}?:it.last()
-						}.let {(i, it) -> Triple(it.statistics.level, engine.undoStack.size-i, it)}
+						}.let {(_, it) -> it.statistics.level}
 						nextSecLv = sectionMax*100
 					}
 					engine.tempHanabi += 10
@@ -561,7 +563,7 @@ class GrandS3:AbstractGrand() {
 				} else {
 					// ST medal
 					stMedalCheck(engine, sectionMax)
-					engine.statistics.rollClear = 2
+					engine.statistics.rollClear = 3
 					engine.gameEnded()
 					engine.resetStatc()
 					engine.ending = 1
@@ -585,7 +587,7 @@ class GrandS3:AbstractGrand() {
 						endGameLv<=2100 -> 5//GMS2
 						endGameLv<=2300 -> 4//GMS1
 						else -> 3//GMS
-					}+maxOf(30-endGameTemp, (90-endGameTemp)/10, 0)).coerceIn(0, 17)
+					}+maxOf(30-endGameTemp, (90-endGameTemp)/10, 0)).coerceIn(0, 14)
 					gradeFlash = 180
 				}
 
@@ -628,13 +630,13 @@ class GrandS3:AbstractGrand() {
 
 			engine.stat = GameEngine.Status.CUSTOM
 			engine.ending = 2
-		return true
-	}
+			return true
+		}
 		return false
 	}
 
 	override fun onARE(engine:GameEngine):Boolean {
-		if(engine.statc[0]==0&&isFieldFrozen) engine.field.lockedLines = freezeRange(engine)
+		if(engine.stime==0&&isFieldFrozen) engine.field.lockedLines = freezeRange(engine)
 		return super.onARE(engine)
 	}
 	/* 各 frame の終わりの処理 */
@@ -676,7 +678,7 @@ class GrandS3:AbstractGrand() {
 				// Roll 終了
 				if(rollTime>=ROLLTIMELIMIT) {
 					secretGrade = engine.field.secretGrade
-					engine.statistics.rollClear = 1
+					engine.statistics.rollClear = 2
 					engine.ending = 0
 					engine.lives = -1
 					engine.gameEnded()
@@ -690,7 +692,7 @@ class GrandS3:AbstractGrand() {
 
 	/* Called at game over */
 	override fun onGameOver(engine:GameEngine):Boolean {
-		if(engine.statc[0]==0&&engine.gameActive) {
+		if(engine.stime==0&&engine.gameActive) {
 			secretGrade = engine.field.secretGrade
 
 			val time = engine.statistics.time
@@ -718,8 +720,8 @@ class GrandS3:AbstractGrand() {
 		when(engine.statc[1]) {
 			0 -> {
 				val gcolor = when(engine.statistics.rollClear) {
-					1, 3 -> COLOR.GREEN
-					2, 4 -> COLOR.ORANGE
+					2 -> COLOR.GREEN
+					3 -> COLOR.ORANGE
 					else -> COLOR.WHITE
 				}
 				receiver.drawMenu(engine, 0, 2, "GRADE", BASE, COLOR.RED)
@@ -799,6 +801,7 @@ class GrandS3:AbstractGrand() {
 		// Update rankings
 		if(!owner.replayMode&&startLevel==0&&temperature<=0&&steps<=0&&engine.ai==null) {
 			owner.statsProp.setProperty("decoration", owner.stats.decoration)
+
 			rankingRank = ranking[0].add(Rankable.GrandRow(grade, engine.statistics, medals.copy()))
 			if(medalST==3) updateBestSectionTime()
 
@@ -823,6 +826,7 @@ class GrandS3:AbstractGrand() {
 		//30000 = 8:20
 		/** Ending time limit */
 		private const val ROLLTIMELIMIT = 4000
+		private const val ROLLTIMEREWIND = 3000
 
 		private val tableFrozenSection = listOf(3, 5, 7, 8, 9)
 

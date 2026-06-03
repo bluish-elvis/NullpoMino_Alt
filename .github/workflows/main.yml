@@ -9,6 +9,7 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    timeout-minutes: 30
 
     steps:
       - name: Checkout
@@ -23,7 +24,22 @@ jobs:
           cache: maven
 
       - name: Build by maven wrapper
+        env:
+          MAVEN_OPTS: >-
+            -Dmaven.wagon.http.timeout=120000
+            -Dmaven.wagon.rto=120000
+            -Dmaven.wagon.http.retryHandler.count=5
+            -Dmaven.wagon.httpconnectionManager.ttlSeconds=120
         run: chmod +x ./mvnw; ./mvnw -B -U package
+#          for i in 1 2 3; do
+#            ./mvnw -B -U -ntp package && break
+#            if [ "$i" -eq 3 ]; then
+#              echo "Maven build failed after 3 attempts"
+#              exit 1
+#            fi
+#            echo "Retrying Maven build ($i/3 failed)..."
+#            sleep 10
+#          done
 
       - name: Upload a Build Artifact
         uses: actions/upload-artifact@v6

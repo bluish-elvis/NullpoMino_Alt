@@ -98,7 +98,7 @@ class ComboRaceBot:DummyAI(), Runnable {
 	/** Called at the start of each frame */
 	override fun onFirst(engine:GameEngine, playerID:Int) {
 		inputARE = 0u
-		val newInARE = engine.stat===GameEngine.Status.ARE
+		val newInARE = engine.stat is GameEngine.Status.ARE
 		if(engine.aiPreThink&&engine.are>0&&engine.areLine>0
 			&&(newInARE&&!inARE||!thinking&&!thinkSuccess)
 		) {
@@ -136,11 +136,11 @@ class ComboRaceBot:DummyAI(), Runnable {
 	}
 	/** Called after every frame */
 	override fun onLast(engine:GameEngine, playerID:Int) {
-		if(engine.stat===GameEngine.Status.READY&&engine.statc[0]==0) thinkRequest!!.newCreateTablesRequest()
+		if(engine.stat is GameEngine.Status.READY&&engine.stime==0) thinkRequest!!.newCreateTablesRequest()
 	}
 	/** Set button input states */
 	override fun setControl(engine:GameEngine, playerID:Int, ctrl:Controller):UShort {
-		if(engine.nowPieceObject!=null&&engine.stat===GameEngine.Status.MOVE&&
+		if(engine.nowPieceObject!=null&&engine.stat is GameEngine.Status.MOVE&&
 			delay>=engine.aiMoveDelay&&engine.statc[0]>0&&
 			(!engine.aiUseThread||threadRunning&&!thinking&&thinkCurrentPieceNo<=thinkLastPieceNo)
 		) {

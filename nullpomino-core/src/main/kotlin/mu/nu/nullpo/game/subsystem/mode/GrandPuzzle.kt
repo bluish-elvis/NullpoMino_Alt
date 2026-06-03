@@ -40,25 +40,20 @@ import mu.nu.nullpo.game.play.GameManager
 import mu.nu.nullpo.game.subsystem.mode.menu.*
 import mu.nu.nullpo.gui.common.BaseFont
 import mu.nu.nullpo.gui.common.BaseFont.FONT.*
+import mu.nu.nullpo.gui.common.BaseFontNumber.Companion.isNumFont
 import mu.nu.nullpo.util.CustomProperties
 import mu.nu.nullpo.util.GeneralUtil.toInt
 import mu.nu.nullpo.util.GeneralUtil.toTimeStr
 import org.apache.logging.log4j.LogManager
-import org.jetbrains.kotlin.konan.file.File
+import java.io.File
 
 /** GEM MANIA */
 class GrandPuzzle:AbstractMode() {
-	/** Level set property file */
-	private var propStageSet = mutableMapOf<Int, CustomProperties>()
-
 	/** 残りプラチナBlockcount */
 	private var rest = 0
 
 	/** Current level number */
 	private var stage = 0
-
-	/** Last level number */
-	private var laststage = 0
 
 	/** Attempted stage count */
 	private var tryLevels = 0
@@ -67,7 +62,7 @@ class GrandPuzzle:AbstractMode() {
 	private var doneLevel = 0
 
 	/** Clear rate */
-	private var clearRate = 0
+	private val clearRate get() = tryLevels.let {if(it>0) doneLevel*100/it else 0}
 
 	/** Stage clear flag */
 	private var clearFlag = false
@@ -153,16 +148,51 @@ class GrandPuzzle:AbstractMode() {
 
 	private enum class Stats { GAME, EDIT_MAIN, EDIT_STAGE }
 
+	/** Level set property file */
+	private var propStageSet = mutableMapOf<Int, CustomProperties>()
+
+	private val maxStages = mutableMapOf<Int, Pair<Int, Int>>()
+	private var numStagesAll
+		get() = maxStages[mapSet]?.first?:0
+		set(value) {
+			maxStages[mapSet] = value to numStagesExtra
+		}
+	private var numStagesExtra
+		get() = maxStages[mapSet]?.second?:0
+		set(value) {
+			maxStages[mapSet] = numStagesAll to value
+		}
+	private val numStagesNormal get() = maxStages[mapSet]?.let {(x, y) -> x-y}?:0
+	/** Last level number */
+	private fun laststage(time:Int):Int = numStagesNormal-1+(if(clearRate<90) 0 // クリア率が90%に満たない場合は stage 20で終了
+	else if(clearRate<100) numStagesExtra*3/7 // クリア率が90～99%はEX3まで
+	else if(time>5*3600) numStagesExtra*5/7 // クリア率が100%で5分超えている場合はEX5
+	else numStagesExtra // クリア率が100%で5分以内ならEX7
+		)
+
+	/**
+	 * @param id stage set number
+	 * @return stageSet name
+	 */
+	private fun getSetName(id:Int):String =
+		if(id in defaultSet.indices) defaultSetName[id] else "Edit:#${"%02d".format(id-mapSetDefaults)}"
+	/** stage numberをStringで取得
+	 * @param stageNumber stage number
+	 * @return stage numberの文字列(21面以降はEX扱い)
+	 */
+	private fun getStageName(stageNumber:Int):String =
+		if(stageNumber>=numStagesNormal) "EX${stageNumber+1-numStagesNormal}" else "${stageNumber+1}"
+
+	private var itemMaps =
+		StringsMenuItem("stageset", "STAGE SET", COLOR.PINK, 0,
+			(0..mapSetMax).map {getSetName(it)})
+	/** Selected stage set */
+	private var mapSet:Int by DelegateMenuItem(itemMaps)
+
 	private var itemStage =
 		StringsMenuItem("startstage", "STAGE NO.", COLOR.PINK, 0, (0..<MAX_STAGE_TOTAL).map {getStageName(it)})
 	/** Stage at start */
 	private var startStage:Int by DelegateMenuItem(itemStage)
-
-	private var itemMaps =
-		StringsMenuItem("stageset", "STAGE SET", COLOR.PINK, 0, (0..100).map {if(it<=0) "DEFAULT" else "EDIT #${it-1}"})
-	/** Selected stage set */
-	private var mapSet:Int by DelegateMenuItem(itemMaps)
-
 	private val itemGhost = BooleanMenuItem("alwaysghost", "FULL GHOST", COLOR.BLUE, false)
 	/** When true, always ghost ON */
 	private var alwaysGhost:Boolean by DelegateMenuItem(itemGhost)
@@ -226,8 +256,6 @@ class GrandPuzzle:AbstractMode() {
 
 	override fun modeInit(manager:GameManager) {
 		super.modeInit(manager)
-		File(LEVEL_DIR).listFiles
-
 		loadStageSet(-1)
 
 	}
@@ -238,10 +266,8 @@ class GrandPuzzle:AbstractMode() {
 		super.playerInit(engine)
 		rest = 0
 		stage = 0
-		laststage = MAX_STAGE_NORMAL-1
 		tryLevels = 0
 		doneLevel = 0
-		clearRate = 0
 		clearFlag = false
 		skipFlag = false
 		limittimeNow = 0
@@ -353,17 +379,24 @@ class GrandPuzzle:AbstractMode() {
 	}
 
 	/** stage セットを読み込み
-	 * @param id stage セット number(-1で default )
+	 * @param id stage セット number()
 	 */
 	private fun loadStageSet(id:Int) {
-		if(propStageSet[id]==null) propStageSet[id] = CustomProperties()
-		if(id>=0) {
-			log.debug("Loading stage set from custom set #$id")
-			propStageSet[id]?.load(LEVEL_DIR+"custom$id.map")
-		} else {
-			log.debug("Loading stage set from default set")
-			propStageSet[-1]?.loadXML(this::class.java.getResource("/map/gemmania.map")!!.path)
-		}
+		if(id in 0..<mapSetMax) {
+
+			if(propStageSet[id]==null) propStageSet[id] = CustomProperties()
+			if(id in defaultSet.indices) {
+				log.debug("Loading stage set from default set {}", defaultSet[id])
+				propStageSet[id]?.loadXML(defaultSet[id].path)?.also {
+					maxStages[id] = it.getProperty("map.maxMapNumber", 0) to it.getProperty("map.extra", 0)
+				}
+			} else {
+				log.debug("Loading stage set from custom set #$id")
+				propStageSet[id]?.loadXML("$CUSTOM_LEVEL_DIR${id-mapSetDefaults}.map")?.also {
+					maxStages[id] = it.getProperty("map.maxMapNumber", 0) to it.getProperty("map.extra", 0)
+				}
+			}
+		} else if(id<0) (0..<mapSetMax).forEach {loadStageSet(it)}
 	}
 
 	/** stage セットを保存
@@ -371,12 +404,14 @@ class GrandPuzzle:AbstractMode() {
 	 */
 	private fun saveStageSet(id:Int) {
 		if(!owner.replayMode)
-			if(id>=0) {
-				log.debug("Saving stage set to custom set #$id")
-				propStageSet[id]?.save("config/map/gemmania/custom$id.map", true)
-			} else
+			if(id in 0..<mapSetMax) {
+				log.debug("Saving stage set to custom set #${id-mapSetDefaults}")
+				propStageSet[id]?.setProperty("map.maxMapNumber", numStagesAll)
+				propStageSet[id]?.setProperty("map.extra", numStagesExtra)
+				propStageSet[id]?.save("$CUSTOM_LEVEL_DIR${id-mapSetDefaults}.map", true)
+			} else if(id in defaultSet.indices)
 				log.warn("unable change the default stage set")
-//				propStageSet[-1]?.save("config/map/gemmania/default.map")
+//				propStageSet[-1]?.save(defaultLevels[id],true)
 
 	}
 
@@ -409,7 +444,28 @@ class GrandPuzzle:AbstractMode() {
 		prop.setProperty("$id.gemmania.gimmickXRay", gimmickXRay)
 		prop.setProperty("$id.gemmania.gimmickColor", gimmickColor)
 	}
+	private fun delMap(field:Field, prop:CustomProperties, id:Int) {
+		(0..<field.height).forEach {prop.remove("$id.field.map.$it")}
+		prop.remove("$id.gemmania.limittimeStart")
+		prop.remove("$id.gemmania.stagetimeStart")
+		prop.remove("$id.gemmania.stagebgm")
+		prop.remove("$id.gemmania.gimmickMirror")
+		prop.remove("$id.gemmania.gimmickRoll")
+		prop.remove("$id.gemmania.gimmickBig")
+		prop.remove("$id.gemmania.gimmickXRay")
+		prop.remove("$id.gemmania.gimmickColor")
+	}
 
+	private fun popMap(field:Field, prop:CustomProperties, id:Int) {
+		(id..<numStagesAll-1).forEach {
+			loadMap(field, prop, it+1)
+			saveMap(field, prop, it)
+		}
+		delMap(field, prop, numStagesAll-1)
+		if(numStagesAll>0) prop.setProperty("$id.maxMapNumber", --numStagesAll)
+		if(id>=numStagesNormal) prop.setProperty("$id.extra", --numStagesExtra)
+		loadMap(field, prop, id)
+	}
 	override fun loadSetting(engine:GameEngine, prop:CustomProperties, ruleName:String, playerID:Int) {
 		startStage = prop.getProperty("gemmania.startstage", 0)
 		mapSet = prop.getProperty("gemmania.stageset", 0)
@@ -476,37 +532,22 @@ class GrandPuzzle:AbstractMode() {
 			true
 		} else false
 
-	/** stage numberをStringで取得
-	 * @param stageNumber stage number
-	 * @return stage numberの文字列(21面以降はEX扱い)
-	 */
-	private fun getStageName(stageNumber:Int):String =
-		if(stageNumber>=MAX_STAGE_NORMAL) "EX${stageNumber+1-MAX_STAGE_NORMAL}" else "${stageNumber+1}"
-
 	/* Called at settings screen */
 	override fun onSetting(engine:GameEngine):Boolean {
 		// エディットMenu  メイン画面
 		when(editModeScreen) {
 			Stats.EDIT_MAIN -> {
 				// Configuration changes
-				val change = updateCursor(engine, 4)
+				val change = updateCursor(engine, 6)
 
 				if(change!=0) {
 					engine.playSE("change")
 
 					when(menuCursor) {
-						0 -> {
-						}
-						1, 2 -> {
-							startStage += change
-							if(startStage<0) startStage = MAX_STAGE_TOTAL-1
-							if(startStage>MAX_STAGE_TOTAL-1) startStage = 0
-						}
-						3, 4 -> {
-							mapSet += change
-							if(mapSet<0) mapSet = 99
-							if(mapSet>99) mapSet = 0
-						}
+						in 0..3 -> startStage = rangeCursor(startStage+change, 0, maxOf(numStagesAll, 1))
+						4 -> numStagesExtra = rangeCursor(numStagesExtra-change, 1, maxOf(numStagesAll-1, 1))
+						5, 6 -> mapSet = rangeCursor(mapSet+change, mapSetDefaults, mapSetMax-1)
+
 					}
 				}
 
@@ -521,43 +562,34 @@ class GrandPuzzle:AbstractMode() {
 							menuTime = 0
 						}
 						1 ->
-							propStageSet[mapSet+1]?.let {
+							propStageSet[mapSet]?.let {
 								loadMap(engine.field, it, startStage)
 								engine.field.setAllSkin(engine.blkSkin)
 							}
 						2 -> propStageSet[mapSet]?.let {saveMap(engine.field, it, startStage)}
-						3 -> loadStageSet(mapSet)
-						4 -> saveStageSet(mapSet)
+						3 -> propStageSet[mapSet]?.let {// DELETE
+							if(startStage in 0..<numStagesAll) popMap(engine.field, it, startStage)
+						}
+						5 -> {
+							loadStageSet(mapSet)
+							propStageSet[mapSet]?.let {loadMap(engine.field, it, startStage)}
+						}
+						6 -> saveStageSet(mapSet)
 					}
 				}
 
 				// Cancel
 				if(engine.ctrl.isPress(Controller.BUTTON_D)&&engine.ctrl.isPress(Controller.BUTTON_E)) {
 					editModeScreen = Stats.GAME
+					owner.musMan.bgm = BGM.Menu(3)
 					menuCursor = 0
 					menuTime = 0
 				}
 			}
 			Stats.EDIT_STAGE -> {
-				// エディットMenu   stage 画面
-				// Up
-				if(engine.ctrl.isMenuRepeatKey(Controller.BUTTON_UP)) {
-					menuCursor--
-					if(menuCursor<0) menuCursor = 4
-					engine.playSE("cursor")
-				}
-				// Down
-				if(engine.ctrl.isMenuRepeatKey(Controller.BUTTON_DOWN)) {
-					menuCursor++
-					if(menuCursor>4) menuCursor = 0
-					engine.playSE("cursor")
-				}
-
+				// エディットMenu stage 画面
 				// Configuration changes
-				var change = 0
-				if(engine.ctrl.isMenuRepeatKey(Controller.BUTTON_LEFT)) change = -1
-				if(engine.ctrl.isMenuRepeatKey(Controller.BUTTON_RIGHT)) change = 1
-
+				val change = updateCursor(engine, 5)
 				if(change!=0) {
 					engine.playSE("change")
 
@@ -566,28 +598,11 @@ class GrandPuzzle:AbstractMode() {
 					if(engine.ctrl.isPress(Controller.BUTTON_F)) m = 1000
 
 					when(menuCursor) {
-						0 -> {
-						}
-						1 -> {
-							stagetimeStart += change*60*m
-							if(stagetimeStart<0) stagetimeStart = 3600*20
-							if(stagetimeStart>3600*20) stagetimeStart = 0
-						}
-						2 -> {
-							limittimeStart += change*60*m
-							if(limittimeStart<0) limittimeStart = 3600*20
-							if(limittimeStart>3600*20) limittimeStart = 0
-						}
-						3 -> {
-							stagebgm += change
-							if(stagebgm<0) stagebgm = BGM.count
-							if(stagebgm>BGM.count) stagebgm = 0
-						}
-						4 -> {
-							gimmickMirror += change
-							if(gimmickMirror<0) gimmickMirror = 99
-							if(gimmickMirror>99) gimmickMirror = 0
-						}
+						1 -> stagetimeStart = rangeCursor(stagetimeStart+change*60*m, 0, 3600*20)
+						2 -> limittimeStart = rangeCursor(limittimeStart+change*60*m, 0, 3600*20)
+						3 -> stagebgm = rangeCursor(stagebgm+change, 0, BGM.count)
+						4 -> gimmickMirror = rangeCursor(gimmickMirror+change, 0, 99)
+
 					}
 				}
 
@@ -612,8 +627,8 @@ class GrandPuzzle:AbstractMode() {
 			else -> {
 				return if(!engine.owner.replayMode&&engine.ctrl.isPush(Controller.BUTTON_D)) {
 					// エディット
-					if(mapSet<0) mapSet = 0
-
+					if(mapSet<mapSetDefaults) mapSet = mapSetDefaults
+					owner.musMan.bgm = BGM.Menu(2)
 					loadStageSet(mapSet)
 					propStageSet[mapSet]?.let {loadMap(engine.field, it, startStage)}
 					engine.field.setAllSkin(engine.blkSkin)
@@ -632,10 +647,10 @@ class GrandPuzzle:AbstractMode() {
 		super.onSettingChanged(engine)
 		when(menuCursor) {
 			0, 1 -> {
-				if(startStage<0) startStage = MAX_STAGE_TOTAL-1
-				if(startStage>MAX_STAGE_TOTAL-1) startStage = 0
+				if(startStage<0) startStage = mapSetMax
+				if(startStage>=mapSetMax) startStage = 0
 
-				propStageSet[mapSet-1]?.let {loadMap(engine.field, it, startStage)}
+				propStageSet[mapSet]?.let {loadMap(engine.field, it, startStage)}
 				engine.field.setAllSkin(engine.blkSkin)
 			}
 		}
@@ -645,11 +660,29 @@ class GrandPuzzle:AbstractMode() {
 	override fun renderSetting(engine:GameEngine) {
 		when(editModeScreen) {
 			Stats.EDIT_MAIN -> {
-				drawMenu(
-					engine, receiver, 0, COLOR.GREEN, 0, "STAGE EDIT" to "[PUSH A]", "LOAD STAGE" to "[${getStageName(startStage)}]",
-					"SAVE STAGE" to "[${getStageName(startStage)}]", "LOAD" to "[SET $mapSet]",
-					"SAVE" to "[SET $mapSet]"
-				)
+
+				receiver.drawMenu(engine, 0, 1, "MAP", BASE, COLOR.GREEN)
+				getStageName(startStage).let {
+					receiver.drawMenu(engine, 4, 1, "$it/$numStagesAll", if(it.isNumFont) NUM else BASE, menuCursor in 1..3)
+				}
+				if(menuCursor in 0..4)
+					receiver.drawMenu(engine, 0, 2+menuCursor, BaseFont.CURSOR, BASE, COLOR.RED)
+				receiver.drawMenu(engine, 1, 2, "[ENTER]", BASE, menuCursor==0)
+
+				receiver.drawMenu(engine, 1, 3, "[LOAD]", BASE, menuCursor==1)
+				receiver.drawMenu(engine, 1, 4, "[SAVE]", BASE, menuCursor==2)
+				receiver.drawMenu(engine, 1, 5, "[DELETE]", BASE, menuCursor==3)
+				receiver.drawMenu(engine, 1, 6, "MAX:", BASE, COLOR.COBALT)
+				receiver.drawMenu(engine, 5, 6, "$numStagesNormal/$numStagesExtra", NUM, menuCursor==4)
+
+
+				receiver.drawMenu(engine, 0, 8, "Map Pack", BASE, COLOR.COBALT)
+				receiver.drawMenu(engine, 0, 9, getSetName(mapSet), NUM, menuCursor in 5..6)
+				if(menuCursor in 5..6)
+					receiver.drawMenu(engine, 0, 10+menuCursor-5, BaseFont.CURSOR, BASE, COLOR.RED)
+				receiver.drawMenu(engine, 1, 10, "[READ]", BASE, menuCursor==5)
+				receiver.drawMenu(engine, 1, 11, "[WRITE]", BASE, menuCursor==6)
+
 
 				receiver.drawMenu(engine, 0, 19, "EXIT-> D+E", BASE, COLOR.ORANGE)
 			}
@@ -669,7 +702,7 @@ class GrandPuzzle:AbstractMode() {
 
 	/* Ready画面の処理 */
 	override fun onReady(engine:GameEngine):Boolean {
-		if(engine.statc[0]==0) {
+		if(engine.stime==0) {
 			if(!engine.readyDone) {
 				loadStageSet(mapSet-1)
 				stage = startStage
@@ -688,7 +721,7 @@ class GrandPuzzle:AbstractMode() {
 
 	/* Ready画面の描画処理 */
 	override fun renderReady(engine:GameEngine) {
-		if(engine.statc[0]>=engine.readyStart) {
+		if(engine.stime>=engine.readyStart) {
 			// トレーニング
 			if(trainingType!=0) receiver.drawMenu(engine, 1, 5, "TRAINING", BASE, COLOR.GREEN)
 
@@ -725,7 +758,7 @@ class GrandPuzzle:AbstractMode() {
 		receiver.drawScore(engine, -1, -4*2, "DECORATION", BASE, scale = .5f)
 		receiver.drawScoreBadges(engine, 0, -3, 100, owner.stats.decoration)
 		receiver.drawScoreBadges(engine, 5, -4, 100, decTemp)
-		if(engine.stat==Status.SETTING||engine.stat==Status.RESULT&&!owner.replayMode) {
+		if(engine.isShowRanking) {
 			if(startStage==0&&!always20g&&trainingType==0&&startNextc==0&&mapSet<0&&engine.ai==null) {
 				val topY = if(receiver.bigSideNext) 5 else 3
 
@@ -748,7 +781,7 @@ class GrandPuzzle:AbstractMode() {
 					receiver.drawScore(engine, 15, topY+i, rankingTime[type][i].toTimeStr, NUM, i==rankingRank)
 				}
 			}
-		} else {
+		} else if(editModeScreen==Stats.GAME) {
 			receiver.drawScore(engine, 0, 2, "LEVEL", BASE, COLOR.PINK)
 			receiver.drawScore(engine, 6, 2, getStageName(stage), BASE)
 
@@ -828,6 +861,7 @@ class GrandPuzzle:AbstractMode() {
 				}
 			}
 		}
+
 	}
 
 	/* Called after every frame */
@@ -883,7 +917,7 @@ class GrandPuzzle:AbstractMode() {
 	/* 移動中の処理 */
 	override fun onMove(engine:GameEngine):Boolean {
 		// 新規ピース出現時
-		if(engine.ending==0&&engine.statc[0]==0&&!engine.holdDisable&&!lvupFlag) {
+		if(engine.ending==0&&engine.stime==0&&!engine.holdDisable&&!lvupFlag) {
 			// Level up
 			if(speedlevel<nextSecLv-1) {
 				speedlevel++
@@ -891,9 +925,9 @@ class GrandPuzzle:AbstractMode() {
 			}
 			setSpeed(engine)
 		}
-		if(engine.ending==0&&engine.statc[0]>0) lvupFlag = false
+		if(engine.ending==0&&engine.stime>0) lvupFlag = false
 
-		if(engine.ending==0&&engine.statc[0]==0&&!engine.holdDisable) {
+		if(engine.ending==0&&engine.stime==0&&!engine.holdDisable) {
 			// Roll Roll
 			engine.itemRollRollEnable = gimmickRoll>0&&(thisStageTotalPieceLockCount+1)%gimmickRoll==0
 			// Big
@@ -921,9 +955,9 @@ class GrandPuzzle:AbstractMode() {
 	}
 
 	/* ARE中の処理 */
-	override fun onARE(engine:GameEngine):Boolean {
+	override fun outARE(engine:GameEngine) {
 		// 最後の frame
-		if(engine.ending==0&&engine.statc[0]>=engine.statc[1]-1&&!lvupFlag) {
+		if(engine.ending==0&&!lvupFlag) {
 			if(speedlevel<nextSecLv-1) {
 				speedlevel++
 				if(speedlevel==nextSecLv-1&&secAlert) engine.playSE("levelstop")
@@ -931,8 +965,6 @@ class GrandPuzzle:AbstractMode() {
 			setSpeed(engine)
 			lvupFlag = true
 		}
-
-		return false
 	}
 
 	/* Calculate score */
@@ -1000,7 +1032,7 @@ class GrandPuzzle:AbstractMode() {
 	/** stage 終了画面の描画 */
 	override fun onCustom(engine:GameEngine):Boolean {
 		// 最初の frame の処理
-		if(engine.statc[0]==0) {
+		if(engine.stime==0) {
 			// Sound effects
 			engine.playSE(if(clearFlag) "stageclear" else "stagefail")
 
@@ -1012,8 +1044,6 @@ class GrandPuzzle:AbstractMode() {
 			}
 			// クリア率計算
 			tryLevels++
-			clearRate = doneLevel*100/tryLevels
-
 			// Time bonus
 			timeextendStageClearSeconds = 0
 			if(clearFlag) {
@@ -1024,19 +1054,8 @@ class GrandPuzzle:AbstractMode() {
 				if(stage==MAX_STAGE_NORMAL-1) timeextendStageClearSeconds += 60
 			} else if(skipFlag) timeextendStageClearSeconds = 30
 
-			// 最終 stage を決定
-			if(stage==MAX_STAGE_NORMAL-1)
-				laststage = if(clearRate<90)
-					19 // クリア率が90%に満たない場合は stage 20で終了
-				else if(clearRate<100)
-					22 // クリア率が90～99%はEX3まで
-				else if(engine.statistics.time>5*3600)
-					24 // クリア率が100%で5分超えている場合はEX5
-				else
-					MAX_STAGE_TOTAL-1 // クリア率が100%で5分以内ならEX7
-
 			// BGM fadeout
-			if((stage==MAX_STAGE_NORMAL-1||stage==laststage)&&trainingType==0) owner.musMan.fadeSW = true
+			if((stage==MAX_STAGE_NORMAL-1||stage==laststage(engine.statistics.time))&&trainingType==0) owner.musMan.fadeSW = true
 
 			// ギミック解除
 			engine.interruptItem = null
@@ -1065,7 +1084,7 @@ class GrandPuzzle:AbstractMode() {
 		}
 
 		// Next 画面へ
-		if(engine.statc[0]>=300||engine.ctrl.isPush(Controller.BUTTON_A)) {
+		if(engine.stime>=300||engine.ctrl.isPush(Controller.BUTTON_A)) {
 			// Training
 			if(trainingType!=0) {
 				if(clearFlag) limittimeNow += timeextendStageClearSeconds*60
@@ -1073,7 +1092,7 @@ class GrandPuzzle:AbstractMode() {
 				if(trainingType==2) engine.nextPieceCount = continueNextPieceCount
 				engine.stat = Status.READY
 				engine.resetStatc()
-			} else if(stage>=laststage) {
+			} else if(stage>=laststage(engine.statistics.time)) {
 				allClear = if(stage>=MAX_STAGE_TOTAL-1) 2 else 1
 				engine.ending = 1
 				engine.gameEnded()
@@ -1090,14 +1109,13 @@ class GrandPuzzle:AbstractMode() {
 			return true
 		}
 
-		engine.statc[0]++
 
 		return true
 	}
 
 	/** stage 終了画面の描画 */
 	override fun renderCustom(engine:GameEngine) {
-		if(engine.statc[0]<1) return
+		if(engine.stime<1) return
 
 		// STAGE XX
 		receiver.drawMenu(engine, 1, 2, "STAGE", BASE, COLOR.GREEN)
@@ -1107,14 +1125,14 @@ class GrandPuzzle:AbstractMode() {
 		if(clearFlag) {
 			// クリア
 			receiver.drawMenu(
-				engine, 2, 4, "CLEAR!", BASE, if(engine.statc[0]%2==0) COLOR.ORANGE else COLOR.WHITE
+				engine, 2, 4, "CLEAR!", BASE, if(engine.stime%2==0) COLOR.ORANGE else COLOR.WHITE
 			)
 
 			receiver.drawMenu(engine, 0, 7, "LIMIT TIME", BASE, COLOR.PINK)
 			receiver.drawMenu(
 				engine, 1, 8, (limittimeNow+engine.statc[1]).toTimeStr,
 				BASE,
-				if(engine.statc[0]%2==0&&engine.statc[1]<timeextendStageClearSeconds*60) COLOR.ORANGE else COLOR.WHITE,
+				if(engine.stime%2==0&&engine.statc[1]<timeextendStageClearSeconds*60) COLOR.ORANGE else COLOR.WHITE,
 				1.5f
 			)
 
@@ -1133,16 +1151,16 @@ class GrandPuzzle:AbstractMode() {
 			// スキップ
 			receiver.drawMenu(engine, 1, 4, "SKIPPED", BASE)
 			receiver.drawMenu(engine, 2, 11, "-30", NUM,
-				if(engine.statc[0]%2==0&&engine.statc[1]<30*60) COLOR.WHITE else COLOR.RED, 2f)
+				if(engine.stime%2==0&&engine.statc[1]<30*60) COLOR.WHITE else COLOR.RED, 2f)
 			receiver.drawMenu(
 				engine, 7, 12, "SEC.", NANO,
-				if(engine.statc[0]%2==0&&engine.statc[1]<30*60) COLOR.WHITE else COLOR.RED, .5f
+				if(engine.stime%2==0&&engine.statc[1]<30*60) COLOR.WHITE else COLOR.RED, .5f
 			)
 
 			receiver.drawMenu(engine, 0, 10, "LIMIT TIME", BASE, COLOR.PINK)
 			receiver.drawMenu(
 				engine, 1, 11, (limittimeNow-engine.statc[1]).toTimeStr, NUM,
-				if(engine.statc[0]%2==0&&engine.statc[1]<30*60) COLOR.RED else COLOR.WHITE, 1.5f
+				if(engine.stime%2==0&&engine.statc[1]<30*60) COLOR.RED else COLOR.WHITE, 1.5f
 			)
 
 			if(trainingType==0) {
@@ -1327,7 +1345,8 @@ class GrandPuzzle:AbstractMode() {
 			owner.statsProp.save(owner.statsFile)
 		}
 		// Update rankings
-		return (!owner.replayMode&&startStage==0&&trainingType==0&&startNextc==0&&mapSet<0&&!always20g&&engine.ai==null&&
+		return (!owner.replayMode&&startStage==0&&trainingType==0&&startNextc==0&&mapSet<mapSetDefaults&&!always20g&&engine
+			.ai==null&&
 			updateRanking(randomQueue.toInt(), stage, clearRate, engine.statistics.time, allClear)!=-1)
 	}
 
@@ -1387,7 +1406,17 @@ class GrandPuzzle:AbstractMode() {
 		private const val CURRENT_VERSION = 1
 
 		/** level contains directory */
-		private const val LEVEL_DIR = "config/map/gemmania/"
+		private const val LEVEL_DIR = "/map/gemmania/"
+
+		val defaultSet:List<File> = this::class.java.getResource("/map/gemmania/")?.file?.let {
+			File(it).listFiles()?.filterNotNull()?:emptyList()
+		}?:emptyList()
+		val defaultSetName:List<String> = defaultSet.map {it.nameWithoutExtension}
+
+		val mapSetDefaults get() = defaultSet.size
+		val mapSetMax get() = mapSetDefaults+100
+
+		private const val CUSTOM_LEVEL_DIR = "config/map/gemmania/"
 		/** Maximum level count */
 		private const val MAX_STAGE_TOTAL = 27
 

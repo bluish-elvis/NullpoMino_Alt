@@ -119,7 +119,7 @@ class Block @JvmOverloads constructor(
 	var countdown = 0
 
 	/** Color to turn into when garbage block turns into a regular block */
-	var secondaryColor = COLOR.BLACK
+	var secondaryColor = color?:COLOR.BLACK
 
 	/** Bonus value awarded when cleared */
 	var bonusValue = 0
@@ -286,7 +286,7 @@ class Block @JvmOverloads constructor(
 		ERASE,
 		/** Temporary mark for block linking check algorithm */
 		TEMP_MARK,
-		/** "Block has fallen" flag for cascade gravity */
+		/** "Block has fallen" done flag for cascade gravity */
 		CASCADE_FALL,
 		/** Antigravity flag (The block will not fall by gravity) */
 		ANTIGRAVITY,

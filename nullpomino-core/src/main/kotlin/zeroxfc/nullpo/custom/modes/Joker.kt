@@ -181,7 +181,7 @@ class Joker:MarathonModeBase() {
 		efficiencyGrade = 0
 		efficiency = 0f
 		engine.lives = 0
-		if(engine.statc[0]==0&&useAnimBG) {
+		if(engine.stime==0&&useAnimBG) {
 			engine.owner.bgMan.bg = -2
 			//for(bg in ANIMATED_BACKGROUNDS) bg.reset()
 		}
@@ -240,7 +240,7 @@ class Joker:MarathonModeBase() {
 	override fun renderLast(engine:GameEngine) {
 		if(owner.menuOnly) return
 		receiver.drawScore(engine, 0, 0, name, BASE, COLOR.RED)
-		if(engine.stat===Status.SETTING||engine.stat===Status.RESULT&&!owner.replayMode) {
+		if(engine.isShowRanking) {
 			if(!owner.replayMode&&!big&&engine.ai==null&&startingStock==0) {
 				val topY = if(receiver.bigSideNext) 6 else 4
 				receiver.drawScore(engine, 3, topY-1, "LEVEL  LINE TIME", BASE, COLOR.BLUE)
@@ -279,7 +279,7 @@ class Joker:MarathonModeBase() {
 						receiver.drawScore(engine, 0, topY+rankingMax+5, "F:SWITCH RANK SCREEN", BASE, COLOR.GREEN)
 				}
 			}
-		} else if(engine.stat===Status.CUSTOM) {
+		} else if(engine.stat is Status.CUSTOM) {
 			engine.playerProp.loginScreen.renderScreen(receiver, engine)
 		} else {
 			receiver.drawScore(engine, 0, 3, "TIME", BASE, COLOR.BLUE)
@@ -333,13 +333,11 @@ class Joker:MarathonModeBase() {
 
 	override fun onCustom(engine:GameEngine):Boolean {
 		showPlayerStats = false
-		engine.isInGame = true
 		val s:Boolean = engine.playerProp.loginScreen.updateScreen(engine)
 		if(engine.playerProp.isLoggedIn) {
 			loadRankingPlayer(engine.playerProp)
 			loadSetting(engine, engine.playerProp.propProfile)
 		}
-		if(engine.stat===Status.SETTING) engine.isInGame = false
 		return s
 	}
 	/*
@@ -351,7 +349,7 @@ class Joker:MarathonModeBase() {
 			ANIMATED_BACKGROUNDS[engine.owner.bgMan.bg+2].update()
 		}*/
 		if(engine.gameStarted&&engine.ending==0) {
-			/*if(engine.stat===GameEngine.Status.ARE) {
+			/*if(engine.stat is GameEngine.Status.ARE) {
 				engine.dasCount = engine.speed.das
 			}*/
 			if(shouldUseTimer&&engine.stat!==Status.GAMEOVER) {
@@ -393,7 +391,7 @@ class Joker:MarathonModeBase() {
 			warningTextSecondLine?.update()
 			if(warningTextSecondLine?.shouldPurge()==true) warningTextSecondLine = null
 		}
-		if(engine.stat===Status.SETTING||engine.stat===Status.RESULT&&!owner.replayMode||engine.stat===Status.CUSTOM) {
+		if(engine.isShowRanking||engine.stat is Status.CUSTOM) {
 			// Show rank
 			if(engine.ctrl.isPush(Controller.BUTTON_F)&&engine.playerProp.isLoggedIn&&engine.stat!==Status.CUSTOM) {
 				showPlayerStats = !showPlayerStats

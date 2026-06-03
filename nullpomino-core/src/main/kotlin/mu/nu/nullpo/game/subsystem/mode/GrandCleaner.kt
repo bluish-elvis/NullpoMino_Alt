@@ -185,7 +185,7 @@ class GrandCleaner:AbstractMode() {
 	}
 	/* Ready画面の処理 */
 	override fun onReady(engine:GameEngine):Boolean {
-		if(engine.statc[0]==0) {
+		if(engine.stime==0) {
 			owner.musMan.fadeSW = true
 		}
 		return super.onReady(engine)
@@ -211,7 +211,7 @@ class GrandCleaner:AbstractMode() {
 		receiver.drawScore(engine, -1, -4*2, "DECORATION", BASE, scale = .5f)
 		receiver.drawScoreBadges(engine, 0, -3, 100, owner.stats.decoration)
 		receiver.drawScoreBadges(engine, 5, -4, 100, decTemp)
-		if(engine.stat==GameEngine.Status.SETTING||engine.stat==GameEngine.Status.RESULT&&!owner.replayMode) {
+		if(engine.isShowRanking) {
 			if(!always20g&&engine.ai==null) {
 				val topY = if(receiver.bigSideNext) 5 else 3
 
@@ -275,7 +275,7 @@ class GrandCleaner:AbstractMode() {
 	/* 移動中の処理 */
 	override fun onMove(engine:GameEngine):Boolean {
 		// 新規ピース出現時
-		if(engine.ending==0&&engine.statc[0]==0&&!engine.holdDisable&&!lvupFlag) {
+		if(engine.ending==0&&engine.stime==0&&!engine.holdDisable&&!lvupFlag) {
 			// Level up
 			if(engine.statistics.level<nextSecLv-1) {
 				engine.statistics.level++
@@ -283,15 +283,15 @@ class GrandCleaner:AbstractMode() {
 			}
 			setSpeed(engine)
 		}
-		if(engine.ending==0&&engine.statc[0]>0) lvupFlag = false
+		if(engine.ending==0&&engine.stime>0) lvupFlag = false
 
 		return false
 	}
 
 	/* ARE中の処理 */
-	override fun onARE(engine:GameEngine):Boolean {
+	override fun outARE(engine:GameEngine) {
 		// 最後の frame
-		if(engine.ending==0&&engine.statc[0]>=engine.statc[1]-1&&!lvupFlag) {
+		if(engine.ending==0&&!lvupFlag) {
 			if(engine.statistics.level<nextSecLv-1) {
 				engine.statistics.level++
 				if(engine.statistics.level==nextSecLv-1) engine.playSE("levelstop")
@@ -299,8 +299,6 @@ class GrandCleaner:AbstractMode() {
 			setSpeed(engine)
 			lvupFlag = true
 		}
-
-		return false
 	}
 
 	/* Calculate score */

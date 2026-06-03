@@ -504,7 +504,7 @@ open class VSBattle:AbstractMode() {
 	/* Called for initialization during Ready (before initialization) */
 	override fun onReady(engine:GameEngine):Boolean {
 		val pid = engine.playerID
-		if(engine.statc[0]==0)
+		if(engine.stime==0)
 		// MapFor storing backup Replay read
 			if(version>=3)
 				if(useMap[pid]) {
