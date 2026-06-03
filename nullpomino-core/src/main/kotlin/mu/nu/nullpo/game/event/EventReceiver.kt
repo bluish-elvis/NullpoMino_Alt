@@ -904,6 +904,10 @@ open class EventReceiver {
 	 */
 	open fun blockBreak(engine:GameEngine, blk:Map<Int, Map<Int, Block>>) {}
 
+	/** It will be called when a bombs are ignited. (ClearType.LineBomb)*/
+	open fun bombExplod(engine:GameEngine, blk:Map<Int, Map<Int, Pair<Block, Pair<Int, Int>>>>) {}
+	/** It will be called when a bombs are ignited. (ClearType.LineSpark)*/
+	open fun sparkExplod(engine:GameEngine, blk:Map<Int, Map<Int, Pair<Block, Int>>>) {}
 	/** It will be called before a block is destroyed.
 	 * @param engine GameEngine
 	 * @param blk Indexed Iterable (listOf(x,y, Block))

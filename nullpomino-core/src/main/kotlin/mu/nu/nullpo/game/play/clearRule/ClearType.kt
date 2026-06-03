@@ -45,20 +45,23 @@ interface ClearType {
 	fun flag(engine:GameEngine, field:Field):ClearResult
 	/** Execute flagged Clear blocks, after calcScore and emitted effect in statLineClear */
 	fun clear(field:Field):ClearResult
+	fun recheck(field:Field):ClearResult = ClearResult()
 
 	/** Result of  the result
 	 * @param size Line: number of lines cleared, others: number of blocks cleared
-	 * @param blocksCleared  List of row of cleared blocks with Y-coordinate index
+	 * @param blocksCleared  List of row of cleared blocks with Map<Y-int, Map<X-int, Block>>
 	 * */
 	@kotlinx.serialization.Serializable
-	data class ClearResult(val size:Int = 0, val blocksCleared:Map<Int, Map<Int, Block?>> = emptyMap()) {
+	data class ClearResult(val size:Int = 0, val blocksCleared:Map<Int, Map<Int, Block>> = emptyMap()) {
+		operator fun plus(check:ClearResult?):ClearResult = if(check!=null)
+			ClearResult(size+check.size, (blocksCleared+check.blocksCleared)) else this
 
 		val linesY=blocksCleared.map {(y)-> y}.toSet()
-		val gemCleared = blocksCleared.count {(_, r) -> r.any {(_, b) -> b?.isGemBlock?:false}}
+		val gemCleared = blocksCleared.count {(_, r) -> r.any {(_, b) -> b.isGemBlock}}
 		val garbageCleared =
-			blocksCleared.asSequence().sumOf {(_, r) -> r.count {(_, b) -> b?.getAttribute(ATTRIBUTE.GARBAGE)?:false}}
+			blocksCleared.asSequence().sumOf {(_, r) -> r.count {(_, b) -> b.getAttribute(ATTRIBUTE.GARBAGE)}}
 		val colorContains =
-			blocksCleared.asSequence().flatMap {(_, r) -> r.values.mapNotNull {it?.color}}.distinct().sortedBy {it.ordinal}
+			blocksCleared.asSequence().flatMap {(_, r) -> r.values.mapNotNull {it.color}}.distinct().sortedBy {it.ordinal}
 				.toSet()
 		val linesYfolded = linesY.sorted().fold(mutableListOf<Set<Int>>()) {a, t ->
 			if(a.isEmpty()||a.last().maxOrNull()!=t-1) a += setOf(t)
@@ -99,7 +102,7 @@ interface ClearType {
 						setAttribute(true, ATTRIBUTE.BROKEN)
 					}
 
-					if(gemType!=0&&b.isGemBlock&&b.cint!=Block.COLOR_GEM_RAINBOW)
+					if(gemType!=0&&b.isGemBlock&&!(b.cint==Block.COLOR_GEM_RAINBOW&&b.getAttribute(ATTRIBUTE.TEMP_MARK)))
 						setBlockColor(x, y, Block.COLOR_GEM_RAINBOW) else
 						delBlock(x, y)
 					b

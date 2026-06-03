@@ -32,10 +32,10 @@ package mu.nu.nullpo.game.component
 
 import mu.nu.nullpo.game.component.Block.ATTRIBUTE
 import mu.nu.nullpo.game.play.GameEngine
-import mu.nu.nullpo.game.play.LineGravity
 import mu.nu.nullpo.game.play.clearRule.ClearType.ClearResult
 import mu.nu.nullpo.game.play.clearRule.Line.checkLines
 import mu.nu.nullpo.game.play.clearRule.Line.clearLines
+import mu.nu.nullpo.game.play.fallRule.Native
 import mu.nu.nullpo.util.CustomProperties
 import mu.nu.nullpo.util.GeneralUtil.aNum
 import mu.nu.nullpo.util.GeneralUtil.toInt
@@ -576,10 +576,10 @@ class Field {
 	/** 上にあったBlockをすべて下まで下ろす
 	 * @return 消えていたLines count
 	 */
-	fun downFloatingBlocks() = LineGravity.Native.fallInstant(this)
+	fun downFloatingBlocks() = Native.fallInstant(this)
 
 	/** 上にあったBlockを1段だけ下ろす */
-	fun downFloatingBlocksSingleLine() = LineGravity.Native.fallSingle(this)
+	fun downFloatingBlocksSingleLine() = Native.fallSingle(this)
 
 	/** Check if specified lines is completely empty
 	 * @param y Y coord
@@ -988,26 +988,6 @@ class Field {
 		}
 		return total
 	}
-
-	fun doCascadeGravity(type:LineGravity):Boolean {
-		setAllAttribute(false, ATTRIBUTE.LAST_COMMIT)
-		return when(type) {
-			LineGravity.CASCADE_SLOW -> doCascadeSlow()
-			LineGravity.CASCADE -> doCascadeGravity()
-			else -> false
-		}
-	}
-
-	/**
-	 * Main routine for cascade gravity.
-	 * @return `true` if something falls. `false` if nothing falls.
-	 */
-	private fun doCascadeGravity():Boolean = LineGravity.CASCADE.fallInstant(this)>0
-	/**
-	 * Routine for cascade gravity which checks from the top down for a slower fall animation.
-	 * @return `true` if something falls. `false` if nothing falls.
-	 */
-	private fun doCascadeSlow():Boolean = LineGravity.CASCADE.fallSingle(this)>0
 
 	/** Checks the connection of blocks and set "mark" to each block.
 	 * @param x X coord

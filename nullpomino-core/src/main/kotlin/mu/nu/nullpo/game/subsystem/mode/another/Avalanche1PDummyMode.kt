@@ -30,15 +30,13 @@
  */
 package mu.nu.nullpo.game.subsystem.mode.another
 
-import mu.nu.nullpo.game.component.Block
-import mu.nu.nullpo.game.component.Piece
-import mu.nu.nullpo.game.component.Statistics
+import mu.nu.nullpo.game.component.*
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
 import mu.nu.nullpo.game.event.ScoreEvent
 import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.game.play.GameEngine.GameStyle
-import mu.nu.nullpo.game.play.LineGravity
 import mu.nu.nullpo.game.play.clearRule.Color
+import mu.nu.nullpo.game.play.fallRule.Cascade
 import mu.nu.nullpo.game.subsystem.mode.AbstractMode
 import mu.nu.nullpo.gui.common.BaseFont.FONT.BASE
 import mu.nu.nullpo.util.GeneralUtil.toTimeStr
@@ -171,7 +169,8 @@ abstract class Avalanche1PDummyMode:AbstractMode() {
 
 	protected open fun readyInit(engine:GameEngine):Boolean {
 		engine.numColors = numColors
-		engine.lineGravityType = if(cascadeSlow) LineGravity.CASCADE_SLOW else LineGravity.CASCADE
+		engine.lineGravityType = Cascade
+		engine.cascadeDelay = if(cascadeSlow) 2 else 1
 		engine.displaySize = if(bigDisplay) 1 else 0
 
 		when(outlinetype) {

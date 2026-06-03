@@ -35,9 +35,10 @@ import mu.nu.nullpo.game.component.Piece.Shape
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
 import mu.nu.nullpo.game.event.ScoreEvent
 import mu.nu.nullpo.game.play.GameEngine
-import mu.nu.nullpo.game.play.LineGravity
 import mu.nu.nullpo.game.play.clearRule.LineBomb
 import mu.nu.nullpo.game.play.clearRule.LineSpark
+import mu.nu.nullpo.game.play.fallRule.Cascade
+import mu.nu.nullpo.game.play.fallRule.Native
 import mu.nu.nullpo.game.subsystem.mode.menu.BooleanMenuItem
 import mu.nu.nullpo.game.subsystem.mode.menu.DelegateMenuItem
 import mu.nu.nullpo.gui.common.BaseFont
@@ -646,9 +647,9 @@ class Practice:AbstractGrand() {
 
 		// Another Rule
 		if(cascadeStyle==0)
-			engine.lineGravityType = LineGravity.Native
+			engine.lineGravityType = Native
 		else {
-			engine.lineGravityType = LineGravity.CASCADE
+			engine.lineGravityType = Cascade
 			if(eraseStyle==1) engine.clearMode = LineBomb
 			if(eraseStyle==2) engine.clearMode = LineSpark
 		}

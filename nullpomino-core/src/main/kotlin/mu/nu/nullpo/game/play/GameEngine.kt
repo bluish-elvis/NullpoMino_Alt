@@ -37,6 +37,7 @@ import mu.nu.nullpo.game.event.*
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
 import mu.nu.nullpo.game.event.ScoreEvent.Twister
 import mu.nu.nullpo.game.play.clearRule.*
+import mu.nu.nullpo.game.play.fallRule.*
 import mu.nu.nullpo.game.subsystem.ai.AIPlayer
 import mu.nu.nullpo.game.subsystem.wallkick.Wallkick
 import mu.nu.nullpo.gui.common.ConfigGlobal.AIConf
@@ -221,7 +222,7 @@ class GameEngine(
 	var lineClearing = 0; internal set
 	var garbageClearing = 0; private set
 	/** Line gravity type (Native, Cascade, etc) */
-	var lineGravityType:LineGravity = LineGravity.Native
+	var lineGravityType:LineGravity = Native
 	/** Current number of chains */
 	var chain = 0; internal set
 
@@ -666,10 +667,6 @@ class GameEngine(
 			field = value
 		}
 
-	/** Delay for each step in cascade animations */
-	var cascadeDelay = 0
-	/** Delay between landing and checking for clears in cascade */
-	var cascadeClearDelay = 0
 	/** If true, color clears will ignore hidden rows */
 	var ignoreHidden = false
 		set(value) {
@@ -700,11 +697,11 @@ class GameEngine(
 
 	internal var playerName = ""
 
-	/** Current AREの値を取得 (ルール設定も考慮)*/
+	/** Current Entry delayの値を取得 (ルール設定も考慮)*/
 	val are
 		get() = if(speed.are<ruleOpt.minARE&&ruleOpt.minARE>=0) ruleOpt.minARE
 		else if(speed.are>ruleOpt.maxARE&&ruleOpt.maxARE>=0) ruleOpt.maxARE else speed.are
-	/** Current ARE after lines clearの値を取得 (ルール設定も考慮)*/
+	/** Current Entry delay after lines clearの値を取得 (ルール設定も考慮)*/
 	val areLine
 		get() = if(speed.areLine<ruleOpt.minARELine&&ruleOpt.minARELine>=0) ruleOpt.minARELine
 		else if(speed.areLine>ruleOpt.maxARELine&&ruleOpt.maxARELine>=0) ruleOpt.maxARELine else speed.areLine
@@ -716,6 +713,16 @@ class GameEngine(
 	val lockDelay
 		get() = if(speed.lockDelay<ruleOpt.minLockDelay&&ruleOpt.minLockDelay>=0) ruleOpt.minLockDelay
 		else if(speed.lockDelay>ruleOpt.maxLockDelay&&ruleOpt.maxLockDelay>=0) ruleOpt.maxLockDelay else speed.lockDelay
+
+	/** Delay for each step in cascade animations */
+	var cascadeDelay = 1
+	/** Delay between landing and checking for clears in cascade */
+	var cascadeClearDelay = areLine
+		get() = areLine
+		set(value) {
+			speed.areLine = value
+			field = value
+		}
 
 	/** Current DASの値を取得 (ルール設定も考慮)*/
 	val das
@@ -878,7 +885,7 @@ class GameEngine(
 
 		lineClearing = 0
 		garbageClearing = 0
-		lineGravityType = LineGravity.Native
+		lineGravityType = Native
 		chain = 0
 		lineGravityTotalLines = 0
 
@@ -1018,6 +1025,7 @@ class GameEngine(
 
 		rainbowAnimate = false
 		depth = 0
+		fieldbg = 0
 		fieldbgY = 0f
 
 		startTime = 0
@@ -2100,7 +2108,7 @@ class GameEngine(
 									lastMove = if(onGroundBeforeMove) {
 										//it.updateConnectData(nowPieceX, nowPieceY, field)
 										receiver.pieceFlicked(this, nowPieceX, nowPieceY, it, true)
-										extendedMoveCount++
+										if(dasCount==0&&!dasInstant) extendedMoveCount++
 										LastMove.SLIDE_GROUND
 									} else LastMove.SLIDE_AIR
 									if(!dasInstant&&frame!=Frame.SG)
@@ -2326,7 +2334,7 @@ class GameEngine(
 								stopSE("danger")
 								if(ending==2&&staffrollNoDeath) stat = Status.NOTHING
 							}
-							(lineGravityType==LineGravity.CASCADE||lineGravityType==LineGravity.CASCADE_SLOW)&&!connectBlocks -> {
+							(lineGravityType==Cascade)&&!connectBlocks -> {
 								stat = Status.LINECLEAR
 								statc[0] = lineDelay
 								statLineClear()
@@ -2421,10 +2429,11 @@ class GameEngine(
 		// 最初の frame
 		if(statc[0]==0) {
 			val check = clearMode.flag(this, field)
-			lastClear = check
+			if(check.gemCleared>0) playSE("gem")
+			lastClear = if(statc[1]==0) check else check+lastClear
+
 			val li = check.size
 
-			if(check.gemCleared>0) playSE("gem")
 			val ev = ScoreEvent(nowPieceObject, li, b2bCount, combo, twistType, split)
 			lastEvent = ev
 			// All clear
@@ -2433,90 +2442,46 @@ class GameEngine(
 				receiver.bravo(this)
 				tempHanabi += 6
 			}
-			// Calculate score
-			owner.mode?.calcScore(this, ev)?.let {
-				if(it>0) {
-					receiver.addScore(this,
-						nowPieceX, check.linesYfolded.maxBy {i -> i.size}.average().toInt(), it)
-				}
-			}
-			receiver.calcScore(this, ev)
-
-			if(b2bCount<-1) b2bCount = -1
 
 			// Blockを消す演出を出す (まだ実際には消えていない)
-			if(clearMode===Line) lastLinesY.flatten().let {
-				owner.mode?.lineClear(this, it)
-				receiver.lineClear(this, it)
-			}
 			field.filterAttributeMap(Block.ATTRIBUTE.ERASE).let {
 				if(owner.mode?.blockBreak(this, it)!=true)
 					receiver.blockBreak(this, it)
 			}
+
 			// Blockを消す
 			clearMode.clear(field)
+			statc[2] = clearMode.recheck(field).size
+			if(statc[2]<=0) {
+				// Calculate score
+				owner.mode?.calcScore(this, ev)?.let {
+					if(it>0) {
+						receiver.addScore(this,
+							nowPieceX, check.linesYfolded.maxBy {i -> i.size}.average().toInt(), it)
+					}
+				}
+				receiver.calcScore(this, ev)
+				if(b2bCount<-1) b2bCount = -1
+			}
 		}
 
-		val (fc1, fc2) = lineGravityType.check(field)
-		statc[7] = fc1
-		statc[8] = fc2
-// Linesを1段落とす
-		if(lineGravityType==LineGravity.Native&&ruleOpt.lineFallAnim&&statc[0]>=lineDelay-(fc1-1).coerceAtLeast
-				(0)) {
-			lineGravityType.fallSingle(field)//field.downFloatingBlocksSingleLine()
-			depth++
+		if(statc[0]==lineDelay/2&&statc[2]>0) {
+			statc[0] = -1
+			statc[1]++
 		}
 		delayCancel = cancelCheck(Status.LINECLEAR)
-
+		val done = lineGravityType.statLineClear(this)
 		if(statc[0]<lineDelay&&delayCancel) statc[0] = lineDelay
-
+		//if(statc[0]==lineDelay) clearMode.check(field)
+		if(statc[0]>=lineDelay&&done) {
 // Next ステータス
-		if(statc[0]>=lineDelay) {
-			if(lineGravityType==LineGravity.CASCADE||lineGravityType==LineGravity.CASCADE_SLOW) // Cascade
-				if(statc[6]<cascadeDelay) {
-					statc[6]++
-					field.filterAttributeBlocks(Block.ATTRIBUTE.CASCADE_FALL).forEach {(b) ->
-						b.offsetY = statc[6]/cascadeDelay.toFloat()
-					}
-					return
-				} else if(fc1>0) {
-					statc[9] = lineGravityType.fallSingle(field)
-					statc[6] = 0
-					if(!isRetroSkin) playSE("softdrop")
-					return
-				} else if(statc[6]<cascadeClearDelay) {
-					statc[6]++
-					return
-				} else if(clearMode.check(field).size>0) {
-					twistType = null
-					chain++
-					if(chain>statistics.maxChain) statistics.maxChain = chain
-					statc[0] = 0
-					statc[6] = 0
-					return
-				}
-
 			val skip = owner.mode?.lineClearEnd(this)?:false
 			receiver.lineClearEnd(this)
 			if(sticky>0) field.setBlockLinkByColor()
 			if(sticky==2) field.setAllAttribute(true, Block.ATTRIBUTE.IGNORE_LINK)
 
 			if(!skip) {
-				if(lineGravityType==LineGravity.Native) lineGravityType.fallInstant(field).also {
-					depth += it
-				}
-				lastLinesY.filter {it.max()>=field.highestBlockY}.distinctBy {it.size>=3}.forEach {
-					playSE(
-						when {
-							frame==Frame.GB -> "linefallold"
-							it.size>=4 -> "linefall1"
-							it.size<=1 -> "linefall"
-							else -> "linefall0"
-						},
-						maxOf(0.8f, 1.2f-it.max()/3f/fieldHeight),
-						minOf(1f, 0.4f+speed.lineDelay*0.1f)
-					)
-				}
+				lineGravityType.lineClearEnd(this)
 //				field.lineColorsCleared = emptyList()
 
 				resetStatc()

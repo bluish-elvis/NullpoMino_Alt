@@ -32,11 +32,13 @@ package mu.nu.nullpo.game.subsystem.mode.another
 
 import mu.nu.nullpo.game.component.*
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
-import mu.nu.nullpo.game.play.*
+import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.game.play.GameEngine.Status
+import mu.nu.nullpo.game.play.GameManager
 import mu.nu.nullpo.game.play.clearRule.Color.Companion.clearAll
+import mu.nu.nullpo.game.play.fallRule.Cascade
 import mu.nu.nullpo.gui.common.BaseFont
-import mu.nu.nullpo.gui.common.BaseFont.FONT.*
+import mu.nu.nullpo.gui.common.BaseFont.FONT.BASE
 import mu.nu.nullpo.gui.common.GameKeyDummy.Companion.MAX_PLAYERS
 import mu.nu.nullpo.util.CustomProperties
 import mu.nu.nullpo.util.GeneralUtil.toTimeStr
@@ -301,10 +303,8 @@ class AvalancheVSDig:AvalancheVSDummyMode() {
 		val pid = engine.playerID
 		if(engine.statc[0]==0) {
 			engine.numColors = numColors[pid]
-			engine.lineGravityType = if(cascadeSlow[pid])
-				LineGravity.CASCADE_SLOW
-			else
-				LineGravity.CASCADE
+			engine.lineGravityType = Cascade
+			engine.cascadeDelay = if(cascadeSlow[pid]) 2 else 1
 			engine.rainbowAnimate = true
 			engine.displaySize = if(bigDisplay) 1 else 0
 

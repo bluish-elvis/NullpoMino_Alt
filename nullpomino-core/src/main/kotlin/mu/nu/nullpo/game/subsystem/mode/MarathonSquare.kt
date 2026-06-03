@@ -35,7 +35,8 @@ import mu.nu.nullpo.game.component.Block.ATTRIBUTE
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
 import mu.nu.nullpo.game.event.ScoreEvent
 import mu.nu.nullpo.game.play.GameEngine
-import mu.nu.nullpo.game.play.LineGravity
+import mu.nu.nullpo.game.play.fallRule.Cascade
+import mu.nu.nullpo.game.play.fallRule.Native
 import mu.nu.nullpo.gui.common.BaseFont.FONT.BASE
 import mu.nu.nullpo.gui.common.BaseFont.FONT.GRADE
 import mu.nu.nullpo.util.CustomProperties
@@ -224,7 +225,7 @@ class MarathonSquare:AbstractMode() {
 	/* Piece movement */
 	override fun onMove(engine:GameEngine):Boolean {
 		// Disable cascade
-		engine.lineGravityType = LineGravity.Native
+		engine.lineGravityType = Native
 		return false
 	}
 
@@ -365,7 +366,7 @@ class MarathonSquare:AbstractMode() {
 		var pts = li
 
 		if(li>0) {
-			engine.lineGravityType = LineGravity.Native
+			engine.lineGravityType = Native
 
 			if(li>3) pts = 3+(li-3)*2
 
@@ -431,12 +432,12 @@ class MarathonSquare:AbstractMode() {
 		for(y in -1*hiddenHeight..<height)
 			engine.field.setLineFlag(y, false)
 		// Set cascade flag
-		engine.lineGravityType = LineGravity.CASCADE
+		engine.lineGravityType = Cascade
 	}
 
 	/* When the lines clear ends */
 	override fun lineClearEnd(engine:GameEngine):Boolean {
-		if(engine.lineGravityType==LineGravity.CASCADE&&engine.lineGravityTotalLines>0&&tntAvalanche) {
+		if(engine.lineGravityType==Cascade&&engine.lineGravityTotalLines>0&&tntAvalanche) {
 			val field = engine.field
 			for(i in field.allSpaceRows.toList().reversed())
 				if(field.isEmptyLine(i)) {

@@ -126,6 +126,10 @@ data object Line:ClearType {
 			lineGravityTotalLines += lineClearing
 			statistics.blocks += li*fieldWidth
 			if(inGame) statistics.lines += li
+			check.linesY.let {
+				owner.mode?.lineClear(this, it)
+				receiver.lineClear(this, it)
+			}
 		}
 	}
 

@@ -992,6 +992,35 @@ abstract class AbstractRenderer:EventReceiver() {
 		efxFG.addAll(y.map {Beam(engine.fX, engine.fY+it*s, s*engine.fieldWidth, s, if(particle) .5f else 1f)})
 	}
 
+	override fun bombExplod(engine:GameEngine, blk:Map<Int, Map<Int, Pair<Block, Pair<Int, Int>>>>) {
+		if(showLineEffect&&engine.displaySize!=-1) {
+			val s = engine.blockSize
+			efxFG.addAll(blk.flatMap {(y, row) ->
+				row.flatMap a@{(x, it) ->
+					val (blk, range) = it
+					val (rx, ry) = range
+					val sx = engine.fX+x*s
+					val sy = engine.fY+y*s
+					val cint = blk.color?.fxInt?:0
+					val r = resources
+					setOf(FragAnim(ANIM.SPARK, sx, sy, cint.mod(r.blockBreakMax), lineEffectSpeed))
+				}
+			})
+		}
+	}
+
+	override fun sparkExplod(engine:GameEngine, blk:Map<Int, Map<Int, Pair<Block, Int>>>) {
+		if(showLineEffect&&engine.displaySize!=-1) {
+			val s = engine.blockSize
+			efxFG.addAll(blk.flatMap {(y, row) ->
+				row.flatMap a@{(x, blk) ->
+					val sx = engine.fX+x*s
+					val sy = engine.fY+y*s
+					emptySet()
+				}
+			})
+		}
+	}
 	override fun blockBreak(engine:GameEngine, blk:Map<Int, Map<Int, Block>>) {
 		if(showLineEffect&&engine.displaySize!=-1) {
 			val s = engine.blockSize

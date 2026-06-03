@@ -30,16 +30,14 @@
  */
 package mu.nu.nullpo.game.subsystem.mode.another
 
-import mu.nu.nullpo.game.component.Block
+import mu.nu.nullpo.game.component.*
 import mu.nu.nullpo.game.component.Block.COLOR.*
-import mu.nu.nullpo.game.component.Controller
-import mu.nu.nullpo.game.component.Piece
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
 import mu.nu.nullpo.game.event.ScoreEvent
 import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.game.play.GameEngine.GameStyle
-import mu.nu.nullpo.game.play.LineGravity
 import mu.nu.nullpo.game.play.clearRule.ColorStraight
+import mu.nu.nullpo.game.play.fallRule.Cascade
 import mu.nu.nullpo.game.subsystem.mode.AbstractMode
 import mu.nu.nullpo.gui.common.BaseFont.FONT.BASE
 import mu.nu.nullpo.util.CustomProperties
@@ -100,7 +98,7 @@ class Physician:AbstractMode() {
 		engine.clearMode = ColorStraight(4, false, true)
 		engine.garbageColorClear = false
 		engine.colorClearSize = 4
-		engine.lineGravityType = LineGravity.CASCADE
+		engine.lineGravityType = Cascade
 		engine.nextPieceEnable = PIECE_ENABLE
 		engine.randomBlockColor = true
 		engine.blockColors = BLOCK_COLORS
