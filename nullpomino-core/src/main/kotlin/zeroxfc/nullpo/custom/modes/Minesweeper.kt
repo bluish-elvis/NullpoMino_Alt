@@ -37,15 +37,14 @@
 
 package zeroxfc.nullpo.custom.modes
 
-import mu.nu.nullpo.game.component.BGM
-import mu.nu.nullpo.game.component.Block
-import mu.nu.nullpo.game.component.Controller
+import mu.nu.nullpo.game.component.*
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
 import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.game.play.GameEngine.Status
 import mu.nu.nullpo.game.subsystem.mode.AbstractMode
 import mu.nu.nullpo.gui.common.BaseFont
-import mu.nu.nullpo.gui.common.BaseFont.FONT.*
+import mu.nu.nullpo.gui.common.BaseFont.FONT.BASE
+import mu.nu.nullpo.gui.common.BaseFont.FONT.NUM
 import mu.nu.nullpo.util.CustomProperties
 import mu.nu.nullpo.util.GeneralUtil.toTimeStr
 import zeroxfc.nullpo.custom.libs.ProfileProperties
@@ -203,7 +202,7 @@ class Minesweeper:AbstractMode() {
 		}
 
 		// Initialization
-		if(engine.statc[0]==0) {
+		if(engine.stime==0) {
 			// fieldInitialization
 			blockGrid = Array(height) {arrayOfNulls(width)}
 			for(y in blockGrid.indices) {
@@ -232,7 +231,6 @@ class Minesweeper:AbstractMode() {
 				// ゲーム中 flagON
 				engine.gameActive = true
 				engine.gameStarted = true
-				engine.isInGame = true
 			}
 		}
 
@@ -546,12 +544,10 @@ class Minesweeper:AbstractMode() {
 			if(engine.ending==0) engine.timerActive = true
 			engine.statc[0]++
 		} else {
-			engine.isInGame = true
 			val s:Boolean = engine.playerProp.loginScreen.updateScreen(engine)
 			if(engine.playerProp.isLoggedIn) {
 				loadSetting(engine, engine.playerProp.propProfile)
 			}
-			if(engine.stat===Status.SETTING) engine.isInGame = false
 		}
 		return true
 	}
@@ -600,7 +596,7 @@ class Minesweeper:AbstractMode() {
 		receiver.drawScore(
 			engine, ix, 1, "("+(width*height*(minePercentage/100f)).toInt()+" MINES)", BASE, COLOR.BLUE
 		)
-		if(engine.stat===Status.SETTING||engine.stat===Status.RESULT&&!owner.replayMode) {
+		if(engine.isShowRanking) {
 			if(engine.playerProp.isLoggedIn) {
 				receiver.drawScore(engine, ix, 3, "PLAYER", BASE, COLOR.BLUE)
 				receiver.drawScore(engine, ix, 4, engine.playerProp.nameDisplay, BASE, COLOR.WHITE, 2f)
@@ -608,7 +604,7 @@ class Minesweeper:AbstractMode() {
 				receiver.drawScore(engine, ix, 3, "LOGIN STATUS", BASE, COLOR.BLUE)
 				if(!engine.playerProp.isLoggedIn) receiver.drawScore(engine, ix, 4, "(NOT LOGGED IN)\n(E:LOG IN)", BASE)
 			}
-		} else if(engine.stat===Status.CUSTOM&&!engine.gameActive) {
+		} else if(engine.stat is Status.CUSTOM&&!engine.gameActive) {
 			engine.playerProp.loginScreen.renderScreen(receiver, engine)
 		} else {
 			receiver.drawScore(engine, ix, 3, "TIME", BASE, COLOR.BLUE)
@@ -634,7 +630,7 @@ class Minesweeper:AbstractMode() {
 			// Block covered = new Block(Block.COLOR.BLUE, engine.getSkin(), Block.ATTRIBUTE.VISIBLE | Block.ATTRIBUTE.OUTLINE);
 			// Block open = new Block(Block.COLOR.WHITE, engine.getSkin(), Block.ATTRIBUTE.VISIBLE);
 			// Block mine = new Block(Block.COLOR.GEM_RED, engine.getSkin(), Block.ATTRIBUTE.VISIBLE);
-			if(engine.stat===Status.CUSTOM) {
+			if(engine.stat is Status.CUSTOM) {
 				if(height<=MAX_DIM&&width<=MAX_DIM) {
 					for(y in 0..<height) {
 						for(x in 0..<width) {

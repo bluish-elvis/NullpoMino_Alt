@@ -35,9 +35,10 @@ import mu.nu.nullpo.game.component.Piece.Shape
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
 import mu.nu.nullpo.game.event.ScoreEvent
 import mu.nu.nullpo.game.play.GameEngine
-import mu.nu.nullpo.game.play.LineGravity
 import mu.nu.nullpo.game.play.clearRule.LineBomb
 import mu.nu.nullpo.game.play.clearRule.LineSpark
+import mu.nu.nullpo.game.play.fallRule.Cascade
+import mu.nu.nullpo.game.play.fallRule.Native
 import mu.nu.nullpo.game.subsystem.mode.menu.BooleanMenuItem
 import mu.nu.nullpo.game.subsystem.mode.menu.DelegateMenuItem
 import mu.nu.nullpo.gui.common.BaseFont
@@ -311,7 +312,9 @@ class Practice:AbstractGrand() {
 
 				when(menuCursor) {
 					0 -> engine.speed.gravity = rangeCursor(engine.speed.gravity+change*m, -1, 99999)
-					1 -> engine.speed.denominator = rangeCursor(change*m, -1, 99999)
+					1 -> engine.speed.denominator = rangeCursor(engine.speed.denominator+change*m, -1, 99999).let {
+						if(it==0) (change*m).coerceIn(-1, 99999) else it
+					}
 					2 -> engine.speed.are = rangeCursor(engine.speed.are+change, 0, 99)
 					3 -> engine.speed.areLine = rangeCursor(engine.speed.areLine+change, 0, 99)
 					4 -> engine.speed.lineDelay = rangeCursor(engine.speed.lineDelay+change, 0, 99)
@@ -319,62 +322,37 @@ class Practice:AbstractGrand() {
 					6 -> engine.speed.das = rangeCursor(engine.speed.das+change, 0, 99)
 					7 -> bgmId = rangeCursor(bgmId+change, 0, BGM.count-1)
 					8 -> big = !big
-					9 -> {
-						leveltype += change
-						if(leveltype<0) leveltype = LEVELTYPE_MAX-1
-						if(leveltype>LEVELTYPE_MAX-1) leveltype = 0
-					}
+					9 -> leveltype = rangeCursor(leveltype+change, 0, LEVELTYPE_MAX-1)
 					10 -> {
 						//enableTwist = !enableTwist;
-						twistEnableType += change
-						if(twistEnableType<0) twistEnableType = 2
-						if(twistEnableType>2) twistEnableType = 0
+						twistEnableType = rangeCursor(twistEnableType+change, 0, 2)
 					}
 					11 -> enableTwistKick = !enableTwistKick
 					13 -> twistEnableEZ = !twistEnableEZ
 					14 -> enableB2B = !enableB2B
-					15 -> {
-						comboType += change
-						if(comboType<0) comboType = 2
-						if(comboType>2) comboType = 0
-					}
+					15 -> comboType = rangeCursor(comboType+change, 0, 2)
+
 					16 -> secAlert = !secAlert
 					17 -> bigmove = !bigmove
 					18 -> bighalf = !bighalf
-					19 -> {
-						goallv += change*m
-						if(goallv<-1) goallv = 9999
-						if(goallv>9999) goallv = -1
+					19 -> goallv = rangeCursor(goallv+change*m, -1, 9999).let {
+						if(it==0) (change*m).coerceIn(-1, 9999) else it
 					}
-					20 -> {
-						timelimit += change*60*m
-						if(timelimit<0) timelimit = 3600*20
-						if(timelimit>3600*20) timelimit = 0
+					20 -> timelimit = rangeCursor(timelimit+change*60*m, -1, 72000).let {
+						if(it==0) (change*m).coerceIn(-1, 72000) else it
 					}
-					21 -> {
-						rolltimelimit += change*60*m
-						if(rolltimelimit<0) rolltimelimit = 3600*20
-						if(rolltimelimit>3600*20) rolltimelimit = 0
+					21 -> rolltimelimit = rangeCursor(rolltimelimit+change*60*m, -1, 72000).let {
+						if(it==0) (change*m).coerceIn(-1, 72000) else it
 					}
 					22 -> timelimitResetEveryLevel = !timelimitResetEveryLevel
 					23 -> bone = !bone
-					24 -> {
-						blockHidden += change*m
-						if(blockHidden<-2) blockHidden = 9999
-						if(blockHidden>9999) blockHidden = -2
+					24 -> blockHidden = rangeCursor(blockHidden+change*m, -2, 9999).let {
+						if(it==0) (change*m).coerceIn(-2, 9999) else it
 					}
 					25 -> blockHiddenAnim = !blockHiddenAnim
-					26 -> {
-						blockOutlineType += change
-						if(blockOutlineType<0) blockOutlineType = 3
-						if(blockOutlineType>3) blockOutlineType = 0
-					}
+					26 -> blockOutlineType = rangeCursor(blockOutlineType+change, 0, 3)
 					27 -> blockShowOutlineOnly = !blockShowOutlineOnly
-					28 -> {
-						heboHiddenLevel += change
-						if(heboHiddenLevel<0) heboHiddenLevel = 7
-						if(heboHiddenLevel>7) heboHiddenLevel = 0
-					}
+					28 -> heboHiddenLevel = rangeCursor(heboHiddenLevel+change, 0, 7)
 					29 -> pieceEnable[0] = !pieceEnable[0]
 					30 -> pieceEnable[1] = !pieceEnable[1]
 					31 -> pieceEnable[2] = !pieceEnable[2]
@@ -387,22 +365,11 @@ class Practice:AbstractGrand() {
 					38 -> pieceEnable[9] = !pieceEnable[9]
 					39 -> pieceEnable[10] = !pieceEnable[10]
 					40 -> useMap = !useMap
-					41, 42, 43 -> {
-						mapNumber += change
-						if(mapNumber<0) mapNumber = 99
-						if(mapNumber>99) mapNumber = 0
-					}
+					41, 42, 43 -> mapNumber = rangeCursor(mapNumber+change, 0, 99)
 					44, 45 -> presetNumber = rangeCursor(presetNumber+change, 0, 99)
-					46 -> {
-						cascadeStyle += change
-						if(cascadeStyle<0) cascadeStyle = BLOCK_CASCADE_TYPE_STRING.size-1
-						if(cascadeStyle>=BLOCK_CASCADE_TYPE_STRING.size) cascadeStyle = 0
-						if(cascadeStyle==0&&eraseStyle!=0) eraseStyle = 0
-					}
+					46 -> cascadeStyle = rangeCursor(cascadeStyle+change, 0, BLOCK_CASCADE_TYPE_STRING.size-1)
 					47 -> {
-						eraseStyle += change
-						if(eraseStyle<0) eraseStyle = BLOCK_ERASE_TYPE_STRING.size-1
-						if(eraseStyle>=BLOCK_CASCADE_TYPE_STRING.size) eraseStyle = 0
+						eraseStyle = rangeCursor(eraseStyle+change, 0, BLOCK_ERASE_TYPE_STRING.size-1)
 						if(eraseStyle!=0&&cascadeStyle==0) cascadeStyle = 1
 					}
 				}
@@ -615,7 +582,7 @@ class Practice:AbstractGrand() {
 
 	/* Called for initialization during Ready (before initialization) */
 	override fun onReady(engine:GameEngine):Boolean {
-		if(engine.statc[0]==0) {
+		if(engine.stime==0) {
 			//  timeLimit setting
 			if(timelimit>0) timelimitTimer = timelimit
 
@@ -646,9 +613,9 @@ class Practice:AbstractGrand() {
 
 		// Another Rule
 		if(cascadeStyle==0)
-			engine.lineGravityType = LineGravity.Native
+			engine.lineGravityType = Native
 		else {
-			engine.lineGravityType = LineGravity.CASCADE
+			engine.lineGravityType = Cascade
 			if(eraseStyle==1) engine.clearMode = LineBomb
 			if(eraseStyle==2) engine.clearMode = LineSpark
 		}
@@ -752,7 +719,7 @@ class Practice:AbstractGrand() {
 		receiver.drawScore(engine, 0, 0, name, BASE, COLOR.YELLOW)
 
 		// fieldエディットのとき
-		if(engine.stat==GameEngine.Status.FIELDEDIT) {
+		if(engine.stat is GameEngine.Status.FIELDEDIT) {
 			// 座標
 			receiver.drawScore(engine, 0, 2, "X POS", BASE, COLOR.BLUE)
 			receiver.drawScore(engine, 0, 3, "${engine.mapEditX}", BASE)
@@ -878,7 +845,7 @@ class Practice:AbstractGrand() {
 
 	/* Called at game over */
 	override fun onGameOver(engine:GameEngine):Boolean {
-		if(engine.statc[0]==0&&engine.gameActive) secretGrade = engine.field.secretGrade
+		if(engine.stime==0&&engine.gameActive) secretGrade = engine.field.secretGrade
 		return false
 	}
 

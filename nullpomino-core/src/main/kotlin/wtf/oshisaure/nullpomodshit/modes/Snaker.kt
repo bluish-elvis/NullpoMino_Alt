@@ -73,11 +73,10 @@ class Snaker:AbstractMode() {
 	}
 
 	override fun onReady(engine:GameEngine):Boolean {
-		return if(engine.statc[0]==0) {
+		return if(engine.stime==0) {
 			engine.fieldWidth = 19
 			engine.fieldHeight = 19
 			engine.createFieldIfNeeded()
-			engine.statc[0]++
 			engine.playSE("ready")
 			val startx = 9-snakelength/2
 			for(i in 0..<snakelength) {
@@ -88,7 +87,7 @@ class Snaker:AbstractMode() {
 			bonusY = 9
 			moveBonus(engine)
 			true
-		} else if(engine.statc[0]>=engine.goEnd) {
+		} else if(engine.stime>=engine.goEnd) {
 			engine.stat = GameEngine.Status.MOVE
 			if(!engine.readyDone) {
 				engine.startTime = System.nanoTime()

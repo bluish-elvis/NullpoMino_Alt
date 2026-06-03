@@ -33,6 +33,7 @@ package mu.nu.nullpo.game.play.clearRule
 
 import mu.nu.nullpo.game.component.Block
 import mu.nu.nullpo.game.component.Block.ATTRIBUTE
+import mu.nu.nullpo.game.component.Block.COLOR
 import mu.nu.nullpo.game.component.Field
 import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.game.play.clearRule.ClearType.ClearResult
@@ -42,74 +43,89 @@ import mu.nu.nullpo.game.play.clearRule.Line.checkLines
 /** TETROMINO,BOMBER:clears square zone from ignited gems*/
 data object LineBomb:ClearType {
 
-	override fun check(field:Field) = ClearResult(field.checkBombOnLine(false))
-	override fun flag(engine:GameEngine, field:Field) = field.checkLines(false).size.let {
-		if(it<=0) return@let ClearResult()
-		field.checkBombOnLine(true)
-		ClearResult(it, field.igniteBomb(engine.chain+field.checkLines(false).size).let {
-			emptyMap()
-		})
-	}.also {
-		engine.run {
-			playSE("bomb")
-			playSE("erase0")
-			chain++
+	//[3,0],[3,1],[3,2],[3,3],[4,4],[5,5],[5,5],[6,6],[6,6],[7,7]}
+	fun power(pow:Int):Pair<Int, Int> = if(pow<0) 4 to 4 else
+		(pow.let {if(it<=4) it else (5+(it-5)/2).coerceAtMost(9)}-1).let {maxOf(3, it) to it}
+
+	override fun check(field:Field) = field.checkBombOnLine(false).first
+	override fun flag(engine:GameEngine, field:Field) =
+		if(engine.statc[1]<=0) field.checkBombOnLine(true).let {(x, y) ->
+			engine.run {
+				val lines = x.linesY
+				statc[2] = field.lineFlags.count {it.value}
+				lines.let {r ->
+					owner.mode?.lineClear(this, r)
+					receiver.lineClear(this, r)
+				}
+				playSE("lines${lines.size.coerceIn(1, 4)}")
+				if(x.gemClearedNum>0) playSE("gem")
+			}
+			x
+		} else recheck(engine, field).let {res ->
+			engine.run {
+				val lines = engine.statc[2]
+				val pow = engine.chain+lines
+				res.blocksCleared.let {blkS ->
+					receiver.bombExplod(engine, blkS.map {(y, r) -> y to r.map {(x, b) -> x to (b to power(pow))}.toMap()}.toMap())
+				}
+				val cnt = field.igniteBomb(pow)
+				playSE("bomb", (2f-(pow-1)*.15f).coerceIn(.6f, 2f))
+				playSE("erase${(cnt/10).coerceIn(0, 2)}")
+				if(field.filterBlocks {it, _, _ ->
+						it.getAttribute(ATTRIBUTE.ERASE)&&it.isGemBlock&&it.cint!=Block.COLOR_GEM_RAINBOW
+					}
+						.isNotEmpty()) playSE("gem")
+			}
+			ClearResult(res.size, field.findBlocks {it.getAttribute(ATTRIBUTE.ERASE)}).also {engine.chain++}
 		}
-	}
 
-	override fun clear(field:Field) = field.clearProceed(1)
-
+	override fun clear(engine:GameEngine, field:Field) = if(engine.statc[1]>0) field.clearProceed(1) else ClearResult()
+	/**誘爆による発火予約がされている爆弾を検索 */
+	override fun recheck(engine:GameEngine, field:Field) =
+		field.findBlocks {
+			it.getAttribute(ATTRIBUTE.ERASE)&&it.cint==Block.COLOR_GEM_RAINBOW&&!it.getAttribute(ATTRIBUTE.TEMP_MARK)
+		}.let {
+			ClearResult(it.values.sumOf {row -> row.size}, it)
+		}
 	/** ライン上の爆弾の取得
 	 * @param ignite 爆弾を発火予約する
-	 * @return ライン上の爆弾ブロックの個数
+	 * @return ライン数 to ライン上の爆弾ブロックの個数
 	 */
-	fun Field.checkBombOnLine(ignite:Boolean):Int {
-		var ret = 0
-		for(i in allSpaceRows) {
-			val bil = ArrayList<Int>()
-			for(j in 0..<width) {
-				val b = getBlock(j, i)
-				if(b?.isEmpty!=false) {
-					bil.clear()
-					break
-				}
-				if(b.isGemBlock) bil.add(j)
-			}
-			setLineFlag(i, bil.isNotEmpty())
-			if(bil.isNotEmpty()) {
-				ret += bil.size
-				if(ignite) for(j in bil) getBlock(j, i)?.run {
-					cint = Block.COLOR_GEM_RAINBOW
-					setAttribute(true, ATTRIBUTE.ERASE)
+	fun Field.checkBombOnLine(ignite:Boolean):Pair<ClearResult, ClearResult> = checkLines(false).let {res ->
+		if(res.size<=0) return@let ClearResult() to ClearResult()
+		val tmp = res.blocksCleared.map {(y, row) ->
+			y to (row.filter {(_, b) -> b.isGemBlock})
+		}.toMap()
+
+		val ret = tmp.values.sumOf {it.size}
+		if(ignite) {
+			res.linesY.forEach {setLineFlag(it, true)}
+			tmp.forEach {(y, row) ->
+//			setLineFlag(y, false)
+				row.forEach {(x, _) ->
+					getBlock(x, y)?.run {
+						setAttribute(true, ATTRIBUTE.ERASE)
+						secondaryColor = color?:COLOR.RED
+						color = COLOR.RAINBOW
+						setAttribute(false, ATTRIBUTE.TEMP_MARK)
+					}
 				}
 			}
 		}
-		return ret
-	}
-	/** 点火した爆弾ブロックの個数
-	 * @return 点火した爆弾ブロックの個数
-	 */
-	fun Field.checkBombIgnited():Int {
-		var ret = 0
-		for(i in allSpaceRows)
-			for(j in 0..<width) {
-				val b = getBlock(j, i)?:continue
-				if(b.cint==Block.COLOR_GEM_RAINBOW&&b.getAttribute(ATTRIBUTE.ERASE))
-					ret++
-			}
-		return ret
+
+		return res to ClearResult(ret, tmp)
 	}
 
 	/** 予約済みの爆弾ブロックそれぞれで周囲ブロックの消去予約をさせる
-	 * @param w width
-	 * @param h height
-	 * @param bigw
-	 * @param bigh
 	 * @return 破壊するブロックの個数
 	 */
 	fun Field.igniteBomb(pow:Int):Int {
-		return filterAttributeBlocks(ATTRIBUTE.ERASE).filter {(b) -> b.isGemBlock}.sumOf {(b, x, y) ->
-			setLineFlag(y, false)
+		return filterBlocks {b, _, _ ->
+			b.isGemBlock&&b.getAttribute(ATTRIBUTE.ERASE)&&!b.getAttribute(ATTRIBUTE.TEMP_MARK)
+		}.sumOf {(b, x, y) ->
+			b.setAttribute(true, ATTRIBUTE.TEMP_MARK)
+			b.secondaryColor = b.color?:COLOR.RED
+			b.cint = Block.COLOR_GEM_RAINBOW
 			detonateBomb(x, y, if(b.getAttribute(ATTRIBUTE.BIG)) -1 else pow)
 		}
 	}
@@ -119,24 +135,29 @@ data object LineBomb:ClearType {
 	 * @return 消えるBlocks
 	 */
 	private fun Field.detonateBomb(x:Int, y:Int, pow:Int):Int {
-		val (w, h) = if(pow<0) 4 to 4 else
-			(pow.let {if(it<=4) it else (5+(it-5)/2).coerceAtMost(9)}-1).let {maxOf(3, it) to it}
-		//[3,0],[3,1],[3,2],[3,3],[4,4],[5,5],[5,5],[6,6],[6,6],[7,7]}
+		val (w, h) = power(pow)
 		val my = heightWoFloor
 		var blocks = 0
 		val r =
 			listOf(
-				if(y-h>-hiddenHeight) y-h else -hiddenHeight, if(y+h<my) y+h else my, if(x>w) x-w else 0,
-				if(x+w<width) x+w else width
+				(if(y-h>-hiddenHeight) y-h else -hiddenHeight)..(if(y+h<my) y+h else my-1),
+				(if(x>w) x-w else 0)..(if(x+w<width) x+w else width-1)
 			)
-		for(i in r[0]..r[1])
-			for(j in r[2]..r[3]) {
-				val b = getBlock(j, i)?:continue
-				if(!b.getAttribute(ATTRIBUTE.ERASE)) {
-					blocks++
-					b.setAttribute(true, ATTRIBUTE.ERASE)
+		for(i in r[0]) {
+			setLineFlag(i, false)
+			for(j in r[1])
+				getBlock(j, i)?.run {
+					if(!getAttribute(ATTRIBUTE.ERASE)) {
+						blocks++
+						setAttribute(true, ATTRIBUTE.ERASE)
+						if(isGemBlock) {
+							secondaryColor = color?:COLOR.RED
+							color = COLOR.RAINBOW
+							darkness = -.3f
+						} else darkness = .5f
+					}
 				}
-			}
+		}
 		return blocks
 	}
 }

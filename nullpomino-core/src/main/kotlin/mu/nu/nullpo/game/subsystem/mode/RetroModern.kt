@@ -35,6 +35,7 @@ import mu.nu.nullpo.game.component.Piece.Companion.createQueueFromIntStr
 import mu.nu.nullpo.game.event.*
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
 import mu.nu.nullpo.game.play.GameEngine
+import mu.nu.nullpo.game.play.GameEngine.Status
 import mu.nu.nullpo.game.subsystem.mode.menu.*
 import mu.nu.nullpo.gui.common.BaseFont
 import mu.nu.nullpo.gui.common.BaseFont.FONT.*
@@ -158,7 +159,7 @@ class RetroModern:AbstractMode() {
 	override fun onSettingChanged(engine:GameEngine) {
 		super.onSettingChanged(engine)
 		engine.statistics.level = startLevel
-		totalNorma = MAX_LINES-startLevel*16
+		totalNorma = MAX_LINES-startLevel*18
 		owner.bgMan.bg = levelBG[startLevel]
 		receiver.setBGSpd(owner, .5f+gameType.ordinal*.4f, levelBG[startLevel])
 		setSpeed(engine)
@@ -184,10 +185,10 @@ class RetroModern:AbstractMode() {
 
 	/** Ready */
 	override fun onReady(engine:GameEngine):Boolean {
-		if(engine.statc[0]==0)
+		if(engine.stime==0)
 			if(engine.ending==0) {
 //				engine.frame = if(gameType==4) GameEngine.Frame.RED else GameEngine.Frame.WHITE
-				totalNorma = MAX_LINES-startLevel*16
+				totalNorma = MAX_LINES-startLevel*18
 				engine.statistics.level = startLevel
 			} else
 				engine.nextPieceArrayID = createQueueFromIntStr(STRING_POWERON_PATTERN)
@@ -204,7 +205,7 @@ class RetroModern:AbstractMode() {
 		receiver.drawScore(engine, 0, 0, name, BASE, color = COLOR.COBALT)
 		receiver.drawScore(engine, 0, 1, "(${gameType} SPEED)", BASE, COLOR.COBALT)
 
-		if(engine.stat==GameEngine.Status.SETTING||engine.stat==GameEngine.Status.RESULT&&!owner.replayMode) {
+		if(engine.isShowRanking) {
 			// Leaderboard
 			if(!owner.replayMode&&!big&&startLevel==0&&engine.ai==null) {
 				val topY = if(receiver.bigSideNext) 6 else 4
@@ -298,7 +299,7 @@ class RetroModern:AbstractMode() {
 					engine.resetStatc()
 					owner.bgMan.nextBg = -17
 					engine.statistics.rollClear = 2
-					engine.stat = GameEngine.Status.EXCELLENT
+					engine.stat = Status.EXCELLENT
 					if(special) {
 						lastScore = 10000000
 						engine.statistics.scoreBonus += lastScore
@@ -459,26 +460,27 @@ class RetroModern:AbstractMode() {
 			engine.resetStatc()
 			engine.field.reset()
 			engine.nowPieceObject = null
-			engine.stat = GameEngine.Status.CUSTOM
+			engine.stat = Status.CUSTOM
 		}
 		return time
 	}
 
 	override fun onCustom(engine:GameEngine):Boolean {
-		engine.nextPieceArrayID = createQueueFromIntStr(STRING_POWERON_PATTERN)
-		engine.nextPieceArrayObject = emptyList()
-		engine.holdPieceObject = null
-		engine.nextPieceCount = 0
-		if(engine.statc[0]==0) engine.playSE("excellent")
 		when {
-			engine.statc[0]>=200&&engine.ctrl.isPush(Controller.BUTTON_A) -> engine.statc[0] = 300
+			engine.stime==0 -> {
+				engine.nextPieceArrayID = createQueueFromIntStr(STRING_POWERON_PATTERN)
+				engine.nextPieceArrayObject = emptyList()
+				engine.holdPieceObject = null
+				engine.nextPieceCount = 0
+				engine.playSE("excellent")
+			}
+			engine.stime>=200&&engine.ctrl.isPush(Controller.BUTTON_A) -> engine.statc[0] = 300
+			(engine.stime>=300||engine.statc[0]>=300) -> {
+				setSpeed(engine)
+				engine.stat = Status.READY
+				engine.resetStatc()
+			}
 		}
-		if(engine.statc[0]==300) {
-			setSpeed(engine)
-			engine.resetStatc()
-			engine.stat = GameEngine.Status.READY
-		} else
-			engine.statc[0]++
 		return true
 	}
 
@@ -492,7 +494,7 @@ class RetroModern:AbstractMode() {
 
 		val cY = (engine.fieldHeight-1)
 		receiver.drawMenu(engine, 0f, cY/3f, "EXCELLENT!", BASE, COLOR.ORANGE, 1f)
-		if(engine.statc[0]>=100) {
+		if(engine.stime>=100) {
 			receiver.drawMenu(engine, 2f, 8f, "BUT...", BASE, col)
 			receiver.drawMenu(engine, -.25f, 9f, "THIS IS NOT", BASE, col)
 			receiver.drawMenu(engine, .5f, 10f, "OVER YET!", BASE, col)

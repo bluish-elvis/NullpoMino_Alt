@@ -232,7 +232,7 @@ class MarathonPlus:NetDummyMode() {
 
 	override fun onReady(engine:GameEngine):Boolean {
 		super.onReady(engine)
-		if(goalType==3) bonusTime = 10800
+		if(engine.stime==0&&goalType==3) bonusTime = 10800
 		return false
 	}
 
@@ -283,17 +283,15 @@ class MarathonPlus:NetDummyMode() {
 			COLOR.GREEN
 		)
 
-		if(engine.stat==GameEngine.Status.SETTING||engine.stat==GameEngine.Status.RESULT&&!owner.replayMode) {
-			if(!owner.replayMode&&!big&&engine.ai==null) {
-				val topY = if(receiver.bigSideNext) 6 else 4
-				receiver.drawScore(engine, 2, topY-1, "SCORE   LINE TIME", BASE, COLOR.BLUE)
-				val gameType = typeSerial(goalType, turbo, startLevel)
-				ranking[gameType].forEachIndexed {i, it ->
-					receiver.drawScore(engine, 0, topY+i, "%2d".format(i+1), GRADE, COLOR.YELLOW)
-					receiver.drawScore(engine, 2, topY+i, "${it.sc}", NUM, i==rankingRank)
-					receiver.drawScore(engine, 10, topY+i, "${it.li}", NUM, i==rankingRank)
-					receiver.drawScore(engine, 15, topY+i, it.ti.toTimeStr, NUM, i==rankingRank)
-				}
+		if(engine.isShowRanking&&!big) {
+			val topY = if(receiver.bigSideNext) 6 else 4
+			receiver.drawScore(engine, 2, topY-1, "SCORE   LINE TIME", BASE, COLOR.BLUE)
+			val gameType = typeSerial(goalType, turbo, startLevel)
+			ranking[gameType].forEachIndexed {i, it ->
+				receiver.drawScore(engine, 0, topY+i, "%2d".format(i+1), GRADE, COLOR.YELLOW)
+				receiver.drawScore(engine, 2, topY+i, "${it.sc}", NUM, i==rankingRank)
+				receiver.drawScore(engine, 10, topY+i, "${it.li}", NUM, i==rankingRank)
+				receiver.drawScore(engine, 15, topY+i, it.ti.toTimeStr, NUM, i==rankingRank)
 			}
 		} else {
 			receiver.drawScore(engine, 0, 3, "LINE", BASE, COLOR.BLUE)

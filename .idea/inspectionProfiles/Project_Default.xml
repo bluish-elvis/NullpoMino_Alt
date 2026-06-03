@@ -37,7 +37,10 @@
       <option name="reportPlatformArguments" value="true" />
     </inspection_tool>
     <inspection_tool class="IncompleteDestructuring" enabled="true" level="INFORMATION" enabled_by_default="true" editorAttributes="INFORMATION_ATTRIBUTES" />
-    <inspection_tool class="InconsistentLineSeparators" enabled="true" level="WARNING" enabled_by_default="true" editorAttributes="GRAMMAR_ERROR" />
+    <inspection_tool class="InconsistentLineSeparators" enabled="true" level="WARNING" enabled_by_default="true" editorAttributes="GRAMMAR_ERROR">
+      <scope name="Production" level="WARNING" enabled="true" />
+      <scope name="Project Files" level="WARNING" enabled="false" />
+    </inspection_tool>
     <inspection_tool class="InlineClassDeprecatedMigration" enabled="true" level="WARNING" enabled_by_default="true" />
     <inspection_tool class="IntLiteralMayBeLongLiteral" enabled="true" level="ERROR" enabled_by_default="true" editorAttributes="ERRORS_ATTRIBUTES" />
     <inspection_tool class="InvisibleCharacter" enabled="true" level="ERROR" enabled_by_default="true" editorAttributes="ERRORS_ATTRIBUTES" />

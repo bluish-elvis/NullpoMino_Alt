@@ -16,7 +16,4 @@
   <component name="ProjectRootManager" version="2" languageLevel="JDK_26" project-jdk-name="liberica-full-26" project-jdk-type="JavaSDK">
     <output url="file://$PROJECT_DIR$/target" />
   </component>
-  <component name="SuppressKotlinCodeStyleNotification">
-    <option name="disableForAll" value="true" />
-  </component>
 </project>

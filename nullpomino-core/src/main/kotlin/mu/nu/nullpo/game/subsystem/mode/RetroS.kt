@@ -166,7 +166,7 @@ class RetroS:AbstractMode() {
 
 	/** Ready */
 	override fun onReady(engine:GameEngine):Boolean {
-		if(engine.statc[0]==0) {
+		if(engine.stime==0) {
 			engine.ruleOpt.run {
 				lockResetMove = false
 				lockResetSpin = false
@@ -205,7 +205,7 @@ class RetroS:AbstractMode() {
 		receiver.drawScore(engine, 0, 0, name, BASE, COLOR.GREEN)
 		receiver.drawScore(engine, 0, 1, "($gameType SPEED)", BASE, COLOR.GREEN)
 
-		if(engine.stat==GameEngine.Status.SETTING||engine.stat==GameEngine.Status.RESULT&&!owner.replayMode) {
+		if(engine.isShowRanking) {
 			// Leaderboard
 			if(!owner.replayMode&&!big&&startLevel==0&&engine.ai==null) {
 				val topY = if(receiver.bigSideNext) 6 else 4

@@ -38,7 +38,8 @@ import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.game.play.GameEngine.Frame
 import mu.nu.nullpo.game.play.GameEngine.Status
 import mu.nu.nullpo.game.play.GameManager
-import mu.nu.nullpo.gui.common.BaseFont.FONT.*
+import mu.nu.nullpo.gui.common.BaseFont.FONT.BASE
+import mu.nu.nullpo.gui.common.BaseFont.FONT.TTF
 import mu.nu.nullpo.gui.net.NetLobbyFrame
 import mu.nu.nullpo.util.GeneralUtil.toTimeStr
 import java.io.IOException
@@ -656,7 +657,7 @@ internal abstract class NetDummyVSMode:NetDummyMode() {
 
 	/** NET-VS: Ready */
 	override fun onReady(engine:GameEngine):Boolean {
-		if(engine.statc[0]==0)
+		if(engine.stime==0)
 		// Map
 			if(netCurrentRoomInfo!!.useMap&&netVSMapNo<netLobby!!.mapList.size&&!netVSIsPractice) {
 				engine.createFieldIfNeeded()
@@ -670,7 +671,7 @@ internal abstract class NetDummyVSMode:NetDummyMode() {
 				engine.field.setAllAttribute(false, Block.ATTRIBUTE.SELF_PLACED)
 			}
 
-		if(netVSIsPractice&&engine.statc[0]>=10) netVSIsPracticeExitAllowed = true
+		if(netVSIsPractice&&engine.stime>=10) netVSIsPracticeExitAllowed = true
 
 		return false
 	}
@@ -867,28 +868,22 @@ internal abstract class NetDummyVSMode:NetDummyMode() {
 	/** NET-VS: Excellent screen */
 	override fun onExcellent(engine:GameEngine):Boolean {
 		engine.allowTextRenderByReceiver = false
-		val pid = engine.playerID
-		if(pid==0) netVSPlayerResultReceived[pid] = true
+		engine.playerID.let {if(it==0) netVSPlayerResultReceived[it] = true}
+		if(engine.stime==0) owner.musMan.bgm = BGM.Silent
+		if(engine.stime>=engine.field.height+1+180)
+			if(outExcellent(engine)) return true
 
-		if(engine.statc[0]==0) {
-			engine.gameEnded()
-			owner.musMan.bgm = BGM.Silent
-			engine.resetFieldVisible()
-			engine.playSE("excellent")
-		}
+		return super.onExcellent(engine)
+	}
 
-		if(engine.statc[0]>=120&&engine.ctrl.isPush(Controller.BUTTON_A)) engine.statc[0] = engine.field.height+1+180
-
-		if(engine.statc[0]>=engine.field.height+1+180) {
-			if(!netVSIsGameActive&&netVSPlayerResultReceived[pid]) {
+	override fun outExcellent(engine:GameEngine):Boolean {
+		return (!netVSIsGameActive&&netVSPlayerResultReceived[engine.playerID]).also {
+			if(it) {
 				engine.field.reset()
 				engine.resetStatc()
 				engine.stat = Status.RESULT
 			}
-		} else
-			engine.statc[0]++
-
-		return true
+		}
 	}
 
 	/** NET-VS: Draw Excellent screen */
@@ -1245,7 +1240,7 @@ internal abstract class NetDummyVSMode:NetDummyMode() {
 
 				// Force start
 				if(!netVSIsWatch()&&netVSPlayTimerActive&&!netVSIsPractice&&
-					engine.stat==Status.READY&&engine.statc[0]<engine.goEnd)
+					engine.stat is Status.READY&&engine.statc[0]<engine.goEnd)
 					engine.statc[0] = engine.goEnd
 			}
 			// Next and Hold

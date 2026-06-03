@@ -38,10 +38,12 @@ import mu.nu.nullpo.game.event.EventReceiver.Companion.getScaleF
 import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.game.play.GameEngine.GameStyle
 import mu.nu.nullpo.game.play.GameManager
+import mu.nu.nullpo.game.subsystem.mode.GameMode.rankMapType
 import mu.nu.nullpo.game.subsystem.mode.menu.MenuList
 import mu.nu.nullpo.game.subsystem.mode.menu.PresetItem
 import mu.nu.nullpo.gui.common.BaseFont
 import mu.nu.nullpo.gui.common.BaseFont.FONT.*
+import mu.nu.nullpo.gui.common.BaseFontNumber.Companion.isNumFont
 import mu.nu.nullpo.gui.net.NetLobbyFrame
 import mu.nu.nullpo.util.CustomProperties
 import mu.nu.nullpo.util.GeneralUtil.getONorOFF
@@ -67,7 +69,7 @@ abstract class AbstractMode:GameMode {
 	override val propPB:rankMapType get() = emptyMap()
 
 	protected fun rankMapOf(list:List<Pair<String, MutableList<*>>>):rankMapType =
-		list.filterIsInstance<Pair<String, rankMapChild>>().toMap()
+		list.filterIsInstance<Pair<String, GameMode.rankMapChild>>().toMap()
 
 	protected fun rankMapOf(vararg array:Pair<String, MutableList<*>>):rankMapType = rankMapOf(listOf(*array))
 
@@ -228,6 +230,7 @@ abstract class AbstractMode:GameMode {
 
 	/** ARE中の処理 */
 	override fun onARE(engine:GameEngine):Boolean = false
+	override fun outARE(engine:GameEngine) {}
 	/** 移動中の処理 */
 	override fun onMove(engine:GameEngine):Boolean = false
 	override fun onLockFlash(engine:GameEngine):Boolean = false
@@ -235,6 +238,7 @@ abstract class AbstractMode:GameMode {
 	override fun onUndo(engine:GameEngine):Boolean = false
 	override fun onEndingStart(engine:GameEngine):Boolean = false
 	override fun onExcellent(engine:GameEngine):Boolean = false
+	override fun outExcellent(engine:GameEngine):Boolean = false
 	override fun onGameOver(engine:GameEngine):Boolean = false
 	override fun onResult(engine:GameEngine):Boolean = false
 	override fun onFieldEdit(engine:GameEngine):Boolean = false
@@ -470,7 +474,10 @@ abstract class AbstractMode:GameMode {
 		return if(engine.ctrl.isMenuRepeatKey(Controller.BUTTON_RIGHT)) 1 else 0
 	}
 
-	protected fun rangeCursor(x:Int, min:Int, max:Int):Int = if(x>max) min else if(x<min) max else x
+	protected fun rangeCursor(x:Int, range:IntRange):Int =
+		if(x>range.last) range.first else if(x<range.first) range.last else x
+
+	protected fun rangeCursor(x:Int, min:Int, max:Int):Int = rangeCursor(x, min..max)
 	// Configuration changes
 	protected fun updateMenu(engine:GameEngine):Int = updateCursor(engine, menu.menus.size-1).also {sw ->
 		if(sw!=0) {
@@ -511,9 +518,10 @@ abstract class AbstractMode:GameMode {
 					else -> "$it"
 				}
 			}
-			receiver.drawMenu(engine, 0, menuY+y*2, key, BASE, color = menuColor)
-			if(menuCursor==statcMenu+y&&!owner.replayMode) receiver.drawMenu(engine, 0, menuY+1+y*2, "\u0082${str}", BASE, true)
-			else receiver.drawMenu(engine, 1, menuY+1+y*2, str, BASE)
+			receiver.drawMenu(engine, 0, menuY+y*2, key, if(str.isNumFont) NUM else BASE, color = menuColor)
+			val b = menuCursor==statcMenu+y&&!owner.replayMode
+			if(b) receiver.drawMenu(engine, 0, menuY+1+y*2, "\u0082", BASE, true)
+			receiver.drawMenu(engine, 1, menuY+1+y*2, str, if(str.isNumFont) NUM else BASE, b)
 		}
 
 		statcMenu += value.size

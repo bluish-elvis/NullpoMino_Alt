@@ -207,7 +207,7 @@ class MarathonShuttle:NetDummyMode() {
 			engine, 0, 0, "SHUTTLE RUN\n(${GAMETYPE_NAME[goalType]})", BASE, COLOR.WHITE
 		)
 
-		if(engine.stat==Status.SETTING||engine.stat==Status.RESULT&&!owner.replayMode) {
+		if(engine.isShowRanking) {
 			if(!owner.replayMode&&!big&&startLevel==0&&engine.ai==null) {
 				val topY = if(receiver.bigSideNext) 6 else 4
 				receiver.drawScore(engine, 3, topY-1, "SCORE  LINE TIME", BASE, COLOR.BLUE)

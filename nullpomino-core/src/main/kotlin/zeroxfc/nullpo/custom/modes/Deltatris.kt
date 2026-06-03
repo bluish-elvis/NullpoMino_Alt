@@ -167,13 +167,11 @@ class Deltatris:MarathonModeBase() {
 	}
 	override fun onCustom(engine:GameEngine):Boolean {
 		showPlayerStats = false
-		engine.isInGame = true
 		val s:Boolean = engine.playerProp.loginScreen.updateScreen(engine)
 		if(engine.playerProp.isLoggedIn) {
 			loadRankingPlayer(engine.playerProp)
 			loadSetting(engine, engine.playerProp.propProfile)
 		}
-		if(engine.stat===Status.SETTING) engine.isInGame = false
 		return s
 	}
 
@@ -219,7 +217,7 @@ class Deltatris:MarathonModeBase() {
 			engine, 0, 1, "(${difficultyName[difficulty]} DIFFICULTY)", BASE, COLOR.RED
 		)
 		val pid = engine.playerID
-		if(engine.stat===Status.SETTING||engine.stat===Status.RESULT&&!owner.replayMode) {
+		if(engine.isShowRanking) {
 			if(!owner.replayMode&&!big&&engine.ai==null) {
 				val topY = if(receiver.bigSideNext) 6 else 4
 				receiver.drawScore(engine, 3, topY-1, "SCORE  LINE TIME", BASE, COLOR.BLUE)
@@ -247,7 +245,7 @@ class Deltatris:MarathonModeBase() {
 						receiver.drawScore(engine, 0, topY+rankingMax+5, "F:SWITCH RANK SCREEN", BASE, COLOR.GREEN)
 				}
 			}
-		} else if(engine.stat===Status.CUSTOM) {
+		} else if(engine.stat is Status.CUSTOM) {
 			engine.playerProp.loginScreen.renderScreen(receiver, engine)
 		} else {
 			val baseX = receiver.fieldX(engine)+4
@@ -267,7 +265,7 @@ class Deltatris:MarathonModeBase() {
 			val riy = receiver.scoreY(engine, 13)
 			GameTextUtilities.drawDirectTextAlign(
 				receiver, rix, riy, GameTextUtilities.ALIGN_TOP_LEFT, "%.2f".format(multiplier)+"X",
-				if(engine.stat===Status.MOVE&&engine.statc[0]>engine.speed.lockDelay*3) COLOR.RED else if(mScale>1) COLOR.ORANGE else COLOR.WHITE,
+				if(engine.stat is Status.MOVE&&engine.statc[0]>engine.speed.lockDelay*3) COLOR.RED else if(mScale>1) COLOR.ORANGE else COLOR.WHITE,
 				mScale
 			)
 			receiver.drawScore(engine, 0, 6, "LINE", BASE, COLOR.BLUE)
@@ -321,7 +319,7 @@ class Deltatris:MarathonModeBase() {
 		// Meter
 		engine.meterValue = (multiplier/20f)
 		engine.meterColor = GameEngine.METER_COLOR_LIMIT
-		if(engine.stat===Status.SETTING||engine.stat===Status.RESULT&&!owner.replayMode||engine.stat===Status.CUSTOM) {
+		if(engine.isShowRanking||engine.stat is Status.CUSTOM) {
 			// Show rank
 			if(engine.ctrl.isPush(Controller.BUTTON_F)&&engine.playerProp.isLoggedIn&&engine.stat!==Status.CUSTOM) {
 				showPlayerStats = !showPlayerStats

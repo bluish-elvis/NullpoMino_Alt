@@ -309,7 +309,7 @@ class GrandOrders:NetDummyMode() {
 
 	/** Ready screen */
 	override fun onReady(engine:GameEngine):Boolean {
-		if(engine.statc[0]==0) {
+		if(engine.stime==0) {
 			setSpeed(engine)
 			bgmLv = maxOf(0, nowCourse.bgmChange.indexOfLast {it<=startLevel}.let {if(it<0) nowCourse.bgmChange.size-1 else it})
 			nowMission?.ready(engine)
@@ -337,7 +337,7 @@ class GrandOrders:NetDummyMode() {
 		//receiver.drawScore(engine, playerID, -1, -4*2, "DECORATION", scale = .5f);
 		//receiver.drawScoreBadges(engine, playerID,0,-3,100,decoration);
 		//receiver.drawScoreBadges(engine, playerID,5,-4,100,decTemp);
-		if(engine.stat==GameEngine.Status.SETTING||engine.stat==GameEngine.Status.RESULT&&!owner.replayMode) {
+		if(engine.isShowRanking) {
 			if(!owner.replayMode&&netIsNetRankingViewOK(engine)&&!netIsWatch&&isShowBest) {
 				receiver.drawScore(engine, 8, 3, "Time", BASE, COLOR.BLUE)
 				ranking[goalType].forEachIndexed {i, (st) ->
@@ -354,7 +354,7 @@ class GrandOrders:NetDummyMode() {
 				}
 			} else {
 				nowCourse.missions.forEachIndexed {i, it ->
-					val y = i+(engine.stat==GameEngine.Status.SETTING&&engine.statc[1]==1&&i>startLevel).toInt()
+					val y = i+(engine.stat is GameEngine.Status.SETTING&&engine.statc[1]==1&&i>startLevel).toInt()
 					val a = if(i<startLevel) .5f else 1f
 					receiver.drawScore(engine, 0, 2+y, "%2d".format(i+1), GRADE,
 						if(i==startLevel) COLOR.RED else COLOR.YELLOW, 1f, a)
@@ -414,7 +414,7 @@ class GrandOrders:NetDummyMode() {
 	/** This function will be called when the piece is active */
 	override fun onMove(engine:GameEngine):Boolean {
 		// Enable timer again after the levelup
-		if(engine.ending==0&&engine.statc[0]==0&&!engine.timerActive&&!engine.holdDisable) engine.timerActive = true
+		if(engine.ending==0&&engine.stime==0&&!engine.timerActive&&!engine.holdDisable) engine.timerActive = true
 
 		// Ending start
 		if(engine.ending==2&&engine.staffrollEnable&&!rollStarted&&!netIsWatch) {
@@ -485,7 +485,7 @@ class GrandOrders:NetDummyMode() {
 	}
 
 	override fun onARE(engine:GameEngine):Boolean {
-		if(!engine.timerActive&&engine.statc[0]==0) {
+		if(!engine.timerActive&&engine.stime==0) {
 			//Next mission
 			if(prog>=norm)
 				missionPos = engine.statistics.level
@@ -549,7 +549,7 @@ class GrandOrders:NetDummyMode() {
 	}
 
 	override fun onGameOver(engine:GameEngine):Boolean {
-		if(engine.statc[0]==0) {
+		if(engine.stime==0) {
 			if(engine.lives>0) setSpeed(engine)
 		}
 		return super.onGameOver(engine)

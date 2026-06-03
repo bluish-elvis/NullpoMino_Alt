@@ -144,6 +144,7 @@ class GrandS2:AbstractGrand() {
 			}
 		}
 		while(sectionIsNewRecord.size<tableSectionMax.max()) sectionIsNewRecord.add(false)
+		while(sectionTime.size<tableSectionMax.max()) sectionTime.add(0)
 		engine.twistEnable = true
 		engine.b2bEnable = true
 		engine.splitB2B = true
@@ -225,7 +226,7 @@ class GrandS2:AbstractGrand() {
 		receiver.drawScore(engine, -1, -4*2, "DECORATION", BASE, scale = .5f)
 		receiver.drawScoreBadges(engine, 0, -3, 100, owner.stats.decoration)
 		receiver.drawScoreBadges(engine, 5, -4, 100, decTemp)
-		if(engine.stat==GameEngine.Status.SETTING||engine.stat==GameEngine.Status.RESULT&&!owner.replayMode) {
+		if(engine.isShowRanking) {
 			if(!owner.replayMode&&startLevel==0&&!big&&engine.ai==null)
 				if(!isShowBestSectionTime) {
 					// Rankings
@@ -336,7 +337,7 @@ class GrandS2:AbstractGrand() {
 	override fun onMove(engine:GameEngine):Boolean {
 		super.onMove(engine)
 
-		if(engine.ending==0&&engine.statc[0]==0&&!engine.holdDisable) {
+		if(engine.ending==0&&engine.stime==0&&!engine.holdDisable) {
 			// せり上がりカウント
 			if(tableGarbage[goalType][engine.statistics.level/100]!=0) garbageCount++
 
@@ -504,12 +505,12 @@ class GrandS2:AbstractGrand() {
 			engine.meterValue = remainRollTime*1f/ROLLTIMELIMIT
 			engine.meterColor = GameEngine.METER_COLOR_LIMIT
 
-			if(goalType>0&&grade>=tableSectionMax[goalType]) {
-				engine.playSE("grade4")
-				grade++
-			}
 			// Roll 終了
 			if(rollTime>=ROLLTIMELIMIT) {
+				if(goalType>0&&grade>=tableSectionMax[goalType]) {
+					engine.playSE("grade4")
+					grade++
+				}
 				secretGrade = engine.field.secretGrade
 				if(grade>=20&&rollPts>=21) grade++
 
@@ -524,7 +525,7 @@ class GrandS2:AbstractGrand() {
 
 	/* Called at game over */
 	override fun onGameOver(engine:GameEngine):Boolean {
-		if(engine.statc[0]==0&&engine.gameActive) {
+		if(engine.stime==0&&engine.gameActive) {
 			secretGrade = engine.field.secretGrade
 
 			val time = engine.statistics.time
@@ -664,7 +665,7 @@ class GrandS2:AbstractGrand() {
 
 		private val tableLevel =
 			LevelData(listOf(16, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 2, 2), listOf(6, 6, 5, 5, 4, 4, 3, 3, 2, 2, 1, 1, 1, 2),
-				listOf(7, 6, 6, 5, 5, 4, 4, 3, 3, 2, 2, 2, 1, 6), listOf(30, 29, 28, 27, 26, 25, 24, 23, 22, 21, 20, 19, 18, 20),
+				listOf(7, 6, 6, 5, 5, 4, 4, 3, 3, 2, 2, 2, 1, 6), listOf(30, 29, 28, 27, 26, 25, 25, 25, 24, 24, 24, 23, 22, 20),
 				listOf(9, 8, 7, 6, 5, 4, 4, 4, 4, 4, 4, 4, 4, 5))
 
 		/** せり上がり間隔 */

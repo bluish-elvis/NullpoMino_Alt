@@ -48,7 +48,8 @@ import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.game.play.GameEngine.Frame
 import mu.nu.nullpo.game.subsystem.mode.AbstractMode
 import mu.nu.nullpo.game.subsystem.mode.menu.*
-import mu.nu.nullpo.gui.common.BaseFont.FONT.*
+import mu.nu.nullpo.gui.common.BaseFont.FONT.BASE
+import mu.nu.nullpo.gui.common.BaseFont.FONT.GRADE
 import mu.nu.nullpo.util.CustomProperties
 import mu.nu.nullpo.util.GeneralUtil.toTimeStr
 
@@ -146,7 +147,7 @@ class MarathonActual:AbstractMode() {
 				receiver.drawScore(engine, 0, 9, "LEVEL", BASE, 1f)
 				receiver.drawScore(engine, 0, 10, (engine.statistics.level+1).toString(), BASE)
 				topY = totalLength
-				if(engine.stat==GameEngine.Status.MOVE&&engine.nowPieceObject!=null) {
+				if(engine.stat is GameEngine.Status.MOVE&&engine.nowPieceObject!=null) {
 					topY += engine.nowPieceY-engine.getSpawnPosY(engine.nowPieceObject)
 				}
 				receiver.drawScore(engine, 0, 12, "DISTANCE LEFT", BASE, 1f)

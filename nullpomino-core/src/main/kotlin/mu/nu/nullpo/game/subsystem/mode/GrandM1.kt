@@ -233,7 +233,7 @@ class GrandM1:AbstractGrand() {
 	}
 
 	override fun onReady(engine:GameEngine):Boolean {
-		if(engine.statc[0]==0) {
+		if(engine.stime==0) {
 			isShowBestSectionTime = false
 			bgmLv = if(engine.statistics.level<500) 0 else 1
 			owner.musMan.bgm = if(engine.statistics.level<500) BGM.GrandM(0) else BGM.GrandM(1)
@@ -272,7 +272,7 @@ class GrandM1:AbstractGrand() {
 		receiver.drawScore(engine, -1, -4*2, "DECORATION", BASE, scale = .5f)
 		receiver.drawScoreBadges(engine, 0, -3, 100, owner.stats.decoration)
 		receiver.drawScoreBadges(engine, 5, -4, 100, decTemp)
-		if(engine.stat==GameEngine.Status.SETTING||engine.stat==GameEngine.Status.RESULT&&!owner.replayMode) {
+		if(engine.isShowRanking) {
 			if(!owner.replayMode&&startLevel==0&&!big&&!always20g&&engine.ai==null)
 				if(!isShowBestSectionTime) {
 					// Rankings
@@ -550,7 +550,7 @@ class GrandM1:AbstractGrand() {
 
 	/* Called at game over */
 	override fun onGameOver(engine:GameEngine):Boolean {
-		if(engine.statc[0]==0) {
+		if(engine.stime==0) {
 			secretGrade = engine.field.secretGrade
 			val time = engine.statistics.time
 			if(grade>=18)
@@ -569,14 +569,14 @@ class GrandM1:AbstractGrand() {
 
 	override fun renderExcellent(engine:GameEngine) {
 		if(grade==18) {
-			val col = if(engine.statc[0]%4<2) COLOR.WHITE else tablePier21GradeColor[gmPier]
+			val col = if(engine.stime%4<2) COLOR.WHITE else tablePier21GradeColor[gmPier]
 			receiver.drawMenu(engine, .5f, 8f, "YOU ARE A", BASE, COLOR.WHITE, 1f)
 			receiver.drawMenu(engine, 1.25f, 9f, "GRAND", BASE, col, 1.5f)
 			receiver.drawMenu(engine, .5f, 10.5f, "MASTER", BASE, col, 1.5f)
 		} else if(grade==17) {
 			val col = when {
-				engine.statc[0]%4==0 -> COLOR.CYAN
-				engine.statc[0]%2==0 -> COLOR.WHITE
+				engine.stime%4==0 -> COLOR.CYAN
+				engine.stime%2==0 -> COLOR.WHITE
 				else -> COLOR.BLUE
 			}
 			receiver.drawMenu(engine, 3.5f, 8.5f, "BUT...", BASE, COLOR.WHITE, 1f)

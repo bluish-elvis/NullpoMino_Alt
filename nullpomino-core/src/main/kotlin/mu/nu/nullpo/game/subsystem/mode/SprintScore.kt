@@ -322,7 +322,7 @@ Ready&Go screen disappears) */
 		receiver.drawScore(engine, 0, 0, name, BASE, COLOR.RED)
 		receiver.drawScore(engine, 0, 1, "(${GOAL_SCORE_TABLE[goalType]} points run)", BASE, COLOR.RED)
 
-		if(engine.stat==GameEngine.Status.SETTING||engine.stat==GameEngine.Status.RESULT&&!owner.replayMode) {
+		if(engine.isShowRanking) {
 			if(!owner.replayMode&&!big&&engine.ai==null&&!netIsWatch) {
 				val topY = if(receiver.bigSideNext) 6 else 4
 				receiver.drawScore(engine, 2, topY-1, "TIME  LINE SCR/LINE", BASE, COLOR.BLUE)

@@ -35,7 +35,7 @@ import mu.nu.nullpo.game.component.*
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
 import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.game.subsystem.ai.DummyAI
-import mu.nu.nullpo.gui.common.BaseFont.FONT.*
+import mu.nu.nullpo.gui.common.BaseFont.FONT.BASE
 import mu.nu.nullpo.util.GeneralUtil.getOX
 import mu.nu.nullpo.util.GeneralUtil.us
 import org.apache.logging.log4j.LogManager
@@ -124,7 +124,7 @@ open class PoochyBot:DummyAI(), Runnable {
 	/* Called at the start of each frame */
 	override fun onFirst(engine:GameEngine, playerID:Int) {
 		inputARE = 0u
-		val newInARE = engine.stat===GameEngine.Status.ARE
+		val newInARE = engine.stat is GameEngine.Status.ARE
 		if(engine.aiPreThink&&engine.speed.are>0&&engine.speed.areLine>0&&(newInARE&&!inARE||!thinking&&!thinkSuccess)) {
 			if(DEBUG_ALL) log.debug("Begin pre-think of next piece.")
 			thinkComplete = false
@@ -165,7 +165,7 @@ open class PoochyBot:DummyAI(), Runnable {
 
 	/* Set button input states */
 	override fun setControl(engine:GameEngine, playerID:Int, ctrl:Controller):UShort {
-		if(engine.nowPieceObject!=null&&engine.stat===GameEngine.Status.MOVE&&delay>=engine.aiMoveDelay&&engine.statc[0]>0&&(!engine.aiUseThread||threadRunning&&!thinking&&thinkComplete)) {
+		if(engine.nowPieceObject!=null&&engine.stat is GameEngine.Status.MOVE&&delay>=engine.aiMoveDelay&&engine.statc[0]>0&&(!engine.aiUseThread||threadRunning&&!thinking&&thinkComplete)) {
 			inputARE = 0u
 			var input:UShort = 0u // Button input data
 			val pieceNow = checkOffset(engine.nowPieceObject, engine)
@@ -599,7 +599,7 @@ open class PoochyBot:DummyAI(), Runnable {
 		bestPts = 0
 		thinkSuccess = false
 
-		val fld:Field = if(engine.stat===GameEngine.Status.READY) Field(
+		val fld:Field = if(engine.stat is GameEngine.Status.READY) Field(
 			engine.fieldWidth,
 			engine.fieldHeight,
 			engine.fieldHiddenHeight,
@@ -663,7 +663,7 @@ open class PoochyBot:DummyAI(), Runnable {
 					pieceNow.getMostMovableRight(nowX, tempY, rt, engine.field)
 				)
 				var spawnOK = true
-				if(engine.stat===GameEngine.Status.ARE) {
+				if(engine.stat is GameEngine.Status.ARE) {
 					val spawnX = engine.getSpawnPosX(pieceNow, fld)
 					val spawnY = engine.getSpawnPosY(pieceNow)
 					spawnOK = !pieceNow.checkCollision(spawnX, spawnY, fld)
@@ -1431,7 +1431,7 @@ open class PoochyBot:DummyAI(), Runnable {
 		var floorKickOK = false
 		if((piece.shape==Piece.Shape.I||piece.shape==Piece.Shape.T)&&
 			(engine.nowWallkickRiseCount<engine.ruleOpt.spinWallkickMaxRise||
-				engine.ruleOpt.spinWallkickMaxRise<0||engine.stat===GameEngine.Status.ARE)
+				engine.ruleOpt.spinWallkickMaxRise<0||engine.stat is GameEngine.Status.ARE)
 		)
 			floorKickOK = true
 		testY = piece.getBottom(testX, testY, testRt, fld!!)

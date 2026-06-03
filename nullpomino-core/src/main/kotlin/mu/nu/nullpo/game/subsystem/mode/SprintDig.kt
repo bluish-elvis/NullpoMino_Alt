@@ -147,7 +147,7 @@ class SprintDig:NetDummyMode() {
 
 	/* Ready */
 	override fun onReady(engine:GameEngine):Boolean {
-		if(engine.statc[0]==0)
+		if(engine.stime==0)
 			if(!netIsNetPlay||!netIsWatch) {
 				engine.createFieldIfNeeded()
 				fillGarbage(engine, goalType)
@@ -246,7 +246,7 @@ class SprintDig:NetDummyMode() {
 				+" garbages run)", BASE, COLOR.GREEN
 		)
 
-		if(engine.stat==GameEngine.Status.SETTING||engine.stat==GameEngine.Status.RESULT&&!owner.replayMode) {
+		if(engine.isShowRanking) {
 			if(!owner.replayMode&&engine.ai==null&&!netIsWatch) {
 				receiver.drawScore(engine, 3, 3, "TIME   LINE Piece", BASE, COLOR.BLUE)
 

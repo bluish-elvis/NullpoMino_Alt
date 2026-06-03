@@ -190,14 +190,12 @@ class RollTraining:MarathonModeBase() {
 
 	override fun onCustom(engine:GameEngine):Boolean {
 		showPlayerStats = false
-		engine.isInGame = true
 		val s = engine.playerProp.loginScreen.updateScreen(engine)
 		if(engine.playerProp.isLoggedIn) {
 			loadRankingPlayer(engine.playerProp)
 			loadSetting(engine, engine.playerProp.propProfile)
 			engine.owner.bgMan.bg = startLevel
 		}
-		if(engine.stat===Status.SETTING) engine.isInGame = false
 		return s
 	}
 	/*
@@ -212,7 +210,7 @@ class RollTraining:MarathonModeBase() {
 		if(useMRoll) sb.append("M-") else sb.append("FADING ")
 		sb.append("ROLL)")
 		receiver.drawScore(engine, 0, 1, "$sb", BASE, COLOR.RED)
-		if(engine.stat===Status.SETTING||engine.stat===Status.RESULT&&!owner.replayMode) {
+		if(engine.isShowRanking) {
 			if(!owner.replayMode&&!big&&engine.ai==null) {
 				if(showPlayerStats) {
 					val topY = if(receiver.bigSideNext) 6 else 4
@@ -261,7 +259,7 @@ class RollTraining:MarathonModeBase() {
 					}
 				}
 			}
-		} else if(engine.stat===Status.CUSTOM) {
+		} else if(engine.stat is Status.CUSTOM) {
 			engine.playerProp.loginScreen.renderScreen(receiver, engine)
 		} else {
 			receiver.drawScore(engine, 0, 3, if(usedSpeed==SPEED_TAP) "GRADE" else "BONUS", BASE, COLOR.BLUE)
@@ -338,7 +336,7 @@ class RollTraining:MarathonModeBase() {
 		val lt = maxOf(timer, 0)
 		engine.meterValue = if(!endless) lt*1f/TIME_LIMITS[usedSpeed] else 1f
 		engine.meterColor = GameEngine.METER_COLOR_LEVEL
-		if(engine.stat===Status.SETTING||engine.stat===Status.RESULT&&!owner.replayMode||engine.stat===Status.CUSTOM) {
+		if(engine.isShowRanking||engine.stat is Status.CUSTOM) {
 			// Show rank
 			if(engine.ctrl.isPush(Controller.BUTTON_F)&&engine.playerProp.isLoggedIn&&engine.stat!==Status.CUSTOM) {
 				showPlayerStats = !showPlayerStats

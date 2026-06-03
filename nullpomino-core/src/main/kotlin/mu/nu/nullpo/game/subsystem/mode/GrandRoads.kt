@@ -307,7 +307,7 @@ class GrandRoads:NetDummyMode() {
 
 	/** Ready screen */
 	override fun onReady(engine:GameEngine):Boolean {
-		if(engine.statc[0]==0) {
+		if(engine.stime==0) {
 			engine.statistics.level = startLevel
 			engine.statistics.levelDispAdd = 1
 			engine.big = big
@@ -339,7 +339,7 @@ class GrandRoads:NetDummyMode() {
 		//receiver.drawScore(engine, playerID, -1, -4*2, "DECORATION", scale = .5f);
 		//receiver.drawScoreBadges(engine, playerID,0,-3,100,decoration);
 		//receiver.drawScoreBadges(engine, playerID,5,-4,100,decTemp);
-		if(engine.stat==GameEngine.Status.SETTING||engine.stat==GameEngine.Status.RESULT&&!owner.replayMode) {
+		if(engine.isShowRanking) {
 			if(!owner.replayMode&&startLevel==0&&!big&&engine.ai==null&&!netIsWatch) {
 				receiver.drawScore(engine, 8, 3, "Time", BASE, COLOR.BLUE)
 				ranking[goalType].forEachIndexed {i, (st) ->
@@ -403,7 +403,7 @@ class GrandRoads:NetDummyMode() {
 	/** This function will be called when the piece is active */
 	override fun onMove(engine:GameEngine):Boolean {
 		// Enable timer again after the levelup
-		if(engine.ending==0&&engine.statc[0]==0&&!engine.timerActive&&!engine.holdDisable)
+		if(engine.ending==0&&engine.stime==0&&!engine.timerActive&&!engine.holdDisable)
 			engine.timerActive = true
 
 		// Ending start
@@ -471,7 +471,7 @@ class GrandRoads:NetDummyMode() {
 	}
 
 	override fun onGameOver(engine:GameEngine):Boolean {
-		if(engine.statc[0]==0) {
+		if(engine.stime==0) {
 			if(engine.lives>0)
 				setSpeed(engine)
 		}

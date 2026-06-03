@@ -259,7 +259,7 @@ class ColorPower:MarathonModeBase() {
 	}
 
 	override fun onReady(engine:GameEngine):Boolean {
-		if(engine.statc[0]==1) {
+		if(engine.stime==1) {
 			engine.ruleOpt.pieceColor.forEachIndexed {i, it ->
 				defaultColors[i] = it
 			}
@@ -347,7 +347,7 @@ class ColorPower:MarathonModeBase() {
 
 	override fun onLast(engine:GameEngine) {
 		super.onLast(engine)
-		if(engine.stat===Status.SETTING||engine.stat===Status.RESULT&&!owner.replayMode||engine.stat===Status.CUSTOM) {
+		if(engine.isShowRanking||engine.stat is Status.CUSTOM) {
 			// Show rank
 			if(engine.ctrl.isPush(Controller.BUTTON_F)&&engine.playerProp.isLoggedIn&&engine.stat!==Status.CUSTOM) {
 				showPlayerStats = !showPlayerStats
@@ -370,7 +370,7 @@ class ColorPower:MarathonModeBase() {
 			BASE,
 			COLOR.GREEN
 		)
-		if(engine.stat===Status.SETTING||engine.stat===Status.RESULT&&!owner.replayMode) {
+		if(engine.isShowRanking) {
 			if(!owner.replayMode&&!big&&engine.ai==null) {
 				val topY = if(receiver.bigSideNext) 6 else 4
 				receiver.drawScore(engine, 3, topY-1, "SCORE  LINE TIME", BASE, COLOR.BLUE)
@@ -422,7 +422,7 @@ class ColorPower:MarathonModeBase() {
 						receiver.drawScore(engine, 0, topY+rankingMax+5, "F:SWITCH RANK SCREEN", BASE, COLOR.GREEN)
 				}
 			}
-		} else if(engine.stat===Status.CUSTOM&&!engine.gameActive)
+		} else if(engine.stat is Status.CUSTOM&&!engine.gameActive)
 			engine.playerProp.loginScreen.renderScreen(receiver, engine) else {
 			receiver.drawScore(engine, 0, 3, "LINE", BASE, COLOR.BLUE)
 			receiver.drawScore(engine, 5, 2, engine.statistics.lines.toString(), NUM, 2f)
@@ -521,14 +521,14 @@ class ColorPower:MarathonModeBase() {
 				}
 			}
 			engine.field.let {
-				if(engine.stat===Status.CUSTOM&&customTimer<120&&!(currentActivePower==0&&engine.lives>=4)) {
+				if(engine.stat is Status.CUSTOM&&customTimer<120&&!(currentActivePower==0&&engine.lives>=4)) {
 					val offset = (10-POWERUP_NAMES[currentActivePower].length)/2
 					receiver.drawMenu(
 						engine, offset, it.height/2, POWERUP_NAMES[currentActivePower], BASE,
 						POWERUP_TEXT_COLORS[currentActivePower]
 					)
 					receiver.drawMenu(engine, 0, it.height/2+1, "ACTIVATED!", BASE)
-				} else if(currentActivePower==0&&customTimer<120&&engine.stat===Status.CUSTOM&&engine.lives>=4) {
+				} else if(currentActivePower==0&&customTimer<120&&engine.stat is Status.CUSTOM&&engine.lives>=4) {
 					val offset = (10-"SMALL SCORE BONUS".length)/2
 					receiver.drawMenu(engine, 0, it.height/2-1, "LIVES FULL!", BASE, COLOR.PINK)
 					receiver.drawMenu(
@@ -566,7 +566,7 @@ class ColorPower:MarathonModeBase() {
 	}
 
 	override fun onExcellent(engine:GameEngine):Boolean {
-		if(engine.lives>0) {
+		if(engine.stime==0&&engine.lives>0) {
 			val bonus:Int = engine.lives*50000*scoreMultiplier
 			lastScore = bonus
 			engine.statistics.scoreBonus += bonus
@@ -685,13 +685,11 @@ class ColorPower:MarathonModeBase() {
 			}
 		} else {
 			showPlayerStats = false
-			engine.isInGame = true
 			engine.playerProp.loginScreen.updateScreen(engine)
 			if(engine.playerProp.isLoggedIn) {
 				loadRankingPlayer(engine.playerProp)
 				loadSetting(engine, engine.playerProp.propProfile)
 			}
-			if(engine.stat===Status.SETTING) engine.isInGame = false
 		}
 		return false
 	}

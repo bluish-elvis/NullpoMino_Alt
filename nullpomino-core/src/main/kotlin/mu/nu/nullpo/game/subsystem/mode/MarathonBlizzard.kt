@@ -162,7 +162,7 @@ class MarathonBlizzard:NetDummyMode() {
 
 		receiver.drawScore(engine, 0, 0, name, BASE, color = COLOR.CYAN)
 
-		if(engine.stat==GameEngine.Status.SETTING||engine.stat==GameEngine.Status.RESULT&&!owner.replayMode) {
+		if(engine.isShowRanking) {
 			if(!owner.replayMode&&startLevel==0) {
 				val topY = if(receiver.bigSideNext) 6 else 4
 				receiver.drawScore(engine, 0, topY-1, "SCORE LINE DEPTH", BASE, COLOR.BLUE)
@@ -228,15 +228,15 @@ class MarathonBlizzard:NetDummyMode() {
 		// Line clear bonus
 		val li = ev.lines
 		val pts = calcPoint(engine, ev)
-		val ices = engine.field.lastLinesCleared.values.sumOf {it.values.count {it?.hard!=0}}
+		val ices = engine.field.lastLinesCleared.values.sumOf {it.values.count {it.hard!=0}}
 		if(li>0) {
 			// Decrease waiting garbage
 			val pow = calcPower(engine, ev, true)
 			val lv = engine.statistics.level
 			val iceBreak = getLineDownNorm(lv)*10
 			water += iceBreak*(li>=4).toInt()+pow+engine.field.lastLinesCleared.values.let {llc ->
-				val fli = llc.count {it.any {(_, b) -> b?.hard!=0}}
-				val fbc = llc.sumOf {it.values.filter {b -> b?.hard!=0}.size}
+				val fli = llc.count {it.any {(_, b) -> b.hard!=0}}
+				val fbc = llc.sumOf {it.values.filter {b -> b.hard!=0}.size}
 				5+fli*5+minOf(maxOf(fbc/2, minOf(fli*10, 20-(engine.field.highestBlockY*2-10).coerceIn(0, 20))), 20)
 				+ev.combo+ev.twist*10+ev.split*10+lv
 			}

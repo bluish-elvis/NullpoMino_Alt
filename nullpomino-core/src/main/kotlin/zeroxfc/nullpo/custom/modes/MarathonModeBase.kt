@@ -43,9 +43,9 @@ import mu.nu.nullpo.game.event.*
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
 import mu.nu.nullpo.game.net.NetUtil.urlEncode
 import mu.nu.nullpo.game.play.GameEngine
+import mu.nu.nullpo.game.subsystem.mode.GameMode.rankMapType
 import mu.nu.nullpo.game.subsystem.mode.NetDummyMode
 import mu.nu.nullpo.game.subsystem.mode.menu.*
-import mu.nu.nullpo.game.subsystem.mode.rankMapType
 import mu.nu.nullpo.gui.common.BaseFont.FONT.BASE
 import mu.nu.nullpo.util.CustomProperties
 import mu.nu.nullpo.util.GeneralUtil.toTimeStr

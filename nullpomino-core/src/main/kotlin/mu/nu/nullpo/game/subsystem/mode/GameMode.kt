@@ -40,11 +40,11 @@ import mu.nu.nullpo.gui.net.NetLobbyFrame
 import mu.nu.nullpo.util.CustomProperties
 import zeroxfc.nullpo.custom.libs.ProfileProperties
 
-typealias rankMapType = Map<String, rankMapChild>
-typealias rankMapChild = MutableList<Comparable<Any>>
 
 /** Game mode interface */
 interface GameMode {
+	typealias rankMapType = Map<String, rankMapChild>
+	typealias rankMapChild = MutableList<Comparable<Any>>
 	/** @return Mode identifier */
 	val id:String
 	/** @return Mode name*/
@@ -112,6 +112,7 @@ interface GameMode {
 	/** During ARE.
 	 * @return true if you override everything of this screen (skips default behavior)*/
 	fun onARE(engine:GameEngine):Boolean
+	fun outARE(engine:GameEngine)
 
 	fun onUndo(engine:GameEngine):Boolean
 	/** During ending-start sequence.
@@ -123,6 +124,7 @@ interface GameMode {
 	/** "Excellent!" screen.
 	 * @return true if you override everything of this screen (skips default behavior)*/
 	fun onExcellent(engine:GameEngine):Boolean
+	fun outExcellent(engine:GameEngine):Boolean
 	/** "Game Over" screen.
 	 * @return true if you override everything of this screen (skips default behavior)*/
 	fun onGameOver(engine:GameEngine):Boolean

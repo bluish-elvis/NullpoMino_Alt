@@ -129,7 +129,7 @@ open class LSPIAI:DummyAI(), Runnable {
 	 * Set button input states
 	 */
 	override fun setControl(engine:GameEngine, playerID:Int, ctrl:Controller):UShort {
-		if(engine.nowPieceObject!=null&&engine.stat===GameEngine.Status.MOVE&&delay>=engine.aiMoveDelay&&engine.statc[0]>0
+		if(engine.nowPieceObject!=null&&engine.stat is GameEngine.Status.MOVE&&delay>=engine.aiMoveDelay&&engine.statc[0]>0
 			&&(!engine.aiUseThread||threadRunning&&!thinking&&thinkCurrentPieceNo<=thinkLastPieceNo)
 		) {
 			var input:UShort = 0u // button input data

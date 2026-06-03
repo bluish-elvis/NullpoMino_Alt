@@ -30,16 +30,14 @@
  */
 package mu.nu.nullpo.game.subsystem.mode.another
 
-import mu.nu.nullpo.game.component.Block
+import mu.nu.nullpo.game.component.*
 import mu.nu.nullpo.game.component.Block.COLOR.*
-import mu.nu.nullpo.game.component.Controller
-import mu.nu.nullpo.game.component.Piece
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
 import mu.nu.nullpo.game.event.ScoreEvent
 import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.game.play.GameEngine.GameStyle
-import mu.nu.nullpo.game.play.LineGravity
 import mu.nu.nullpo.game.play.clearRule.ColorStraight
+import mu.nu.nullpo.game.play.fallRule.Cascade
 import mu.nu.nullpo.game.subsystem.mode.AbstractMode
 import mu.nu.nullpo.gui.common.BaseFont.FONT.BASE
 import mu.nu.nullpo.util.CustomProperties
@@ -100,7 +98,7 @@ class Physician:AbstractMode() {
 		engine.clearMode = ColorStraight(4, false, true)
 		engine.garbageColorClear = false
 		engine.colorClearSize = 4
-		engine.lineGravityType = LineGravity.CASCADE
+		engine.lineGravityType = Cascade
 		engine.nextPieceEnable = PIECE_ENABLE
 		engine.randomBlockColor = true
 		engine.blockColors = BLOCK_COLORS
@@ -186,7 +184,7 @@ class Physician:AbstractMode() {
 	override fun renderLast(engine:GameEngine) {
 		receiver.drawScore(engine, 0, 0, name, BASE, COLOR.COBALT)
 
-		if(engine.stat==GameEngine.Status.SETTING||engine.stat==GameEngine.Status.RESULT&&!owner.replayMode) {
+		if(engine.isShowRanking) {
 			if(!owner.replayMode&&engine.ai==null) {
 				receiver.drawScore(engine, 3, 3, "SCORE  TIME", BASE, COLOR.BLUE)
 				for(i in 0..<rankingMax) {
@@ -233,7 +231,7 @@ class Physician:AbstractMode() {
 
 	/* ReadyScreen processing */
 	override fun onReady(engine:GameEngine):Boolean {
-		if(hoverBlocks>0&&engine.statc[0]==0) {
+		if(hoverBlocks>0&&engine.stime==0) {
 			engine.createFieldIfNeeded()
 			var minY = 6
 			when {

@@ -92,8 +92,6 @@ abstract class ResourceHolder {
 			emptyList()
 		}.also {Companion.imgBlockListSize = it.size}
 	}
-
-	val imgBlockListSize:Int get() = imgNormalBlockList.size
 	/** Block sticky flag */
 	val blockStickyFlagList:List<Boolean> get() = imgNormalBlockList.map {it.width>=400&&it.height>=304}
 
@@ -109,6 +107,8 @@ abstract class ResourceHolder {
 			//loadImage("blockskin/big/b$i")
 		}?:emptyList()
 	}
+
+	val imgBlockListSize:Int get() = minOf(imgNormalBlockList.size, imgSmallBlockList.size, imgBigBlockList.size)
 
 	internal open val imgItemBlock:List<ResourceImage<*>> = listOf("s", "n", "b").map {
 		ResourceImageStr("blockskin/item_$it")

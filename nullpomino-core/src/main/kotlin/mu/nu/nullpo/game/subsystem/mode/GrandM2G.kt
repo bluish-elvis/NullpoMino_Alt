@@ -276,7 +276,7 @@ class GrandM2G:AbstractGrand() {
 		receiver.drawScore(engine, -1, -4*2, "DECORATION", BASE, scale = .5f)
 		receiver.drawScoreBadges(engine, 0, -3, 100, owner.stats.decoration)
 		receiver.drawScoreBadges(engine, 5, -4, 100, decTemp)
-		if(engine.stat==GameEngine.Status.SETTING||engine.stat==GameEngine.Status.RESULT&&!owner.replayMode) {
+		if(engine.isShowRanking) {
 			if(!owner.replayMode&&startLevel==0&&!big&&!always20g
 				&&engine.ai==null
 			)
@@ -587,7 +587,7 @@ class GrandM2G:AbstractGrand() {
 
 	/* Called at game over */
 	override fun onGameOver(engine:GameEngine):Boolean {
-		if(engine.statc[0]==0) secretGrade = engine.field.secretGrade
+		if(engine.stime==0) secretGrade = engine.field.secretGrade
 
 		return false
 	}

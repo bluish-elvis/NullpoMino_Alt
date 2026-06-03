@@ -31,11 +31,8 @@
 package mu.nu.nullpo.game.subsystem.mode
 
 import mu.nu.nullpo.game.component.BGM
-import mu.nu.nullpo.game.event.EventReceiver
+import mu.nu.nullpo.game.event.*
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
-import mu.nu.nullpo.game.event.Leaderboard
-import mu.nu.nullpo.game.event.Rankable
-import mu.nu.nullpo.game.event.ScoreEvent
 import mu.nu.nullpo.game.net.NetUtil
 import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.game.subsystem.mode.menu.*
@@ -145,7 +142,7 @@ Ready&Go screen disappears) */
 		receiver.drawScore(engine, 0, 0, name, BASE, COLOR.RED)
 		receiver.drawScore(engine, 0, 1, "(${GOAL_TABLE[goalType]} Lines run)", BASE, COLOR.RED)
 
-		if(engine.stat==GameEngine.Status.SETTING||engine.stat==GameEngine.Status.RESULT&&!owner.replayMode) {
+		if(engine.isShowRanking) {
 			if(!owner.replayMode&&!big&&engine.ai==null&&!netIsWatch) {
 				val topY = if(receiver.bigSideNext) 6 else 4
 				receiver.drawScore(engine, 1, topY-1, "TIME   PIECE/sec", BASE, COLOR.BLUE)

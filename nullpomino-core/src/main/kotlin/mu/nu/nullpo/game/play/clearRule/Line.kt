@@ -64,6 +64,7 @@ data object Line:ClearType {
 						else -> if(frame==Frame.GB) "eraseold0" else "erase0"
 					}
 				)
+				if(check.gemClearedNum>0) playSE("gem")
 //				lastLinesY = check.linesYfolded
 //				lastLineY = check.linesY.maxOrNull()?:0
 				if(frame!=Frame.SG) playSE("lines${li.coerceIn(1, 4)}")
@@ -126,11 +127,19 @@ data object Line:ClearType {
 			lineGravityTotalLines += lineClearing
 			statistics.blocks += li*fieldWidth
 			if(inGame) statistics.lines += li
+			check.linesY.let {
+				owner.mode?.lineClear(this, it)
+				receiver.lineClear(this, it)
+			}
 		}
 	}
 
-	override fun clear(field:Field) = field.clearLines()
+	override fun clear(engine:GameEngine, field:Field) = field.clearLines()
 
+	/** @param flag ラインに消去フラグを立てるか
+	 * @param bigHalf big pieceのときはtrue,ライン数を半分にする
+	 * @return 消えたLines count and 消えたBlocks with their coordinates
+	 */
 	fun Field.checkLines(flag:Boolean = true, bigHalf:Boolean = false):ClearResult {
 		if(height<=0) return ClearResult()
 		/*val lines1 = (-hiddenHeight..<heightWithoutHurryupFloor).filter {
@@ -161,11 +170,11 @@ data object Line:ClearType {
 			getRow(y).filterNotNullIndexed().associate {(x, b) -> x to b}
 		}).also {check -> if(flag) this.lastClearResult = check}
 	}
-	/** Linesを消す
+	/** 前回のcheckLines(true)で判定した横列を消す
 	 * @return 消えたLines count
 	 */
 	fun Field.clearLines():ClearResult {
-		val lines = lastClearResult
+		val lines = lastClearResult.copy()
 //		log.debug("clearLines: {} {}", lines.size, lines)
 		// field内
 		(lines.linesY-lockedLines).forEach {y ->

@@ -34,8 +34,17 @@ package mu.nu.nullpo.gui.common.fx
 import mu.nu.nullpo.gui.common.AbstractRenderer
 
 /** imgLine : del_h.png del_v.png */
-class Beam(x:Float, y:Float, val w:Int, val h:Int, alpha:Float = 1f):SpriteSheet(x, y, alpha = alpha) {
-	val isV = (h>=w*5)
+sealed class Beam(x:Float, y:Float, val w:Int, val h:Int, alpha:Float = 1f, var angle:Float = 0f):
+	SpriteSheet(x, y, alpha = alpha) {
+	protected abstract val isV:Boolean
+
+	class H(x:Float, y:Float, w:Int, h:Int, alpha:Float = 1f, angle:Float = 0f):Beam(x, y, w, h, alpha, angle) {
+		override val isV:Boolean get() = false
+	}
+
+	class V(x:Float, y:Float, w:Int, h:Int, alpha:Float = 1f, angle:Float = 0f):Beam(x, y, w, h, alpha, angle) {
+		override val isV:Boolean get() = true
+	}
 	override fun update(r:AbstractRenderer):Boolean = ++ticks>=16
 
 	override fun draw(i:Int, r:AbstractRenderer) {

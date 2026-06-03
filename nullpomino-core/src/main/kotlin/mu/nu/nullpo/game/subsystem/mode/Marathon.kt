@@ -167,7 +167,7 @@ class Marathon:NetDummyMode() {
 		if(tableGameClearLines[goalType]<=0) receiver.drawScore(engine, 0, 0, "ENDLESS MARATHON", BASE, COLOR.GREEN)
 		else receiver.drawScore(engine, 0, 0, "${tableGameClearLines[goalType]} LINES MARATHON", BASE, COLOR.GREEN)
 
-		if(engine.stat==GameEngine.Status.SETTING||engine.stat==GameEngine.Status.RESULT&&!owner.replayMode) {
+		if(engine.isShowRanking) {
 			if(!owner.replayMode&&!big&&engine.ai==null) {
 				val topY = if(receiver.bigSideNext) 6 else 4
 				receiver.drawScore(engine, 2, topY-1, "SCORE LINE TIME", BASE, COLOR.BLUE)

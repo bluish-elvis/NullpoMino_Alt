@@ -281,7 +281,7 @@ class MarathonZone:NetDummyMode() {
 			BASE,
 			titlecolor
 		)
-		if((engine.stat===GameEngine.Status.SETTING)||((engine.stat===GameEngine.Status.RESULT)&&(!owner.replayMode))) {
+		if((engine.stat is GameEngine.Status.SETTING)||((engine.stat is GameEngine.Status.RESULT)&&(!owner.replayMode))) {
 			if((!owner.replayMode)&&(engine.ai==null)) {
 				val scale:Float = if((receiver.bigSideNext)) 0.5f else 1.0f
 				val topY = if((receiver.bigSideNext)) 6 else 4
@@ -421,10 +421,10 @@ class MarathonZone:NetDummyMode() {
 			lastzonelines = newlines
 			calcScore(engine, ScoreEvent(null, newlines))
 //			engine.owner.receiver.calcScore(engine, ScoreEvent(null, newlines))
-			engine.statc[0] = 0
+			engine.resetStatc()
 			engine.statc[1] = engine.are
 			engine.statc[2] = 1
-			engine.stat = GameEngine.Status.ARE
+			engine.stat = GameEngine.Status.ARE(engine.are)
 			return true
 		}
 		return false

@@ -198,7 +198,7 @@ abstract class AbstractGrand:AbstractMode() {
 	}
 
 	override fun onReady(engine:GameEngine):Boolean {
-		if(engine.statc[0]==0) {
+		if(engine.stime==0) {
 			sectionsDone = 0
 			decTemp = 0
 		}
@@ -207,22 +207,20 @@ abstract class AbstractGrand:AbstractMode() {
 
 	override fun onMove(engine:GameEngine):Boolean {
 		// 新規ピース出現時
-		if(engine.ending==0&&engine.statc[0]==0&&!engine.holdDisable&&!lvupFlag) {
+		if(engine.ending==0&&engine.stime==0&&!engine.holdDisable&&!lvupFlag) {
 			levelUp(engine, (engine.statistics.level<nextSecLv-1).toInt())
 		}
-		if(engine.ending==0&&engine.statc[0]>0&&!engine.holdDisable) lvupFlag = false
+		if(engine.ending==0&&engine.stime>0&&!engine.holdDisable) lvupFlag = false
 
 		return false
 	}
 
-	override fun onARE(engine:GameEngine):Boolean {
+	override fun outARE(engine:GameEngine) {
 		// 最後の frame
-		if(engine.ending==0&&engine.statc[0]>=engine.statc[1]-1&&!lvupFlag) {
+		if(engine.ending==0&&!lvupFlag) {
 			levelUp(engine, (engine.statistics.level<nextSecLv-1).toInt())
 			lvupFlag = true
 		}
-
-		return false
 	}
 	/** Calculate score */
 	override fun calcScore(engine:GameEngine, ev:ScoreEvent):Int {

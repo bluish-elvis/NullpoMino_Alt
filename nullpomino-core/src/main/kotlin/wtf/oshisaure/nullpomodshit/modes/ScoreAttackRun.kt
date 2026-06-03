@@ -49,7 +49,8 @@ import mu.nu.nullpo.game.play.GameEngine.Frame
 import mu.nu.nullpo.game.subsystem.mode.AbstractMode
 import mu.nu.nullpo.game.subsystem.mode.menu.*
 import mu.nu.nullpo.gui.common.BaseFont
-import mu.nu.nullpo.gui.common.BaseFont.FONT.*
+import mu.nu.nullpo.gui.common.BaseFont.FONT.BASE
+import mu.nu.nullpo.gui.common.BaseFont.FONT.GRADE
 import mu.nu.nullpo.util.CustomProperties
 import mu.nu.nullpo.util.GeneralUtil.toTimeStr
 import kotlin.math.pow
@@ -217,7 +218,7 @@ class ScoreAttackRun:AbstractMode() {
 
 			var colour:Int
 			val event:Int = if(receiver.bigSideNext) 6 else 4
-			if(engine.stat==GameEngine.Status.SETTING||engine.stat==GameEngine.Status.RESULT&&!owner.replayMode) {
+			if(engine.isShowRanking) {
 				if(!owner.replayMode&&engine.ai==null) {
 					receiver.drawScore(engine, 1, event-1, "LV QS SCORE", BASE, COLOR.PURPLE)
 					colour = 0

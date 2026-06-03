@@ -241,13 +241,11 @@ class ScoreTrial:MarathonModeBase() {
 
 	override fun onCustom(engine:GameEngine):Boolean {
 		showPlayerStats = false
-		engine.isInGame = true
 		val s:Boolean = engine.playerProp.loginScreen.updateScreen(engine)
 		if(engine.playerProp.isLoggedIn) {
 			loadRankingPlayer(engine.playerProp)
 			loadSetting(engine, engine.playerProp.propProfile)
 		}
-		if(engine.stat===Status.SETTING) engine.isInGame = false
 		return s
 	}
 	// Render score
@@ -255,7 +253,7 @@ class ScoreTrial:MarathonModeBase() {
 		if(owner.menuOnly) return
 		receiver.drawScore(engine, 0, 0, name, BASE, COLOR.GREEN)
 		receiver.drawScore(engine, 0, 1, "("+DIFFICULTY_NAMES[difficultySelected]+" TIER)", BASE, COLOR.GREEN)
-		if(engine.stat===Status.SETTING||engine.stat===Status.RESULT&&!owner.replayMode) {
+		if(engine.isShowRanking) {
 			if(!owner.replayMode&&!big&&engine.ai==null&&startLife==0) {
 				val topY = if(receiver.bigSideNext) 6 else 4
 				receiver.drawScore(engine, 3, topY-1, "SCORE  LINE TIME", BASE, COLOR.BLUE)
@@ -305,7 +303,7 @@ class ScoreTrial:MarathonModeBase() {
 					)
 				}
 			}
-		} else if(engine.stat===Status.CUSTOM) {
+		} else if(engine.stat is Status.CUSTOM) {
 			engine.playerProp.loginScreen.renderScreen(receiver, engine)
 		} else {
 			receiver.drawScore(engine, 0, 3, "LINE", BASE, COLOR.BLUE)
@@ -319,7 +317,7 @@ class ScoreTrial:MarathonModeBase() {
 			if(!o) {
 				l = engine.lives+1
 			}
-			if(engine.stat===Status.GAMEOVER&&!o&&engine.lives==0) l = 0
+			if(engine.stat is Status.GAMEOVER&&!o&&engine.lives==0) l = 0
 			receiver.drawScore(engine, 0, 9, "LIVES", BASE, COLOR.BLUE)
 			receiver.drawScore(engine, 0, 10, "$l", BASE, l<=1)
 			receiver.drawScore(engine, 0, 12, "LEVEL", BASE, COLOR.BLUE)
@@ -361,7 +359,7 @@ class ScoreTrial:MarathonModeBase() {
 	override fun onLast(engine:GameEngine) {
 		super.onLast(engine)
 		if(engine.gameStarted&&engine.ending==0) {
-			/*if(engine.stat===GameEngine.Status.ARE&&difficultySelected==2) {
+			/*if(engine.stat is GameEngine.Status.ARE&&difficultySelected==2) {
 				engine.dasCount = engine.speed.das
 			}*/
 			if(shouldUseTimer&&engine.stat!==Status.GAMEOVER) {
@@ -423,7 +421,7 @@ class ScoreTrial:MarathonModeBase() {
 			comboTextNumber?.update()
 			if(comboTextNumber?.shouldPurge()==true) comboTextNumber = null
 		}
-		if(engine.stat===Status.SETTING||engine.stat===Status.RESULT&&!owner.replayMode||engine.stat===Status.CUSTOM) {
+		if(engine.isShowRanking||engine.stat is Status.CUSTOM) {
 			// Show rank
 			if(engine.ctrl.isPush(Controller.BUTTON_F)&&engine.playerProp.isLoggedIn&&engine.stat!==Status.CUSTOM) {
 				showPlayerStats = !showPlayerStats

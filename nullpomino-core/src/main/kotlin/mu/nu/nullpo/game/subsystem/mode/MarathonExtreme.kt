@@ -182,7 +182,7 @@ class MarathonExtreme:NetDummyMode() {
 
 		receiver.drawScore(engine, 0, 0, "EXTREME MARATHON!", BASE, COLOR.RED)
 
-		if(engine.stat==GameEngine.Status.SETTING||engine.stat==GameEngine.Status.RESULT&&!owner.replayMode) {
+		if(engine.isShowRanking) {
 			if(!owner.replayMode&&!big&&engine.ai==null) {
 				val topY = if(receiver.bigSideNext) 6 else 4
 				receiver.drawScore(engine, 2, topY-1, "SCORE LINE TIME", BASE, COLOR.RED)
