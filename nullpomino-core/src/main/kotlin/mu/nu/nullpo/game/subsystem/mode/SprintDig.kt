@@ -146,20 +146,19 @@ class SprintDig:NetDummyMode() {
 	}
 
 	/* Ready */
-	override fun onReady(engine:GameEngine):Boolean {
-		if(engine.stime==0)
-			if(!netIsNetPlay||!netIsWatch) {
-				engine.createFieldIfNeeded()
-				fillGarbage(engine, goalType)
+	override fun onReadyDone(engine:GameEngine, readyDone:Boolean) {
+		super.onReadyDone(engine, readyDone)
+		if(!readyDone) if(!netIsNetPlay||!netIsWatch) {
+			engine.createFieldIfNeeded()
+			fillGarbage(engine, goalType)
 
-				// Update meter
-				engine.meterValue = GOAL_TABLE[goalType]*1f
-				engine.meterColor = GameEngine.METER_COLOR_GREEN
+			// Update meter
+			engine.meterValue = GOAL_TABLE[goalType]*1f
+			engine.meterColor = GameEngine.METER_COLOR_GREEN
 
-				// NET: Send field
-				if(netNumSpectators>0) netSendField(engine)
-			}
-		return false
+			// NET: Send field
+			if(netNumSpectators>0) netSendField(engine)
+		}
 	}
 
 	/* This function will be called before the game actually begins (after

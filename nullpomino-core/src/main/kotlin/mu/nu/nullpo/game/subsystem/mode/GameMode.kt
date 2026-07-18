@@ -98,6 +98,7 @@ interface GameMode {
 	/** Ready->Go screen.
 	 * @return true if you override everything of this screen (skips default behavior)*/
 	fun onReady(engine:GameEngine):Boolean
+	fun onReadyDone(engine:GameEngine, readyDone:Boolean)
 	/** Piece movement screen.
 	 * This is where the player can move/spin/drop the current piece.
 	 * But in the first frame, The Current piece is still in the next queue.

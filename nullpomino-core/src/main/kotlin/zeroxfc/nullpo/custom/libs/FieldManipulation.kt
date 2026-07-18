@@ -41,18 +41,15 @@ import mu.nu.nullpo.game.component.Field
 import mu.nu.nullpo.game.event.EventReceiver
 import mu.nu.nullpo.game.play.GameEngine
 import kotlin.random.Random
-
+object FieldManipulation {}
 /**
-Deletes blocks with any of the colors in the given array.
+Deletes blocks with any of the [colors] in the given array.
 
-@param colors Colors to erase
 @return int[]; Amount of blocks of each color erased
  */
 fun Field.delColors(colors:Array<Block.COLOR>, dir:Boolean = true) = colors.map {delColor(it, dir)}
-/**
-Deletes all blocks of a certain color on a field.
 
-@param color Color to erase
+/** Deletes all blocks of a certain [color] on a field.
 @param dir if false, block marked will be erased but not now
 @return int; Amount of blocks erased
  */

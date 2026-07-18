@@ -137,6 +137,7 @@ class Snaker:AbstractMode() {
 			else -> false
 		}
 	}
+
 	private fun checkBonusAhead():Boolean {
 		val x = snakepositionsX[snakelength-1]
 		val y = snakepositionsY[snakelength-1]
@@ -241,7 +242,7 @@ class Snaker:AbstractMode() {
 		snakepositionsY = newpositionsY
 		moveBonus(engine)
 		engine.statistics.scoreBonus++
-		engine.playSE("gem")
+		engine.playSE("medal")
 	}
 
 	private fun blockInSnake(x:Int, y:Int):Int {

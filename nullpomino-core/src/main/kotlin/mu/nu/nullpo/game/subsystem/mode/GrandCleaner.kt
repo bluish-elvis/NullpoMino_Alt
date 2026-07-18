@@ -184,11 +184,11 @@ class GrandCleaner:AbstractMode() {
 		super.onSettingChanged(engine)
 	}
 	/* Ready画面の処理 */
-	override fun onReady(engine:GameEngine):Boolean {
-		if(engine.stime==0) {
+	override fun onReadyDone(engine:GameEngine, readyDone:Boolean) {
+		super.onReadyDone(engine, readyDone)
+		if(!readyDone) {
 			owner.musMan.fadeSW = true
 		}
-		return super.onReady(engine)
 	}
 
 	/* Called at game start(2回目以降のReadyも含む) */

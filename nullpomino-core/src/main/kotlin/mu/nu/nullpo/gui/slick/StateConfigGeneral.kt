@@ -296,13 +296,13 @@ internal class StateConfigGeneral:BaseMenuConfigState() {
 	override val columns = listOf(
 		"APPEARANCE" to listOf(
 			Column({"Sound Effects:"+se.getOX}, {se = !se}, "ConfigGeneral_SE"),
-			Column({"BGM:"+bgm.getOX}, {bgm = !bgm}, "ConfigGeneral_BGM"),
-			Column({"BGM Preload:"+bgmPreload.getOX}, {bgmPreload = !bgmPreload}, "ConfigGeneral_BGMPreload"),
 			Column({"SE Volume:$seVolume(${seVolume*100/128}%)"}, {
 				seVolume += it
 				if(seVolume<0) seVolume = 128
 				if(seVolume>128) seVolume = 0
 			}, "ConfigGeneral_SEVolume"),
+			Column({"BGM:"+bgm.getOX}, {bgm = !bgm}, "ConfigGeneral_BGM"),
+			Column({"BGM Preload:"+bgmPreload.getOX}, {bgmPreload = !bgmPreload}, "ConfigGeneral_BGMPreload"),
 			Column({"BGM Volume:$bgmVolume(${bgmVolume*100/128}%)"}, {
 				bgmVolume += it
 				if(bgmVolume<0) bgmVolume = 128

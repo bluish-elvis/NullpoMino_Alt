@@ -31,6 +31,7 @@
 package mu.nu.nullpo.game.subsystem.mode
 
 import mu.nu.nullpo.game.component.*
+import mu.nu.nullpo.game.component.Item.Companion.Type
 import mu.nu.nullpo.game.component.Piece.Shape
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
 import mu.nu.nullpo.game.event.ScoreEvent
@@ -48,6 +49,7 @@ import mu.nu.nullpo.util.CustomProperties
 import mu.nu.nullpo.util.GeneralUtil.getONorOFF
 import mu.nu.nullpo.util.GeneralUtil.toTimeStr
 import org.apache.logging.log4j.LogManager
+import zeroxfc.nullpo.custom.modes.MarathonModeBase.Companion.CURRENT_VERSION
 
 /** PRACTICE Mode */
 class Practice:AbstractGrand() {
@@ -165,6 +167,9 @@ class Practice:AbstractGrand() {
 	/** How to erase Block */
 	private var eraseStyle = 0
 
+	private var itemFilter = 0
+	private var itemFreq = 0
+
 	/* Initialization */
 	override fun playerInit(engine:GameEngine) {
 		log.debug("playerInit called")
@@ -237,6 +242,8 @@ class Practice:AbstractGrand() {
 		heboHiddenLevel = prop.getProperty("practice.heboHiddenLevel.$preset", 0)
 		cascadeStyle = prop.getProperty("practice.cascadeStyle", 0)
 		eraseStyle = prop.getProperty("practice.eraseStyle", 0)
+		itemFilter = prop.getProperty("practice.itemFilter", 0)
+		itemFreq = prop.getProperty("practice.itemFreq", 0)
 	}
 
 	/** PresetSave the
@@ -279,6 +286,8 @@ class Practice:AbstractGrand() {
 		prop.setProperty("practice.heboHiddenLevel.$preset", heboHiddenLevel)
 		prop.setProperty("practice.cascadeStyle.$preset", cascadeStyle)
 		prop.setProperty("practice.eraseStyle.$preset", eraseStyle)
+		prop.setProperty("practice.itemFilter.$preset", itemFilter)
+		prop.setProperty("practice.itemFreq.$preset", itemFreq)
 	}
 
 	/** MapRead into #[id]:[field] from [prop] */
@@ -301,7 +310,7 @@ class Practice:AbstractGrand() {
 			owner.menuOnly = true
 
 			// Configuration changes
-			val change = updateCursor(engine, 47)
+			val change = updateCursor(engine, 49)
 
 			if(change!=0) {
 				engine.playSE("change")
@@ -371,6 +380,10 @@ class Practice:AbstractGrand() {
 					47 -> {
 						eraseStyle = rangeCursor(eraseStyle+change, 0, BLOCK_ERASE_TYPE_STRING.size-1)
 						if(eraseStyle!=0&&cascadeStyle==0) cascadeStyle = 1
+					}
+					48 -> itemFilter = rangeCursor(cascadeStyle+change, 0, ItemFilters.entries.size-1)
+					49 -> {
+						itemFreq = rangeCursor(eraseStyle+change, 0, 20)
 					}
 				}
 			}
@@ -469,14 +482,14 @@ class Practice:AbstractGrand() {
 			}
 			cy = if(menuCursor<=1) 3 else if(menuCursor<=3) 4 else if(menuCursor<=6) 5 else cy
 
-			receiver.drawMenu(engine, 2, 3, "GRAVITY:", BASE, COLOR.BLUE)
+			receiver.drawMenu(engine, 2, 3, "Gravity:", BASE, COLOR.BLUE)
 			receiver.drawMenu(engine, 11, 3, "%5d/".format(engine.speed.gravity), NUM, menuCursor==0)
 			receiver.drawMenu(engine, 16, 3, "%5d".format(engine.speed.denominator), NUM, menuCursor==1)
 			receiver.drawScoreSpeed(engine, 13, 4, engine.speed.rank, 3f)
 			receiver.drawMenu(engine, 2, 4, "ARE:", BASE, COLOR.BLUE)
 			receiver.drawMenu(engine, 7, 4, "%2d/".format(engine.speed.are), NUM, menuCursor==2)
 			receiver.drawMenu(engine, 11, 4, "%2d".format(engine.speed.areLine), NUM, menuCursor==3)
-			receiver.drawMenu(engine, 2, 5, "DELAY:", BASE, COLOR.BLUE)
+			receiver.drawMenu(engine, 2, 5, "Delay:", BASE, COLOR.BLUE)
 			receiver.drawMenu(engine, 9, 5, "%2d+".format(engine.speed.lockDelay), NUM, menuCursor==5)
 			receiver.drawMenu(engine, 12, 5, "%2d".format(engine.speed.lineDelay), NUM, menuCursor==4)
 			receiver.drawMenu(engine, 15, 5, "DAS:", BASE, COLOR.BLUE)
@@ -485,42 +498,42 @@ class Practice:AbstractGrand() {
 				engine, 2, 7, "BGM:%2d %s".format(bgmId, "${BGM.values[bgmId]}".uppercase()),
 				BASE, menuCursor==7
 			)
-			receiver.drawMenu(engine, 2, 8, "BIG:${big.getONorOFF()}", BASE, menuCursor==8)
-			receiver.drawMenu(engine, 2, 9, "LEVEL TYPE:${LEVELTYPE_STRING[leveltype]}", BASE, menuCursor==9)
+			receiver.drawMenu(engine, 2, 8, "BIG Block:${big.getONorOFF()}", BASE, menuCursor==8)
+			receiver.drawMenu(engine, 2, 9, "LEVEL Type:${LEVELTYPE_STRING[leveltype]}", BASE, menuCursor==9)
 			receiver.drawMenu(
 				engine, 2, 10,
 				"SPIN BONUS:${if(twistEnableType==0) "OFF" else if(twistEnableType==1) "T-ONLY" else "ALL"}",
 				BASE, menuCursor==10
 			)
-			receiver.drawMenu(engine, 2, 11, "EZ SPIN:${enableTwistKick.getONorOFF()}", BASE, menuCursor==11)
+			receiver.drawMenu(engine, 2, 11, "EZ Spin:${enableTwistKick.getONorOFF()}", BASE, menuCursor==11)
 			receiver.drawMenu(
 				engine, 2, 13, "EZ IMMOBILE:${twistEnableEZ.getONorOFF()}", BASE, menuCursor==13
 			)
 			receiver.drawMenu(engine, 2, 14, "B2B:${enableB2B.getONorOFF()}", BASE, menuCursor==14)
-			receiver.drawMenu(engine, 2, 15, "COMBO:${COMBOTYPE_STRING[comboType]}", BASE, menuCursor==15)
-			receiver.drawMenu(engine, 2, 16, "LEVEL STOP SE:${secAlert.getONorOFF()}", BASE, menuCursor==16)
-			receiver.drawMenu(engine, 2, 17, "BIG MOVE:${if(bigmove) "2 CELLS" else "1 CELL"}", BASE, menuCursor==17)
-			receiver.drawMenu(engine, 2, 18, "BIG HALF:${bighalf.getONorOFF()}", BASE, menuCursor==18)
-			var strGoalLv = "ENDLESS"
+			receiver.drawMenu(engine, 2, 15, "Combo:${COMBOTYPE_STRING[comboType]}", BASE, menuCursor==15)
+			receiver.drawMenu(engine, 2, 16, "LEVEL Stop SE:${secAlert.getONorOFF()}", BASE, menuCursor==16)
+			receiver.drawMenu(engine, 2, 17, "BIG move:${if(bigmove) "2 CELLS" else "1 CELL"}", BASE, menuCursor==17)
+			receiver.drawMenu(engine, 2, 18, "BIG half:${bighalf.getONorOFF()}", BASE, menuCursor==18)
+			var strGoalLv = "Endless"
 			if(goallv>=0)
 				strGoalLv = when(leveltype) {
 					LEVELTYPE_MANIA, LEVELTYPE_MANIAPLUS -> "${((goallv+1)*100)} LEVELS"
-					LEVELTYPE_NONE -> "${(goallv+1)} LINES"
+					LEVELTYPE_NONE -> "${(goallv+1)} Lines"
 					else -> "${(goallv+1)} LEVELS"
 				}
-			receiver.drawMenu(engine, 2, 19, "GOAL LEVEL:$strGoalLv", BASE, menuCursor==19)
+			receiver.drawMenu(engine, 2, 19, "Goal LEVEL:$strGoalLv", BASE, menuCursor==19)
 			receiver.drawMenu(
-				engine, 2, 20, "TIME LIMIT:${if(timelimit==0) "NONE" else timelimit.toTimeStr}",
+				engine, 2, 20, "TIME LIMIT:${if(timelimit==0) "none" else timelimit.toTimeStr}",
 				BASE,
 				menuCursor==20
 			)
 			receiver.drawMenu(
-				engine, 2, 21, "ROLL LIMIT:${if(rolltimelimit==0) "NONE" else rolltimelimit.toTimeStr}",
+				engine, 2, 21, "ROLL LIMIT:${if(rolltimelimit==0) "none" else rolltimelimit.toTimeStr}",
 				BASE,
 				menuCursor==21
 			)
 			receiver.drawMenu(
-				engine, 2, 22, "TIME LIMIT PER LEVEL:${timelimitResetEveryLevel.getONorOFF()}",
+				engine, 2, 22, "TIME LIMIT per LEVEL:${timelimitResetEveryLevel.getONorOFF()}",
 				BASE,
 				menuCursor==22
 			)
@@ -529,60 +542,47 @@ class Practice:AbstractGrand() {
 			cy -= if(menuCursor<29) 20 else if(menuCursor<40) 19 else if(menuCursor<=45) 30 else 29
 
 			receiver.drawMenu(engine, 2, 3, "USE BONE BLOCKS:${bone.getONorOFF()}", BASE, menuCursor==23)
-			var strHiddenFrames = "NONE"
+			var strHiddenFrames = "none"
 			if(blockHidden==-2) strHiddenFrames = "LOCK FLASH (${engine.ruleOpt.lockFlash}F)"
 			if(blockHidden>=0) strHiddenFrames = "%d (%.2f SEC.)".format(blockHidden, blockHidden/60f)
-			receiver.drawMenu(
-				engine, 2, 4, "BLOCK HIDDEN FRAMES:$strHiddenFrames",
-				BASE, menuCursor==24
-			)
-			receiver.drawMenu(
-				engine, 2, 5, "BLOCK HIDDEN ANIM:${blockHiddenAnim.getONorOFF()}",
-				BASE, menuCursor==25
-			)
-			receiver.drawMenu(
-				engine, 2, 6, "BLOCK OUTLINE TYPE:${BLOCK_OUTLINE_TYPE_STRING[blockOutlineType]}",
-				BASE,
-				menuCursor==26
-			)
-			receiver.drawMenu(
-				engine, 2, 7, "BLOCK OUTLINE ONLY:${blockShowOutlineOnly.getONorOFF()}",
-				BASE, menuCursor==27
-			)
-			receiver.drawMenu(
-				engine, 2, 8, "HEBO HIDDEN:${if(heboHiddenLevel==0) "NONE" else "LV$heboHiddenLevel"}",
-				BASE,
-				menuCursor==28
-			)
-			receiver.drawMenu(engine, 2, 10, "PIECE I:${pieceEnable[0].getONorOFF()}", BASE, menuCursor==29)
-			receiver.drawMenu(engine, 2, 11, "PIECE L:${pieceEnable[1].getONorOFF()}", BASE, menuCursor==30)
-			receiver.drawMenu(engine, 2, 12, "PIECE O:${pieceEnable[2].getONorOFF()}", BASE, menuCursor==31)
-			receiver.drawMenu(engine, 2, 13, "PIECE Z:${pieceEnable[3].getONorOFF()}", BASE, menuCursor==32)
-			receiver.drawMenu(engine, 2, 14, "PIECE T:${pieceEnable[4].getONorOFF()}", BASE, menuCursor==33)
-			receiver.drawMenu(engine, 2, 15, "PIECE J:${pieceEnable[5].getONorOFF()}", BASE, menuCursor==34)
-			receiver.drawMenu(engine, 2, 16, "PIECE S:${pieceEnable[6].getONorOFF()}", BASE, menuCursor==35)
-			receiver.drawMenu(engine, 2, 17, "PIECE I1:${pieceEnable[7].getONorOFF()}", BASE, menuCursor==36)
-			receiver.drawMenu(engine, 2, 18, "PIECE I2:${pieceEnable[8].getONorOFF()}", BASE, menuCursor==37)
-			receiver.drawMenu(engine, 2, 19, "PIECE I3:${pieceEnable[9].getONorOFF()}", BASE, menuCursor==38)
-			receiver.drawMenu(engine, 2, 20, "PIECE L3:${pieceEnable[10].getONorOFF()}", BASE, menuCursor==39)
-			receiver.drawMenu(engine, 16, 10, "USE MAP:${useMap.getONorOFF()}", BASE, menuCursor==40)
-			receiver.drawMenu(engine, 16, 11, "[EDIT FIELD MAP]", BASE, menuCursor==41)
-			receiver.drawMenu(engine, 16, 12, "[LOAD FIELD MAP]:$mapNumber", BASE, menuCursor==42)
-			receiver.drawMenu(engine, 16, 13, "[SAVE FIELD MAP]:$mapNumber", BASE, menuCursor==43)
-			receiver.drawMenu(engine, 16, 14, "[LOAD PRESET]:$presetNumber", BASE, menuCursor==44)
-			receiver.drawMenu(engine, 16, 15, "[SAVE PRESET]:$presetNumber", BASE, menuCursor==45)
+			receiver.drawMenu(engine, 2, 4, "Block Hidden Frames:$strHiddenFrames", BASE, menuCursor==24)
+			receiver.drawMenu(engine, 2, 5, "Block Hidden Anim:${blockHiddenAnim.getONorOFF()}", BASE, menuCursor==25)
+			receiver.drawMenu(engine, 2, 6, "Block Outline Type:${BLOCK_OUTLINE_TYPE_STRING[blockOutlineType]}", BASE,
+				menuCursor==26)
+			receiver.drawMenu(engine, 2, 7, "Block Outline Only:${blockShowOutlineOnly.getONorOFF()}", BASE, menuCursor==27)
+			receiver.drawMenu(engine, 2, 8, "Hebo Hidden:${if(heboHiddenLevel==0) "none" else "LV$heboHiddenLevel"}", BASE, menuCursor==28)
+			receiver.drawMenu(engine, 2, 10, "Piece I:${pieceEnable[0].getONorOFF()}", BASE, menuCursor==29)
+			receiver.drawMenu(engine, 2, 11, "Piece L:${pieceEnable[1].getONorOFF()}", BASE, menuCursor==30)
+			receiver.drawMenu(engine, 2, 12, "Piece O:${pieceEnable[2].getONorOFF()}", BASE, menuCursor==31)
+			receiver.drawMenu(engine, 2, 13, "Piece Z:${pieceEnable[3].getONorOFF()}", BASE, menuCursor==32)
+			receiver.drawMenu(engine, 2, 14, "Piece T:${pieceEnable[4].getONorOFF()}", BASE, menuCursor==33)
+			receiver.drawMenu(engine, 2, 15, "Piece J:${pieceEnable[5].getONorOFF()}", BASE, menuCursor==34)
+			receiver.drawMenu(engine, 2, 16, "Piece S:${pieceEnable[6].getONorOFF()}", BASE, menuCursor==35)
+			receiver.drawMenu(engine, 2, 17, "Piece I1:${pieceEnable[7].getONorOFF()}", BASE, menuCursor==36)
+			receiver.drawMenu(engine, 2, 18, "Piece I2:${pieceEnable[8].getONorOFF()}", BASE, menuCursor==37)
+			receiver.drawMenu(engine, 2, 19, "Piece I3:${pieceEnable[9].getONorOFF()}", BASE, menuCursor==38)
+			receiver.drawMenu(engine, 2, 20, "Piece L3:${pieceEnable[10].getONorOFF()}", BASE, menuCursor==39)
+			receiver.drawMenu(engine, 16, 10, "Use Map:${useMap.getONorOFF()}", BASE, menuCursor==40)
+			receiver.drawMenu(engine, 16, 11, "[Edit Field Map]", BASE, menuCursor==41)
+			receiver.drawMenu(engine, 16, 12, "[Load Field Map]:$mapNumber", BASE, menuCursor==42)
+			receiver.drawMenu(engine, 16, 13, "[Save Field Map]:$mapNumber", BASE, menuCursor==43)
+			receiver.drawMenu(engine, 16, 14, "[Load Preset]:$presetNumber", BASE, menuCursor==44)
+			receiver.drawMenu(engine, 16, 15, "[Save Preset]:$presetNumber", BASE, menuCursor==45)
 
 			receiver.drawMenu(
-				engine, 17, 17, "BLOCK FALL:${BLOCK_CASCADE_TYPE_STRING[cascadeStyle]}", BASE, menuCursor==46
+				engine, 17, 17, "Block Fall:${BLOCK_CASCADE_TYPE_STRING[cascadeStyle]}", BASE, menuCursor==46
 			)
-			receiver.drawMenu(engine, 17, 18, "BLOCK ERASE:${BLOCK_ERASE_TYPE_STRING[eraseStyle]}", BASE, menuCursor==47)
+			receiver.drawMenu(engine, 17, 18, "Block Erase:${BLOCK_ERASE_TYPE_STRING[eraseStyle]}", BASE, menuCursor==47)
+			receiver.drawMenu(engine, 17, 19, "Item Filter:${ItemFilters.entries[itemFilter].name}", BASE, menuCursor==48)
+			receiver.drawMenu(engine, 17, 20, "Item Freq.:${itemFreq}", BASE, menuCursor==49)
 		}
 		if(!owner.replayMode) receiver.drawMenu(engine, cx, cy, BaseFont.CURSOR, BASE, COLOR.RED)
 	}
 
 	/* Called for initialization during Ready (before initialization) */
-	override fun onReady(engine:GameEngine):Boolean {
-		if(engine.stime==0) {
+	override fun onReadyDone(engine:GameEngine, readyDone:Boolean) {
+		super.onReadyDone(engine, readyDone)
+		if(!readyDone) {
 			//  timeLimit setting
 			if(timelimit>0) timelimitTimer = timelimit
 
@@ -620,7 +620,6 @@ class Practice:AbstractGrand() {
 			if(eraseStyle==2) engine.clearMode = LineSpark
 		}
 
-		return false
 	}
 
 	/* ReadyAt the time ofCalled at initialization (Start gameJust before) */
@@ -671,6 +670,12 @@ class Practice:AbstractGrand() {
 		engine.meterValue = 0f
 		engine.meterColor = GameEngine.METER_COLOR_GREEN
 		setMeter(engine)
+
+		if(itemFreq>0){
+			engine.nextPieceArrayObject.forEachIndexed { i, it ->
+				if(i%itemFreq==0)it.setItem(Item.entries.filter(ItemFilters.entries[itemFilter].filter).random(engine.random))
+			}
+		}
 	}
 
 	/** Set Hebo Hidden params
@@ -814,7 +819,6 @@ class Practice:AbstractGrand() {
 			// Roll End
 			if(rollTime>=rolltimelimit) {
 				engine.gameEnded()
-				engine.resetStatc()
 				engine.stat = GameEngine.Status.EXCELLENT
 			}
 		} else {
@@ -824,7 +828,6 @@ class Practice:AbstractGrand() {
 			if(timelimit>0&&timelimitTimer<=0&&engine.timerActive) {
 				engine.gameEnded()
 				engine.timerActive = false
-				engine.resetStatc()
 				engine.stat = if(goallv==-1) GameEngine.Status.ENDINGSTART else GameEngine.Status.GAMEOVER
 			}
 
@@ -1083,18 +1086,22 @@ class Practice:AbstractGrand() {
 			"GM" // 18
 		)
 
+		enum class ItemFilters(val filter:(it:Item)->Boolean) {
+			None({false}), Offence({it.type==Type.DIRECT||it.type==Type.INTERRUPT}),
+			Defence({it.type==Type.SELF}),
+		}
 		/** LevelThe display name of the type */
-		private val LEVELTYPE_STRING = listOf("NONE", "10LINES", "POINTS", "MANIA", "MANIA+")
+		private val LEVELTYPE_STRING = listOf("none", "10Lines", "Points", "Mania", "Mania+")
 
 		/** ComboThe display name of the type */
-		private val COMBOTYPE_STRING = listOf("DISABLE", "NORMAL", "DOUBLE")
+		private val COMBOTYPE_STRING = listOf("disable", "Normal", "Double")
 
 		/** Outline type names */
-		private val BLOCK_OUTLINE_TYPE_STRING = listOf("NONE", "NORMAL", "CONNECT", "SAMECOLOR")
+		private val BLOCK_OUTLINE_TYPE_STRING = listOf("none", "Normal", "Connect", "SameColor")
 
 		/** Cascade type names */
-		private val BLOCK_CASCADE_TYPE_STRING = listOf("NONE", "CONNECT", "SAMECOLOR")
+		private val BLOCK_CASCADE_TYPE_STRING = listOf("none", "Connect", "SameColor")
 		/** Erase type names */
-		private val BLOCK_ERASE_TYPE_STRING = listOf("LINE", "BOMB", "CROSS")
+		private val BLOCK_ERASE_TYPE_STRING = listOf("Line", "Bomb", "Cross")
 	}
 }

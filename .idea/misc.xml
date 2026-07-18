@@ -2,12 +2,12 @@
 <project version="4">
   <component name="ExternalStorageConfigurationManager" enabled="true" />
   <component name="MavenProjectsManager">
-    <option name="originalFiles">
-      <list>
+    <option name="ignoredFiles">
+      <set>
         <option value="$PROJECT_DIR$/pom.xml" />
         <option value="$PROJECT_DIR$/nullpomino-core/pom.xml" />
         <option value="$PROJECT_DIR$/nullpomino-run/pom.xml" />
-      </list>
+      </set>
     </option>
   </component>
   <component name="ProjectResources">

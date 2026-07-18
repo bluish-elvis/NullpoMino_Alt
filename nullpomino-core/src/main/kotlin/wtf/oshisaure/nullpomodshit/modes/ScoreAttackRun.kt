@@ -284,7 +284,6 @@ class ScoreAttackRun:AbstractMode() {
 				ingame = false
 				engine.playSE("levelstop")
 				engine.gameEnded()
-				engine.resetStatc()
 				engine.stat = GameEngine.Status.EXCELLENT
 			} else if(currenttime<=600&&currenttime%60==0) {
 				engine.playSE("countdown")

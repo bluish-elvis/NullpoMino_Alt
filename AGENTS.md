@@ -2,12 +2,11 @@
 
 ## Project Overview
 
-NullpoMino_Alt is a Kotlin/Java stacker game-engine in the same genre as Tetris with sophisticated game modes, AI 
-capabilities, and 
-modular 
-architecture. The codebase is production-grade with ~7.7K version history.
+NullpoMino_Alt is a Kotlin/Java stacker game-engine in the same genre as Tetris with sophisticated game modes,
+AI capabilities, and modular architecture.
+The codebase is production-grade with ~7.7K version history.
 
-**Tech Stack**: Kotlin 2.4.0 + Java 26, Maven multi-module, Slick2D graphics 1.0.2, LWJGL for OpenGL binding.
+**Tech Stack**: Kotlin 2.4.0 + Java 26, Maven&Gradle multi-module, Slick2D graphics 1.0.2, LWJGL for OpenGL binding.
 
 ---
 
@@ -76,15 +75,23 @@ nullpomino-run/
 
 ### Build & Run
 
-**Build**: `mvn clean install` or use IDE
+You can use Run Configurations for IntelliJ IDEA with Gradle to build and run the game, but here are the command-line options:
+**Build on Linux**: `./mvnw clean install` or `./gradlew clean assemble`
+**Build on Windows**: `./mvnw.cmd clean install` or `./gradlew.bat clean assemble`
+
 - Generates `target/install/` with executable layout
-- Bundles JAR, libs, resources via maven-assembly & maven-dependency plugins
+  - Maven-based. This project lets Gradle use the same directory
+- Bundles the JAR, libs, resources via Maven assembly & Maven dependency plugins
+- Also bundles via Gradle assemble, no different from Maven output
 
 **Run Main Game (Windows)**:
-```bash
+```shell
 cd nullpomino-run/scripts
 play_slick.bat
 ```
+
+- `.run/` contains many Run Configurations for IntelliJ IDEA with Gradle
+
 
 **Key classes in startup** (`NullpoMinoSlick.kt` companion object main):
 1. Load config XML files (music, language, rule descriptions)

@@ -266,14 +266,10 @@ class GrandZ:AbstractGrand() {
 	}
 
 	/** Ready screen */
-	override fun onReady(engine:GameEngine):Boolean {
+	override fun onReadyDone(engine:GameEngine, readyDone:Boolean) {
+		super.onReadyDone(engine, readyDone)
 		owner.musMan.bgm = BGM.Finale(gametype)
-		return false
-	}
 
-	/** This function will be called before the game actually begins
-	 * (after Ready&Go screen disappears) */
-	override fun startGame(engine:GameEngine) {
 		val lv = if(gametype==2) 0 else startLevel
 		engine.statistics.level = lv*100
 		nextSecLv = (lv*100+100).coerceIn(100, 999)
@@ -568,7 +564,6 @@ class GrandZ:AbstractGrand() {
 			// Player has survived the roll
 			if(rollTime>=ROLLTIMELIMIT) {
 				engine.gameEnded()
-				engine.resetStatc()
 				engine.stat = GameEngine.Status.EXCELLENT
 			}
 		}
@@ -614,13 +609,7 @@ class GrandZ:AbstractGrand() {
 				receiver.drawMenu(engine, 2, 15, sectionAvgTime.toTimeStr, NUM)
 			}
 		} else if(engine.statc[1]==2) {
-			receiver.drawMenu(engine, 0, 1.5f, "MEDAL", NANO, COLOR.RED, .5f)
-			receiver.drawMenuMedal(engine, 2, 2, "AC", medalAC)
-			receiver.drawMenuMedal(engine, 5, 2, "ST", medalST)
-			receiver.drawMenuMedal(engine, 8, 2, "SK", medalSK)
-			receiver.drawMenuMedal(engine, 1, 3, "RE", medalRE)
-			receiver.drawMenuMedal(engine, 4, 3, "RO", medalRO)
-			receiver.drawMenuMedal(engine, 7, 3, "CO", medalCO)
+			drawResultMedals(engine, 1, medals)
 
 			drawResultStats(engine, receiver, 6, COLOR.RED, Statistic.LPS, Statistic.SPS, Statistic.PIECE, Statistic.PPS)
 		}

@@ -134,7 +134,7 @@ class Fireworks @JvmOverloads constructor(
 
 		fun colorBy(b:Block):List<Int> = DEF_COLORS[
 			if(b.type!=TYPE.BLOCK&&b.color?.color!=true) Random.nextInt(DEF_COLORS.size) else
-				when(b.color) {
+				when(b.item?.color?:b.color) {
 					Block.COLOR.RED -> 1
 					Block.COLOR.ORANGE -> 2
 					Block.COLOR.YELLOW -> 3

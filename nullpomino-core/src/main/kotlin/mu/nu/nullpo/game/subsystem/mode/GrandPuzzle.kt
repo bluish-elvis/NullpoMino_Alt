@@ -444,6 +444,7 @@ class GrandPuzzle:AbstractMode() {
 		prop.setProperty("$id.gemmania.gimmickXRay", gimmickXRay)
 		prop.setProperty("$id.gemmania.gimmickColor", gimmickColor)
 	}
+
 	private fun delMap(field:Field, prop:CustomProperties, id:Int) {
 		(0..<field.height).forEach {prop.remove("$id.field.map.$it")}
 		prop.remove("$id.gemmania.limittimeStart")
@@ -466,6 +467,7 @@ class GrandPuzzle:AbstractMode() {
 		if(id>=numStagesNormal) prop.setProperty("$id.extra", --numStagesExtra)
 		loadMap(field, prop, id)
 	}
+
 	override fun loadSetting(engine:GameEngine, prop:CustomProperties, ruleName:String, playerID:Int) {
 		startStage = prop.getProperty("gemmania.startstage", 0)
 		mapSet = prop.getProperty("gemmania.stageset", 0)
@@ -523,12 +525,10 @@ class GrandPuzzle:AbstractMode() {
 			engine.nowPieceObject = null
 			engine.timerActive = false
 			engine.stat = Status.CUSTOM
-			engine.resetStatc()
 			true
 		} else if(limittimeNow<=0&&engine.timerActive) {
 			engine.nowPieceObject = null
 			engine.stat = Status.GAMEOVER
-			engine.resetStatc()
 			true
 		} else false
 
@@ -701,22 +701,20 @@ class GrandPuzzle:AbstractMode() {
 	}
 
 	/* Ready画面の処理 */
-	override fun onReady(engine:GameEngine):Boolean {
-		if(engine.stime==0) {
-			if(!engine.readyDone) {
-				loadStageSet(mapSet-1)
-				stage = startStage
-				engine.nextPieceCount = startNextc
+	override fun onReadyDone(engine:GameEngine, readyDone:Boolean) {
+		super.onReadyDone(engine, readyDone)
+		if(!engine.readyDone) {
+			loadStageSet(mapSet-1)
+			stage = startStage
+			engine.nextPieceCount = startNextc
 
-				if(!randomQueue)
-					engine.nextPieceArrayID = createQueueFromIntStr(STRING_DEFAULT_NEXT_LIST)
-			}
-
-			startStage(engine)
-
-			if(!engine.readyDone) limittimeNow = limittimeStart
+			if(!randomQueue)
+				engine.nextPieceArrayID = createQueueFromIntStr(STRING_DEFAULT_NEXT_LIST)
 		}
-		return false
+
+		startStage(engine)
+
+		if(!engine.readyDone) limittimeNow = limittimeStart
 	}
 
 	/* Ready画面の描画処理 */
@@ -879,7 +877,6 @@ class GrandPuzzle:AbstractMode() {
 				engine.nowPieceObject = null
 				engine.timerActive = false
 				engine.stat = Status.CUSTOM
-				engine.resetStatc()
 			}
 		} else
 			skipbuttonPressTime = 0
@@ -1091,19 +1088,16 @@ class GrandPuzzle:AbstractMode() {
 				if(skipFlag) limittimeNow -= timeextendStageClearSeconds*60
 				if(trainingType==2) engine.nextPieceCount = continueNextPieceCount
 				engine.stat = Status.READY
-				engine.resetStatc()
 			} else if(stage>=laststage(engine.statistics.time)) {
 				allClear = if(stage>=MAX_STAGE_TOTAL-1) 2 else 1
 				engine.ending = 1
 				engine.gameEnded()
 				engine.stat = Status.ENDINGSTART
-				engine.resetStatc()
 			} else {
 				stage++
 				if(clearFlag) limittimeNow += timeextendStageClearSeconds*60
 				if(skipFlag) limittimeNow -= timeextendStageClearSeconds*60
 				engine.stat = Status.READY
-				engine.resetStatc()
 			}// Next  stage
 			// Ending
 			return true
@@ -1238,7 +1232,6 @@ class GrandPuzzle:AbstractMode() {
 						if(trainingType==0) engine.statistics.time += 60*60*2
 						engine.allowTextRenderByReceiver = true
 						engine.stat = Status.READY
-						engine.resetStatc()
 						engine.playSE("decide")
 					} else
 					// NO

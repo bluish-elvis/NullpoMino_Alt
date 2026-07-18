@@ -250,12 +250,10 @@ class GrandS3:AbstractGrand() {
 		setSpeed(engine)
 	}
 
-	override fun onReady(engine:GameEngine):Boolean {
-		if(engine.statc[0]==1) {
-			engine.field.lockedLines = if(tableFrozenSection.contains(startLevel)) freezeRange(engine) else emptySet()
-			if(startLevel>=10) dirShuffle(engine)
-		}
-		return super.onReady(engine)
+	override fun onReadyDone(engine:GameEngine, readyDone:Boolean) {
+		super.onReadyDone(engine, readyDone)
+		engine.field.lockedLines = if(tableFrozenSection.contains(startLevel)) freezeRange(engine) else emptySet()
+		if(startLevel>=10) dirShuffle(engine)
 	}
 
 	private fun dirShuffle(engine:GameEngine) {
@@ -447,7 +445,6 @@ class GrandS3:AbstractGrand() {
 					b.hard = 0
 				}
 				engine.stat = GameEngine.Status.READY
-				engine.resetStatc()
 				return true
 			}
 
@@ -682,7 +679,6 @@ class GrandS3:AbstractGrand() {
 					engine.ending = 0
 					engine.lives = -1
 					engine.gameEnded()
-					engine.resetStatc()
 					engine.stat = GameEngine.Status.GAMEOVER
 				}
 			} else if(engine.statistics.level==nextSecLv-1)

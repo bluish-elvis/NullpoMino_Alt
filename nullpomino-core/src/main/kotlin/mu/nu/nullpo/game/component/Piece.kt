@@ -32,7 +32,6 @@ package mu.nu.nullpo.game.component
 
 import kotlinx.serialization.Serializable
 import mu.nu.nullpo.game.component.Block.ATTRIBUTE
-import mu.nu.nullpo.game.component.Piece.Companion.DIRECTION_COUNT
 import kotlin.math.roundToInt
 
 /** Blockピース
@@ -189,13 +188,26 @@ class Piece(var shape:Shape) {
 	/** Sets all blocks to an item block
 	 * @param item ID number of the item
 	 */
+	@JvmName("setItemInt")
 	fun setItem(item:Int) = block.forEach {it.iNum = item}
+	/** Sets all blocks to an item block*/
+	fun setItem(item:Item) = block.forEach {it.item = item}
 
 	/** Sets the items of the blocks individually; allows one piece to have
 	 * different item settings for each block
 	 * @param item Array with each element specifying a color of a block
 	 */
+	@JvmName("setItemInts")
 	fun setItem(item:List<Int>) = block.forEachIndexed {i, it -> it.iNum = item[i%item.size]}
+	/** Sets the items of the blocks individually; allows one piece to have
+	 * different item settings for each block
+	 * @param item Array with each element specifying a color of a block
+	 */
+	fun setItem(item:List<Item>) = block.forEachIndexed {i, it -> it.item = item[i%item.size]}
+
+	/**最も多いItem */
+	val item get() = block.groupingBy {it.item}.eachCount().maxByOrNull {it.value}?.key
+	val hasItem get() = item!=null
 
 	/** Sets all blocks' hard count to [hard] */
 	fun setHard(hard:Int) = block.forEach {it.hard = hard}

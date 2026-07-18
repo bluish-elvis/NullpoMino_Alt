@@ -1,0 +1,190 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE properties SYSTEM "http://java.sun.com/dtd/properties.dtd">
+<properties>
+ <comment>GrandOrder Modes Descriptions</comment>
+ <!--◆あらかじめ入っているミッションセットの解説
+
+▼BIGロード
+　BIGが何度も出てくるロードです
+　EXミッション:BIG
+
+▼トリッキーロード
+　ターゲットやイレイサーが多いロードです
+　5問目の追加条件を達成するのは一苦労？
+　EXミッション:イレイサー
+
+▼グランドロード
+　ここからミッションの総数が多くなってきます
+　追加条件のあるミッションが2つ出てくるので注意。
+　EXミッション:レベルスター
+
+▼スターロード
+　ミッション数が多いコース、終盤には20G状態の"Speed Star"が待ち構えているぞ！
+　EXミッション:ハイスピード2
+
+▼アナザーロード
+　追加制限を持つミッションが大量にあるコース
+　長丁場にどこまで耐えられるか？
+　EXミッション:スピードスター
+
+▼DSロード
+　ノルマ控えめの短いミッション多数で構成されたコース
+　その分だけ制限時間も短くなってくるぞ！
+　EXミッション:耐久
+
+▼デビルロード
+　アナザーロードも楽々クリアーできるプレイヤーへの挑戦状。
+　ほとんどのミッションの速度がアナザーと同じという、
+　凶悪極まりないロードです。
+　EXミッション:DEVIL 1200(REAL)　…?
+
+▼トライアル　一段～十段
+　比較的短時間で終わる段位認定ミッション
+　肩慣らしはここから
+
+▼トライアル　GM
+　高Lvスピードスターが3つもある高難易度コース
+
+▼トライアル　GM
+　(・w・)
+
+▼アマチュア・プロ・ブロンズ・シルバー・ゴールド・プラチナ
+　ミッション制限時間は一切無し、ただしミッションクリア毎のライン消去も一切なし！
+　次のミッションに備えながら攻略しよう
+-->
+ <entry key="Course_GiantStep">BigBlockが多く配置されたコース</entry>
+ <entry key="Course_Tricky">LadderやTargetが多く配置されたコース 5問目の追加条件に注意</entry>
+ <entry key="Course_Grand">追加条件持ちミッションが２つあるコース</entry>
+ <entry key="Course_Star">ミッション数が多いコース 終盤には20G状態の"Speed Star"が待ち構えているぞ！</entry>
+ <entry key="Course_Another">追加制限を持つミッションが大量にあるコース</entry>
+ <entry key="Course_DS">ノルマ控えめの短いミッション多数で構成されたコース</entry>
+ <entry key="Course_Devil">アナザーロードも楽々クリアーできるプレイヤーへの挑戦状</entry>
+ <entry key="Course_Trial">比較的短時間で終わる段位認定ミッション</entry>
+ <entry key="Course_Trial_S10">高Lvスピードスターが3つもある高難易度コース</entry>
+ <entry key="Course_Trial_GM">(・w・)</entry>
+ <entry key="Course_Chrome">ミッション制限時間は一切無し、ただしミッションクリア毎のライン消去も一切なし！ 次のミッションに備えながら攻略しよう</entry>
+
+ <entry key="LevelStar">[norm]ライン消せ</entry>
+ <entry key="Enduro">[time]秒間耐えろ ブロックを</entry>
+ <entry key="Singles">[norm]回 1ラインずつ消せ</entry>
+ <entry key="Doubles">[norm]回 2ラインずつ消せ</entry>
+ <entry key="Triples">[norm]回 3ラインずつ消せ</entry>
+ <entry key="Quads">[norm]回 4ライン消ししろ</entry>
+ <entry key="RequireChain">条件外のライン消しをするとやり直し</entry>
+ 
+ <entry key="Cycle">1ライン消し、2ライン消し、3ライン消し、4ライン消しをそれぞれ1回以上せよ</entry>
+ 
+ <entry key="Combo">ラインを消さないブロック置きをせず [norm]回連続でラインを消せ</entry>
+ <entry key="ComboDouble">[norm]回連続で2ライン以上同時に消せ 1ライン消しはカウント保持</entry>
+ 
+ <entry key="B2BChain">[norm]回連続で4ライン同時・回転入れ・中抜きのいずれかとともに消せ 対象外のライン消しをするとやり直し</entry>
+ <entry key="Split">[norm]回 中抜きで複数ライン消しをせよ</entry>
+ <entry key="Split2">[norm]回 中抜き2ライン消しをせよ</entry>
+ <entry key="Split3">[norm]回 中抜き3ライン消しをせよ</entry>
+ <entry key="Twister">[norm][回/列] [OrderedShapes]回転入れと同時にラインを消せ</entry>
+ <entry key="OrderedShapes">[shapes]ピースで</entry>
+ <entry key="Order">[OrderedShapes][norm][回/列]ラインを消せ</entry>
+ <entry key="OrderHold">[shapes]ピースをHOLDスロットから出し、それを使って[norm][回/列]ラインを消せ</entry>
+
+ <entry key="XRay">ブロックが一瞬しか見えない状態で [norm]ライン消せ</entry>
+ <entry key="Illuminate">ブロックが点滅する状態で [norm]ライン消せ</entry>
+ <entry key="RollRoll">ブロックが強制回転し続ける状態で [norm]ライン消せ</entry>
+ <entry key="Mirror">[freq]ピース毎にフィールドが左右反転する状態で [norm]ライン消せ</entry>
+ <entry key="Dizzy">操作の上下左右が逆転した状態で [norm]ライン消せ</entry>
+ <entry key="SpinLock">回転が不可能な状態で [norm]ライン消せ</entry>
+ <entry key="HideNext">次に出現するピースが見えない状態で [norm]ライン消せ</entry>
+ <entry key="Pressure">[freq]ピース毎のせり上がりに耐えながら [norm]ライン消せ</entry>
+ <entry key="Spiked">最初のピースを置くと[height]段せり上げられる [norm]ライン消せ</entry>
+ <entry key="Retro">壁蹴り・HOLD・先行回転・NEXT表示数が制限された状態で [norm]ライン消せ</entry>
+ <entry key="Squares">ピースを組み合わせて 4x4の正方形[norm]個作れ</entry>
+ <entry key="BigBlock">BIGピースで [norm]ライン消せ</entry>
+ <entry key="Bravo">[norm]回全消しせよ</entry>
+ <entry key="Ladder">指定位置でラインを消せ</entry>
+ <!--
+
+ ・上下左右逆転(LRUD REV)
+ 　操作の上と下・左と右が逆転した状態でレベルスターを行います。
+
+ ・全消し(ALL CLEAR)
+ 　全消しを指定回数行うとクリアです。
+ 　難易度の都合上、(通常は)BIGがかかります。
+ 　□ OPTIONSの値
+ 　　 OPT: 0以外にすると…？
+
+ ・ASSHOLES
+ 　(・w・)接地固定猶予とAREが一切ない状態で[norm]個ピースを置くとクリア
+
+    */
+   /** ピースを組み合わせて4x4の正方形を[time]秒以内に[norm]個作るとクリア。
+    * @sample「ライン消しに巻き込まれて残った破片を含まない」「ブロックが4x4の外側に繋がっていない」が条件。
+    * @see MarathonSquare*/
+   data class Squares(
+    override val lv:Int, override val norm:Int, override val time:Int = 0):Mission()
+   /** 1色のピースだけ([shapes]指定時はそのピースのみ)を使って4x4の正方形を[time]秒以内に[norm]個作るとクリア
+    * S,Zは指定不可 */
+   @ConsistentCopyVisibility data class GoldSquares private constructor(override val lv:Int, override val norm:Int,
+    override val time:Int = 0, val shapes:Set<Shape> = emptySet())
+    :Mission() {
+    companion object {
+     operator fun invoke(lv:Int, norm:Int, time:Int = 0, shapes:Set<Shape> = emptySet()) =
+      GoldSquares(lv, norm, time, shapes.filter {it in Shape.Tetras&&it!=Shape.S&&it!=Shape.Z}.toSet())
+
+    }
+   }
+
+   /** ピースブロックが大きい状態で[time]秒以内に[norm]本ラインを消せばクリア
+   消したライン数 = [prog]は、(見た目での消したライン数÷２)だけカウント*/
+   data class BigBlock(override val lv:Int, override val norm:Int, override val time:Int = 0):Mission()
+
+   /** [time]秒以内に[norm]本ターゲットライン上でライン消しをするとクリア
+   全ての線を消してもまだ[norm]が残っている場合はターゲット再出現
+    *@param heightRange ターゲットの出現範囲
+    *@param multi ターゲットの同時出現数 1~4
+    *@param quad trueの場合、4ライン消しのみがカウントされる*/
+   data class Ladder(override val lv:Int, override val norm:Int, override val time:Int = 0,
+    private val heightRange:IntRange, val multi:Int, val quad:Boolean):Mission() {
+    val target = mutableSetOf<Int>()
+    fun reset(random:Random) {
+     while(target.size<minOf(norm-prog, multi)) {
+      target.add(random.nextInt(heightRange.last-heightRange.first)+heightRange.first)
+     }
+    }
+   }
+   /** Grand Blossamモードで使用されるパズルマップのジェムブロック全消しを[time]秒以内に[norm]回達成でクリア。
+    * せり上がり以外のギミックは発動しない
+    * @param mapRange 出現するマップの範囲 (0～26=Ti 27～44=EH 45～67=ACE)
+    * @param rndTarget 1以上にするとジェムブロックを数値分ランダムで配置する。0(OFF)では初期配置のまま。
+    *  99以上にすると…？*/
+   data class Target(override val lv:Int, override val norm:Int, val mapRange:IntRange, override val time:Int = 0,
+    val rndTarget:Int):Mission()
+   /**積んであるブロックが枠しか見えない状態で[time]秒以内に[norm]本ラインを消せばクリア
+    * @param misc 1以上で、数値に応じた速度で固定したブロックが順次不可視になる。*/
+   data class Dark(override val lv:Int, override val norm:Int, override val time:Int = 0, val misc:Int):
+    Mission()
+   /**フィールドが下段から隠されていく状態で[time]秒以内に[norm]本ラインを消せばクリア
+    * @param misc フィールドが隠れる速度*/
+   data class Shutter(override val lv:Int, override val norm:Int, override val time:Int = 0, val misc:Int)
+    :Mission()
+
+   /**ブロックが[ ]に変化した状態で[time]秒以内に[norm]本ラインを消せばクリア
+    * lvがマイナスならGrand Lightning 1000~準拠となる */-->
+ <entry key="MemorylessRandomizer">偏り補正を行いません。</entry>
+ <entry key="BagRandomizer">7種全てのピース１個ずつでランダムに1巡を繰り返します。</entry>
+ <entry key="BagNoSZORandomizer">1個ずつ全種ピースを1巡しますが、S/Z/O型のブロックは最初のブロックになりません。</entry>
+ <entry key="BagBonusRandomizer">ランダムで1巡する中に、1個だけ何らかのピースが追加されます。</entry>
+ <entry key="BagBonusBagRandomizer">ランダムで1巡する中に1個ピースが追加されます。追加ピースもランダムで一巡します。</entry>
+ <entry key="BagDoublesRandomizer">2個ずつの全ピースをランダムに1巡します。</entry>
+ <entry key="BagNonuplesRandomizer">9個ずつの全ピースをランダムに1巡します。</entry>
+ <entry key="BagMinusRandomizer">ランダムで1巡しますが、その内から1種のピースが差し引かれます。</entry>
+ <entry key="BagMinusTwoRandomizer">ランダムで1巡しますが、その内から2種のピースが差し引かれます。</entry>
+ <entry key="History4RollsRandomizer">直近4個までと同じピースは4回再抽選されます。</entry>
+ <entry key="History6RollsRandomizer">直近4個までと同じピースは6回再抽選されます。</entry>
+ <entry key="StrictHistoryRandomizer">直近4個までと同じピースは重複出現しなくなります。</entry>
+ <entry key="NintendoRandomizer">同じピースが２連続で出なくなります。</entry>
+ <entry key="GameBoyRandomizer">出現したピースに応じて、次に抽選されるピースの範囲が変動します。</entry>
+ <entry key="DistanceLinearWeightRandomizer">出現していないピースの出現率が少しずつ増していきます。</entry>
+ <entry key="DistanceQuadWeightRandomizer">出現していないピースの出現率が加速度的に増していきます。</entry>
+ <entry key="DistanceExpWeightRandomizer">出現していないピースの出現率が途中で一気に増していきます。</entry>
+ <entry key="FixedSequenceRandomizer">sequence.txtで設定された順序で完全に固定されます。</entry>
+
+</properties>

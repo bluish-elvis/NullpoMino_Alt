@@ -120,7 +120,6 @@ internal class NetVSSprintLine:NetDummyVSMode() {
 		if(engine.statistics.lines>=goalLines&&engine.playerID==0)
 			if(netVSIsPractice) {
 				engine.stat = GameEngine.Status.EXCELLENT
-				engine.resetStatc()
 			} else {
 				// Send game end message
 				val places = IntArray(NET_MAX_PLAYERS)
@@ -140,7 +139,6 @@ internal class NetVSSprintLine:NetDummyVSMode() {
 
 				// Wait until everyone dies
 				engine.stat = GameEngine.Status.NOTHING
-				engine.resetStatc()
 			}
 		return 0
 	}

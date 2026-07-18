@@ -171,7 +171,6 @@ class MissionRush:MarathonModeBase() {
 				engine.playerProp.reset()
 				engine.playSE("decide")
 				engine.stat = Status.CUSTOM
-				engine.resetStatc()
 				return true
 			}
 
@@ -358,7 +357,7 @@ class MissionRush:MarathonModeBase() {
 					owner.bgMan.nextBg = engine.statistics.level
 					engine.playSE("levelup_section")
 				} else engine.playSE("levelup")
-			} else engine.playSE("gem")
+			} else engine.playSE("medal")
 			return 1
 		}
 		return 0
@@ -490,6 +489,7 @@ class MissionRush:MarathonModeBase() {
 		fun missionLevel(max:Int):Int = minOf(max, 1+engine.statistics.scoreBonus)*max/tableGameClearMissions[goalType].let {
 			if(it<0) tableGameClearMissions.maxOrNull()?:50 else it
 		}
+
 		fun randomMission(prevMission:MissionType?):MissionType {
 			val missionTypeRd = missionRandomizer.nextInt(15)
 			return when {

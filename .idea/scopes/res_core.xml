@@ -1,0 +1,3 @@
+<component name="DependencyValidationManager">
+  <scope name="res_core" pattern="src[NullpoMino_Alt.nullpomino-core.main]:*||src[NullpoMino_Alt.nullpomino-core.main]:lang..*||src[NullpoMino_Alt.nullpomino-core.main]:map..*" />
+</component>

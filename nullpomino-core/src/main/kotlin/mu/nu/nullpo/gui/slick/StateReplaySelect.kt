@@ -38,11 +38,10 @@ import mu.nu.nullpo.gui.slick.img.FontNormal
 import mu.nu.nullpo.util.CustomProperties
 import mu.nu.nullpo.util.GeneralUtil.toTimeStr
 import org.apache.logging.log4j.LogManager
-import org.jetbrains.kotlin.konan.file.File
-import org.jetbrains.kotlin.library.impl.javaFile
 import org.newdawn.slick.GameContainer
 import org.newdawn.slick.Graphics
 import org.newdawn.slick.state.StateBasedGame
+import java.io.File
 import java.io.FileInputStream
 import java.io.IOException
 import java.util.zip.*
@@ -102,12 +101,12 @@ internal class StateReplaySelect:BaseMenuScrollState() {
 
 		val fd = File(d)
 		listInternal = try {
-			fd.listFiles.sortedBy {it.name}.sortedByDescending {it.isDirectory}.map {
+			(fd.listFiles()?.sortedBy {it.name}?.sortedByDescending {it.isDirectory} ?: emptyList()).map {
 				if(it.isDirectory) ReplayCol(it, it.name, stats = Statistics().apply {
-					lines = it.listFilesOrEmpty.count {lf -> isReplay(lf)}
+					lines = it.listFiles()?.count {lf -> isReplay(lf)} ?: 0
 				}, dir = true)
 				else if(isReplay(it)) try {
-					val gis = GZIPInputStream(FileInputStream(it.javaFile()))
+					val gis = GZIPInputStream(FileInputStream(it))
 					val prop = CustomProperties().apply {
 						load(gis)
 					}

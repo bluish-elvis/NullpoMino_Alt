@@ -270,7 +270,6 @@ class MarathonDrill:NetDummyMode() {
 								// Pushed out from the visible part of the field
 								if(!nowPieceObject.canPlaceToVisibleField(engine.nowPieceX, engine.nowPieceY)) {
 									engine.stat = GameEngine.Status.GAMEOVER
-									engine.resetStatc()
 									engine.gameEnded()
 								}
 							}

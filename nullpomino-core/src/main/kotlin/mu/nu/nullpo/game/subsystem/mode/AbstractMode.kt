@@ -228,6 +228,8 @@ abstract class AbstractMode:GameMode {
 		return false
 	}
 
+	override fun onReadyDone(engine:GameEngine, readyDone:Boolean) {}
+
 	/** ARE中の処理 */
 	override fun onARE(engine:GameEngine):Boolean = false
 	override fun outARE(engine:GameEngine) {}

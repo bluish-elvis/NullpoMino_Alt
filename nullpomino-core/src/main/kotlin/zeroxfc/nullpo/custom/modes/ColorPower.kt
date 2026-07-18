@@ -219,7 +219,6 @@ class ColorPower:MarathonModeBase() {
 				engine.playerProp.reset()
 				engine.playSE("decide")
 				engine.stat = Status.CUSTOM
-				engine.resetStatc()
 				return true
 			}
 
@@ -578,7 +577,6 @@ class ColorPower:MarathonModeBase() {
 	override fun onMove(engine:GameEngine):Boolean {
 		if(currentModified!=-1) {
 			currentActivePower = currentModified
-			engine.resetStatc()
 			engine.stat = Status.CUSTOM
 			customTimer = 0
 			return true
@@ -631,7 +629,6 @@ class ColorPower:MarathonModeBase() {
 					engine.stat = GameEngine.Status.MOVE;
 					break;
 				} */
-				engine.resetStatc()
 				engine.stat = Status.MOVE
 				currentModified = -1
 				currentActivePower = 1

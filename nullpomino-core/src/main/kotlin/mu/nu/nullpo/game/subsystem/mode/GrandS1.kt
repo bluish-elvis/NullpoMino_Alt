@@ -174,12 +174,10 @@ class GrandS1:AbstractGrand() {
 		engine.big = big
 	}
 
-	override fun onReady(engine:GameEngine):Boolean {
-		if(engine.stime==0) {
-			isShowBestSectionTime = false
-			owner.musMan.fadeSW = true
-		}
-		return super.onReady(engine)
+	override fun onReadyDone(engine:GameEngine, readyDone:Boolean) {
+		super.onReadyDone(engine, readyDone)
+		isShowBestSectionTime = false
+		owner.musMan.fadeSW = true
 	}
 
 	/* Called at game start */
@@ -432,7 +430,6 @@ class GrandS1:AbstractGrand() {
 			// Roll 終了
 			if(rollTime>=ROLLTIMELIMIT) {
 				engine.gameEnded()
-				engine.resetStatc()
 				engine.stat = GameEngine.Status.EXCELLENT
 			}
 		} else if(engine.statistics.level==nextSecLv-1)

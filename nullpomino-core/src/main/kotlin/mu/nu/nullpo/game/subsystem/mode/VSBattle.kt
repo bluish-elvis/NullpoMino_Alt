@@ -450,8 +450,6 @@ open class VSBattle:AbstractMode() {
 			if(owner.engine.all {it.statc[4]==1}) {
 				owner.engine[0].stat = Status.READY
 				owner.engine[1].stat = Status.READY
-				owner.engine[0].resetStatc()
-				owner.engine[1].resetStatc()
 			} else if(engine.ctrl.isPush(Controller.BUTTON_B)) engine.statc[4] = 0// Cancel
 
 		return true
@@ -502,9 +500,10 @@ open class VSBattle:AbstractMode() {
 	}
 
 	/* Called for initialization during Ready (before initialization) */
-	override fun onReady(engine:GameEngine):Boolean {
-		val pid = engine.playerID
-		if(engine.stime==0)
+	override fun onReadyDone(engine:GameEngine, readyDone:Boolean) {
+		super.onReadyDone(engine, readyDone)
+			val pid = engine.playerID
+		if(!readyDone)
 		// MapFor storing backup Replay read
 			if(version>=3)
 				if(useMap[pid]) {
@@ -535,36 +534,30 @@ open class VSBattle:AbstractMode() {
 					}
 				} else engine.field.reset()
 
-		return false
-	}
-
-	/* Called at game start */
-	override fun startGame(engine:GameEngine) {
-		val playerID = engine.playerID
-		engine.comboType = if(enableCombo[playerID]) GameEngine.COMBO_TYPE_NORMAL else GameEngine.COMBO_TYPE_DISABLE
+		engine.comboType = if(enableCombo[pid]) GameEngine.COMBO_TYPE_NORMAL else GameEngine.COMBO_TYPE_DISABLE
 		engine.b2bEnable = true
-		engine.splitB2B = version>=5&&splitb2b[playerID]
-		engine.big = big[playerID]
-		engine.enableSE = enableSE[playerID]
-		if(playerID==1) owner.musMan.bgm = BGM.values[bgmId]
+		engine.splitB2B = version>=5&&splitb2b[pid]
+		engine.big = big[pid]
+		engine.enableSE = enableSE[pid]
+		if(pid==1) owner.musMan.bgm = BGM.values[bgmId]
 
 		engine.twistAllowKick = true
 		if(version>=4) {
 			when {
-				twistEnableType[playerID]==0 -> {
+				twistEnableType[pid]==0 -> {
 					engine.twistEnable = false
 					engine.useAllSpinBonus = false
 				}
-				twistEnableType[playerID]==1 -> {
+				twistEnableType[pid]==1 -> {
 					engine.twistEnable = true
 					engine.useAllSpinBonus = false
 				}
-				twistEnableType[playerID]==2 -> {
+				twistEnableType[pid]==2 -> {
 					engine.twistEnable = true
 					engine.useAllSpinBonus = true
 				}
 			}
-		} else engine.twistEnable = enableTwist[playerID]
+		} else engine.twistEnable = enableTwist[pid]
 		engine.twistEnableEZ = engine.twistEnable
 	}
 

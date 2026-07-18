@@ -108,7 +108,7 @@ class Block @JvmOverloads constructor(
 	var item:Item? = null
 	/** アイテム number */
 	var iNum
-		get() = item?.let {it.ordinal+1}?:0
+		get() = item?.let {it.id+1}?:0
 		set(value) {
 			item = if(value in 1..items.size) items[value-1] else null; }
 
@@ -233,13 +233,13 @@ class Block @JvmOverloads constructor(
 		.let {31*it+darkness.hashCode()}
 		.let {31*it+alpha.hashCode()}
 		.let {31*it+placeNum}
-		.let {31*it+(item?.hashCode()?:0)}
+		.let {31*it+item.hashCode()}
 		.let {31*it+hard}
 		.let {31*it+countdown}
 		.let {31*it+secondaryColor.hashCode()}
 		.let {31*it+bonusValue}
 
-	enum class TYPE(val pos:Byte = 0) { BLOCK, GEM, ITEM }
+	enum class TYPE(val pos:Byte = 0) { BLOCK, GEM }
 	enum class COLOR(val color:Boolean = true, private val regular:Boolean = color) {
 		BLACK(false, true), WHITE(false, true), RED, ORANGE, YELLOW, GREEN, CYAN, BLUE, PURPLE, RAINBOW(false);
 
@@ -344,11 +344,10 @@ class Block @JvmOverloads constructor(
 				else COLOR_RAINBOW
 			} else {
 				val ci:Int = (color?.ordinal?:0)
-				when(type) {
+				item?.color?.ordinal?:when(type) {
 					TYPE.BLOCK -> if(color?.color!=true&&isBone) COLOR_WHITE else ci
 					TYPE.GEM -> if(color?.color!=true) COLOR_GEM_RAINBOW
 					else ci+COLOR_GEM_RED-COLOR_RED
-					TYPE.ITEM -> item?.color?.ordinal?:0
 				}
 			}
 

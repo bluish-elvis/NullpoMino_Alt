@@ -166,7 +166,6 @@ class Minesweeper:AbstractMode() {
 			if(engine.ctrl.isPush(Controller.BUTTON_E)&&engine.ai==null) {
 				engine.playSE("decide")
 				engine.stat = Status.CUSTOM
-				engine.resetStatc()
 				return true
 			}
 			engine.statc[3]++
@@ -246,7 +245,6 @@ class Minesweeper:AbstractMode() {
 			engine.owner.mode?.startGame(engine)
 			engine.owner.receiver.startGame(engine)
 			engine.stat = Status.CUSTOM
-			engine.resetStatc()
 			if(!engine.readyDone) {
 				engine.startTime = System.nanoTime()
 				//startTime = System.nanoTime()/1000000L;
@@ -300,7 +298,6 @@ class Minesweeper:AbstractMode() {
 					for(i in 0..<owner.players) {
 						if(i==engine.playerID||engine.dieAll) {
 							owner.engine[i].field.reset()
-							owner.engine[i].resetStatc()
 							owner.engine[i].stat = Status.RESULT
 						}
 					}
@@ -323,7 +320,6 @@ class Minesweeper:AbstractMode() {
 				engine.statc[1]++
 			} else {
 				engine.lives--
-				engine.resetStatc()
 				engine.stat = Status.CUSTOM
 			}
 		}
@@ -345,7 +341,6 @@ class Minesweeper:AbstractMode() {
 							}
 						}*/
 		engine.gameEnded()
-		engine.resetStatc()
 		engine.stat = Status.GAMEOVER
 	}
 
@@ -538,7 +533,6 @@ class Minesweeper:AbstractMode() {
 				engine.gameEnded()
 				engine.stat = Status.EXCELLENT
 				engine.ending = 1
-				engine.resetStatc()
 				return true
 			}
 			if(engine.ending==0) engine.timerActive = true

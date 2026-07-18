@@ -78,8 +78,7 @@ class RetroS:AbstractMode() {
 	/** せり上がりした count */
 	private var garbageTotal = 0
 
-
-	override val menu = MenuList("retromania", itemMode, itemPower, itemGarbage,  itemLevel, itemBig)
+	override val menu = MenuList("retromania", itemMode, itemPower, itemGarbage, itemLevel, itemBig)
 	/** Version of this mode */
 	private var version = 0
 
@@ -184,8 +183,9 @@ class RetroS:AbstractMode() {
 	}
 
 	/** Ready */
-	override fun onReady(engine:GameEngine):Boolean {
-		if(engine.stime==0) {
+	override fun onReadyDone(engine:GameEngine, readyDone:Boolean) {
+		super.onReadyDone(engine, readyDone)
+		if(!readyDone) {
 			engine.ruleOpt.run {
 				lockResetMove = false
 				lockResetSpin = false
@@ -202,17 +202,11 @@ class RetroS:AbstractMode() {
 				dasInReady = false
 				nextDisplay = 1
 			}
-			if(powerOn)
-				engine.nextPieceArrayID = createQueueFromIntStr(STRING_POWERON_PATTERN)
-			if(hazardType==HazardType.RANDOM)
-				garbagePos = engine.random.nextInt(if(big) engine.field.width/2 else engine.field.width)
+			if(powerOn) engine.nextPieceArrayID = createQueueFromIntStr(STRING_POWERON_PATTERN)
+			if(hazardType==HazardType.RANDOM) garbagePos =
+				engine.random.nextInt(if(big) engine.field.width/2 else engine.field.width)
 		}
-		return false
-	}
 
-	/** This function will be called before the game actually begins (after
-	 * Ready&Go screen disappears) */
-	override fun startGame(engine:GameEngine) {
 		engine.statistics.level = startLevel
 		engine.statistics.levelDispAdd = 1
 
@@ -381,13 +375,13 @@ class RetroS:AbstractMode() {
 							for(i in field.width-1 downTo 0)
 								tableGarbagePattern[garbagePos].let {
 									if((it.first shr i) and 1!=0) field.setBlock(
-											i, h-1,
-											Block(it.second, engine.blkSkin, Block.ATTRIBUTE.VISIBLE, Block.ATTRIBUTE.GARBAGE)
-										)
+										i, h-1,
+										Block(it.second, engine.blkSkin, Block.ATTRIBUTE.VISIBLE, Block.ATTRIBUTE.GARBAGE)
+									)
 								}
 							garbagePos++
 						}
-						else-> field.addBottomCopyGarbage(
+						else -> field.addBottomCopyGarbage(
 							engine.blkSkin, 1,
 							Block.ATTRIBUTE.GARBAGE, Block.ATTRIBUTE.VISIBLE, Block.ATTRIBUTE.OUTLINE
 						)

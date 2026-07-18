@@ -67,7 +67,6 @@ data object LineSpark:ClearType {
 					receiver.lineClear(this, r)
 				}
 				playSE("lines${lines.size.coerceIn(1, 4)}")
-				if(x.gemClearedNum>0) playSE("gem")
 				statc[3] = x.gemClearedNum
 			}
 			lastSparked.clear()
@@ -152,8 +151,8 @@ data object LineSpark:ClearType {
 				alpha = .8f
 				if(isGemBlock) {
 					if(getAttribute(ATTRIBUTE.TEMP_MARK)) {
-					secondaryColor = color?:COLOR.RED
-					color = COLOR.RAINBOW
+						secondaryColor = color?:COLOR.RED
+						color = COLOR.RAINBOW
 						darkness = -.5f
 					}
 				} else darkness = .5f

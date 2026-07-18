@@ -211,12 +211,12 @@ class GrandBasic:AbstractGrand() {
 		super.onSettingChanged(engine)
 	}
 
-	override fun onReady(engine:GameEngine):Boolean {
-		if(engine.stime==0) {
+	override fun onReadyDone(engine:GameEngine, readyDone:Boolean) {
+		super.onReadyDone(engine, readyDone)
+		if(!readyDone) {
 			isShowBestSectionTime = false
 			owner.musMan.fadeSW = true
 		}
-		return super.onReady(engine)
 	}
 	/** This function will be called before the game actually begins
 	 *  (after Ready&Go screen disappears) */
@@ -348,6 +348,13 @@ class GrandBasic:AbstractGrand() {
 			(-1-sectionsDone).let {
 				if(owner.bgMan.bg!=it) owner.bgMan.nextBg = it
 			}
+			if(nextSecLv==200)
+			//next piece turns Item blocks:Free Fall
+				engine.nextPieceArrayObject[engine.nextPieceCount+1].setItem(Item.FREE_FALL)
+			else if(nextSecLv==300)
+			//next piece turns Item blocks:Del even
+				engine.nextPieceArrayObject[engine.nextPieceCount+1].setItem(Item.DEL_EVEN)
+
 		}
 
 		if(bgmLv==0&&engine.statistics.level>=280&&engine.ending==0) owner.musMan.fadeSW = true
@@ -459,7 +466,6 @@ class GrandBasic:AbstractGrand() {
 				stNewRecordCheck(sectionsDone)
 				sectionsDone++
 				engine.gameEnded()
-				engine.resetStatc()
 				engine.stat = GameEngine.Status.EXCELLENT
 			}
 		}

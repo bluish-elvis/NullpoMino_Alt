@@ -540,13 +540,13 @@ abstract class AbstractRenderer:EventReceiver() {
 				val bY = p.dataY[p.direction][i]
 				val x = dX+bX*ps
 				val y = dY+bY*ps
-				if(!blk.getAttribute(ATTRIBUTE.CONNECT_UP)&&engine.field.getBlockEmpty(bX, bY-1, false))
+				if(!blk.getAttribute(ATTRIBUTE.CONNECT_UP)&&engine.field.getBlockEmpty(pX+bX, pY+bY-1, false))
 					drawLineSpecific(x, y, x+ps, y, oColor, w = outline)
-				if(!blk.getAttribute(ATTRIBUTE.CONNECT_DOWN)&&engine.field.getBlockEmpty(bX, bY+1, false))
+				if(!blk.getAttribute(ATTRIBUTE.CONNECT_DOWN)&&engine.field.getBlockEmpty(pX+bX, pY+bY+1, false))
 					drawLineSpecific(x, y+ps, x+ps, y+ps, oColor, w = outline)
-				if(!blk.getAttribute(ATTRIBUTE.CONNECT_LEFT)&&engine.field.getBlockEmpty(bX-1, bY, false))
+				if(!blk.getAttribute(ATTRIBUTE.CONNECT_LEFT)&&engine.field.getBlockEmpty(pX+bX-1, pY+bY, false))
 					drawLineSpecific(x, y, x, y+ps, oColor, w = outline)
-				if(!blk.getAttribute(ATTRIBUTE.CONNECT_RIGHT)&&engine.field.getBlockEmpty(bX+1, bY, false))
+				if(!blk.getAttribute(ATTRIBUTE.CONNECT_RIGHT)&&engine.field.getBlockEmpty(pX+bX+1, pY+bY, false))
 					drawLineSpecific(x+ps, y, x+ps, y+ps, oColor, w = outline)
 			}
 			/*if(engine.nowPieceSteps<10) {
@@ -703,9 +703,15 @@ abstract class AbstractRenderer:EventReceiver() {
 				)
 				drawFont(cX-45, y-26, "%3d".format(pid), NANO, if(pid%7==0) YELLOW else WHITE, .75f)
 			}
+			fun drawLatestItem(x:Number, y:Number) = engine.latestSpawnItem?.let {i ->
+				drawFont(x, y, "$i", NANO, getBlockColor(i.color), .75f)
+			}
+
+
 			if(engine.ruleOpt.nextDisplay>1) when(nextDisplayType) {
 				2 -> {
 					drawFont(rX, y-fbs/2, "NEXT", NANO, ORANGE, .75f)
+					drawLatestItem(rX, y-fbs/2+12)
 					for(i in 0..<minOf(engine.ruleOpt.nextDisplay, 14)) {
 						engine.getNextObject(pid+i)?.let {
 							val centerX = ((4-it.width-1)*fbs)/2-it.minimumBlockX*fbs
@@ -718,6 +724,7 @@ abstract class AbstractRenderer:EventReceiver() {
 				}
 				1 -> {
 					drawFont(rX, y, "NEXT", NANO, ORANGE, .75f)
+					drawLatestItem(rX, y+12)
 					for(i in 0..<minOf(engine.ruleOpt.nextDisplay, 14)) {
 						engine.getNextObject(pid+i)?.let {
 							val centerX = ((4-it.width-1)*fbs)/4-it.minimumBlockX*fbs/2
@@ -730,6 +737,7 @@ abstract class AbstractRenderer:EventReceiver() {
 				}
 				else -> {
 					drawFont(cX-16, y-nextHeight, "NEXT", NANO, ORANGE, .75f)
+					drawLatestItem(cX+45, y-nextHeight)
 					// NEXT1~4
 					for(i in (0..<minOf(3, engine.ruleOpt.nextDisplay-1)).reversed())
 						engine.getNextObject(pid+i+1)?.let {
@@ -1033,6 +1041,7 @@ abstract class AbstractRenderer:EventReceiver() {
 			})
 		}
 	}
+
 	override fun blockBreak(engine:GameEngine, blk:Map<Int, Map<Int, Block>>) {
 		if(showLineEffect&&engine.displaySize!=-1) {
 			val s = engine.blockSize
@@ -1044,7 +1053,7 @@ abstract class AbstractRenderer:EventReceiver() {
 						Fireworks.colorBy(blk).let {col ->
 							LandingParticles(5, sx, sx+s, sy+s/2f, s*.5f, col[0], col[1], col[2], 235, 25, .44f, .66f).let {
 								if(blk.getAttribute(ATTRIBUTE.BONE)||engine.isRetroSkin) it.set else (it.particles+
-									if(blk.type==Block.TYPE.GEM) setOf(Ripple(sx+s/2f, sy+s/2f, col[0], col[1], col[2], 255))
+									if(blk.type==Block.TYPE.GEM||blk.item!=null) setOf(Ripple(sx+s/2f, sy+s/2f, col[0], col[1], col[2], 255))
 									else
 										Fireworks(sx+s/2f, sy+s/2f, col[0], col[1], col[2], 255, 32, .1f, .95f, 25, 45, 4.5f, 4..10).set)
 							}

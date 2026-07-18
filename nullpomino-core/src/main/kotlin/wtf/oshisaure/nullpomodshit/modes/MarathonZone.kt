@@ -422,9 +422,9 @@ class MarathonZone:NetDummyMode() {
 			calcScore(engine, ScoreEvent(null, newlines))
 //			engine.owner.receiver.calcScore(engine, ScoreEvent(null, newlines))
 			engine.resetStatc()
+			engine.stat = GameEngine.Status.ARE(engine.are)
 			engine.statc[1] = engine.are
 			engine.statc[2] = 1
-			engine.stat = GameEngine.Status.ARE(engine.are)
 			return true
 		}
 		return false
@@ -485,7 +485,6 @@ class MarathonZone:NetDummyMode() {
 	override fun onGameOver(engine:GameEngine):Boolean {
 		if(inzone) {
 			endZone(engine)
-			engine.resetStatc()
 			if(engine.ending==0) engine.stat = GameEngine.Status.MOVE
 			return true
 		}

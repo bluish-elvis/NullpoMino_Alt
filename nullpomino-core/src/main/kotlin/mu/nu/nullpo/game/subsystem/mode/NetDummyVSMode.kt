@@ -473,7 +473,6 @@ internal abstract class NetDummyVSMode:NetDummyMode() {
 
 		engine.init()
 		engine.stat = Status.READY
-		engine.resetStatc()
 		netUpdatePlayerExist()
 		netVSSetGameScreenLayout()
 
@@ -751,7 +750,6 @@ internal abstract class NetDummyVSMode:NetDummyMode() {
 			engine.field.reset()
 			engine.gameEnded()
 			engine.stat = Status.SETTING
-			engine.resetStatc()
 		}
 	}
 
@@ -802,7 +800,6 @@ internal abstract class NetDummyVSMode:NetDummyMode() {
 			else {
 				engine.field.reset()
 				engine.stat = Status.RESULT
-				engine.resetStatc()
 				true
 			}
 
@@ -823,7 +820,6 @@ internal abstract class NetDummyVSMode:NetDummyMode() {
 		if(netVSPlayerDead[pid]) {
 			if(engine.field.isEmpty) {
 				engine.stat = Status.SETTING
-				engine.resetStatc()
 				return true
 			}
 			return engine.statc[0]>=engine.field.height+1&&!netVSPlayerResultReceived[pid]
@@ -880,7 +876,6 @@ internal abstract class NetDummyVSMode:NetDummyMode() {
 		return (!netVSIsGameActive&&netVSPlayerResultReceived[engine.playerID]).also {
 			if(it) {
 				engine.field.reset()
-				engine.resetStatc()
 				engine.stat = Status.RESULT
 			}
 		}
@@ -913,7 +908,6 @@ internal abstract class NetDummyVSMode:NetDummyMode() {
 				engine.playSE("decide")
 				netVSIsPractice = false
 				engine.stat = Status.SETTING
-				engine.resetStatc()
 				return true
 			}
 			// Start Practice
@@ -1141,7 +1135,6 @@ internal abstract class NetDummyVSMode:NetDummyMode() {
 				netVSPlayerDead[playerID] = true
 				netVSPlayerPlace[playerID] = message[4].toInt()
 				owner.engine[playerID].stat = Status.GAMEOVER
-				owner.engine[playerID].resetStatc()
 				netVSNumAlivePlayers--
 
 				if(seatID==netLobby!!.netPlayerClient!!.yourPlayerInfo!!.seatID) {
@@ -1174,7 +1167,6 @@ internal abstract class NetDummyVSMode:NetDummyMode() {
 				owner.musMan.bgm = BGM.Silent
 				owner.engine[0].gameEnded()
 				owner.engine[0].stat = Status.SETTING
-				owner.engine[0].resetStatc()
 			}
 
 			val flagTeamWin = message[4].toBoolean()
@@ -1186,7 +1178,6 @@ internal abstract class NetDummyVSMode:NetDummyMode() {
 						netVSPlayerPlace[i] = 1
 						owner.engine[i].gameEnded()
 						owner.engine[i].stat = Status.EXCELLENT
-						owner.engine[i].resetStatc()
 						owner.engine[i].statistics.time = netVSPlayTimer
 						netVSNumAlivePlayers--
 
@@ -1201,7 +1192,6 @@ internal abstract class NetDummyVSMode:NetDummyMode() {
 						netVSPlayerPlace[playerID] = 1
 						owner.engine[playerID].gameEnded()
 						owner.engine[playerID].stat = Status.EXCELLENT
-						owner.engine[playerID].resetStatc()
 						owner.engine[playerID].statistics.time = netVSPlayTimer
 						netVSNumAlivePlayers--
 

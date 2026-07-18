@@ -188,12 +188,12 @@ class GrandM2G:AbstractGrand() {
 		super.onSettingChanged(engine)
 	}
 	/** Ready */
-	override fun onReady(engine:GameEngine):Boolean {
-		if(engine.stime==0) {
+	override fun onReadyDone(engine:GameEngine, readyDone:Boolean) {
+		super.onReadyDone(engine, readyDone)
+		if(!readyDone) {
 			if(hazardType==HazardType.RANDOM)
 				garbagePos = engine.random.nextInt(if(big) engine.field.width/2 else engine.field.width)
 		}
-		return false
 	}
 
 	/* Called at game start */
@@ -511,7 +511,6 @@ class GrandM2G:AbstractGrand() {
 			// Roll 終了
 			if(rollTime>=ROLLTIMELIMIT) {
 				engine.gameEnded()
-				engine.resetStatc()
 				engine.stat = GameEngine.Status.EXCELLENT
 			}
 		}

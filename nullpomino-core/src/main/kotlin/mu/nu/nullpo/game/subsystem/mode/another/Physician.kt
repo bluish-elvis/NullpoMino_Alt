@@ -264,7 +264,6 @@ class Physician:AbstractMode() {
 		if(rest==0&&engine.timerActive) {
 			engine.gameEnded()
 			engine.timerActive = false
-			engine.resetStatc()
 			engine.stat = GameEngine.Status.EXCELLENT
 		}
 	}
@@ -285,7 +284,6 @@ class Physician:AbstractMode() {
 			gemsClearedChainTotal += gemsCleared
 			lastScore = pts
 			engine.statistics.scoreLine += pts
-			engine.playSE("gem")
 			setSpeed(engine)
 			return pts
 		}

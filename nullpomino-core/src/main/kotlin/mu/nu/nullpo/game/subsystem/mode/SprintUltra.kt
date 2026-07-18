@@ -302,7 +302,6 @@ class SprintUltra:NetDummyMode() {
 				// Out of time
 				if(engine.statistics.time>=limitTime) {
 					engine.gameEnded()
-					engine.resetStatc()
 					engine.stat = GameEngine.Status.ENDINGSTART
 					return
 				}

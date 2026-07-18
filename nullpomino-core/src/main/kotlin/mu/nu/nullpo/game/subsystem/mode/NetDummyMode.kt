@@ -385,7 +385,6 @@ abstract class NetDummyMode:AbstractMode(), NetLobbyListener {
 			else {
 				engine.field.reset()
 				engine.stat = Status.RESULT
-				engine.resetStatc()
 				return true
 			}
 
@@ -504,7 +503,6 @@ abstract class NetDummyMode:AbstractMode(), NetLobbyListener {
 			if(netIsWatch) {
 				owner.reset()
 				owner.engine[0].stat = Status.READY
-				owner.engine[0].resetStatc()
 			}
 		}
 		// Dead
@@ -516,7 +514,6 @@ abstract class NetDummyMode:AbstractMode(), NetLobbyListener {
 
 				if(owner.engine[0].stat!=Status.GAMEOVER&&owner.engine[0].stat!=Status.RESULT) {
 					owner.engine[0].stat = Status.GAMEOVER
-					owner.engine[0].resetStatc()
 				}
 			}
 		}
@@ -563,26 +560,22 @@ abstract class NetDummyMode:AbstractMode(), NetLobbyListener {
 					engine.ending = 1
 					if(!engine.staffrollEnable) engine.gameEnded()
 					engine.stat = Status.ENDINGSTART
-					engine.resetStatc()
 				}
 				// Excellent
 				if(message[3]=="excellent") {
 					engine.stat = Status.EXCELLENT
-					engine.resetStatc()
 				}
 				// Retry
 				if(message[3]=="retry") {
 					engine.ending = 0
 					engine.gameEnded()
 					engine.stat = Status.SETTING
-					engine.resetStatc()
 					engine.playSE("decide")
 				}
 				// Display results screen
 				if(message[3]=="resultsscreen") {
 					engine.field.reset()
 					engine.stat = Status.RESULT
-					engine.resetStatc()
 				}
 			}
 	}

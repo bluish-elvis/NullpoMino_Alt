@@ -70,3 +70,4 @@ target/
 nullpomino-core/target/
 nullpomino-run/target/
 .idea/workspace.xml
+.kotlin/

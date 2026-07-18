@@ -1,6 +1,6 @@
-mkdir target,nullpomino-core\target,nullpomino-run\target
-Set-Content -Path .git -Stream com.dropbox.ignored -Value 1
-Set-Content -Path .idea\workspace.xml -Stream com.dropbox.ignored -Value 1
-Set-Content -Path target -Stream com.dropbox.ignored -Value 1
-Set-Content -Path nullpomino-core\target -Stream com.dropbox.ignored -Value 1
-Set-Content -Path nullpomino-run\target -Stream com.dropbox.ignored -Value 1
+"build","out","target" | %{$d=$_; "","nullpomino-core\", "nullpomino-run\" | %{ "$_$d"}} | %{
+  mkdir $_ -Force | Out-Null
+  Set-Content -Path $_ -Stream com.dropbox.ignored -Value 1
+}
+
+".git", ".gradle", ".idea\workspace.xml"|%{Set-Content -Path $_ -Stream com.dropbox.ignored -Value 1}

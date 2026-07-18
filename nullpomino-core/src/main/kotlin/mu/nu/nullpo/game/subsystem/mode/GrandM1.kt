@@ -232,13 +232,17 @@ class GrandM1:AbstractGrand() {
 		super.onSettingChanged(engine)
 	}
 
-	override fun onReady(engine:GameEngine):Boolean {
-		if(engine.stime==0) {
+	override fun onReadyDone(engine:GameEngine, readyDone:Boolean) {
+		super.onReadyDone(engine, readyDone)
+			if(!readyDone) {
 			isShowBestSectionTime = false
-			bgmLv = if(engine.statistics.level<500) 0 else 1
-			owner.musMan.bgm = if(engine.statistics.level<500) BGM.GrandM(0) else BGM.GrandM(1)
+			bgmSet(engine)
 		}
-		return super.onReady(engine)
+	}
+	fun bgmSet(engine:GameEngine){
+		bgmLv = if(engine.statistics.level<500) 0 else 1
+		owner.musMan.bgm = if(engine.statistics.level<500) BGM.GrandM(0) else BGM.GrandM(1)
+
 	}
 	/* Render the settings screen */
 	/*override fun renderSetting(engine:GameEngine, playerID:Int) {
@@ -294,8 +298,8 @@ class GrandM1:AbstractGrand() {
 						} else if(it.clear>0) COLOR.GREEN else COLOR.WHITE
 
 
-						if(gr>=0&&gr<tableGradeName.size)
-							receiver.drawScore(engine, 2, 3+i, tableGMTier[gr].second, GRADE, gc)
+						if(gr in tableGradeName.indices)
+							receiver.drawScore(engine, 2, 3+i, tableGradeName[gr], GRADE, gc)
 						receiver.drawScore(engine, 5, 3+i, it.ti.toTimeStr, NUM, i==rankingRank)
 						receiver.drawScore(engine, 12, 3+i, "%03d".format(it.lv), NUM, i==rankingRank)
 					}
@@ -494,10 +498,9 @@ class GrandM1:AbstractGrand() {
 				sectionsDone++
 				stMedalCheck(engine, section)
 
-				if(bgmLv==0&&nextSecLv==500) {
-					bgmLv++
+				if(owner.musMan.fadeSW) {
 					owner.musMan.fadeSW = false
-					owner.musMan.bgm = BGM.GrandM(1)
+					bgmSet(engine)
 				}
 
 				nextSecLv += 100
@@ -542,7 +545,6 @@ class GrandM1:AbstractGrand() {
 			// Roll 終了
 			if(rollTime>=ROLLTIMELIMIT) {
 				engine.gameEnded()
-				engine.resetStatc()
 				engine.stat = GameEngine.Status.EXCELLENT
 			}
 		}
@@ -579,10 +581,10 @@ class GrandM1:AbstractGrand() {
 				engine.stime%2==0 -> COLOR.WHITE
 				else -> COLOR.BLUE
 			}
-			receiver.drawMenu(engine, 3.5f, 8.5f, "BUT...", BASE, COLOR.WHITE, 1f)
-			receiver.drawMenu(engine, .5f, 10f, "CHALLENGE", BASE, COLOR.BLUE, 1f)
-			receiver.drawMenu(engine, -.5f, 11f, "MORE FASTER", BASE, col, 1f)
-			receiver.drawMenu(engine, .5f, 12f, "NEXT TIME", BASE, COLOR.WHITE, 1f)
+			receiver.drawMenu(engine, 3.5f, 9.5f, "BUT...", BASE, COLOR.WHITE, 1f)
+			receiver.drawMenu(engine, .5f, 11f, "CHALLENGE", BASE, COLOR.BLUE, 1f)
+			receiver.drawMenu(engine, -.5f, 12f, "MORE FASTER", BASE, col, 1f)
+			receiver.drawMenu(engine, .5f, 13f, "NEXT TIME", BASE, COLOR.WHITE, 1f)
 		}
 	}
 
@@ -619,13 +621,7 @@ class GrandM1:AbstractGrand() {
 				}
 			}
 			2 -> {
-				receiver.drawMenu(engine, 0, 1.5f, "MEDAL", NANO, COLOR.BLUE, .5f)
-				receiver.drawMenuMedal(engine, 2, 2, "AC", medalAC)
-				receiver.drawMenuMedal(engine, 5, 2, "ST", medalST)
-				receiver.drawMenuMedal(engine, 8, 2, "SK", medalSK)
-				receiver.drawMenuMedal(engine, 1, 3, "RE", medalRE)
-				receiver.drawMenuMedal(engine, 4, 3, "RO", medalRO)
-				receiver.drawMenuMedal(engine, 7, 3, "CO", medalCO)
+				drawResultMedals(engine, 1, medals)
 
 				drawResultStats(engine, receiver, 4, COLOR.BLUE, Statistic.LPM, Statistic.SPM, Statistic.PIECE, Statistic.PPS)
 

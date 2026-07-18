@@ -194,12 +194,12 @@ class SprintCombo:NetDummyMode() {
 		super.onSettingChanged(engine)
 	}
 	/** Ready */
-	override fun onReady(engine:GameEngine):Boolean {
-		if(engine.stime==0) {
+	override fun onReadyDone(engine:GameEngine, readyDone:Boolean) {
+		super.onReadyDone(engine, readyDone)
+		if(!readyDone) {
 			engine.meterColor = GameEngine.METER_COLOR_GREEN
 			engine.meterValue = if(GOAL_TABLE[goalType]==-1) 0f else 1f
 		}
-		return false
 	}
 
 	/** This function will be called before the game actually begins (after
@@ -374,7 +374,6 @@ class SprintCombo:NetDummyMode() {
 		} else if(engine.statistics.maxCombo>=(if(GOAL_TABLE[goalType]==-1) 2 else GOAL_TABLE[goalType]-engine.statistics.lines)) {
 			engine.ending = 1
 			engine.gameEnded()
-			engine.resetStatc()
 			engine.stat = if(engine.statistics.maxCombo>=if(GOAL_TABLE[goalType]==-1) 40 else GOAL_TABLE[goalType]-1)
 				GameEngine.Status.EXCELLENT else GameEngine.Status.GAMEOVER
 			engine.statistics.time = scgettime

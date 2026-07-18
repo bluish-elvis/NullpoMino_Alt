@@ -141,7 +141,7 @@ abstract class ResourceHolder {
 
 	/** Field frame for retro mode */
 	internal open val imgFrameOld:List<ResourceImage<*>> =
-		listOf("gb", "sa", "hebo", "grade").map {ResourceImageStr("frames/$it")}
+		listOf("gb", "sa", "hebo", "grade","ace").map {ResourceImageStr("frames/$it")}
 
 	/** Field background */
 	internal open val imgFieldBG:List<List<ResourceImage<*>>> =
@@ -256,13 +256,13 @@ abstract class ResourceHolder {
 
 		"countdown", "hurryup", "timeover",
 		"stageclear", "stagefail", "matchend",
-		"gem", "bomb", "square_s", "square_g"
+		"gem", "bomb", "square_s", "square_g","garbage_cancel","medal"
 	)+((0..1).flatMap {setOf("start$it", "crowd$it")}+
-		(0..2).flatMap {setOf("decide$it", "garbage$it", "erase$it", "eraseold$it", "firecracker$it")}+
+		(0..2).flatMap {setOf("decide$it", "garbage$it", "erase$it", "eraseold$it", "firecracker$it","medal${it+1}")}+
 		(0..4).map {"grade$it"}+(0..5).map {"applause$it"}+
 		Piece.Shape.names.map {"piece_${it.lowercase()}"}+(1..4).map {"lines$it"}+
-		setOf("spawn", "trigger", "laser").map {"item_$it"}+
-		(1..3).map {"medal$it"}+(1..5).map {"countdown$it"}+setOf(5, 10).map {"timebonus_$it"}
+		setOf("spawn", "trigger", "buff","laser_h", "laser_v", "laser_w","nuke").map {"item_$it"}+
+		(1..5).map {"countdown$it"}+setOf(5, 10).map {"timebonus_$it"}
 		).toSet()
 
 }

@@ -510,8 +510,6 @@ class SPF:AbstractMode() {
 			if(owner.engine[0].statc[4]==1&&owner.engine[1].statc[4]==1&&pid==1) {
 				owner.engine[0].stat = GameEngine.Status.READY
 				owner.engine[1].stat = GameEngine.Status.READY
-				owner.engine[0].resetStatc()
-				owner.engine[1].resetStatc()
 			} else if(engine.ctrl.isPush(Controller.BUTTON_B)) engine.statc[4] = 0// Cancel
 
 		return true
@@ -1131,7 +1129,6 @@ class SPF:AbstractMode() {
 				owner.engine[0].gameEnded()
 				owner.engine[1].gameEnded()
 				owner.engine[0].stat = GameEngine.Status.EXCELLENT
-				owner.engine[0].resetStatc()
 				owner.engine[0].statc[1] = 1
 				owner.musMan.bgm = BGM.Silent
 			} else if(owner.engine[0].stat==GameEngine.Status.GAMEOVER&&owner.engine[1].stat!=GameEngine.Status.GAMEOVER) {
@@ -1140,7 +1137,6 @@ class SPF:AbstractMode() {
 				owner.engine[0].gameEnded()
 				owner.engine[1].gameEnded()
 				owner.engine[1].stat = GameEngine.Status.EXCELLENT
-				owner.engine[1].resetStatc()
 				owner.engine[1].statc[1] = 1
 				owner.musMan.bgm = BGM.Silent
 			}

@@ -64,7 +64,6 @@ data object Line:ClearType {
 						else -> if(frame==Frame.GB) "eraseold0" else "erase0"
 					}
 				)
-				if(check.gemClearedNum>0) playSE("gem")
 //				lastLinesY = check.linesYfolded
 //				lastLineY = check.linesY.maxOrNull()?:0
 				if(frame!=Frame.SG) playSE("lines${li.coerceIn(1, 4)}")

@@ -340,7 +340,6 @@ class Avalanche1P:Avalanche1PDummyMode() {
 			// Out of time
 			if(engine.statistics.time>=ULTRA_MAX_TIME&&engine.timerActive) {
 				engine.gameEnded()
-				engine.resetStatc()
 				engine.stat = GameEngine.Status.ENDINGSTART
 				return
 			}
@@ -356,7 +355,6 @@ class Avalanche1P:Avalanche1PDummyMode() {
 			// Goal
 			if(engine.statistics.score>=SPRINT_MAX_SCORE[sprintTarget]&&engine.timerActive) {
 				engine.gameEnded()
-				engine.resetStatc()
 				engine.stat = GameEngine.Status.ENDINGSTART
 			}
 		}
@@ -386,7 +384,6 @@ class Avalanche1P:Avalanche1PDummyMode() {
 		if(!engine.field.getBlockEmpty(2, 0)||dangerColumnDouble&&!engine.field.getBlockEmpty(3, 0)) {
 			engine.stat = GameEngine.Status.GAMEOVER
 			engine.gameEnded()
-			engine.resetStatc()
 			engine.statc[1] = 1
 		}
 

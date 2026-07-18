@@ -813,7 +813,7 @@ class GrandM3:AbstractGrand() {
 						gradeBasicReal++
 						if(grade<31) {
 							grade = minOf(31, gradeBasicReal+coolCount)
-							engine.playSE(if(gradeDisp) "grade${grade/8}" else "medal1")
+							engine.playSE(if(gradeDisp) "grade${grade/8}" else "medal")
 							gradeFlash = 180
 							lastGradeTime = engine.statistics.time
 						}
@@ -943,7 +943,7 @@ class GrandM3:AbstractGrand() {
 				lastGradeTime = engine.statistics.time
 			}
 		}
-		if(gradeFlash==180) engine.playSE(if(gradeDisp) "grade${grade/8}" else "medal1")
+		if(gradeFlash==180) engine.playSE(if(gradeDisp) "grade${grade/8}" else "medal")
 		return ret
 	}
 
@@ -1018,7 +1018,6 @@ class GrandM3:AbstractGrand() {
 				engine.blockShowOutlineOnly = false
 
 				engine.gameEnded()
-				engine.resetStatc()
 				engine.stat = GameEngine.Status.EXCELLENT
 				val timeQ = 28800*(goalType+1)
 				if(engine.statistics.time<timeQ) decTemp += (timeQ-engine.statistics.time)/1800
@@ -1179,13 +1178,8 @@ class GrandM3:AbstractGrand() {
 					}
 				}
 				2 -> {
-					receiver.drawMenu(engine, 0, 1.5f, "MEDAL", NANO, COLOR.BLUE, .5f)
-					receiver.drawMenuMedal(engine, 2, 2, "AC", medalAC)
-					receiver.drawMenuMedal(engine, 5, 2, "ST", medalST)
-					receiver.drawMenuMedal(engine, 8, 2, "SK", medalSK)
-					receiver.drawMenuMedal(engine, 1, 3, "RE", medalRE)
-					receiver.drawMenuMedal(engine, 4, 3, "RO", medalRO)
-					receiver.drawMenuMedal(engine, 7, 3, "CO", medalCO)
+					drawResultMedals(engine, 1, medals)
+
 
 					if(rollPointsTotal>0) {
 						receiver.drawMenu(engine, 0, 4, "ROLL POINT", BASE, COLOR.BLUE)

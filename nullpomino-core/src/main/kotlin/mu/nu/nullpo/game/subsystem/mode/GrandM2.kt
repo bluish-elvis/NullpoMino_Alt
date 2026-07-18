@@ -252,12 +252,12 @@ class GrandM2:AbstractGrand() {
 			"FULL GHOST" to alwaysGhost, "FULL 20G" to always20g, "LVSTOPSE" to secAlert, "SHOW STIME" to showST,
 			"BIG" to big)
 	}*/
-	override fun onReady(engine:GameEngine):Boolean {
-		if(engine.stime==0) {
+	override fun onReadyDone(engine:GameEngine, readyDone:Boolean) {
+		super.onReadyDone(engine, readyDone)
+		if(!readyDone) {
 			isShowBestSectionTime = false
 			owner.musMan.fadeSW = true
 		}
-		return super.onReady(engine)
 	}
 	/* Called at game start */
 	override fun startGame(engine:GameEngine) {
@@ -624,7 +624,6 @@ class GrandM2:AbstractGrand() {
 				engine.blockOutlineType = GameEngine.BLOCK_OUTLINE_NORMAL
 
 				engine.gameEnded()
-				engine.resetStatc()
 				engine.stat = GameEngine.Status.EXCELLENT
 				if(engine.statistics.time<28800) decTemp += (28800-engine.statistics.time)/1800
 			}
@@ -692,17 +691,9 @@ class GrandM2:AbstractGrand() {
 				}
 			}
 			2 -> {
-				receiver.drawMenu(engine, 0, 1.5f, "MEDAL", NANO, COLOR.BLUE, .5f)
-				receiver.drawMenuMedal(engine, 2, 2, "AC", medalAC)
-				receiver.drawMenuMedal(engine, 5, 2, "ST", medalST)
-				receiver.drawMenuMedal(engine, 8, 2, "SK", medalSK)
-				receiver.drawMenuMedal(engine, 1, 3, "RE", medalRE)
-				receiver.drawMenuMedal(engine, 4, 3, "RO", medalRO)
-				receiver.drawMenuMedal(engine, 7, 3, "CO", medalCO)
+				drawResultMedals(engine, 1, medals)
 
-				drawResultStats(
-					engine, receiver, 4, COLOR.BLUE, Statistic.LPM, Statistic.SPM, Statistic.PIECE, Statistic.PPS
-				)
+				drawResultStats(engine, receiver, 4, COLOR.BLUE, Statistic.LPM, Statistic.SPM, Statistic.PIECE, Statistic.PPS)
 
 				drawResult(engine, receiver, 15, COLOR.BLUE, "DECORATION", "%10d".format(decTemp))
 			}

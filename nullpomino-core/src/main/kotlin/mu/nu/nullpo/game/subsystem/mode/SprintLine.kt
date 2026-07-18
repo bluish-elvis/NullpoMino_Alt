@@ -198,7 +198,6 @@ Ready&Go screen disappears) */
 	override fun calcScore(engine:GameEngine, ev:ScoreEvent):Int {
 		val li = ev.lines
 		if(gameMode==3&&!(engine.twist&&li>=2&&!engine.twistMini)) {
-			engine.resetStatc()
 			engine.stat = GameEngine.Status.GAMEOVER
 			return 0
 		}

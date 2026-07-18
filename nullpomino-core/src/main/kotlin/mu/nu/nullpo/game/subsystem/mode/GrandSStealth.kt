@@ -553,9 +553,7 @@ class GrandSStealth:AbstractGrand() {
 
 			if(rollTime>=ROLLTIMELIMIT) {
 				if(engine.statistics.level>=999) rollClear = 2
-
 				engine.gameEnded()
-				engine.resetStatc()
 				engine.stat = GameEngine.Status.EXCELLENT
 			}
 		}
@@ -601,13 +599,7 @@ class GrandSStealth:AbstractGrand() {
 				receiver.drawMenu(engine, 2, 15, sectionAvgTime.toTimeStr, BASE)
 			}
 		} else if(engine.statc[1]==2) {
-			receiver.drawMenu(engine, 0, 1.5f, "MEDAL", NANO, COLOR.PURPLE, .5f)
-			receiver.drawMenuMedal(engine, 2, 2, "AC", medalAC)
-			receiver.drawMenuMedal(engine, 5, 2, "ST", medalST)
-			receiver.drawMenuMedal(engine, 8, 2, "SK", medalSK)
-			receiver.drawMenuMedal(engine, 1, 3, "RE", medalRE)
-			receiver.drawMenuMedal(engine, 4, 3, "RO", medalRO)
-			receiver.drawMenuMedal(engine, 7, 3, "CO", medalCO)
+			drawResultMedals(engine, 1, medals)
 
 			drawResultStats(engine, receiver, 6, COLOR.PURPLE, Statistic.LPM, Statistic.SPM, Statistic.PIECE, Statistic.PPS)
 		}

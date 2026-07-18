@@ -37,6 +37,7 @@ import mu.nu.nullpo.game.event.ScoreEvent
 import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.game.subsystem.mode.menu.BooleanMenuItem
 import mu.nu.nullpo.game.subsystem.mode.menu.DelegateMenuItem
+import mu.nu.nullpo.gui.common.BaseFont
 import mu.nu.nullpo.util.GeneralUtil.toInt
 
 abstract class AbstractGrand:AbstractMode() {
@@ -73,7 +74,6 @@ abstract class AbstractGrand:AbstractMode() {
 	protected var medalRE get() = medals.RE; set(v) {; medals.RE = v}
 	/** 150個以上Blockがあるとtrue, 70個まで減らすとfalseになる */
 	protected var recoveryFlag = false
-
 
 	protected var medalRO get() = medals.RO; set(v) {; medals.RO = v}
 	/** rotationした合計 count (Maximum4個ずつ増える) */
@@ -125,27 +125,28 @@ abstract class AbstractGrand:AbstractMode() {
 	 */
 	protected fun stMedalCheck(engine:GameEngine, section:Int = engine.statistics.level/100, lastTime:Int, best:Int) {
 //		val best = bestSectionTime[goalType][section]
-
-		if(best !in 1..lastTime) {
-			engine.playSE("medal3")
-			if(medalST<1) decTemp += 3
-			if(medalST<2) decTemp += 6
-			decTemp += 6
-			medalsST[0]++
-			if(!owner.replayMode) {
+		if(!owner.replayMode)
+			if(best !in 1..lastTime) {
+				engine.playSE("medal")
+				engine.playSE("medal3")
+				if(medalST<1) decTemp += 3
+				if(medalST<2) decTemp += 6
+				decTemp += 6
+				medalsST[0]++
 				decTemp++
 				sectionIsNewRecord[section] = true
+			} else if(lastTime<best+300) {
+				engine.playSE("medal")
+				engine.playSE("medal2")
+				if(medalST<1) decTemp += 3
+				medalsST[1]++
+				decTemp += 6
+			} else if(lastTime<best+600) {
+				engine.playSE("medal")
+				engine.playSE("medal1")
+				medalsST[2]++
+				decTemp += 3
 			}
-		} else if(lastTime<best+300) {
-			engine.playSE("medal2")
-			if(medalST<1) decTemp += 3
-			medalsST[1]++
-			decTemp += 6
-		} else if(lastTime<best+600) {
-			engine.playSE("medal1")
-			medalsST[2]++
-			decTemp += 3
-		}
 	}
 	/** RO medal check */
 	protected fun roMedalCheck(engine:GameEngine, nextSecLv:Int) {
@@ -160,6 +161,7 @@ abstract class AbstractGrand:AbstractMode() {
 		spinCount = 0
 		(sectionSpins.indexOfLast {(s, p) -> (s.toFloat()/p)>=1.2f}+1).let {
 			if(it>medalRO) {
+				engine.playSE("medal")
 				engine.playSE("medal$it")
 				if(medalRO<1) decTemp += 3
 				if(medalRO<2) decTemp += 6
@@ -190,6 +192,7 @@ abstract class AbstractGrand:AbstractMode() {
 			} else if(blocks<=70) {
 				recoveryFlag = false
 				decTemp += 5+medalRE// 5 11 18
+				engine.playSE("medal")
 				engine.playSE("medal${++medalRE}")
 			}
 		}
@@ -197,12 +200,12 @@ abstract class AbstractGrand:AbstractMode() {
 		engine.ghost = /*(engine.speed.rank<1f)&&*/(engine.statistics.level<100||alwaysGhost)
 	}
 
-	override fun onReady(engine:GameEngine):Boolean {
-		if(engine.stime==0) {
+	override fun onReadyDone(engine:GameEngine, readyDone:Boolean) {
+		super.onReadyDone(engine, readyDone)
+		if(!readyDone) {
 			sectionsDone = 0
 			decTemp = 0
 		}
-		return super.onReady(engine)
 	}
 
 	override fun onMove(engine:GameEngine):Boolean {
@@ -244,6 +247,7 @@ abstract class AbstractGrand:AbstractMode() {
 			if(li>=4) medalSKQuads[engine.big.toInt()].getOrNull(medalSK)?.let {qua ->
 				if(engine.statistics.totalQuadruple>=qua) {
 					decTemp += 3+medalSK*2// 3 8 15
+					engine.playSE("medal")
 					engine.playSE("medal${++medalSK}")
 				}
 			}
@@ -251,6 +255,7 @@ abstract class AbstractGrand:AbstractMode() {
 			if(ev.twist) medalTSLines[engine.big.toInt()].getOrNull(medalTS)?.let {qua ->
 				if(engine.statistics.totalTwistsLine>=qua) {
 					decTemp += 3+medalSK*2// 3 8 15
+					engine.playSE("medal")
 					engine.playSE("medal${++medalTS}")
 				}
 			}
@@ -261,6 +266,7 @@ abstract class AbstractGrand:AbstractMode() {
 				if(li==4) decTemp += 150
 				if(medalAC<3) {
 					decTemp += 3+medalAC*4// 3 10 21
+					engine.playSE("medal")
 					engine.playSE("medal${++medalAC}")
 				}
 				4
@@ -271,6 +277,7 @@ abstract class AbstractGrand:AbstractMode() {
 				medalCOChain[engine.big.toInt()].getOrNull(medalCO)?.let {qua ->
 					if(engine.combo>=qua) {
 						decTemp += 3+medalCO// 3 7 12
+						engine.playSE("medal")
 						engine.playSE("medal${++medalCO}")
 					}
 				}
@@ -282,5 +289,15 @@ abstract class AbstractGrand:AbstractMode() {
 			((levelb/(4-(ev.b2b>0).toInt())+engine.softdropFall+engine.manualLock.toInt()+engine.harddropFall*2)
 				*li*comboValue)*bravo+maxOf(0, engine.lockDelay-engine.lockDelayNow)*7+levela*tx/ty
 		} else 0
+	}
+
+	fun drawResultMedals(engine:GameEngine,y:Int,medals:Rankable.GrandRow.Medals){
+		receiver.drawMenu(engine, 0, y+.5f, "MEDAL", BaseFont.FONT.NANO, COLOR.BLUE, .5f)
+		receiver.drawMenuMedal(engine, 2, y+1, "AC", medals.AC)
+		receiver.drawMenuMedal(engine, 5, y+1, "ST", medals.ST.indexOfFirst {it>0}.let {; if(it>=0) medalsST.size-it else 0;})
+		receiver.drawMenuMedal(engine, 8, y+1, "SK", medals.SK)
+		receiver.drawMenuMedal(engine, 1, y+2, "RE", medals.RE)
+		receiver.drawMenuMedal(engine, 4, y+2, "RO", medals.RO)
+		receiver.drawMenuMedal(engine, 7, y+2, "CO", medals.CO)
 	}
 }

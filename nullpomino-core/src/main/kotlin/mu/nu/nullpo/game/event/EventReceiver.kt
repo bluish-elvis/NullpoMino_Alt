@@ -646,7 +646,7 @@ open class EventReceiver {
 	 */
 	@JvmOverloads
 	fun drawBlock(x:Number, y:Number, block:Block, darkness:Float = 0f, alpha:Float = 1f, scale:Float = 1f) {
-		if(block.type==Block.TYPE.ITEM) drawBlock(x, y, block.iNum, -1, false, block.darkness+darkness,
+		if(block.item!=null) drawBlock(x, y, block.iNum-1, -1, false, block.darkness+darkness,
 			block.alpha*alpha, scale, block.aint) else
 			drawBlock(x, y, block.drawId, block.skin, block.getAttribute(Block.ATTRIBUTE.BONE),
 				block.darkness+darkness, block.alpha*alpha, scale, block.aint)

@@ -58,7 +58,6 @@ data object LineBomb:ClearType {
 					receiver.lineClear(this, r)
 				}
 				playSE("lines${lines.size.coerceIn(1, 4)}")
-				if(x.gemClearedNum>0) playSE("gem")
 			}
 			x
 		} else recheck(engine, field).let {res ->
