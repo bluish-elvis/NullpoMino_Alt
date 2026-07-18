@@ -382,7 +382,6 @@ class ScoreTrial:MarathonModeBase() {
 				if(engine.statistics.level<199&&difficultySelected==2) {
 					engine.lives = 0
 					engine.stat = Status.GAMEOVER
-					engine.resetStatc()
 					engine.gameEnded()
 				} else {
 					// Ending
@@ -403,7 +402,6 @@ class ScoreTrial:MarathonModeBase() {
 					}
 					engine.lives = 0
 					engine.ending = 1
-					engine.resetStatc()
 					engine.gameEnded()
 					engine.stat = Status.ENDINGSTART
 				}

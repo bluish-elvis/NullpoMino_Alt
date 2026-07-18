@@ -294,8 +294,8 @@ class GrandM1:AbstractGrand() {
 						} else if(it.clear>0) COLOR.GREEN else COLOR.WHITE
 
 
-						if(gr>=0&&gr<tableGradeName.size)
-							receiver.drawScore(engine, 2, 3+i, tableGMTier[gr].second, GRADE, gc)
+						if(gr in tableGradeName.indices)
+							receiver.drawScore(engine, 2, 3+i, tableGradeName[gr], GRADE, gc)
 						receiver.drawScore(engine, 5, 3+i, it.ti.toTimeStr, NUM, i==rankingRank)
 						receiver.drawScore(engine, 12, 3+i, "%03d".format(it.lv), NUM, i==rankingRank)
 					}
@@ -542,7 +542,6 @@ class GrandM1:AbstractGrand() {
 			// Roll 終了
 			if(rollTime>=ROLLTIMELIMIT) {
 				engine.gameEnded()
-				engine.resetStatc()
 				engine.stat = GameEngine.Status.EXCELLENT
 			}
 		}

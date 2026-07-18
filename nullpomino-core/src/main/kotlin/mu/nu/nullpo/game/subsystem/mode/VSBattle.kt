@@ -450,8 +450,6 @@ open class VSBattle:AbstractMode() {
 			if(owner.engine.all {it.statc[4]==1}) {
 				owner.engine[0].stat = Status.READY
 				owner.engine[1].stat = Status.READY
-				owner.engine[0].resetStatc()
-				owner.engine[1].resetStatc()
 			} else if(engine.ctrl.isPush(Controller.BUTTON_B)) engine.statc[4] = 0// Cancel
 
 		return true

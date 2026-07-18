@@ -38,6 +38,7 @@ import mu.nu.nullpo.game.event.EventReceiver.COLOR
 import mu.nu.nullpo.game.net.NetUtil
 import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.game.play.GameEngine.Frame
+import mu.nu.nullpo.game.play.GameManager
 import mu.nu.nullpo.game.subsystem.mode.GrandOrders.Companion.Mission.*
 import mu.nu.nullpo.game.subsystem.mode.menu.*
 import mu.nu.nullpo.gui.common.BaseFont.Companion.CURSOR
@@ -47,14 +48,18 @@ import mu.nu.nullpo.gui.common.BaseFont.FONT.*
 import mu.nu.nullpo.util.CustomProperties
 import mu.nu.nullpo.util.GeneralUtil.toInt
 import mu.nu.nullpo.util.GeneralUtil.toTimeStr
+import java.io.*
+import java.util.*
 import kotlin.math.absoluteValue
 import kotlin.random.Random
 
 /** MISSION MANIA mode */
 class GrandOrders:NetDummyMode() {
+
 	/** Remaining level time */
 	private var levelTimer = 0
 	private var lastLineTime = 0
+	private var lastLivesSection = 0
 
 	/** Original level time */
 	private var levelTimerMax = 0
@@ -97,10 +102,11 @@ class GrandOrders:NetDummyMode() {
 		set(value) {
 			nowMission?.prog = value
 		}
-
 	/** Lines for Next level */
 	private val norm get() = nowMission?.norm?:0
 
+	/** Time limit for current mission */
+	private val timeLimit get() = nowMission?.time?:0
 	/** Course記録表示中ならtrue */
 	private var isShowBest = false
 
@@ -129,6 +135,10 @@ class GrandOrders:NetDummyMode() {
 		get() = rankMapOf(
 			bestSectionTime.mapIndexed {c, it -> "$c.section.time" to it}
 		)
+	/** 新記録が出たSection はtrue */
+	protected val sectionIsNewRecord by lazy {MutableList(courses.maxOf {it.goalLevel}) {false}}
+	/** どこかのSection で新記録を出すとtrue */
+	protected val sectionAnyNewRecord get() = sectionIsNewRecord.any()
 	/** Returns the name of this mode */
 	override val name = "Grand Orders"
 	override val color = COLOR.PURPLE
@@ -140,6 +150,21 @@ class GrandOrders:NetDummyMode() {
 			else -> 0
 		}*/
 
+	override fun modeInit(manager:GameManager) {
+		super.modeInit(manager)
+		try {
+			this::class.java.getResource("/lang/GrandOrder_${Locale.getDefault().country}.xml")?.file?.let {
+				FileInputStream(it).use {fis ->
+					propLang.loadFromXML(fis)
+				}
+			}
+		} catch(_:IOException) {
+			FileOutputStream("config/lang/GrandOrder_${Locale.getDefault().country}.xml").use {
+				propLangDefault.storeToXML(it, "Grand Order language file - ${Locale.getDefault().displayCountry}")
+			}
+		}
+
+	}
 	/** This function will be called when the game enters the main game
 	 * screen. */
 	override fun playerInit(engine:GameEngine) {
@@ -155,6 +180,7 @@ class GrandOrders:NetDummyMode() {
 		showST = true
 
 		rankingRank = -1
+		sectionIsNewRecord.fill(false)
 		bestSectionTime.forEachIndexed {x, it ->
 			for(i in it.indices) bestSectionTime[x][i] = DEFAULT_SECTION_TIME
 		}
@@ -194,7 +220,7 @@ class GrandOrders:NetDummyMode() {
  engine.speed.lineDelay = 10; engine.speed.lockDelay = 30;
  engine.speed.das = 12; levelTimerMax = levelTimer = 3600 * 3; */
 
-		levelTimer = nowMission.time*60
+		levelTimer = if(timeLimit>0) timeLimit*60 else -1
 		levelTimerMax = levelTimer
 		// Blocks fade for HELL-X
 		engine.blockHidden = if(nowMission is Dark) nowMission.misc else -1
@@ -254,6 +280,9 @@ class GrandOrders:NetDummyMode() {
 					engine.playSE("cancel")
 					engine.statc[1] = 0
 					true
+				} else if(nowCourse.missions.isEmpty()&&engine.ctrl.isPush(Controller.BUTTON_A)&&!netIsNetPlay) {
+					engine.playSE("rotfail")
+					true
 				} else super.onSetting(engine)
 			} else {
 				if(engine.ctrl.isMenuRepeatKey(Controller.BUTTON_UP)) {
@@ -299,7 +328,7 @@ class GrandOrders:NetDummyMode() {
 
 	override fun onSettingChanged(engine:GameEngine) {
 		if(startLevel>nowCourse.goalLevel-1) startLevel =
-			if(menuCursor!=menu.items.indexOf(itemLevel)) 0 else nowCourse.goalLevel-1
+			if(menuCursor!=menu.items.indexOf(itemLevel)) 0 else maxOf(0, nowCourse.goalLevel-1)
 		engine.owner.bgMan.bg = startLevel
 		engine.statistics.level = startLevel
 		missionPos = engine.statistics.level
@@ -311,7 +340,7 @@ class GrandOrders:NetDummyMode() {
 	override fun onReady(engine:GameEngine):Boolean {
 		if(engine.stime==0) {
 			setSpeed(engine)
-			bgmLv = maxOf(0, nowCourse.bgmChange.indexOfLast {it<=startLevel}.let {if(it<0) nowCourse.bgmChange.size-1 else it})
+			owner.musMan.fadeSW = true
 			nowMission?.ready(engine)
 		}
 		return false
@@ -320,13 +349,18 @@ class GrandOrders:NetDummyMode() {
 	/** This function will be called before the game actually begins
 	 * (after Ready&Go screen disappears) */
 	override fun startGame(engine:GameEngine) {
+		lastLivesSection = engine.lives
+		bgmUpdate(engine)
+	}
+
+	fun bgmUpdate(engine:GameEngine) {
 		if(owner.musMan.fadeSW) {
 			bgmLv = nowCourse.bgmChange.count {it<=engine.statistics.level}
 			owner.musMan.bgm = if(netIsWatch) BGM.Silent else nowCourse.bgmList[bgmLv]
 			owner.musMan.fadeSW = false
 		}
-	}
 
+	}
 	/** Renders HUD (leaderboard or game statistics) */
 	override fun renderLast(engine:GameEngine) {
 		if(owner.menuOnly) return
@@ -352,16 +386,28 @@ class GrandOrders:NetDummyMode() {
 					receiver.drawScore(engine, 4.5f, 4+i, if(clear) "LIVES\nREMAINED" else "LEVELS\nDONE", NANO, gColor, .5f)
 					receiver.drawScore(engine, 8, 4+i, st.time.toTimeStr, NUM, gColor)
 				}
+				receiver.drawScore(engine, 0, 17, "F:VIEW SECTION TIME", BASE, COLOR.GREEN)
 			} else {
-				nowCourse.missions.forEachIndexed {i, it ->
-					val y = i+(engine.stat is GameEngine.Status.SETTING&&engine.statc[1]==1&&i>startLevel).toInt()
-					val a = if(i<startLevel) .5f else 1f
-					receiver.drawScore(engine, 0, 2+y, "%2d".format(i+1), GRADE,
-						if(i==startLevel) COLOR.RED else COLOR.YELLOW, 1f, a)
-					receiver.drawScore(engine, 2.5f, 2+y, it.showName, BASE, i==startLevel, 1f, a)
+				if(nowCourse.goalLevel>0) {
+					val arr = bestSectionTime[goalType]
+					nowCourse.missions.forEachIndexed {i, it ->
+						val y = i+(engine.stat is GameEngine.Status.SETTING&&engine.statc[1]==1&&i>startLevel).toInt()
+						val a = if(i<startLevel) .5f else 1f
+						receiver.drawScore(engine, 0, 2+y, "%2d".format(i+1), GRADE,
+							if(i==startLevel) COLOR.RED else COLOR.YELLOW, 1f, a)
+						receiver.drawScore(engine, 8f, 2+y, it.showName, BASE, i==startLevel, 1f, a)
+						receiver.drawScore(engine, 1.5f, 2+y, arr[i].toTimeStr, NUM, sectionIsNewRecord[i])
+					}
+					val totalTime = arr.sum()
+					val averageTime = totalTime/nowCourse.goalLevel
+
+					receiver.drawScore(engine, 3, 19, "TOTAL", BASE, COLOR.BLUE)
+					receiver.drawScore(engine, 3, 20, totalTime.toTimeStr, NUM_T)
+					receiver.drawScore(engine, 12, 19, "AVERAGE", BASE, COLOR.BLUE)
+					receiver.drawScore(engine, 12, 20, averageTime.toTimeStr, NUM_T)
 				}
 				if(!owner.replayMode) {
-					receiver.drawScore(engine, 0, 17, "F:VIEW SECTION TIME", BASE, COLOR.GREEN)
+					receiver.drawScore(engine, 0, 17, "F:VIEW RANKING", BASE, COLOR.GREEN)
 				}
 			}
 		} else {
@@ -374,7 +420,8 @@ class GrandOrders:NetDummyMode() {
 			receiver.drawScore(engine, 0, 8, "%3d/%3d".format(prog, norm), NUM)
 
 			receiver.drawScore(engine, 0, 10, "TIME LIMIT", BASE, COLOR.BLUE)
-			receiver.drawScore(engine, 0, 11, levelTimer.toTimeStr, NUM, levelTimer in 1..<600&&levelTimer%4==0, 2f)
+			receiver.drawScore(engine, 0, 11, levelTimer.toTimeStr, NUM, levelTimer in 1..<600&&levelTimer%4==0, 2f,
+				if(timeLimit>0) 1f else .5f)
 
 			receiver.drawScore(engine, 0, 13, "TOTAL TIME", BASE, COLOR.BLUE)
 			receiver.drawScore(engine, 0, 14, engine.statistics.time.toTimeStr, NUM_T)
@@ -436,14 +483,13 @@ class GrandOrders:NetDummyMode() {
 		super.onLast(engine)
 		// Level timer
 		if(engine.timerActive&&engine.ending==0) {
-			if(levelTimer>0) {
+			if(levelTimer>0&&timeLimit>0) {
 				levelTimer--
-				if(nowMission is Enduro) prog = levelTimer/60
-
-				if(nowMission is Enduro&&levelTimer<=0) engine.playSE("levelstop")
-				else if(levelTimer<=600&&levelTimer%60==0) engine.playSE("countdown")
-			} else if(!netIsWatch&&nowMission !is Enduro) {
-				engine.resetStatc()
+				if(nowMission is Enduro) {
+					prog = levelTimer/60
+					if(levelTimer<=0) engine.playSE("levelstop")
+				} else if(levelTimer<=600&&levelTimer%60==0) engine.playSE("countdown")
+			} else if(!netIsWatch&&nowMission !is Enduro&&timeLimit>0) {
 				engine.lives = -1
 				engine.stat = GameEngine.Status.GAMEOVER
 				engine.playSE("timeover")
@@ -478,7 +524,6 @@ class GrandOrders:NetDummyMode() {
 			if(rollTime>=ROLLTIMELIMIT&&!netIsWatch) {
 				engine.statistics.rollClear = 2
 				engine.gameEnded()
-				engine.resetStatc()
 				engine.stat = GameEngine.Status.EXCELLENT
 			}
 		}
@@ -487,8 +532,10 @@ class GrandOrders:NetDummyMode() {
 	override fun onARE(engine:GameEngine):Boolean {
 		if(!engine.timerActive&&engine.stime==0) {
 			//Next mission
-			if(prog>=norm)
+			if(missionPos!=engine.statistics.level) {
 				missionPos = engine.statistics.level
+				nowMission?.ready(engine)
+			}
 			engine.resetStatc()
 			return true
 		}
@@ -506,12 +553,17 @@ class GrandOrders:NetDummyMode() {
 
 		// Add lines to norm
 		val checked = mission.checkProgress(engine, ev)
-		if(checked) lastLineTime = levelTimer
-
+		if(checked>0) lastLineTime = levelTimer
+		if(prog>=norm-1) {
+			owner.musMan.fadeSW = true
+		}
 		// Level up
-		if(checked&&prog>=norm) {
+		if(checked>0&&prog>=norm) {
+			if(!owner.replayMode) {
+				if(bestSectionTime[goalType][lv]>sectionTime[lv]&&engine.lives>=lastLivesSection) sectionIsNewRecord[lv] = true
+			}
 			// Game completed
-			if(lv>=nowCourse.goalLevel) {
+			if(lv>=nowCourse.goalLevel-1) {
 				owner.musMan.fadeSW = true
 				engine.playSE("levelup_section")
 
@@ -537,8 +589,8 @@ class GrandOrders:NetDummyMode() {
 				}
 				engine.playSE("levelup")
 				engine.statistics.level++
+				lastLivesSection = engine.lives
 				owner.bgMan.nextBg = engine.statistics.level+nowCourse.bgOffset
-
 				sectionsDone++
 
 				engine.timerActive = false // Stop timer until the next piece becomes active
@@ -718,6 +770,11 @@ class GrandOrders:NetDummyMode() {
 	override fun netIsNetRankingViewOK(engine:GameEngine):Boolean = startLevel==0&&engine.ai==null
 
 	companion object {
+		/** Default language file */
+		private val propLangDefault = CustomProperties()
+		/** 言語ファイル */
+		private val propLang = CustomProperties()
+
 		/** Current version of this mode */
 		private const val CURRENT_VERSION = 1
 		private val DEFAULT_SKIN = Frame.METAL
@@ -747,6 +804,7 @@ class GrandOrders:NetDummyMode() {
 		/** Mision Types */
 		sealed class Mission {
 			/** この問題におけるスピードレベル。0~27で指定される。
+			 * ハイスピードは13~27間
 			 * マイナス値に設定するとアナザーレベル（超高速帯）の設定となる**/
 			open val lv:Int = 0
 			/** この問題のミッションクリアまでのノルマカウント。**/
@@ -786,8 +844,7 @@ class GrandOrders:NetDummyMode() {
 			/**1ライン消し、2ライン消し、3ライン消し、4ライン消しをそれぞれ1回以上するとクリア*/
 			data class Cycle(override val lv:Int, override val time:Int = 0):Mission() {
 				var tmp = 0
-				override val norm:Int
-					get() = tmp and 1+(tmp ushr 1 and 1)+(tmp ushr 2 and 1)+(tmp ushr 3 and 1)
+				override val norm = 4
 			}
 			/**ライン消しをしない設置をせずに、[norm]回以上連続でラインを消すコンボを達成すればクリア
 			 *@param multiLine trueにすると1ライン消しではカウントが変化しなくなる*/
@@ -813,23 +870,25 @@ class GrandOrders:NetDummyMode() {
 			 * @param progL trueにすると同時消ししたライン数に応じて進行
 			 */
 			@ConsistentCopyVisibility data class Twister private constructor(override val lv:Int, override val norm:Int,
-				override val time:Int = 0, val zeroL:Int, val shapes:Set<Shape> = emptySet(), val lines:Set<Int> = emptySet(),
+				override val time:Int = 0, val zeroL:Int = 0, val shapes:Set<Shape> = emptySet(), val lines:Set<Int> = emptySet(),
 				val progL:Boolean = false):Mission() {
 				companion object {
-					operator fun invoke(lv:Int, norm:Int, time:Int = 0, zeroL:Int, shape:Set<Shape> = emptySet(),
+					/** @see Twister */
+					operator fun invoke(lv:Int, norm:Int, time:Int = 0, zeroL:Int = 0, shape:Set<Shape> = emptySet(),
 						line:Set<Int> = emptySet(), progL:Boolean = false) =
 						Twister(lv, norm, time, zeroL, shape.filter {it in Shape.Tetras}.toSet(),
 							line.filter {it in 1..3}.toSet(), progL)
-
-					operator fun invoke(lv:Int, norm:Int, time:Int = 0, zeroL:Int, shapes:Set<Shape> = emptySet(), lines:Int,
+					/** @see Twister */
+					operator fun invoke(lv:Int, norm:Int, time:Int = 0, zeroL:Int = 0, shapes:Set<Shape> = emptySet(), lines:Int,
 						progL:Boolean = false) =
 						invoke(lv, norm, time, zeroL, shapes, setOf(lines), false)
-
-					operator fun invoke(lv:Int, norm:Int, time:Int = 0, zeroL:Int, shapes:Shape, lines:Set<Int>, progL:Boolean =
+					/** @see Twister */
+					operator fun invoke(lv:Int, norm:Int, time:Int = 0, zeroL:Int = 0, shapes:Shape, lines:Set<Int>, progL:Boolean =
 						false) =
 						invoke(lv, norm, time, zeroL, setOf(shapes), lines, false)
-
-					operator fun invoke(lv:Int, norm:Int, time:Int = 0, zeroL:Int, shapes:Shape, lines:Int, progL:Boolean = false) =
+					/** @see Twister */
+					operator fun invoke(lv:Int, norm:Int, time:Int = 0, zeroL:Int = 0, shapes:Shape, lines:Int, progL:Boolean =
+						false) =
 						invoke(lv, norm, time, zeroL, setOf(shapes), setOf(lines), false)
 
 				}
@@ -838,23 +897,24 @@ class GrandOrders:NetDummyMode() {
 			}
 
 			/** [shapes]のピースで[time]秒以内に[norm]回以上ラインを消すとクリア。[shapes]以外のピースはカウント対象外
-			 * @param lines 1～4で、同時に消すライン数の指定。0以下の場合は指定なし。
+			 * @param lines 1～4で、同時に消すライン数の指定。それ以外の数値は指定なし。
 			 * @param holdUse trueの場合、[shapes]をHOLDスロットに経由させなければカウントされない
 			 */
 			@ConsistentCopyVisibility data class Order private constructor(override val lv:Int, override val norm:Int,
 				override val time:Int = 0, val shapes:Set<Shape> = emptySet(), val lines:Set<Int> = emptySet(),
 				val holdUse:Boolean = false):Mission() {
 				companion object {
+					/** @see Order */
 					operator fun invoke(lv:Int, norm:Int, time:Int = 0, shapes:Set<Shape> = emptySet(), lines:Set<Int> = emptySet(),
 						holdUse:Boolean = false) =
 						Order(lv, norm, time, shapes.filter {it in Shape.Tetras}.toSet(), lines.filter {it in 1..4}.toSet(), holdUse)
-
+					/** @see Order */
 					operator fun invoke(lv:Int, norm:Int, time:Int = 0, shapes:Set<Shape> = emptySet(), lines:Int = 0,
 						holdUse:Boolean = false) = Order(lv, norm, time, shapes, setOf(lines), holdUse)
-
+					/** @see Order */
 					operator fun invoke(lv:Int, norm:Int, time:Int = 0, shapes:Shape, lines:Set<Int> = emptySet(),
 						holdUse:Boolean = false) = Order(lv, norm, time, setOf(shapes), lines, holdUse)
-
+					/** @see Order */
 					operator fun invoke(lv:Int, norm:Int, time:Int = 0, shapes:Shape, lines:Int = 0,
 						holdUse:Boolean = false) = Order(lv, norm, time, setOf(shapes), setOf(lines), holdUse)
 				}
@@ -869,6 +929,7 @@ class GrandOrders:NetDummyMode() {
 			@ConsistentCopyVisibility data class Mirror private constructor(override val lv:Int, override val norm:Int,
 				override val time:Int = 0, val freq:Int = 0):Mission() {
 				companion object {
+					/** @see Mirror */
 					operator fun invoke(lv:Int, norm:Int, time:Int = 0, freq:Int = 0) = Mirror(lv, norm, time, freq.coerceAtLeast(0))
 				}
 			}
@@ -880,7 +941,7 @@ class GrandOrders:NetDummyMode() {
 			data class HideNext(
 				override val lv:Int, override val norm:Int, override val time:Int = 0):Mission()
 			/** [freq]ピース毎に最下段コピーせり上がりが起こる中で[time]秒以内に[norm]ラインを消すとクリア
-			 * [lv]がマイナス値ならGrand Lightningモードlv800に近くなる*/
+			 * [lv]がマイナス値ならGrand Lightningモードlv800準拠になる*/
 			data class Pressure(override val lv:Int, override val norm:Int, override val time:Int = 0, val freq:Int = 0):
 				Mission()
 
@@ -890,6 +951,7 @@ class GrandOrders:NetDummyMode() {
 				var temp = false
 
 				companion object {
+					/** @see Spiked */
 					operator fun invoke(lv:Int, norm:Int, time:Int = 0, height:Int) = Spiked(lv, norm, time, height.coerceIn(0, 18))
 				}
 			}
@@ -925,6 +987,7 @@ class GrandOrders:NetDummyMode() {
 				override val time:Int = 0, val shapes:Set<Shape> = emptySet())
 				:Mission() {
 				companion object {
+					/** @see GoldSquares */
 					operator fun invoke(lv:Int, norm:Int, time:Int = 0, shapes:Set<Shape> = emptySet()) =
 						GoldSquares(lv, norm, time, shapes.filter {it in Shape.Tetras&&it!=Shape.S&&it!=Shape.Z}.toSet())
 
@@ -935,13 +998,15 @@ class GrandOrders:NetDummyMode() {
 			消したライン数 = [prog]は、(見た目での消したライン数÷２)だけカウント*/
 			data class BigBlock(override val lv:Int, override val norm:Int, override val time:Int = 0):Mission()
 
+			data class Bravo(override val lv:Int, override val norm:Int, override val time:Int = 0, val big:Boolean = true)
+				:Mission()
 			/** [time]秒以内に[norm]本ターゲットライン上でライン消しをするとクリア
 			全ての線を消してもまだ[norm]が残っている場合はターゲット再出現
 			 *@param heightRange ターゲットの出現範囲
 			 *@param multi ターゲットの同時出現数 1~4
 			 *@param quad trueの場合、4ライン消しのみがカウントされる*/
 			data class Ladder(override val lv:Int, override val norm:Int, override val time:Int = 0,
-				private val heightRange:IntRange, val multi:Int, val quad:Boolean):Mission() {
+				private val heightRange:IntRange = 10..19, val multi:Int = 4, val quad:Boolean = false):Mission() {
 				val target = mutableSetOf<Int>()
 				fun reset(random:Random) {
 					while(target.size<minOf(norm-prog, multi)) {
@@ -951,11 +1016,11 @@ class GrandOrders:NetDummyMode() {
 			}
 			/** Grand Blossamモードで使用されるパズルマップのジェムブロック全消しを[time]秒以内に[norm]回達成でクリア。
 			 * せり上がり以外のギミックは発動しない
-			 * @param mapRange 出現するマップの範囲 (0～26=Ti 27～44=EH 45～67=ACE)
+			 * @param mapRange 出現するマップの範囲 (0～26=Ti 27～44=EH 45～67=ACE 68～168=FP)
 			 * @param rndTarget 1以上にするとジェムブロックを数値分ランダムで配置する。0(OFF)では初期配置のまま。
 			 * 	99以上にすると…？*/
-			data class Target(override val lv:Int, override val norm:Int, val mapRange:IntRange, override val time:Int = 0,
-				val rndTarget:Int):Mission()
+			data class Target(override val lv:Int, override val norm:Int, override val time:Int = 0, val mapRange:IntRange,
+				val rndTarget:Int=0):Mission()
 			/**積んであるブロックが枠しか見えない状態で[time]秒以内に[norm]本ラインを消せばクリア
 			 * @param misc 1以上で、数値に応じた速度で固定したブロックが順次不可視になる。*/
 			data class Dark(override val lv:Int, override val norm:Int, override val time:Int = 0, val misc:Int):
@@ -970,7 +1035,7 @@ class GrandOrders:NetDummyMode() {
 			data class Monochrome(override val lv:Int, override val norm:Int, override val time:Int = 0):Mission()
 			/** Mission Ready */
 			val ready:(GameEngine)->Unit by lazy {
-
+				prog = 0
 				when(this) {
 					is Combo -> {e -> e.comboType = 1+multiLine.toInt()}
 					is Twister -> {e ->
@@ -990,10 +1055,13 @@ class GrandOrders:NetDummyMode() {
 						e.holdDisable = true
 //							e.initialSpinEnable = false
 					}
-					is BigBlock -> {e ->
-						e.big = true
-						e.bigMove = true
-						e.bigHalf = true
+					is Cycle -> {_ -> tmp = 0}
+					is BigBlock, is Bravo -> {e ->
+						if(this is BigBlock||(this as Bravo).big) {
+							e.big = true
+							e.bigMove = true
+							e.bigHalf = true
+						}
 					}
 					is Ladder -> {e -> reset(e.random)}
 					is Target -> {e ->
@@ -1045,7 +1113,7 @@ class GrandOrders:NetDummyMode() {
 						e.holdDisable = false
 //							e.initialSpinEnable = true
 					}
-					is BigBlock -> {e ->
+					is BigBlock, is Bravo -> {e ->
 						e.big = false
 						e.bigMove = false
 						e.bigHalf = false
@@ -1060,7 +1128,7 @@ class GrandOrders:NetDummyMode() {
 				}
 			}
 			/** Check if the mission progress has been updated */
-			fun checkProgress(engine:GameEngine, ev:ScoreEvent):Boolean {
+			fun checkProgress(engine:GameEngine, ev:ScoreEvent):Int {
 				val prev = prog
 				val li = ev.lines
 				when(this) {
@@ -1079,8 +1147,10 @@ class GrandOrders:NetDummyMode() {
 					is B2BChain -> prog = ev.b2b
 					is Cycle -> {
 						tmp = tmp or (1 shl li)
-						prog = tmp and 1+(tmp and 2>0).toInt()+(tmp and 4>0).toInt()+(tmp and 8>0).toInt()
+						prog = (tmp and 1)+(tmp and 2>0).toInt()+(tmp and 4>0).toInt()+(tmp and 8>0).toInt()
 					}
+					is Bravo -> if(ev.lines>0&&engine.field.isEmpty) prog++
+
 					is Shutter -> {
 						prog += li
 						// Decrease Shutter Hidden
@@ -1102,7 +1172,7 @@ class GrandOrders:NetDummyMode() {
 					else -> prog += li
 
 				}
-				return prog>prev
+				return prog-prev
 			}
 
 			/** Game type names (short) */
@@ -1145,6 +1215,7 @@ class GrandOrders:NetDummyMode() {
 						is Retro -> "Retrospective"
 						is GoldSquares -> "Gold ${shapes.str}Square"
 						is BigBlock -> "BIG block"
+						is Bravo -> "${if(big) "BIG" else "Small"} Bravo"
 						is Ladder -> "Ladder Liner"
 						is Target -> "Target Dig"
 						is Dark -> "Hiding Dark"
@@ -1167,8 +1238,8 @@ class GrandOrders:NetDummyMode() {
 		}
 
 		@Serializable enum class Course {
-			ARookie, G8, G7, G6, G5, G4, G3, G2, G1,
-			S1, S2, S3, S4, S5, S6, S7, S8, S9, S10, GM,
+			G9, G8, G7, G6, G5, G4, G3, G2, G1,
+			S1, S2, S3, S4, S5, S6, S7, S8, S9, M, GM,
 			GiantStep, Tricky, Grand, Star, Another, DS, Devil,
 			Amateur, Pro, Bronze, Silver, Gold, Platinum;
 			/** Game type names */
@@ -1180,67 +1251,27 @@ class GrandOrders:NetDummyMode() {
 
 				}
 			}
-			/*
-	* ◆あらかじめ入っているミッションセットの解説
-
-	▼BIGロード
-	　BIGが何度も出てくるロードです
-	　EXミッション:BIG
-
-	▼トリッキーロード
-	　ターゲットやイレイサーが多いロードです
-	　5問目の追加条件を達成するのは一苦労？
-	　EXミッション:イレイサー
-
-	▼グランドロード
-	　ここからミッションの総数が多くなってきます
-	　追加条件のあるミッションが2つ出てくるので注意。
-	　EXミッション:レベルスター
-
-	▼スターロード
-	　グランドロードに似ていますが、
-	　終盤には20G状態の"Speed Star"が待ち構えているぞ！
-	　EXミッション:ハイスピード2
-
-	▼アナザーロード
-	　ミッションの総数が多く、その大半に追加制限があるコース
-	　長丁場にどこまで耐えられるか？
-	　EXミッション:アナザー
-
-	▼DSロード
-	　ノルマ控えめの短いミッション多数で構成されたコース
-	　その分だけ制限時間も短くなってくる。
-	　EXミッション:耐久
-
-	▼デビルロード
-	　アナザーロードも楽々クリアーできるプレイヤーへの挑戦状。
-	　ほとんどのミッションの速度がアナザーと同じという、
-	　凶悪極まりないロードです。
-	　EXミッション:DEVIL 1200(REAL)　…?
-
-	▼トライアル　一段～十段
-	　まずはこれらのミッションで肩慣らしをするといいでしょう。
-
-	▼トライアル　HM(ヘボマニア)
-	　アナザーが3つもある難度の高いトライアルです。
-
-	▼トライアル　ネ申(GOD)
-	　(・w・)
-
-	▼アマチュア・プロ・ブロンズ・シルバー・ゴールド・プラチナ
-	　制限時間はありませんが、ミッション間のライン消去は一切発生しません。
-	　常に後のミッションの事を考えてプレイする必要があります。
-
-	*/
 			val missions:List<Mission> by lazy {
 				when(this) {
 					S1 -> listOf(BigBlock(2, 20, 60),
 						LevelStar(1, 6, 70))
+					S8->listOf(
+						LevelStar(-1,20,60),Triples(8,5,120),Cycle(8,100),LevelStar(-5,40,100)
+					)
+					GM->listOf(Pressure(-1,40,80), Target(12,10,290,20..27), Enduro(14,240), Monochrome(-1,70,420))
 					GiantStep -> listOf(
 						BigBlock(2, 10, 60), Quads(4, 5, 120),
-						Cycle(4, 120), BigBlock(5, 20, 120), LevelStar(6, 15, 90))
+						Cycle(4, 120), BigBlock(5, 20, 120), LevelStar(6, 15, 90), BigBlock(10, 20, 120))
 					Amateur -> listOf(
 						LevelStar(1, 6), Doubles(1, 1),
+						Order(1, 1, 0, setOf(Shape.Z, Shape.S), 0), Order(1, 1, 0, setOf(Shape.L, Shape.J), 0),
+						Order(1, 1, 0, Shape.O, 2), Order(1, 1, 0, Shape.T, 2), Order(1, 1, 0, setOf(Shape.Z, Shape.S), 2),
+						Triples(2, 1), Ladder(1, 1, 0), Quads(2, 1),
+					)
+					Pro -> listOf(
+						Order(3, 1, 0, setOf(Shape.L, Shape.J), 3), Order(3, 1, 0, Shape.O, 2, true), Ladder(3, 1, 0),
+						Quads(3, 1), Order(3, 1, 0, Shape.T, 2, true), Twister(3, 1, 0, 0, Shape.T, 0), Doubles(4, 2), Quads(4, 2),
+						Ladder(4, 1, 0), Ladder(5, 1, 0),
 					)
 					else -> emptyList()
 				}
@@ -1251,6 +1282,7 @@ class GrandOrders:NetDummyMode() {
 					S2, S3 -> {i ->
 						InterLines.FALL(if(i==0) 10 else 5)
 					}
+					GiantStep->{i->if(i==3||i==5) InterLines.FALL(10) else null}
 					Amateur, Pro, Bronze, Silver, Gold, Platinum -> {_ -> null}
 					else -> {_ -> InterLines.FALL(1)}
 				}

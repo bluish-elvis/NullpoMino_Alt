@@ -372,7 +372,6 @@ class Joker:MarathonModeBase() {
 				engine.playSE("died")
 				engine.lives = 0
 				engine.stat = Status.GAMEOVER
-				engine.resetStatc()
 				engine.gameEnded()
 			}
 			if(engine.statistics.level>=300&&stock<0) {
@@ -380,7 +379,6 @@ class Joker:MarathonModeBase() {
 				stock = 0
 				engine.lives = 0
 				engine.stat = Status.GAMEOVER
-				engine.resetStatc()
 				engine.gameEnded()
 			}
 		}

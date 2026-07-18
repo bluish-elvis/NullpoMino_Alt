@@ -314,7 +314,6 @@ class MarathonSquare:AbstractMode() {
 			// Time up!
 			if(engine.statistics.time>=ULTRA_MAX_TIME&&engine.timerActive) {
 				engine.gameEnded()
-				engine.resetStatc()
 				engine.stat = GameEngine.Status.ENDINGSTART
 				return
 			}
@@ -330,7 +329,6 @@ class MarathonSquare:AbstractMode() {
 			// Goal
 			if(engine.statistics.score>=SPRINT_MAX_SCORE&&engine.timerActive) {
 				engine.gameEnded()
-				engine.resetStatc()
 				engine.stat = GameEngine.Status.ENDINGSTART
 			}
 		}

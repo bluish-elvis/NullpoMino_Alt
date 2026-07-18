@@ -141,7 +141,7 @@ abstract class ResourceHolder {
 
 	/** Field frame for retro mode */
 	internal open val imgFrameOld:List<ResourceImage<*>> =
-		listOf("gb", "sa", "hebo", "grade").map {ResourceImageStr("frames/$it")}
+		listOf("gb", "sa", "hebo", "grade","ace").map {ResourceImageStr("frames/$it")}
 
 	/** Field background */
 	internal open val imgFieldBG:List<List<ResourceImage<*>>> =

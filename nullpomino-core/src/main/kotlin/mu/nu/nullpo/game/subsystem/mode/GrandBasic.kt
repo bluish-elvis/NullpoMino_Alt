@@ -459,7 +459,6 @@ class GrandBasic:AbstractGrand() {
 				stNewRecordCheck(sectionsDone)
 				sectionsDone++
 				engine.gameEnded()
-				engine.resetStatc()
 				engine.stat = GameEngine.Status.EXCELLENT
 			}
 		}

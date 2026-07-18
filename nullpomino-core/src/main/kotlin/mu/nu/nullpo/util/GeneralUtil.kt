@@ -381,6 +381,10 @@ object GeneralUtil {
 	fun <T:Any> Array<T?>.filterNotNullIndexed():List<IndexedValue<T>> =
 		this.mapIndexedNotNull {i, it -> it?.let {IndexedValue(i, it)}}
 
+	/** Compatibility helper for old kotlin-utils style map creation. */
+	@Deprecated("Use associateWith instead", ReplaceWith("associateWith(value)"))
+	fun <K, V> Iterable<K>.keysToMap(value:(K)->V):Map<K, V> = associateWith(value)
+
 	@OptIn(ExperimentalSerializationApi::class)
 	val Json = Json {
 		coerceInputValues = true

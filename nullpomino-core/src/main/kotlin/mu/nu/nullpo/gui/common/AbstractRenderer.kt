@@ -540,13 +540,13 @@ abstract class AbstractRenderer:EventReceiver() {
 				val bY = p.dataY[p.direction][i]
 				val x = dX+bX*ps
 				val y = dY+bY*ps
-				if(!blk.getAttribute(ATTRIBUTE.CONNECT_UP)&&engine.field.getBlockEmpty(bX, bY-1, false))
+				if(!blk.getAttribute(ATTRIBUTE.CONNECT_UP)&&engine.field.getBlockEmpty(pX+bX, pY+bY-1, false))
 					drawLineSpecific(x, y, x+ps, y, oColor, w = outline)
-				if(!blk.getAttribute(ATTRIBUTE.CONNECT_DOWN)&&engine.field.getBlockEmpty(bX, bY+1, false))
+				if(!blk.getAttribute(ATTRIBUTE.CONNECT_DOWN)&&engine.field.getBlockEmpty(pX+bX, pY+bY+1, false))
 					drawLineSpecific(x, y+ps, x+ps, y+ps, oColor, w = outline)
-				if(!blk.getAttribute(ATTRIBUTE.CONNECT_LEFT)&&engine.field.getBlockEmpty(bX-1, bY, false))
+				if(!blk.getAttribute(ATTRIBUTE.CONNECT_LEFT)&&engine.field.getBlockEmpty(pX+bX-1, pY+bY, false))
 					drawLineSpecific(x, y, x, y+ps, oColor, w = outline)
-				if(!blk.getAttribute(ATTRIBUTE.CONNECT_RIGHT)&&engine.field.getBlockEmpty(bX+1, bY, false))
+				if(!blk.getAttribute(ATTRIBUTE.CONNECT_RIGHT)&&engine.field.getBlockEmpty(pX+bX+1, pY+bY, false))
 					drawLineSpecific(x+ps, y, x+ps, y+ps, oColor, w = outline)
 			}
 			/*if(engine.nowPieceSteps<10) {
@@ -1033,6 +1033,7 @@ abstract class AbstractRenderer:EventReceiver() {
 			})
 		}
 	}
+
 	override fun blockBreak(engine:GameEngine, blk:Map<Int, Map<Int, Block>>) {
 		if(showLineEffect&&engine.displaySize!=-1) {
 			val s = engine.blockSize

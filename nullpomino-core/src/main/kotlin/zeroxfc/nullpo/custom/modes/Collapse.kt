@@ -197,7 +197,6 @@ class Collapse:AbstractMode() {
 			if(engine.ctrl.isPush(Controller.BUTTON_E)&&engine.ai==null) {
 				engine.playSE("decide")
 				engine.stat = Status.CUSTOM
-				engine.resetStatc()
 				return true
 			}
 			engine.statc[3]++
@@ -492,12 +491,10 @@ class Collapse:AbstractMode() {
 		if(engine.field.highestBlockY<0) {
 			if(engine.statistics.level<19) {
 				engine.stat = Status.GAMEOVER
-				engine.resetStatc()
 				engine.gameEnded()
 				engine.rainbowAnimate = false
 			} else {
 				engine.stat = Status.EXCELLENT
-				engine.resetStatc()
 				engine.gameEnded()
 				engine.ending = 1
 				engine.rainbowAnimate = false
@@ -754,7 +751,6 @@ class Collapse:AbstractMode() {
 				for(i in 0..<owner.players) {
 					if(i==engine.playerID||engine.dieAll) {
 						owner.engine[i].field.reset()
-						owner.engine[i].resetStatc()
 						owner.engine[i].stat = Status.RESULT
 					}
 				}
@@ -778,7 +774,6 @@ class Collapse:AbstractMode() {
 				engine.statc[1]++
 			} else {
 				engine.lives--
-				engine.resetStatc()
 				engine.stat = Status.CUSTOM
 			}
 		}

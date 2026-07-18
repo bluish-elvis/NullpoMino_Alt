@@ -432,7 +432,6 @@ class GrandS1:AbstractGrand() {
 			// Roll 終了
 			if(rollTime>=ROLLTIMELIMIT) {
 				engine.gameEnded()
-				engine.resetStatc()
 				engine.stat = GameEngine.Status.EXCELLENT
 			}
 		} else if(engine.statistics.level==nextSecLv-1)

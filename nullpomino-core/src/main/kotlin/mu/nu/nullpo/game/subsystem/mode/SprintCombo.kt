@@ -374,7 +374,6 @@ class SprintCombo:NetDummyMode() {
 		} else if(engine.statistics.maxCombo>=(if(GOAL_TABLE[goalType]==-1) 2 else GOAL_TABLE[goalType]-engine.statistics.lines)) {
 			engine.ending = 1
 			engine.gameEnded()
-			engine.resetStatc()
 			engine.stat = if(engine.statistics.maxCombo>=if(GOAL_TABLE[goalType]==-1) 40 else GOAL_TABLE[goalType]-1)
 				GameEngine.Status.EXCELLENT else GameEngine.Status.GAMEOVER
 			engine.statistics.time = scgettime

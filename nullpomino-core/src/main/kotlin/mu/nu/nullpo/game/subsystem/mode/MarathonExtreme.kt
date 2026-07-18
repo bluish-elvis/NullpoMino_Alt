@@ -244,7 +244,6 @@ class MarathonExtreme:NetDummyMode() {
 			if(rollTime>=ROLLTIMELIMIT) {
 				engine.statistics.rollClear = 2
 				engine.gameEnded()
-				engine.resetStatc()
 				engine.stat = GameEngine.Status.EXCELLENT
 			}
 		}

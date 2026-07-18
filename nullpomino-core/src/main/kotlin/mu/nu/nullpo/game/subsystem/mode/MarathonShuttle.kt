@@ -315,7 +315,6 @@ class MarathonShuttle:NetDummyMode() {
 					engine.playSE("timeover")
 					if(goalType==GAMETYPE_LV15_HARD||goalType==GAMETYPE_10MIN_HARD) {
 						engine.gameEnded()
-						engine.resetStatc()
 						engine.stat = Status.GAMEOVER
 					} else if(goalType==GAMETYPE_10MIN_EASY||goalType==GAMETYPE_LV15_EASY) {
 						regretdispframe = 180
@@ -348,8 +347,6 @@ class MarathonShuttle:NetDummyMode() {
 					// Out of time
 					engine.playSE("timeover")
 					engine.gameEnded()
-					engine.resetStatc()
-
 					engine.stat = if(goalType==GAMETYPE_10MIN_EASY||goalType==GAMETYPE_10MIN_HARD)
 						Status.ENDINGSTART else Status.GAMEOVER
 
@@ -376,7 +373,6 @@ class MarathonShuttle:NetDummyMode() {
 				engine.lastEvent = null
 				engine.statistics.rollClear = 2
 				engine.gameEnded()
-				engine.resetStatc()
 				engine.stat = Status.EXCELLENT
 			}
 		}

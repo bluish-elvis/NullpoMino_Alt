@@ -814,7 +814,6 @@ class Practice:AbstractGrand() {
 			// Roll End
 			if(rollTime>=rolltimelimit) {
 				engine.gameEnded()
-				engine.resetStatc()
 				engine.stat = GameEngine.Status.EXCELLENT
 			}
 		} else {
@@ -824,7 +823,6 @@ class Practice:AbstractGrand() {
 			if(timelimit>0&&timelimitTimer<=0&&engine.timerActive) {
 				engine.gameEnded()
 				engine.timerActive = false
-				engine.resetStatc()
 				engine.stat = if(goallv==-1) GameEngine.Status.ENDINGSTART else GameEngine.Status.GAMEOVER
 			}
 

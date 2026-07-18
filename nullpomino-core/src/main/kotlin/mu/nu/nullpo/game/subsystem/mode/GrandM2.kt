@@ -624,7 +624,6 @@ class GrandM2:AbstractGrand() {
 				engine.blockOutlineType = GameEngine.BLOCK_OUTLINE_NORMAL
 
 				engine.gameEnded()
-				engine.resetStatc()
 				engine.stat = GameEngine.Status.EXCELLENT
 				if(engine.statistics.time<28800) decTemp += (28800-engine.statistics.time)/1800
 			}

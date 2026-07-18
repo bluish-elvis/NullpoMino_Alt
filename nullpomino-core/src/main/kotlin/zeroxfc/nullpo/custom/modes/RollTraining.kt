@@ -318,7 +318,6 @@ class RollTraining:MarathonModeBase() {
 				}
 				if(!endless) {
 					engine.stat = Status.EXCELLENT
-					engine.resetStatc()
 					engine.resetFieldVisible()
 					engine.gameEnded()
 				}

@@ -447,7 +447,6 @@ class GrandS3:AbstractGrand() {
 					b.hard = 0
 				}
 				engine.stat = GameEngine.Status.READY
-				engine.resetStatc()
 				return true
 			}
 
@@ -682,7 +681,6 @@ class GrandS3:AbstractGrand() {
 					engine.ending = 0
 					engine.lives = -1
 					engine.gameEnded()
-					engine.resetStatc()
 					engine.stat = GameEngine.Status.GAMEOVER
 				}
 			} else if(engine.statistics.level==nextSecLv-1)

@@ -171,7 +171,6 @@ class MissionRush:MarathonModeBase() {
 				engine.playerProp.reset()
 				engine.playSE("decide")
 				engine.stat = Status.CUSTOM
-				engine.resetStatc()
 				return true
 			}
 

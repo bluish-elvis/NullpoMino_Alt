@@ -390,7 +390,6 @@ Ready&Go screen disappears) */
 		// Goal reached
 		if(engine.statistics.score>=GOAL_SCORE_TABLE[goalType]&&engine.timerActive) {
 			engine.gameEnded()
-			engine.resetStatc()
 			engine.stat = GameEngine.Status.ENDINGSTART
 		}
 

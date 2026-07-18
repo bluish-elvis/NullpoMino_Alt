@@ -44,7 +44,6 @@ import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.gui.common.BaseFont.FONT.GRADE
 import mu.nu.nullpo.gui.common.ResourceImage
 import org.apache.logging.log4j.LogManager
-import org.jetbrains.kotlin.utils.keysToMap
 import zeroxfc.nullpo.custom.libs.MathHelper.almostEqual
 
 abstract class ExamSpinnerBase private constructor(private val gradeText:String, private val selectedOutcome:Int,
@@ -190,7 +189,7 @@ abstract class ExamSpinnerBase private constructor(private val gradeText:String,
 					}
 				} else {
 					if(lifeTime==spinDuration+120)
-						receiver.blockBreak(engine, (13..17).keysToMap {(3..7).keysToMap {HUGE_O.block.first()}})
+						receiver.blockBreak(engine, (13..17).associateWith {(3..7).associateWith {HUGE_O.block.first()}})
 
 					splitPossibilityText[selectedOutcome].forEachIndexed {i, it ->
 						GameTextUtilities.drawDirectTextAlign(
@@ -260,7 +259,7 @@ abstract class ExamSpinnerBase private constructor(private val gradeText:String,
 					}
 				} else {
 					if(lifeTime==spinDuration+120)
-						receiver.blockBreak(engine, (13..17).keysToMap {(3..7).keysToMap {HUGE_O.block.first()}})
+						receiver.blockBreak(engine, (13..17).associateWith {(3..7).associateWith {HUGE_O.block.first()}})
 
 					if(selectedOutcome==0) {
 						// PASS

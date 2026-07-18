@@ -553,9 +553,7 @@ class GrandSStealth:AbstractGrand() {
 
 			if(rollTime>=ROLLTIMELIMIT) {
 				if(engine.statistics.level>=999) rollClear = 2
-
 				engine.gameEnded()
-				engine.resetStatc()
 				engine.stat = GameEngine.Status.EXCELLENT
 			}
 		}

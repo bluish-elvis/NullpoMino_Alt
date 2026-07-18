@@ -516,7 +516,6 @@ class GrandS2:AbstractGrand() {
 
 				engine.statistics.rollClear = 2
 				engine.gameEnded()
-				engine.resetStatc()
 				engine.stat = GameEngine.Status.EXCELLENT
 			}
 		} else if(engine.statistics.level==nextSecLv-1)

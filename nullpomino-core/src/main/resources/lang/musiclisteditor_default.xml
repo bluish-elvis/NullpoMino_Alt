@@ -10,24 +10,6 @@
 <!--Message-->
 <entry key="Message_FileSaveFailed">Failed to save config file</entry>
 
-<!--Music Name Labels-->
-<entry key="MusicListEditor_LabelMusic0">#0 (Normal Mode 1)</entry>
-<entry key="MusicListEditor_LabelMusic1">#1 (Normal Mode 2)</entry>
-<entry key="MusicListEditor_LabelMusic2">#2 (Normal Mode 3)</entry>
-<entry key="MusicListEditor_LabelMusic3">#3 (Normal Mode 4)</entry>
-<entry key="MusicListEditor_LabelMusic4">#4 (Normal Mode 5)</entry>
-<entry key="MusicListEditor_LabelMusic5">#5 (Normal Mode 6)</entry>
-<entry key="MusicListEditor_LabelMusic6">#6 (Puzzle Mode 1)</entry>
-<entry key="MusicListEditor_LabelMusic7">#7 (Puzzle Mode 2)</entry>
-<entry key="MusicListEditor_LabelMusic8">#8 (Puzzle Mode 3)</entry>
-<entry key="MusicListEditor_LabelMusic9">#9 (Puzzle Mode 4)</entry>
-<entry key="MusicListEditor_LabelMusic10">#10 (Normal Ending)</entry>
-<entry key="MusicListEditor_LabelMusic11">#11 (Easy Ending)</entry>
-<entry key="MusicListEditor_LabelMusic12">#12 (Special 1)</entry>
-<entry key="MusicListEditor_LabelMusic13">#13 (Special 2)</entry>
-<entry key="MusicListEditor_LabelMusic14">#14 (Special 3)</entry>
-<entry key="MusicListEditor_LabelMusic15">#15 (Special 4)</entry>
-
 <!--Buttons-->
 <entry key="MusicListEditor_NoLoop_Tip">Check this box to disable loop</entry>
 <entry key="MusicListEditor_OpenFileDialog">...</entry>

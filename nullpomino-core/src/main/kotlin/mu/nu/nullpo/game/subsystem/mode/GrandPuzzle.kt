@@ -523,12 +523,10 @@ class GrandPuzzle:AbstractMode() {
 			engine.nowPieceObject = null
 			engine.timerActive = false
 			engine.stat = Status.CUSTOM
-			engine.resetStatc()
 			true
 		} else if(limittimeNow<=0&&engine.timerActive) {
 			engine.nowPieceObject = null
 			engine.stat = Status.GAMEOVER
-			engine.resetStatc()
 			true
 		} else false
 
@@ -879,7 +877,6 @@ class GrandPuzzle:AbstractMode() {
 				engine.nowPieceObject = null
 				engine.timerActive = false
 				engine.stat = Status.CUSTOM
-				engine.resetStatc()
 			}
 		} else
 			skipbuttonPressTime = 0
@@ -1091,19 +1088,16 @@ class GrandPuzzle:AbstractMode() {
 				if(skipFlag) limittimeNow -= timeextendStageClearSeconds*60
 				if(trainingType==2) engine.nextPieceCount = continueNextPieceCount
 				engine.stat = Status.READY
-				engine.resetStatc()
 			} else if(stage>=laststage(engine.statistics.time)) {
 				allClear = if(stage>=MAX_STAGE_TOTAL-1) 2 else 1
 				engine.ending = 1
 				engine.gameEnded()
 				engine.stat = Status.ENDINGSTART
-				engine.resetStatc()
 			} else {
 				stage++
 				if(clearFlag) limittimeNow += timeextendStageClearSeconds*60
 				if(skipFlag) limittimeNow -= timeextendStageClearSeconds*60
 				engine.stat = Status.READY
-				engine.resetStatc()
 			}// Next  stage
 			// Ending
 			return true
@@ -1238,7 +1232,6 @@ class GrandPuzzle:AbstractMode() {
 						if(trainingType==0) engine.statistics.time += 60*60*2
 						engine.allowTextRenderByReceiver = true
 						engine.stat = Status.READY
-						engine.resetStatc()
 						engine.playSE("decide")
 					} else
 					// NO

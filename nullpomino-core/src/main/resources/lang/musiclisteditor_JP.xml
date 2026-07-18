@@ -10,24 +10,6 @@
 <!--Message-->
 <entry key="Message_FileSaveFailed">ファイルの保存に失敗しました</entry>
 
-<!--Music Name Labels-->
-<entry key="MusicListEditor_LabelMusic0">#0 (通常1)</entry>
-<entry key="MusicListEditor_LabelMusic1">#1 (通常2)</entry>
-<entry key="MusicListEditor_LabelMusic2">#2 (通常3)</entry>
-<entry key="MusicListEditor_LabelMusic3">#3 (通常4)</entry>
-<entry key="MusicListEditor_LabelMusic4">#4 (通常5)</entry>
-<entry key="MusicListEditor_LabelMusic5">#5 (通常6)</entry>
-<entry key="MusicListEditor_LabelMusic6">#6 (パズル1)</entry>
-<entry key="MusicListEditor_LabelMusic7">#7 (パズル2)</entry>
-<entry key="MusicListEditor_LabelMusic8">#8 (パズル3)</entry>
-<entry key="MusicListEditor_LabelMusic9">#9 (パズル4)</entry>
-<entry key="MusicListEditor_LabelMusic10">#10 (エンディング)</entry>
-<entry key="MusicListEditor_LabelMusic11">#11 (イージーエンディング)</entry>
-<entry key="MusicListEditor_LabelMusic12">#12 (その他1)</entry>
-<entry key="MusicListEditor_LabelMusic13">#13 (その他2)</entry>
-<entry key="MusicListEditor_LabelMusic14">#14 (その他3)</entry>
-<entry key="MusicListEditor_LabelMusic15">#15 (その他4)</entry>
-
 <!--Buttons-->
 <entry key="MusicListEditor_NoLoop_Tip">チェックを入れると曲がループしなくなります</entry>
 <entry key="MusicListEditor_OpenFileDialog">...</entry>

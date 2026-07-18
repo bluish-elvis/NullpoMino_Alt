@@ -264,7 +264,6 @@ class Physician:AbstractMode() {
 		if(rest==0&&engine.timerActive) {
 			engine.gameEnded()
 			engine.timerActive = false
-			engine.resetStatc()
 			engine.stat = GameEngine.Status.EXCELLENT
 		}
 	}

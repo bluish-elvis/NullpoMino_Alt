@@ -362,7 +362,6 @@ class MarathonPlus:NetDummyMode() {
 							}
 							engine.statistics.rollClear = 2
 							engine.gameEnded()
-							engine.resetStatc()
 							engine.stat = if(startLevel) GameEngine.Status.ENDINGSTART else GameEngine.Status.EXCELLENT
 						}
 					}
@@ -383,7 +382,6 @@ class MarathonPlus:NetDummyMode() {
 				} else if(!netIsWatch) {
 					engine.lives = 0
 					engine.gameEnded()
-					engine.resetStatc()
 					engine.stat = GameEngine.Status.GAMEOVER
 				}
 			}
@@ -514,7 +512,6 @@ class MarathonPlus:NetDummyMode() {
 		if(!engine.gameActive) return super.onEndingStart(engine)
 
 		engine.stat = GameEngine.Status.CUSTOM
-		engine.resetStatc()
 		return true
 	}
 
@@ -539,7 +536,6 @@ class MarathonPlus:NetDummyMode() {
 		} else if(engine.statc[0]>=480) {
 			engine.ending = 0
 			engine.stat = GameEngine.Status.READY
-			engine.resetStatc()
 
 			// NET: Send game restarted messages
 			if(netIsNetPlay&&!netIsWatch)
@@ -664,11 +660,9 @@ class MarathonPlus:NetDummyMode() {
 				engine.timerActive = false
 				engine.ending = 1
 				engine.stat = GameEngine.Status.CUSTOM
-				engine.resetStatc()
 			} else if(message[3]=="bonuslevelstart") {
 				engine.ending = 0
 				engine.stat = GameEngine.Status.READY
-				engine.resetStatc()
 			}// Bonus level started
 		}
 	}

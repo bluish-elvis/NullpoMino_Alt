@@ -462,7 +462,6 @@ class ProfileProperties @JvmOverloads constructor(colorHeading:COLOR = COLOR.CYA
 				engine.ctrl.isPush(Controller.BUTTON_E) -> {
 					engine.stat = GameEngine.Status.SETTING
 					engine.playSE("decide")
-					engine.resetStatc()
 					return false
 				}
 				else -> return false

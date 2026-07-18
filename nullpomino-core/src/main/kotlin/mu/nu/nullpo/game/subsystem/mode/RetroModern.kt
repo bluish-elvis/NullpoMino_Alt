@@ -296,7 +296,6 @@ class RetroModern:AbstractMode() {
 				if(rollTime>=ROLLTIMELIMIT) {
 					engine.statistics.level++
 					engine.gameEnded()
-					engine.resetStatc()
 					owner.bgMan.nextBg = -17
 					engine.statistics.rollClear = 2
 					engine.stat = Status.EXCELLENT
@@ -457,7 +456,6 @@ class RetroModern:AbstractMode() {
 		val time = engine.statc[0]>=engine.lineDelay+2
 		if(time) {
 			engine.ending = 2
-			engine.resetStatc()
 			engine.field.reset()
 			engine.nowPieceObject = null
 			engine.stat = Status.CUSTOM
@@ -478,7 +476,6 @@ class RetroModern:AbstractMode() {
 			(engine.stime>=300||engine.statc[0]>=300) -> {
 				setSpeed(engine)
 				engine.stat = Status.READY
-				engine.resetStatc()
 			}
 		}
 		return true

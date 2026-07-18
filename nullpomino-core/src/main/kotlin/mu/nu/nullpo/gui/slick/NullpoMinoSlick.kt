@@ -44,10 +44,7 @@ import org.newdawn.slick.*
 import org.newdawn.slick.state.StateBasedGame
 import org.newdawn.slick.util.Log
 import java.awt.image.BufferedImage
-import java.io.File
-import java.io.FileInputStream
-import java.io.FileOutputStream
-import java.io.IOException
+import java.io.*
 import java.text.DecimalFormat
 import java.text.SimpleDateFormat
 import java.util.*
@@ -230,52 +227,60 @@ internal class NullpoMinoSlick:StateBasedGame("NullpoMino (Now Loading...)") {
 			loadSlickConfig()
 
 			try {
-				val fin = FileInputStream("config/setting/music.xml")
-				propMusic.loadFromXML(fin)
-				fin.close()
+				FileInputStream("config/setting/music.xml").use {
+					propMusic.loadFromXML(it)
+				}
 			} catch(_:IOException) {
 			}
 
 			// 言語ファイル読み込み
 			try {
-				val fin = FileInputStream("config/lang/slick_default.xml")
-				propLangDefault.loadFromXML(fin)
-				fin.close()
+				this::class.java.getResource("/lang/slick_default.xml")?.file?.let {
+					FileInputStream(it).use {fis ->
+						propLangDefault.loadFromXML(fis)
+					}
+				}
 			} catch(e:IOException) {
 				log.error("Couldn't load default UI language file", e)
 			}
 
 			try {
-				val fin = FileInputStream("config/lang/slick_${Locale.getDefault().country}.xml")
-				propLang.loadFromXML(fin)
-				fin.close()
-
-				val out = FileOutputStream("config/lang/slick_${Locale.getDefault().country}.xml")
-				propLang.storeToXML(out, "Slick language file - ${Locale.getDefault().displayCountry}")
-				out.close()
+				this::class.java.getResource("/lang/slick_${Locale.getDefault().country}.xml")?.file?.let {
+					FileInputStream(it).use {fis ->
+						propLang.loadFromXML(fis)
+					}
+				}
 			} catch(_:IOException) {
+				FileOutputStream("config/lang/slick_${Locale.getDefault().country}.xml").use {
+					propLangDefault.storeToXML(it, "Slick language file - ${Locale.getDefault().displayCountry}")
+				}
 			}
 
 			// Game mode description
 			try {
-				val fis = FileInputStream("config/lang/modedesc_default.xml")
-				propDefaultModeDesc.loadFromXML(fis)
+				this::class.java.getResource("/lang/modedesc_default.xml")?.file?.let {
+					FileInputStream(it).use {fis ->
+						propDefaultModeDesc.loadFromXML(fis)
+					}
+				}
 			} catch(e:IOException) {
 				log.error("Couldn't load default mode description file", e)
 			}
 
 			try {
-				val fis = FileInputStream("config/lang/modedesc_${Locale.getDefault().country}.xml")
-				propModeDesc.loadFromXML(fis)
-				fis.close()
+				this::class.java.getResource("/lang/modedesc_${Locale.getDefault().country}.xml")?.file?.let {
+					FileInputStream(it).use {fis ->
+						propModeDesc.loadFromXML(fis)
+					}
+				}
 			} catch(_:IOException) {
 			}
 
 			// 設定ファイル読み込み
 			try {
-				val fis = FileInputStream("config/lang/blockskin.xml")
-				propSkins.loadFromXML(fis)
-				fis.close()
+				FileInputStream("config/lang/blockskin.xml").use {fis ->
+					propSkins.loadFromXML(fis)
+				}
 			} catch(_:IOException) {
 			}
 
@@ -293,9 +298,9 @@ internal class NullpoMinoSlick:StateBasedGame("NullpoMino (Now Loading...)") {
 			// Set default rule selections
 			try {
 				val propDefaultRule = CustomProperties()
-				val fis = FileInputStream("config/list/global_defaultrule.lst")
-				propDefaultRule.load(fis)
-				fis.close()
+				FileInputStream("config/list/global_defaultrule.lst").use { fis ->
+					propDefaultRule.load(fis)
+				}
 
 				for(pl in 0..1) {
 					if(propGlobal.rule.getOrNull(pl).isNullOrEmpty())

@@ -533,9 +533,9 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 	fun init() {
 		// Read configuration file
 		try {
-			val fin = FileInputStream("config/setting/netlobby.cfg")
-			propConfig.load(fin)
-			fin.close()
+			FileInputStream("config/setting/netlobby.cfg").use {
+				propConfig.load(it)
+			}
 		} catch(_:IOException) {
 		}
 
@@ -548,49 +548,57 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 
 		// SwingRead version of the configuration file
 		try {
-			val fin = FileInputStream("config/setting/swing.cfg")
-			propSwingConfig.load(fin)
-			fin.close()
+			FileInputStream("config/setting/swing.cfg").use {
+				propSwingConfig.load(it)
+			}
 		} catch(_:IOException) {
 		}
 
 		// ObserverFunction read configuration file
 		try {
-			val fin = FileInputStream("config/setting/netobserver.cfg")
-			propObserver.load(fin)
-			fin.close()
+			FileInputStream("config/setting/netobserver.cfg").use {
+				propObserver.load(it)
+			}
 		} catch(_:IOException) {
 		}
 
 		// Game mode description
 		try {
-			val fin = FileInputStream("config/lang/modedesc_default.xml")
-			propDefaultModeDesc.loadFromXML(fin)
-			fin.close()
+			this::class.java.getResource("/lang/modedesc_default.xml")?.file?.let {
+				FileInputStream(it).use {fin ->
+					propDefaultModeDesc.loadFromXML(fin)
+				}
+			}
 		} catch(e:IOException) {
 			log.error("Couldn't load default mode description file", e)
 		}
 
 		try {
-			val fin = FileInputStream("config/lang/modedesc_${Locale.getDefault().country}.xml")
-			propModeDesc.loadFromXML(fin)
-			fin.close()
+			this::class.java.getResource("/lang/modedesc_${Locale.getDefault().country}.xml")?.file?.let {
+				FileInputStream(it).use {fin ->
+					propModeDesc.loadFromXML(fin)
+				}
+			}
 		} catch(_:IOException) {
 		}
 
 		// Read language file
 		try {
-			val fin = FileInputStream("config/lang/netlobby_default.xml")
-			propLangDefault.loadFromXML(fin)
-			fin.close()
+			this::class.java.getResource("/lang/netlobby_default.xml")?.file?.let {
+				FileInputStream(it).use {fin ->
+					propLangDefault.loadFromXML(fin)
+				}
+			}
 		} catch(e:Exception) {
 			log.error("Couldn't load default UI language file", e)
 		}
 
 		try {
-			val fin = FileInputStream("config/lang/netlobby_${Locale.getDefault().country}.xml")
-			propLang.loadFromXML(fin)
-			fin.close()
+			this::class.java.getResource("/lang/netlobby_${Locale.getDefault().country}.xml")?.file?.let {
+				FileInputStream(it).use {fin ->
+					propLang.loadFromXML(fin)
+				}
+			}
 		} catch(_:IOException) {
 		}
 

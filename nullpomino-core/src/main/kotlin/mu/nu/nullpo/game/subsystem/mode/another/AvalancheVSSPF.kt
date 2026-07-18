@@ -363,8 +363,6 @@ class AvalancheVSSPF:AvalancheVSDummyMode() {
 			if(owner.engine[0].statc[4]==1&&owner.engine[1].statc[4]==1&&playerID==1) {
 				owner.engine[0].stat = GameEngine.Status.READY
 				owner.engine[1].stat = GameEngine.Status.READY
-				owner.engine[0].resetStatc()
-				owner.engine[1].resetStatc()
 			} else if(engine.ctrl.isPush(Controller.BUTTON_B)) engine.statc[4] = 0// Cancel
 
 		return true

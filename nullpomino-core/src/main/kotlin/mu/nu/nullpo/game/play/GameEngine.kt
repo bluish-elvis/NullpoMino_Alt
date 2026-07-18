@@ -159,11 +159,10 @@ class GameEngine(
 
 	/** Current main game status */
 	var stat:Status = Status.NOTHING
-	/*set(value) {
-		field = value
-		val inPlay = value !is Status.SETTING&&value !is Status.PROFILE&&value !is Status.RESULT&&value !is Status.FIELDEDIT
-		if(isInGame!=inPlay) isInGame = inPlay
-	}*/
+		set(value) {
+			field = value
+			resetStatc()
+		}
 	/** Free status counters */
 	val statc = MutableList(MAX_STATC) {0}
 	var stime
@@ -884,7 +883,6 @@ class GameEngine(
 
 		owner.musMan.bgm = BGM.Menu(4+(owner.mode?.gameIntensity?:0))
 		stat = Status.SETTING
-		statc.fill(0)
 
 		lastEvent = null
 		lastClear = null
@@ -1085,7 +1083,7 @@ class GameEngine(
 	}
 	/** ステータス counterInitialization */
 	fun resetStatc() {
-		for(i in statc.indices) statc[i] = 0
+		statc.fill(0)
 		stat.time = 0
 	}
 
@@ -1632,8 +1630,6 @@ class GameEngine(
 		}
 		owner.mode?.saveSetting(this, owner.modeConfig)
 		owner.saveModeConfig()
-
-		resetStatc()
 	}
 
 	/** 開始前の名前入力画面のときの処理 */
@@ -1645,7 +1641,6 @@ class GameEngine(
 		if(playerProp.loginScreen.updateScreen(this)) return
 		// Mode側が何もしない場合は設定画面へ戻る
 		stat = Status.SETTING
-		resetStatc()
 	}
 
 	/** Ready→Goのときの処理 */
@@ -1757,7 +1752,6 @@ class GameEngine(
 			owner.musMan.fadeSW = false
 			initialSpin()
 			stat = Status.MOVE
-			resetStatc()
 			if(!readyDone) startTime = System.nanoTime()
 			//startTime = System.nanoTime()/1000000L;
 			readyDone = true
@@ -2065,7 +2059,6 @@ class GameEngine(
 						stat = Status.GAMEOVER
 						stopSE("danger")
 						if(ending==2&&staffrollNoDeath) stat = Status.NOTHING
-						resetStatc()
 						return@statMove
 					}
 				}
@@ -2340,8 +2333,6 @@ class GameEngine(
 
 					// Next 処理を決める(Mode 側でステータスを弄っている場合は何もしない)
 					if(stat==Status.MOVE) {
-						resetStatc()
-
 						when {
 							ending==1 -> stat = Status.ENDINGSTART // Ending
 							!put&&ruleOpt.fieldLockoutDeath||partialLockOut&&ruleOpt.fieldPartialLockoutDeath -> {
@@ -2371,8 +2362,8 @@ class GameEngine(
 							}
 							are>0||lagARE -> {
 								// AREあり (光なし)
-								statc[1] = are
 								stat = Status.ARE(are)
+								statc[1] = are
 							}
 							interruptItem!=null -> {
 								// 中断効果のあるアイテム処理
@@ -2387,7 +2378,10 @@ class GameEngine(
 							else -> {
 								// AREなし
 								stat = Status.MOVE
-								if(!ruleOpt.moveFirstFrame) statMove()
+								if(!ruleOpt.moveFirstFrame) {
+									statMove()
+									stime++
+								}
 							}
 						}
 					}
@@ -2418,8 +2412,6 @@ class GameEngine(
 
 		// Next ステータス
 		if(stime+1>=ruleOpt.lockFlash) {
-			resetStatc()
-
 			if(lineClearing>0) {
 				// Line clear
 				stat = Status.LINECLEAR
@@ -2505,7 +2497,6 @@ class GameEngine(
 				lineGravityType.lineClearEnd(this)
 //				field.lineColorsCleared = emptyList()
 
-				resetStatc()
 				when {
 					ending==1 -> stat = Status.ENDINGSTART// Ending
 					areLine>0||lagARE -> {
@@ -2555,6 +2546,7 @@ class GameEngine(
 		receiver.onARE(this)
 
 		if(stime==0) {
+			statc[1] = (stat as Status.ARE).maxTime
 			fieldbg = (field.level*4).toInt()
 			if(field.danger) {
 				loopSE("danger")
@@ -2584,15 +2576,12 @@ class GameEngine(
 		if(stime>=statc[1]&&!lagARE) {
 			owner.mode?.outARE(this)
 			nowPieceObject = null
-			resetStatc()
 			lockDelayNow = 0
-			if(interruptItem!=null) {
-				// 中断効果のあるアイテム処理
-				stat = Status.INTERRUPTITEM(Status.MOVE)
-			} else {
+			stat = if(interruptItem!=null) Status.INTERRUPTITEM(Status.MOVE) // 中断効果のあるアイテム処理
+			else {
 				// Blockピース移動処理
 				initialSpin()
-				stat = Status.MOVE
+				Status.MOVE
 			}
 		} else stime--
 	}
@@ -2634,13 +2623,11 @@ class GameEngine(
 		} else if(statc[0]<lineDelay+2) statc[0]++
 		else {
 			ending = 2
-			resetStatc()
-
-			if(staffrollEnable&&gameActive) {
+			stat = if(staffrollEnable&&gameActive) {
 				field.reset()
 				nowPieceObject = null
-				stat = Status.MOVE
-			} else stat = Status.EXCELLENT
+				Status.MOVE
+			} else Status.EXCELLENT
 		}
 	}
 
@@ -2672,31 +2659,31 @@ class GameEngine(
 
 		if(stime>=maxOf) {
 			if(owner.mode?.outExcellent(this)==true) return
-			resetStatc()
 			stat = Status.GAMEOVER
+			statc[2] = 1
 		} else statc[0] = stime+1
 	}
 
 	/** game overの処理
 	 * - [statc].1 maxTime of field animation]
-	 * - [statc].2 0:in the Game Play, 1: already cleared / safe-Staff roll */
+	 * - [statc].2 0:top-out in the Game Play, 1: already cleared / safe-Staff roll */
 	private fun statGameOver() {
 		//  event 発生
 		if(owner.mode?.onGameOver(this)==true) return
 		receiver.onGameOver(this)
 		if(stime==0) {
 			//死亡時はgameActive中にStatus.GAMEOVERになる
-			statc[2] = if(gameActive&&!staffrollNoDeath) 0 else 1
+			statc[2] = if(gameActive&&(!staffrollNoDeath||ending==0)||statc[2]<1) 0 else 1
 			stopSE("danger")
 		}
-		val topOut = statc[2]==0
+		val deadInGame = statc[2]==0
 		field.let {field ->
-			if(!topOut||lives<=0) {
+			if(!deadInGame||lives<=0) {
 				// もう復活できないとき
 				val animInt = 6
 				statc[1] = animInt*(field.height+1)
 				if(stime==0) {
-					if(topOut) {
+					if(deadInGame) {
 						playSE("dead_last")
 						lives = -1
 					}
@@ -2715,7 +2702,7 @@ class GameEngine(
 					stime<statc[1] -> {
 						for(x in 0..<field.width)
 							field.getBlock(x, field.height-stime/animInt)?.apply {
-								if(ending==2&&!topOut) {
+								if(ending==2&&!deadInGame) {
 									if(stime%animInt==0) {
 										setAttribute(false, ATTRIBUTE.OUTLINE)
 										darkness = -.1f
@@ -2734,7 +2721,7 @@ class GameEngine(
 						statc[0] = stime+1
 					}
 					stime==statc[1] -> {
-						if(ending==2&&!topOut) {
+						if(ending==2&&!deadInGame) {
 							playSE("applause${
 								when(owner.mode?.gameIntensity) {
 									0, 1 -> 4
@@ -2756,7 +2743,6 @@ class GameEngine(
 						for(i in 0..<owner.players)
 							if(i==playerID||dieAll) {
 								owner.engine[i].field.reset()
-								owner.engine[i].resetStatc()
 								owner.engine[i].stat = Status.RESULT
 							}
 					}
@@ -2785,7 +2771,6 @@ class GameEngine(
 				} else if(statc[1]<are) statc[1]++
 				else {
 					lives--
-					resetStatc()
 					stat = Status.MOVE
 				}
 			}
@@ -2906,7 +2891,6 @@ class GameEngine(
 
 		if(!contFlag) {
 			interruptItem = null
-			resetStatc()
 			stat = interruptItemPreviousStat
 		}
 	}
@@ -2963,9 +2947,8 @@ class GameEngine(
 				val prevTime = statistics.time
 				statistics.replace(state.statistics)
 				statistics.time = prevTime // timeは巻き戻し後も現状維持
-				resetStatc()
-				statc[1] = 60
 				stat = Status.ARE(60)
+				statc[1] = 60
 			}
 		}
 

@@ -74,7 +74,6 @@ abstract class AbstractGrand:AbstractMode() {
 	/** 150個以上Blockがあるとtrue, 70個まで減らすとfalseになる */
 	protected var recoveryFlag = false
 
-
 	protected var medalRO get() = medals.RO; set(v) {; medals.RO = v}
 	/** rotationした合計 count (Maximum4個ずつ増える) */
 	protected var spinCount = 0
@@ -125,27 +124,25 @@ abstract class AbstractGrand:AbstractMode() {
 	 */
 	protected fun stMedalCheck(engine:GameEngine, section:Int = engine.statistics.level/100, lastTime:Int, best:Int) {
 //		val best = bestSectionTime[goalType][section]
-
-		if(best !in 1..lastTime) {
-			engine.playSE("medal3")
-			if(medalST<1) decTemp += 3
-			if(medalST<2) decTemp += 6
-			decTemp += 6
-			medalsST[0]++
-			if(!owner.replayMode) {
+		if(!owner.replayMode)
+			if(best !in 1..lastTime) {
+				engine.playSE("medal3")
+				if(medalST<1) decTemp += 3
+				if(medalST<2) decTemp += 6
+				decTemp += 6
+				medalsST[0]++
 				decTemp++
 				sectionIsNewRecord[section] = true
+			} else if(lastTime<best+300) {
+				engine.playSE("medal2")
+				if(medalST<1) decTemp += 3
+				medalsST[1]++
+				decTemp += 6
+			} else if(lastTime<best+600) {
+				engine.playSE("medal1")
+				medalsST[2]++
+				decTemp += 3
 			}
-		} else if(lastTime<best+300) {
-			engine.playSE("medal2")
-			if(medalST<1) decTemp += 3
-			medalsST[1]++
-			decTemp += 6
-		} else if(lastTime<best+600) {
-			engine.playSE("medal1")
-			medalsST[2]++
-			decTemp += 3
-		}
 	}
 	/** RO medal check */
 	protected fun roMedalCheck(engine:GameEngine, nextSecLv:Int) {

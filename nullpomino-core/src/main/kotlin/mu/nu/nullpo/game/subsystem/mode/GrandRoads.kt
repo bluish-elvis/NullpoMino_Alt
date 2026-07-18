@@ -49,6 +49,7 @@ class GrandRoads:NetDummyMode() {
 	/** Remaining level time */
 	private var levelTimer = 0
 	private var lastLineTime = 0
+	private var lastLivesSection = 0
 
 	/** Original level time */
 	private var levelTimerMax = 0
@@ -91,6 +92,7 @@ class GrandRoads:NetDummyMode() {
 			goalType = courses.indexOfFirst {it==value}
 		}
 
+	private val sectionMax get() = nowCourse.goalLevel
 	private val itemLevel = LevelMenuItem(
 		"startlevel", "LEVEL", COLOR.RED, 0,
 		0..(courses.maxOfOrNull {it.goalLevel}?:0), true, true
@@ -118,6 +120,10 @@ class GrandRoads:NetDummyMode() {
 		List(COURSE_MAX) {Leaderboard(rankingMax, kotlinx.serialization.serializer<List<Rankable.TimeRow>>())}
 	/** Section Time記録 (Lifeが減った場合は記録されない) */
 	private val bestSectionTime = List(COURSE_MAX) {MutableList(courses[it].goalLevel) {DEFAULT_SECTION_TIME}}
+	/** 新記録が出たSection はtrue */
+	protected val sectionIsNewRecord by lazy {MutableList(courses.maxOf {it.goalLevel}) {false}}
+	/** どこかのSection で新記録を出すとtrue */
+	protected val sectionAnyNewRecord get() = sectionIsNewRecord.any()
 	override val propRank
 		get() = rankMapOf(
 			bestSectionTime.mapIndexed {c, it -> "$c.section.time" to it}
@@ -150,13 +156,12 @@ class GrandRoads:NetDummyMode() {
 		isShowBestSectionTime = false
 
 		rankingRank = -1
+		sectionIsNewRecord.fill(false)
 		bestSectionTime.forEachIndexed {x, it ->
 			for(i in it.indices) bestSectionTime[x][i] = DEFAULT_SECTION_TIME
 		}
-		engine.b2bEnable = false
-		engine.splitB2B = false
-		engine.comboType = GameEngine.COMBO_TYPE_DISABLE
-		engine.frame = GameEngine.Frame.WHITE
+		sectionTime.fill(0)
+		engine.frame = GameEngine.Frame.METAL
 		engine.bigHalf = true
 		engine.bigMove = true
 		engine.staffrollEnable = false
@@ -324,6 +329,7 @@ class GrandRoads:NetDummyMode() {
 	 * (after Ready&Go screen disappears) */
 	override fun startGame(engine:GameEngine) {
 		owner.musMan.bgm = if(netIsWatch) BGM.Silent else nowCourse.bgmList[bgmLv]
+		lastLivesSection = engine.lives
 	}
 
 	override fun renderFirst(engine:GameEngine) {
@@ -341,18 +347,39 @@ class GrandRoads:NetDummyMode() {
 		//receiver.drawScoreBadges(engine, playerID,5,-4,100,decTemp);
 		if(engine.isShowRanking) {
 			if(!owner.replayMode&&startLevel==0&&!big&&engine.ai==null&&!netIsWatch) {
-				receiver.drawScore(engine, 8, 3, "Time", BASE, COLOR.BLUE)
-				ranking[goalType].forEachIndexed {i, (st) ->
-					val clear = st.rollClear>0
-					val gColor = when(st.rollClear) {
-						1 -> COLOR.GREEN
-						2 -> COLOR.ORANGE
-						else -> COLOR.WHITE
+				if(isShowBestSectionTime) {
+					receiver.drawScore(engine, 0, 2, "F:VIEW RANKING", BASE, COLOR.GREEN)
+					// Section Time
+					receiver.drawScore(engine, 0, 3, "LEVEL TIME", BASE, COLOR.BLUE)
+					val arr = bestSectionTime[goalType]
+					arr.forEachIndexed {i, it ->
+						receiver.drawScore(engine, (i/15)*10, 4+i%15, "%2d/%s".format(i, it.toTimeStr), NUM, sectionIsNewRecord[i])
 					}
-					receiver.drawScore(engine, 0, 4+i, "%2d".format(i+1), GRADE, if(i==rankingRank) COLOR.RED else COLOR.YELLOW)
-					receiver.drawScore(engine, 2, 4+i, "%3d".format(if(clear) st.lives else st.lines), NUM, gColor)
-					receiver.drawScore(engine, 4.5f, 4+i, if(clear) "LIVES\nREMAINED" else "LINES\nCLEARED", NANO, gColor, .5f)
-					receiver.drawScore(engine, 8, 4+i, st.time.toTimeStr, NUM, gColor)
+					val totalTime = arr.sum()
+					val averageTime = totalTime/nowCourse.goalLevel
+
+					receiver.drawScore(engine, 3, 19, "TOTAL", BASE, COLOR.BLUE)
+					receiver.drawScore(engine, 3, 20, totalTime.toTimeStr, NUM_T)
+					receiver.drawScore(engine, 12, 19, "AVERAGE", BASE, COLOR.BLUE)
+					receiver.drawScore(engine, 12, 20, averageTime.toTimeStr, NUM_T)
+
+				} else {
+					receiver.drawScore(engine, 0, 2, "F:VIEW SECTION TIME", BASE, COLOR.GREEN)
+					receiver.drawScore(engine, 8, 3, "Time", BASE, COLOR.BLUE)
+					ranking[goalType].forEachIndexed {i, (st) ->
+						val clear = st.rollClear>0
+						val gColor = when {
+							rankingRank==i -> COLOR.RAINBOW
+							st.rollClear==1 -> COLOR.GREEN
+							st.rollClear==2 -> COLOR.ORANGE
+							else -> COLOR.WHITE
+						}
+						receiver.drawScore(engine, 0, 4+i, "%2d".format(i+1), GRADE, if(i==rankingRank) COLOR.RED else COLOR.YELLOW)
+						receiver.drawScore(engine, 2, 4+i, "%3d".format(if(clear) st.lives else st.lines), NUM, gColor)
+						receiver.drawScore(engine, 4.5f, 4+i, if(clear) "LIVES\nREMAINED" else "LINES\nCLEARED", NANO, gColor, .5f)
+						receiver.drawScore(engine, 8, 4+i, st.time.toTimeStr, NUM, gColor)
+
+					}
 				}
 			}
 		} else {
@@ -390,8 +417,8 @@ class GrandRoads:NetDummyMode() {
 					val i = it+l
 					val strSeparator = if(i==engine.statistics.level&&engine.ending==0) "+" else "-"
 					receiver.drawScore(engine, x+1, y+1+it,
-						"%2d%s%s".format(i+1, strSeparator, sectionTime.getOrElse(i) {-1}.toTimeStr), NUM, 1f,
-						if(i<=engine.statistics.level) 1f else .5f)
+						"%2d%s%s".format(i+1, strSeparator, sectionTime.getOrElse(i) {-1}.toTimeStr), NUM,
+						sectionIsNewRecord[i], 1f, if(i<=engine.statistics.level) 1f else .5f)
 				}
 				receiver.drawScore(engine, 5, 15, "AVERAGE", BASE, COLOR.BLUE)
 				receiver.drawScore(engine, 5, 16, sectionAvgTime.toTimeStr, NUM_T)
@@ -433,7 +460,6 @@ class GrandRoads:NetDummyMode() {
 					if(levelTimer<=300) engine.playSE("countdown${levelTimer/60}")
 				}
 			} else if(!netIsWatch) {
-				engine.resetStatc()
 				engine.stat = GameEngine.Status.GAMEOVER
 			}
 
@@ -464,7 +490,6 @@ class GrandRoads:NetDummyMode() {
 			if(rollTime>=ROLLTIMELIMIT&&!netIsWatch) {
 				engine.statistics.rollClear = 2
 				engine.gameEnded()
-				engine.resetStatc()
 				engine.stat = GameEngine.Status.EXCELLENT
 			}
 		}
@@ -501,9 +526,12 @@ class GrandRoads:NetDummyMode() {
 			owner.musMan.fadeSW = true// BGM fadeout
 
 		// Level up
-		if(li>0&&norm>=nextLv)
-		// Game completed
+		if(li>0&&norm>=nextLv) {
+			if(!owner.replayMode) {
+				if(bestSectionTime[goalType][lv]>sectionTime[lv] && engine.lives>=lastLivesSection) sectionIsNewRecord[lv] = true
+			}
 			if(norm>=nowCourse.goalLines||lv+engine.statistics.levelDispAdd>=nowCourse.goalLevel) {
+				// Game completed
 				engine.playSE("levelup_section")
 
 				// Update section time
@@ -531,6 +559,7 @@ class GrandRoads:NetDummyMode() {
 				if(bgmChanged) engine.playSE("levelup_section")
 				engine.playSE("levelup")
 				engine.statistics.level++
+				lastLivesSection = engine.lives
 
 				owner.bgMan.nextBg = engine.statistics.level+nowCourse.bgOffset
 
@@ -539,6 +568,7 @@ class GrandRoads:NetDummyMode() {
 				engine.timerActive = false // Stop timer until the next piece becomes active
 				setSpeed(engine)
 			}
+		}
 		return 0
 	}
 
@@ -576,7 +606,7 @@ class GrandRoads:NetDummyMode() {
 				x = i+engine.statc[1]*10-10
 				if(x>=0)
 					if(sectionTime[x]>0)
-						receiver.drawMenu(engine, 2, 3+i, sectionTime[x].toTimeStr, NUM)
+						receiver.drawMenu(engine, 2, 3+i, sectionTime[x].toTimeStr, NUM, sectionIsNewRecord[x])
 				i++
 			}
 			if(sectionAvgTime>0) {
@@ -597,6 +627,10 @@ class GrandRoads:NetDummyMode() {
 	override fun onResult(engine:GameEngine):Boolean {
 		if(goalType>=Course.HELL.ordinal&&engine.statistics.rollClear>=1) owner.musMan.bgm = BGM.Result(3)
 		if(!netIsWatch) {
+			if(engine.ctrl.isPush(Controller.BUTTON_F)) {
+				engine.playSE("change")
+				isShowBestSectionTime = !isShowBestSectionTime
+			}
 			if(engine.ctrl.isMenuRepeatKey(Controller.BUTTON_UP)) {
 				engine.statc[1]--
 				if(engine.statc[1]<0) engine.statc[1] = 2
@@ -625,12 +659,16 @@ class GrandRoads:NetDummyMode() {
 
 		if(!owner.replayMode&&startLevel==0&&!big&&engine.ai==null) {
 			rankingRank = ranking[goalType].add(Rankable.TimeRow(engine.statistics))
-
+			if(sectionAnyNewRecord) updateBestSectionTime()
 			if(rankingRank!=-1) return true
 		}
 		return false
 	}
 
+	private fun updateBestSectionTime() {
+		for(i in 0..<sectionMax)
+			if(sectionIsNewRecord[i]) bestSectionTime[goalType][i] = sectionTime[i]
+	}
 	/** Load the settings from [prop] */
 	override fun loadSetting(engine:GameEngine, prop:CustomProperties, ruleName:String, playerID:Int) {
 		goalType = prop.getProperty("timeattack.gametype", 0)

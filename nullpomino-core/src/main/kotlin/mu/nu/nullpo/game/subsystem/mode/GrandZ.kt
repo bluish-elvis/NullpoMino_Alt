@@ -568,7 +568,6 @@ class GrandZ:AbstractGrand() {
 			// Player has survived the roll
 			if(rollTime>=ROLLTIMELIMIT) {
 				engine.gameEnded()
-				engine.resetStatc()
 				engine.stat = GameEngine.Status.EXCELLENT
 			}
 		}

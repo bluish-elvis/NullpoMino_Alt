@@ -31,6 +31,7 @@
 package mu.nu.nullpo.gui.slick
 
 import mu.nu.nullpo.game.play.GameEngine
+import mu.nu.nullpo.game.play.GameEngine.Frame
 import mu.nu.nullpo.game.play.GameManager
 import mu.nu.nullpo.gui.common.AbstractRenderer
 import mu.nu.nullpo.gui.common.BaseFont.FONT
@@ -289,9 +290,9 @@ class RendererSlick(
 		val size = engine.blockSize
 		val width = engine.field.width//?: Field.DEFAULT_WIDTH
 		val height = engine.field.height//?: Field.DEFAULT_HEIGHT
-
-		if(engine.frame.type==GameEngine.Frame.Type.COLOR) {
-			val fi = resources.imgFrame[engine.frame.id].res
+		val f = engine.frame
+		if(f.type==Frame.Type.COLOR||f==Frame.METAL) {
+			val fi = resources.imgFrame[if(f==Frame.METAL) 0 else f.id].res
 			val rX = x+width*size
 			val bY = y+height*size
 
@@ -319,7 +320,10 @@ class RendererSlick(
 				Polygon(floatArrayOf(rX+size, y-size, rX, y, rX, bY, rX+size, bY+size)),
 				fi.getSubImage(16, 96, 16, 32), 1f, 1f, true
 			)
-		} else if(engine.frame==GameEngine.Frame.GRADE) {
+			if(f==Frame.METAL){
+				val fi = resources.imgFrameOld[4]
+			}
+		} else if(engine.frame==Frame.GRADE) {
 			val fi = resources.imgFrameOld[3]
 		}
 	}

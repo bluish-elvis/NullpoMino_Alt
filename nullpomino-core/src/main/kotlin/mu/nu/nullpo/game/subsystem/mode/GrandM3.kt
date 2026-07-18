@@ -1018,7 +1018,6 @@ class GrandM3:AbstractGrand() {
 				engine.blockShowOutlineOnly = false
 
 				engine.gameEnded()
-				engine.resetStatc()
 				engine.stat = GameEngine.Status.EXCELLENT
 				val timeQ = 28800*(goalType+1)
 				if(engine.statistics.time<timeQ) decTemp += (timeQ-engine.statistics.time)/1800

@@ -46,6 +46,8 @@ import net.omegaboshi.nullpomino.game.subsystem.randomizer.NintendoRandomizer
 
 /** RETRO CLASSIC mode (Based from NES, Original from NullpoUE build 010210 by Zircean) */
 class RetroN:AbstractMode() {
+	private var garbageCount:Int = 0
+
 	/** Used for soft drop scoring */
 	private var sdScore = 0
 
@@ -64,7 +66,7 @@ class RetroN:AbstractMode() {
 	/** Selected Speed Difficulty */
 	private var speedType:SpeedLevel by DelegateMenuItem(itemSpeed)
 
-	private val itemLevel = LevelMenuItem("startlevel", "LEVEL", COLOR.BLUE, 0, 0..19, false, true)
+	private val itemLevel = LevelMenuItem("startlevel", "LEVEL", COLOR.BLUE, 0, 0..19)
 	/** Selected starting level */
 	private var startLevel:Int by DelegateMenuItem(itemLevel)
 
@@ -117,6 +119,7 @@ class RetroN:AbstractMode() {
 		lvLBegin = 0
 		drought = 0
 		droughts.removeAll {true}
+		garbageCount = 0
 
 		rankingRank = -1
 		engine.run {
@@ -186,7 +189,7 @@ class RetroN:AbstractMode() {
 			engine.speed.das = 6
 			engine.owARR = 2
 		}*/
-		engine.speed.lockDelay = engine.speed.denominator/engine.speed.gravity
+		if(speedType!=SpeedLevel.BPS2) engine.speed.lockDelay = engine.speed.denominator/engine.speed.gravity
 	}
 
 	/** Main routine for game setup screen */
@@ -221,7 +224,7 @@ class RetroN:AbstractMode() {
 				ghost = false
 				createFieldIfNeeded()
 			}
-			fillGarbage(engine, startHeight)
+			fillGarbage(engine, tableGarbageHeight[startHeight.coerceIn(tableGarbageHeight.indices)])
 		}
 		return false
 	}
@@ -231,17 +234,27 @@ class RetroN:AbstractMode() {
 	override fun startGame(engine:GameEngine) {
 
 		owner.musMan.bgm = BGM.RetroN(if(startLevel>9) 3 else (gameType.ordinal+startLevel)%3)
+		if(gameType==GameType.C) garbageCount = 0
 		setSpeed(engine)
 	}
 
 	override fun onMove(engine:GameEngine):Boolean {
 		// 新規ピース出現時
-		if(engine.ending==0&&engine.statc[0]==0&&!engine.holdDisable)
+		if(engine.ending==0&&engine.stime==0&&!engine.holdDisable) {
 			if(engine.getNextObjectCopy()?.shape!=Piece.Shape.I) drought++
 			else {
 				if(drought>7) droughts += drought
 				drought = 0
 			}
+			tableGarbageQuota.let {it.getOrElse(engine.statistics.lines/10%it.size) {0}}.let {quota ->
+				if(quota>0) if(garbageCount>=quota) {
+					engine.playSE("garbage0")
+					engine.field.pushUp()
+					fillGarbage(engine, 1)
+					garbageCount = 0
+				} else garbageCount++
+			}
+		}
 
 		return false
 	}
@@ -332,7 +345,6 @@ class RetroN:AbstractMode() {
 		engine.meterValue =
 			if(gameType==GameType.B) minOf(engine.statistics.lines, 25)/25f else
 				(engine.statistics.lines-lvLBegin)*1f/lvLines
-
 		if(gameType!=GameType.B&&engine.statistics.lines>=lvLines) {
 			// Level up
 			engine.statistics.level++
@@ -349,18 +361,17 @@ class RetroN:AbstractMode() {
 
 			setSpeed(engine)
 			engine.playSE("levelup")
-		}
 
-		// Game ends: B-TYPE: 25 Lines, C-TYPE:255 levels(3300 lines)
+			// Game ends: B-TYPE: 25 Lines, C-TYPE:255 levels(3300 lines)
 
-		if((gameType==GameType.B&&engine.statistics.lines>=25)||gameType==GameType.C&&engine.statistics.level>255) {
-			engine.statistics.scoreBonus += ((engine.statistics.level+startHeight)*1000).also {
-				engine.receiver.addScore(engine, +2, engine.field.highestBlockY-2, it, COLOR.RAINBOW, "CLEAR BONUS", true)
+			if((gameType==GameType.B&&engine.statistics.lines>=25)||gameType==GameType.C&&engine.statistics.level>255) {
+				engine.statistics.scoreBonus += ((engine.statistics.level+startHeight)*1000).also {
+					engine.receiver.addScore(engine, +2, engine.field.highestBlockY-2, it, COLOR.RAINBOW, "CLEAR BONUS", true)
+				}
+				engine.ending = 1
+				engine.gameEnded()
 			}
-			engine.ending = 1
-			engine.gameEnded()
 		}
-
 		return pts
 	}
 
@@ -457,13 +468,10 @@ class RetroN:AbstractMode() {
 	private fun fillGarbage(engine:GameEngine, height:Int) {
 		val h = engine.field.height
 		val startHeight = h-1
-		var f:Float
-		for(y in startHeight downTo h-tableGarbageHeight[height])
-			for(x in 0..<engine.field.width) {
-				f = engine.random.nextFloat()
-				if(f<0.5)
-					engine.field.setBlock(x, y,
-						Block((f*14).toInt()+2, engine.blkSkin, Block.ATTRIBUTE.VISIBLE, Block.ATTRIBUTE.GARBAGE))
+		for(y in startHeight downTo h-height)
+			for(x in 0..<engine.field.width) engine.random.nextFloat().let {f ->
+				if(f<0.5) engine.field.setBlock(x, y,
+					Block((f*14).toInt()+2, engine.blkSkin, Block.ATTRIBUTE.VISIBLE, Block.ATTRIBUTE.GARBAGE))
 			}
 	}
 
@@ -487,8 +495,8 @@ class RetroN:AbstractMode() {
 			36, 32, 29, 25, 22, 18, 15, 11, 7, 5, // 00
 			4, 4, 4, 3, 3, 3, 2, 2, 2, 1, // 10
 		)
-		/** Garbage height table */
-		private val tableGarbagePeriod = intArrayOf(6, 5)
+		/** Garbage quota table in Type-C */
+		private val tableGarbageQuota = listOf(6, 0, 16, 0, 12, 0)
 		/** Garbage height table */
 		private val tableGarbageHeight = intArrayOf(0, 3, 5, 8, 10, 12)
 
@@ -521,7 +529,7 @@ class RetroN:AbstractMode() {
 			N_PAL(pal(false), 4, "NOE-PAL"), N_PAL_RAW(pal(true), 4, "NOE-PAL HARD"),
 			BPS2(LevelData(listOf(1, 3, 5, 7, 9, 11, 13, 15, 17, 19, 23, 27, 31, 35, 39, 43, 47, 51, 55, 59,
 				69, 77, 85, 93, 101, 109, 117, 125, 133, 141, 152, 164, 175, 187, 198, 210, 221, 233, 244, 256), listOf(128),
-				8, 8, 16, 26, 12), 10, "BPS-S2");
+				8, 8, 16, 26, 12), 1, "BPS-S2");
 
 			val showName:String = title?:name
 			override fun toString() = showName
