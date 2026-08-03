@@ -39,7 +39,7 @@ import mu.nu.nullpo.game.play.GameEngine.Status
 import mu.nu.nullpo.game.play.GameManager
 import mu.nu.nullpo.game.play.clearRule.ColorStraight
 import mu.nu.nullpo.game.play.fallRule.Cascade
-import mu.nu.nullpo.game.play.fallRule.Cascade.canCascade
+import mu.nu.nullpo.game.play.fallRule.Cascade.Connect.canCascade
 import mu.nu.nullpo.game.subsystem.mode.AbstractMode
 import mu.nu.nullpo.gui.common.BaseFont.FONT.BASE
 import mu.nu.nullpo.gui.common.GameKeyDummy.Companion.MAX_PLAYERS
@@ -275,7 +275,7 @@ class PhysicianVS:AbstractMode() {
 		engine.clearMode = ColorStraight(4, false, true)
 		engine.garbageColorClear = false
 		engine.colorClearSize = 4
-		engine.lineGravityType = Cascade
+		engine.lineGravityType = Cascade.Connect
 		engine.nextPieceEnable = PIECE_ENABLE
 		engine.randomBlockColor = true
 		engine.blockColors = BLOCK_COLORS

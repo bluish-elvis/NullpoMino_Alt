@@ -159,10 +159,9 @@ internal class StateLoading:BasicGameState() {
 			3 -> {
 				ResourceHolder.let {
 					try {
-						listOf(it.imgFont, it.imgNum).flatten().forEach {i ->
+						listOf(it.imgFont,it.imgFontNano, it.imgNum).flatten().forEach {i ->
 							i.draw()
 						}
-						it.imgFontNano.draw()
 					} catch(_:Exception) {
 					}
 				}

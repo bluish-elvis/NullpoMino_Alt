@@ -292,12 +292,12 @@ class GrandBasic:AbstractGrand() {
 			receiver.drawScore(engine, 5, 4, "$hanabi", NUM, g20||intHanabi>-100, 2f)
 
 			receiver.drawScore(engine, 0, 9, "Level", BASE, COLOR.BLUE)
-			receiver.drawScore(engine, 1, 10, "%3d".format(maxOf(engine.statistics.level, 0)), NUM)
+			receiver.drawScore(engine, 1, 10, "%3d".format(maxOf(engine.statistics.level, 0)), NUM_W)
 			receiver.drawScoreSpeed(
 				engine, 0, 11, if(g20) 40 else floor(ln(engine.speed.gravity.toDouble())).toInt()*4,
 				4
 			)
-			receiver.drawScore(engine, 1, 12, "300", NUM)
+			receiver.drawScore(engine, 1, 12, "300", NUM_W)
 
 			receiver.drawScore(engine, 0, 14, "Time", BASE, COLOR.BLUE)
 			if(engine.ending!=2||rollTime/20%2==0||!engine.gameActive)

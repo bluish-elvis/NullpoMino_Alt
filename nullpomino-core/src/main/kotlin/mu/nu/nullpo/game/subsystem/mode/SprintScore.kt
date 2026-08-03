@@ -371,8 +371,10 @@ Ready&Go screen disappears) */
 	}
 
 	/* Hard drop */
-	override fun afterHardDropFall(engine:GameEngine, fall:Int) {
-		engine.statistics.scoreHD += fall*2
+	override fun afterHardDropFall(engine:GameEngine, fall:Int) = (fall*2).let {
+		engine.statistics.scoreHD += it
+		scDisp += it
+		engine.receiver.addScore(engine, engine.nowPieceX+2, engine.nowPieceBottomY+2, 0, str = "+$it")
 	}
 
 	/* Called after every frame */

@@ -368,9 +368,9 @@ class GrandM1:AbstractGrand() {
 			receiver.drawScore(engine, 0, 6, "$scDisp", NUM, textCol, 2f)
 
 			receiver.drawScore(engine, 0, 9, "Level", BASE, headCol)
-			receiver.drawScore(engine, 1, 10, "%3d".format(maxOf(engine.statistics.level, 0)), NUM, g20)
+			receiver.drawScore(engine, 1, 10, "%3d".format(maxOf(engine.statistics.level, 0)), NUM_W, g20)
 			receiver.drawScoreSpeed(engine, 0, 11, if(g20) 40 else floor(ln(engine.speed.gravity.toDouble())).toInt()*4, 4)
-			receiver.drawScore(engine, 1, 12, "%3d".format(nextSecLv), NUM, g20)
+			receiver.drawScore(engine, 1, 12, "%3d".format(nextSecLv), NUM_W, g20)
 
 			receiver.drawScore(engine, 0, 14, "Time", BASE, if(g20) if(gm500) COLOR.YELLOW else COLOR.CYAN else COLOR.BLUE)
 			if(engine.ending!=2||rollTime/30%2==0||!engine.gameActive)

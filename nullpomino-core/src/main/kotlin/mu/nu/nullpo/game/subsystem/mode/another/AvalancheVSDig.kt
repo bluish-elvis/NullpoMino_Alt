@@ -301,7 +301,7 @@ class AvalancheVSDig:AvalancheVSDummyMode() {
 		val pid = engine.playerID
 		if(engine.stime==0) {
 			engine.numColors = numColors[pid]
-			engine.lineGravityType = Cascade
+			engine.lineGravityType = Cascade.All
 			engine.cascadeDelay = if(cascadeSlow[pid]) 2 else 1
 			engine.rainbowAnimate = true
 			engine.displaySize = if(bigDisplay) 1 else 0

@@ -79,6 +79,7 @@ class RendererSlick(
 			FONT.NANO -> FontNano.printFont(x, y, str, color, scale, alpha)
 			FONT.NUM -> FontNumber.printFont(x, y, str, color, scale, alpha)
 			FONT.NUM_T -> FontNumTall.printFont(x, y, str, color, scale, alpha)
+			FONT.NUM_W -> FontNumWide.printFont(x, y, str, color, scale, alpha)
 			FONT.TTF -> printTTFSpecific(x, y, str, color, scale, alpha)
 			FONT.GRADE -> FontGrade.printFont(x, y, str, color, scale, alpha)
 			else -> FontNormal.printFont(x, y, str, color, scale, alpha)

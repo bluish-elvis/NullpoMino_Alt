@@ -388,8 +388,8 @@ class GrandRoads:NetDummyMode() {
 			receiver.drawScore(engine, 0, 7, "%3d/%3d".format(nextLv, nowCourse.goalLines), NUM)
 
 			receiver.drawScore(engine, 2.5f, 5, "Level", NANO, COLOR.BLUE)
-			receiver.drawScore(engine, 5.5f, 5, "%02d".format(engine.statistics.level+1), NUM, 2f)
-			receiver.drawScore(engine, 6, 7, "/%3d".format(nowCourse.goalLevel), NUM)
+			receiver.drawScore(engine, 5.5f, 5, "%02d".format(engine.statistics.level+1), NUM_W, 2f)
+			receiver.drawScore(engine, 6, 7, "/%3d".format(nowCourse.goalLevel), NUM_W)
 
 			receiver.drawScore(engine, 0, 9, "TIME LIMIT", BASE, COLOR.BLUE)
 			receiver.drawScore(engine, 0, 10, levelTimer.toTimeStr, NUM, levelTimer in 1..<600&&levelTimer%4==0, 2f)

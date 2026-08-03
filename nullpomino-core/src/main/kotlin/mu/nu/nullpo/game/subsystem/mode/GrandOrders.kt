@@ -412,12 +412,12 @@ class GrandOrders:NetDummyMode() {
 			}
 		} else {
 			receiver.drawScore(engine, 3, 2, "Missions", BASE, COLOR.BLUE)
-			receiver.drawScore(engine, 0, 2, "%02d".format(engine.statistics.level+1), NUM, 2f)
-			receiver.drawScore(engine, 3, 3, "/%3d".format(nowCourse.goalLevel), NUM)
+			receiver.drawScore(engine, 0, 2, "%02d".format(engine.statistics.level+1), NUM_W, 2f)
+			receiver.drawScore(engine, 3, 3, "/%02d".format(nowCourse.goalLevel), NUM_W)
 
 			receiver.drawScore(engine, 0, 5, nowMission?.showName?:"", BASE, COLOR.PURPLE)
 			receiver.drawScoreSpeed(engine, 0, 7, engine.speed.rank, 6f)
-			receiver.drawScore(engine, 0, 8, "%3d/%3d".format(prog, norm), NUM)
+			receiver.drawScore(engine, 0, 8, "%3d/%3d".format(prog, norm), NUM_W)
 
 			receiver.drawScore(engine, 0, 10, "TIME LIMIT", BASE, COLOR.BLUE)
 			receiver.drawScore(engine, 0, 11, levelTimer.toTimeStr, NUM, levelTimer in 1..<600&&levelTimer%4==0, 2f,

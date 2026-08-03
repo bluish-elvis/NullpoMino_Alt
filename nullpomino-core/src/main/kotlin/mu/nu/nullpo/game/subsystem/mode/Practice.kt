@@ -31,6 +31,7 @@
 package mu.nu.nullpo.game.subsystem.mode
 
 import mu.nu.nullpo.game.component.*
+import mu.nu.nullpo.game.component.Item.Companion.Behavior
 import mu.nu.nullpo.game.component.Item.Companion.Type
 import mu.nu.nullpo.game.component.Piece.Shape
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
@@ -39,6 +40,7 @@ import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.game.play.clearRule.LineBomb
 import mu.nu.nullpo.game.play.clearRule.LineSpark
 import mu.nu.nullpo.game.play.fallRule.Cascade
+import mu.nu.nullpo.game.play.fallRule.LineGravity
 import mu.nu.nullpo.game.play.fallRule.Native
 import mu.nu.nullpo.game.subsystem.mode.menu.BooleanMenuItem
 import mu.nu.nullpo.game.subsystem.mode.menu.DelegateMenuItem
@@ -104,7 +106,11 @@ class Practice:AbstractGrand() {
 	private var bighalf = false
 
 	/** LevelType */
-	private var leveltype = 0
+	private var intLevelType:Int get() = levelType.ordinal
+		set(value) {
+			levelType = LevelTypes.entries.let{it[value%it.size]}
+		}
+	private var levelType=LevelTypes.None
 
 	/** Preset number */
 	private var presetNumber = 0
@@ -225,7 +231,7 @@ class Practice:AbstractGrand() {
 		big = prop.getProperty("practice.big.$preset", false)
 		bigmove = prop.getProperty("practice.bigmove.$preset", true)
 		bighalf = prop.getProperty("practice.bighalf.$preset", true)
-		leveltype = prop.getProperty("practice.leveltype.$preset", LEVELTYPE_NONE)
+		intLevelType = prop.getProperty("practice.leveltype.$preset", LEVELTYPE_NONE)
 		secAlert = prop.getProperty("practice.lvstopse.$preset", true)
 		goallv = prop.getProperty("practice.goallv.$preset", -1)
 		timelimit = prop.getProperty("practice.timelimit.$preset", 0)
@@ -269,7 +275,7 @@ class Practice:AbstractGrand() {
 		prop.setProperty("practice.big.$preset", big)
 		prop.setProperty("practice.bigmove.$preset", bigmove)
 		prop.setProperty("practice.bighalf.$preset", bighalf)
-		prop.setProperty("practice.leveltype.$preset", leveltype)
+		prop.setProperty("practice.leveltype.$preset", intLevelType)
 		prop.setProperty("practice.lvstopse.$preset", secAlert)
 		prop.setProperty("practice.goallv.$preset", goallv)
 		prop.setProperty("practice.timelimit.$preset", timelimit)
@@ -331,7 +337,7 @@ class Practice:AbstractGrand() {
 					6 -> engine.speed.das = rangeCursor(engine.speed.das+change, 0, 99)
 					7 -> bgmId = rangeCursor(bgmId+change, 0, BGM.count-1)
 					8 -> big = !big
-					9 -> leveltype = rangeCursor(leveltype+change, 0, LEVELTYPE_MAX-1)
+					9 -> intLevelType = rangeCursor(intLevelType+change, 0, LEVELTYPE_MAX-1)
 					10 -> {
 						//enableTwist = !enableTwist;
 						twistEnableType = rangeCursor(twistEnableType+change, 0, 2)
@@ -381,9 +387,9 @@ class Practice:AbstractGrand() {
 						eraseStyle = rangeCursor(eraseStyle+change, 0, BLOCK_ERASE_TYPE_STRING.size-1)
 						if(eraseStyle!=0&&cascadeStyle==0) cascadeStyle = 1
 					}
-					48 -> itemFilter = rangeCursor(cascadeStyle+change, 0, ItemFilters.entries.size-1)
+					48 -> itemFilter = rangeCursor(itemFilter+change, 0, ItemFilters.entries.size-1)
 					49 -> {
-						itemFreq = rangeCursor(eraseStyle+change, 0, 20)
+						itemFreq = rangeCursor(itemFreq+change, 0, 20)
 					}
 				}
 			}
@@ -499,7 +505,7 @@ class Practice:AbstractGrand() {
 				BASE, menuCursor==7
 			)
 			receiver.drawMenu(engine, 2, 8, "BIG Block:${big.getONorOFF()}", BASE, menuCursor==8)
-			receiver.drawMenu(engine, 2, 9, "LEVEL Type:${LEVELTYPE_STRING[leveltype]}", BASE, menuCursor==9)
+			receiver.drawMenu(engine, 2, 9, "LEVEL Type:$levelType", BASE, menuCursor==9)
 			receiver.drawMenu(
 				engine, 2, 10,
 				"SPIN BONUS:${if(twistEnableType==0) "OFF" else if(twistEnableType==1) "T-ONLY" else "ALL"}",
@@ -516,7 +522,7 @@ class Practice:AbstractGrand() {
 			receiver.drawMenu(engine, 2, 18, "BIG half:${bighalf.getONorOFF()}", BASE, menuCursor==18)
 			var strGoalLv = "Endless"
 			if(goallv>=0)
-				strGoalLv = when(leveltype) {
+				strGoalLv = when(intLevelType) {
 					LEVELTYPE_MANIA, LEVELTYPE_MANIAPLUS -> "${((goallv+1)*100)} LEVELS"
 					LEVELTYPE_NONE -> "${(goallv+1)} Lines"
 					else -> "${(goallv+1)} LEVELS"
@@ -524,18 +530,15 @@ class Practice:AbstractGrand() {
 			receiver.drawMenu(engine, 2, 19, "Goal LEVEL:$strGoalLv", BASE, menuCursor==19)
 			receiver.drawMenu(
 				engine, 2, 20, "TIME LIMIT:${if(timelimit==0) "none" else timelimit.toTimeStr}",
-				BASE,
-				menuCursor==20
+				BASE, menuCursor==20
 			)
 			receiver.drawMenu(
 				engine, 2, 21, "ROLL LIMIT:${if(rolltimelimit==0) "none" else rolltimelimit.toTimeStr}",
-				BASE,
-				menuCursor==21
+				BASE, menuCursor==21
 			)
 			receiver.drawMenu(
 				engine, 2, 22, "TIME LIMIT per LEVEL:${timelimitResetEveryLevel.getONorOFF()}",
-				BASE,
-				menuCursor==22
+				BASE, menuCursor==22
 			)
 		} else {
 			cx = if(menuCursor in 40..45) 15 else if(menuCursor in 46..49) 16 else cx
@@ -551,17 +554,9 @@ class Practice:AbstractGrand() {
 				menuCursor==26)
 			receiver.drawMenu(engine, 2, 7, "Block Outline Only:${blockShowOutlineOnly.getONorOFF()}", BASE, menuCursor==27)
 			receiver.drawMenu(engine, 2, 8, "Hebo Hidden:${if(heboHiddenLevel==0) "none" else "LV$heboHiddenLevel"}", BASE, menuCursor==28)
-			receiver.drawMenu(engine, 2, 10, "Piece I:${pieceEnable[0].getONorOFF()}", BASE, menuCursor==29)
-			receiver.drawMenu(engine, 2, 11, "Piece L:${pieceEnable[1].getONorOFF()}", BASE, menuCursor==30)
-			receiver.drawMenu(engine, 2, 12, "Piece O:${pieceEnable[2].getONorOFF()}", BASE, menuCursor==31)
-			receiver.drawMenu(engine, 2, 13, "Piece Z:${pieceEnable[3].getONorOFF()}", BASE, menuCursor==32)
-			receiver.drawMenu(engine, 2, 14, "Piece T:${pieceEnable[4].getONorOFF()}", BASE, menuCursor==33)
-			receiver.drawMenu(engine, 2, 15, "Piece J:${pieceEnable[5].getONorOFF()}", BASE, menuCursor==34)
-			receiver.drawMenu(engine, 2, 16, "Piece S:${pieceEnable[6].getONorOFF()}", BASE, menuCursor==35)
-			receiver.drawMenu(engine, 2, 17, "Piece I1:${pieceEnable[7].getONorOFF()}", BASE, menuCursor==36)
-			receiver.drawMenu(engine, 2, 18, "Piece I2:${pieceEnable[8].getONorOFF()}", BASE, menuCursor==37)
-			receiver.drawMenu(engine, 2, 19, "Piece I3:${pieceEnable[9].getONorOFF()}", BASE, menuCursor==38)
-			receiver.drawMenu(engine, 2, 20, "Piece L3:${pieceEnable[10].getONorOFF()}", BASE, menuCursor==39)
+			listOf("I","L","O","Z","T","J","S", "I1", "I2", "I3", "L3").forEachIndexed { i, name ->
+				receiver.drawMenu(engine, 2, 10+i, "Piece $name:${pieceEnable[i].getONorOFF()}", BASE, menuCursor==29+i)
+			}
 			receiver.drawMenu(engine, 16, 10, "Use Map:${useMap.getONorOFF()}", BASE, menuCursor==40)
 			receiver.drawMenu(engine, 16, 11, "[Edit Field Map]", BASE, menuCursor==41)
 			receiver.drawMenu(engine, 16, 12, "[Load Field Map]:$mapNumber", BASE, menuCursor==42)
@@ -612,23 +607,27 @@ class Practice:AbstractGrand() {
 		}
 
 		// Another Rule
-		if(cascadeStyle==0)
-			engine.lineGravityType = Native
-		else {
-			engine.lineGravityType = Cascade
+
+		engine.lineGravityType = LineGravity.values().let{it[cascadeStyle%it.size]}
+		if(cascadeStyle!=0) {
 			if(eraseStyle==1) engine.clearMode = LineBomb
 			if(eraseStyle==2) engine.clearMode = LineSpark
 		}
 
+		if(itemFreq>0){
+			engine.nextPieceArrayObject.forEachIndexed { i, it ->
+				if(i%itemFreq==0)it.setItem(Item.entries.filter(ItemFilters.entries[itemFilter].filter).random(engine.random))
+			}
+		}/*
 	}
 
-	/* ReadyAt the time ofCalled at initialization (Start gameJust before) */
-	override fun startGame(engine:GameEngine) {
+	ReadyAt the time ofCalled at initialization (Start gameJust before)
+	override fun startGame(engine:GameEngine) {*/
 		engine.big = big
 		engine.bigMove = bigmove
 		engine.bigHalf = bighalf
 
-		if(leveltype!=LEVELTYPE_MANIA&&leveltype!=LEVELTYPE_MANIAPLUS) {
+		if(intLevelType!=LEVELTYPE_MANIA&&intLevelType!=LEVELTYPE_MANIAPLUS) {
 			engine.b2bEnable = enableB2B
 			engine.splitB2B = enableSplitB2B
 
@@ -671,11 +670,6 @@ class Practice:AbstractGrand() {
 		engine.meterColor = GameEngine.METER_COLOR_GREEN
 		setMeter(engine)
 
-		if(itemFreq>0){
-			engine.nextPieceArrayObject.forEachIndexed { i, it ->
-				if(i%itemFreq==0)it.setItem(Item.entries.filter(ItemFilters.entries[itemFilter].filter).random(engine.random))
-			}
-		}
 	}
 
 	/** Set Hebo Hidden params
@@ -778,7 +772,7 @@ class Practice:AbstractGrand() {
 					engine, 14, 19, remainTime.toTimeStr, BASE, remainTime>0&&remainTime<10*60, 2f
 				)
 			}
-			if(leveltype!=LEVELTYPE_NONE) when(leveltype) {
+			if(intLevelType!=LEVELTYPE_NONE) when(intLevelType) {
 				LEVELTYPE_MANIA, LEVELTYPE_MANIAPLUS -> {
 					//  GrandLevel
 					receiver.drawScore(engine, 0, 12, "Level", BASE, COLOR.BLUE)
@@ -855,17 +849,17 @@ class Practice:AbstractGrand() {
 	/* Processing on the move */
 	override fun onMove(engine:GameEngine):Boolean {
 		// Occurrence new piece
-		val ret = if(leveltype==LEVELTYPE_MANIA||leveltype==LEVELTYPE_MANIAPLUS) super.onMove(engine) else false
+		val ret = (intLevelType==LEVELTYPE_MANIA||intLevelType==LEVELTYPE_MANIAPLUS)&&super.onMove(engine)
 
 		// EndingStart
 		if(engine.ending==2&&!rollStarted) {
 			rollStarted = true
 
-			if(leveltype==LEVELTYPE_MANIA||leveltype==LEVELTYPE_MANIAPLUS) {
+			if(intLevelType==LEVELTYPE_MANIA||intLevelType==LEVELTYPE_MANIAPLUS) {
 				engine.blockHidden = 300
 				engine.blockHiddenAnim = true
 
-				if(leveltype==LEVELTYPE_MANIA) engine.blockOutlineType = GameEngine.BLOCK_OUTLINE_NONE
+				if(intLevelType==LEVELTYPE_MANIA) engine.blockOutlineType = GameEngine.BLOCK_OUTLINE_NONE
 			}
 
 			owner.musMan.bgm = BGM.Ending(0)
@@ -878,7 +872,7 @@ class Practice:AbstractGrand() {
 	/* AREProcessing during */
 	override fun onARE(engine:GameEngine):Boolean {
 		// Last frame
-		val ret = if(leveltype==LEVELTYPE_MANIA||leveltype==LEVELTYPE_MANIAPLUS) super.onARE(engine) else false
+		val ret = if(intLevelType==LEVELTYPE_MANIA||intLevelType==LEVELTYPE_MANIAPLUS) super.onARE(engine) else false
 
 		if(engine.ctrl.isPush(Controller.BUTTON_F)) engine.undo().let {if(it) return true}
 
@@ -897,7 +891,7 @@ class Practice:AbstractGrand() {
 			engine.heboHiddenYNow -= ev.lines
 			if(engine.heboHiddenYNow<0) engine.heboHiddenYNow = 0
 		}
-		return if(leveltype==LEVELTYPE_MANIA||leveltype==LEVELTYPE_MANIAPLUS)
+		return if(intLevelType==LEVELTYPE_MANIA||intLevelType==LEVELTYPE_MANIAPLUS)
 			calcScoreMania(engine, ev) else calcScoreNormal(engine, ev)
 	}
 
@@ -909,7 +903,7 @@ class Practice:AbstractGrand() {
 
 			levelUp(
 				engine,
-				if(leveltype==LEVELTYPE_MANIAPLUS&&lines>=3) lines+lines-2 else lines
+				if(intLevelType==LEVELTYPE_MANIAPLUS&&lines>=3) lines+lines-2 else lines
 			)
 
 			if(engine.statistics.level>=(goallv+1)*100&&goallv!=-1) {
@@ -954,7 +948,7 @@ class Practice:AbstractGrand() {
 		// Line clear bonus
 		val pts = super.calcScore(engine, ev)
 		// Add to score
-		if(leveltype==LEVELTYPE_POINTS) {
+		if(intLevelType==LEVELTYPE_POINTS) {
 			lastgoal = calcPoint(engine, ev)
 			goal -= lastgoal
 			lastlineTime = levelTimer
@@ -963,7 +957,7 @@ class Practice:AbstractGrand() {
 
 		var endingFlag = false // EndingIf the inrushtrue
 
-		if(leveltype==LEVELTYPE_10LINES&&engine.statistics.lines>=(engine.statistics.level+1)*10||leveltype==LEVELTYPE_POINTS&&goal<=0)
+		if(intLevelType==LEVELTYPE_10LINES&&engine.statistics.lines>=(engine.statistics.level+1)*10||intLevelType==LEVELTYPE_POINTS&&goal<=0)
 			if(engine.statistics.level>=goallv&&goallv!=-1)
 			// Ending
 				endingFlag = true
@@ -982,7 +976,7 @@ class Practice:AbstractGrand() {
 			}
 
 		// Ending ( levelTypeNONE)
-		if(version>=2&&leveltype==LEVELTYPE_NONE&&engine.statistics.lines>=goallv+1&&(goallv!=-1||version<=2))
+		if(version>=2&&intLevelType==LEVELTYPE_NONE&&engine.statistics.lines>=goallv+1&&(goallv!=-1||version<=2))
 			endingFlag = true
 
 		// EndingRush processing
@@ -1002,7 +996,7 @@ class Practice:AbstractGrand() {
 		}
 
 		setMeter(engine)
-		return if(pts>0) lastScore else 0
+		return pts
 	}
 
 	/** MeterUpdate the amount of
@@ -1017,16 +1011,16 @@ class Practice:AbstractGrand() {
 			val remainTime = timelimitTimer
 			engine.meterValue = remainTime*1f/timelimit
 			engine.meterColor = GameEngine.METER_COLOR_LIMIT
-		} else if(leveltype==LEVELTYPE_10LINES) {
+		} else if(intLevelType==LEVELTYPE_10LINES) {
 			engine.meterValue = engine.statistics.lines%10*1f/9f
 			engine.meterColor = GameEngine.METER_COLOR_LEVEL
-		} else if(leveltype==LEVELTYPE_POINTS) {
+		} else if(intLevelType==LEVELTYPE_POINTS) {
 			engine.meterValue = goal/(5f*(engine.statistics.level+1))
 			engine.meterColor = GameEngine.METER_COLOR_LEVEL
-		} else if(leveltype==LEVELTYPE_MANIA||leveltype==LEVELTYPE_MANIAPLUS) {
+		} else if(intLevelType==LEVELTYPE_MANIA||intLevelType==LEVELTYPE_MANIAPLUS) {
 			engine.meterValue = engine.statistics.level%100/99f
 			engine.meterColor = GameEngine.METER_COLOR_LEVEL
-		} else if(leveltype==LEVELTYPE_NONE&&goallv!=-1) {
+		} else if(intLevelType==LEVELTYPE_NONE&&goallv!=-1) {
 			engine.meterValue = engine.statistics.lines/(goallv+1f)
 			engine.meterColor = GameEngine.METER_COLOR_LEVEL
 		}
@@ -1036,13 +1030,16 @@ class Practice:AbstractGrand() {
 	}
 
 	override fun afterSoftDropFall(engine:GameEngine, fall:Int) {
-		if(leveltype!=LEVELTYPE_MANIA&&leveltype!=LEVELTYPE_MANIAPLUS)
+		if(intLevelType!=LEVELTYPE_MANIA&&intLevelType!=LEVELTYPE_MANIAPLUS)
 			engine.statistics.scoreSD += fall
 	}
 
 	override fun afterHardDropFall(engine:GameEngine, fall:Int) {
-		if(leveltype!=LEVELTYPE_MANIA&&leveltype!=LEVELTYPE_MANIAPLUS)
-			engine.statistics.scoreHD += fall*2
+		if(intLevelType!=LEVELTYPE_MANIA&&intLevelType!=LEVELTYPE_MANIAPLUS) (fall*2).let {
+			engine.statistics.scoreHD += it
+			scDisp += it
+			engine.receiver.addScore(engine, engine.nowPieceX+2, engine.nowPieceBottomY+2, 0, str = "+$it")
+		}
 	}
 
 	override fun renderResult(engine:GameEngine) {
@@ -1077,7 +1074,7 @@ class Practice:AbstractGrand() {
 		private const val LEVELTYPE_POINTS = 2
 		private const val LEVELTYPE_MANIA = 3
 		private const val LEVELTYPE_MANIAPLUS = 4
-		private const val LEVELTYPE_MAX = 5
+		private val LEVELTYPE_MAX = LevelTypes.entries.size
 
 		/** Dan&#39;s backName */
 		private val tableSecretGradeName = listOf(
@@ -1086,15 +1083,30 @@ class Practice:AbstractGrand() {
 			"GM" // 18
 		)
 
-		enum class ItemFilters(val filter:(it:Item)->Boolean) {
-			None({false}), Offence({it.type==Type.DIRECT||it.type==Type.INTERRUPT}),
-			Defence({it.type==Type.SELF}),
+		private enum class ItemFilters(val filter:(it:Item)->Boolean) {
+			None({false}), Blind({it.type==Type.BLIND}),Gimmick({it.type==Type.DISTURB||it.type==Type.DEBUFF}),
+			Safety({it.type==Type.RECOVERY}),Maso({it.type==Type.BACKFIRE}),
+			DS({item -> hasSameClassIn(item, Item.setDS)}),GM({item -> hasSameClassIn(item, Item.setGM)}),
+			All({true})
 		}
-		/** LevelThe display name of the type */
-		private val LEVELTYPE_STRING = listOf("none", "10Lines", "Points", "Mania", "Mania+")
+		private fun hasSameClassIn(item:Item, target:Collection<Item>) = target.any { it::class==item::class }
 
+		/** LevelThe display name of the type */
+		private enum class LevelTypes(val str:String?=null) {
+			None,Lines("10Lines"),Points,Mania,ManiaPlus("Mania+");
+
+			override fun toString():String = str?:name
+		}
+		private val LEVELTYPE_STRING = LevelTypes.entries.map { "$it" }
+
+		private enum class ComboType(val str:String?=null) {
+			Disable, Normal, Double;
+
+			override fun toString():String = str?:name
+		}
 		/** ComboThe display name of the type */
-		private val COMBOTYPE_STRING = listOf("disable", "Normal", "Double")
+		private val COMBOTYPE_STRING = ComboType.entries.map { "$it" }
+
 
 		/** Outline type names */
 		private val BLOCK_OUTLINE_TYPE_STRING = listOf("none", "Normal", "Connect", "SameColor")

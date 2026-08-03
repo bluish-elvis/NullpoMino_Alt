@@ -56,11 +56,12 @@ interface LineGravity {
 		/** Log */
 		internal val log = LogManager.getLogger()
 
-		fun values():Array<LineGravity> = arrayOf(Native, Cascade)
+		fun values():Array<LineGravity> = arrayOf(Native, Cascade.Connect, Cascade.Color)
 
 		fun valueOf(value:String):LineGravity = when(value) {
 			"NATIVE" -> Native
-			"CASCADE" -> Cascade
+			"CASCADE","Connect" -> Cascade.Connect
+			"CASCADE_COLOR","Color" -> Cascade.Color
 			else -> throw IllegalArgumentException("No object mu.nu.nullpo.game.play.fallRule.LineGravity.$value")
 
 		}

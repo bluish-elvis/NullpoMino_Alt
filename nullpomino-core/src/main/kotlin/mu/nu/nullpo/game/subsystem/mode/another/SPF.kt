@@ -38,7 +38,7 @@ import mu.nu.nullpo.game.play.GameEngine.GameStyle
 import mu.nu.nullpo.game.play.GameManager
 import mu.nu.nullpo.game.play.clearRule.ColorGem
 import mu.nu.nullpo.game.play.fallRule.Cascade
-import mu.nu.nullpo.game.play.fallRule.Cascade.canCascade
+import mu.nu.nullpo.game.play.fallRule.Cascade.Connect.canCascade
 import mu.nu.nullpo.game.subsystem.mode.AbstractMode
 import mu.nu.nullpo.gui.common.BaseFont
 import mu.nu.nullpo.gui.common.BaseFont.FONT.BASE
@@ -327,7 +327,7 @@ class SPF:AbstractMode() {
 		engine.colorClearSize = 2
 		engine.ignoreHidden = false
 		engine.garbageColorClear = true
-		engine.lineGravityType = Cascade
+		engine.lineGravityType = Cascade.Connect
 		engine.nextPieceEnable = PIECE_ENABLE
 		engine.blockColors = BLOCK_COLORS
 		engine.gemRate = 0.2f

@@ -1,6 +1,25 @@
 # 製作- 謝辞
 
-## 製作
+## Nullpomino_Alt
+
+- Tools on Nullpomino_Alt
+  - [JetBrains IntelliJ IDEA CE](http://www.jetbrains.com/idea/)
+    - [JetBrains Writerside](https://plugins.jetbrains.com/plugin/7896-writerside)
+  - [GNU Image Manipulation Program](http://www.gimp.org/)
+  - [Tenacity](https://tenacityaudio.org/)
+  - NO AI-Generated Assets used
+- Libraries
+  - [Slick - 2D Game Library based on LWJGL](http://slick.cokeandcode.com/)
+  - [Lightweight Java Game Library (LWJGL)](http://www.lwjgl.org/)
+  - [JOrbis -- Pure Java Ogg Vorbis Decoder](http://www.jcraft.com/jorbis/)
+  - [IBXM Java MOD/S3M/XM Player](http://sites.google.com/site/mumart/)
+  - [Apache log4j](http://logging.apache.org/log4j/1.2/index.html)
+  - [Crypt.java](http://www.cacas.org/java/gnu/tools/)
+    : Java-based implementation of the unix crypt(3) command
+  - [ModePile](https://github.com/0xFC963F18DC21/ModePile)
+  - [Oshisaure Nullpomino Mod](https://drive.google.com/file/d/13hy-_e11bVU0703d8SNjRAsPSWKr7IK7/view)
+
+##  Nullpomino 製作
   - NullNoname ◆bzEQ7554bc (別名pbomqlu910963、元名無し)
   - Zircean
   - Poochy
@@ -27,23 +46,17 @@
 - ツール
   - [Eclipse IDE](http://www.eclipse.org/)
   - [Fenrir PictBear](https://www.fenrir-inc.com/jp/pictbear/)
-- Tools on Nullpomino_ Alt
-  - [JetBrains IntelliJ IDEA CE](http://www.jetbrains.com/idea/)
-    - [JetBrains Writerside](https://plugins.jetbrains.com/plugin/7896-writerside)
-  - [GNU Image Manipulation Program](http://www.gimp.org/)
 
 - ライブラリ
-  - Slick - 2D Game Library based on LWJGL http://slick.cokeandcode.com/
-  - Lightweight Java Game Library (LWJGL) http://www.lwjgl.org/
-  - JOrbis -- Pure Java Ogg Vorbis Decoder http://www.jcraft.com/jorbis/
-  - IBXM Java MOD/S3M/XM Player http://sites.google.com/site/mumart/
-  - sdljava - Java Binding to SDL http://sdljava.sourceforge.net/
+  - [Slick - 2D Game Library based on LWJGL](http://slick.cokeandcode.com/)
+  - [Lightweight Java Game Library (LWJGL)](http://www.lwjgl.org/)
+  - [JOrbis -- Pure Java Ogg Vorbis Decoder](http://www.jcraft.com/jorbis/)
+  - [IBXM Java MOD/S3M/XM Player](http://sites.google.com/site/mumart/)
+  - [sdljava - Java Binding to SDL](http://sdljava.sourceforge.net/)
   - [Simple DirectMedia Layer](http://www.libsdl.org/)
   - [Apache log4j](http://logging.apache.org/log4j/1.2/index.html)
   - [Crypt.java](http://www.cacas.org/java/gnu/tools/)
     : Java-based implementation of the unix crypt(3) command
-  - ModePile (https://github.com/0xFC963F18DC21/ModePile)
-  - [Oshisaure Nullpomino Mod](https://drive.google.com/file/d/13hy-_e11bVU0703d8SNjRAsPSWKr7IK7/view)
 
 - 効果音
   - [ザ・マッチメイカァズ](http://osabisi.sakura.ne.jp/m2/)

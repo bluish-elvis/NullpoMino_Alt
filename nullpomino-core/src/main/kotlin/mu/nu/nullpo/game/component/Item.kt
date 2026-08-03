@@ -39,7 +39,7 @@ import mu.nu.nullpo.game.component.Block.COLOR as BCOLOR
 
 @Suppress("ClassName")
 @Serializable
-sealed class Item(val id:Int, val showName:String? = null,
+sealed class Item(val id:Int, val showName:String? = null, val type:Type = Type.DISTURB,
 	/** the item persists duration
 	 * - [duration]=3 ,[isSec]:false = 3 placements
 	 * - [duration]=3 ,[isSec]:true = 5 seconds
@@ -47,12 +47,13 @@ sealed class Item(val id:Int, val showName:String? = null,
 	val duration:Int = 0,
 	/** if this is true, [duration] as frame */
 	val isSec:Boolean = false,
-	val type:Type = Type.INTERRUPT,
-	val color:BCOLOR = if(type==Type.SELF) BCOLOR.BLUE else BCOLOR.RED) {
+	val color:BCOLOR = if(type.behavior==Behavior.SELF) BCOLOR.BLUE else BCOLOR.RED) {
 
-	constructor(id:Int, showName:String):this(id, showName, type = Type.SELF)
+	val behavior:Behavior = type.behavior
 
-	var lifetime = duration
+	constructor(id:Int, showName:String):this(id, showName, type = Type.RECOVERY)
+
+	var lifetime = if(isSec)duration*60 else duration
 	open fun statMoveEffect(e:GameEngine):Boolean = false
 
 	/**
@@ -63,7 +64,7 @@ sealed class Item(val id:Int, val showName:String? = null,
 	val ordinal get() = entries.indexOf(this)
 
 	/** Flip Opponents Field horizontally 3 times */
-	class MIRROR(var maxCount:Int = 3):Item(0, "FLIP MIRROR", 3) {
+	class MIRROR(var maxCount:Int = 3):Item(0, "FLIP MIRROR", Type.DISTURB, 3) {
 		private var count = 0
 		private var tempField:Field = Field()
 		override fun statInterrupt(e:GameEngine):Boolean {
@@ -86,49 +87,56 @@ sealed class Item(val id:Int, val showName:String? = null,
 		}
 	}
 
-	class ROLL_ROLL(var interval:Int = 30):Item(1, "ROLLING dizzy", 3)
+	/**  */
+	class ROLL_ROLL(var interval:Int = 30):Item(1, "ROLLING dizzy", Type.DISTURB, 3)
 	/** Opponent's a next Piece becomes BIG */
-	data object DEATH:Item(2, "DEATH BIG BLOCK", 0) {
+	data object DEATH:Item(2, "DEATH BIG BLOCK", Type.DISTURB) {
 		override fun statInterrupt(e:GameEngine):Boolean {
 			if(e.stime==15) {
 				e.getNextObject(e.nextPieceCount)?.big = true
+				e.playSE("garbage1")
+				e.playSE("garbage2")
 			}
 			return e.stime<30
 			// 終了
 		}
 	}
-	/** Opponent's field becomes barely visible for 3 seconds */
-	class XRAY:Item(3, "X-RAY", 4) {
+	/** Opponent's field becomes barely visible for 4 seconds */
+	class XRAY:Item(3, "X-RAY", Type.BLIND, 4, true) {
 		var time = 0
 	}
 
-	class COLOR:Item(4, "Color Illumination", 3) {
+	class COLOR:Item(4, "Color Illumination", Type.BLIND, 3, true) {
 		var time = 0
 	}
 	/** disable opponent's spinning piece */
-	data object LOCK_SPIN:Item(5, "LOCK SPIN SHOCK")
-	data object HIDE_NEXT:Item(6, "HIDDEN QUEUE")
-	/** Changes opponent's lockDelay to 0 */
-	data object MAGNET:Item(7, "MAGNA LOCK")
-	/** Freezes opponent's play for 3 seconds */
-	data object FREEZE:Item(8, "CHRONOS FREEZE") {
-		override fun statInterrupt(e:GameEngine):Boolean = e.stime<200
+	data object LOCK_SPIN:Item(5, "LOCK SPIN SHOCK", Type.DEBUFF, 3)
+	data object HIDE_NEXT:Item(6, "HIDDEN QUEUE", Type.BLIND, 7)
+	/** Changes opponent's lockDelay to 0 , gravity to 1/10G ~ 1/2G */
+	data object MAGNET:Item(7, "MAGNA LOCK", Type.DEBUFF, 3)
+	/** Freezes opponent's play for 5 seconds */
+	data object FREEZE:Item(8, "CHRONO FREEZE", Type.DEBUFF, 5, true) {
+		override fun statInterrupt(e:GameEngine):Boolean = e.stime<duration*60
 		// 終了
 	}
 	/** Unable opponents HoldSwap Slots */
-	data object LOCK_HOLD:Item(9, "LOCK SWAP ZONE", 6, false, Type.DIRECT)
+	data object LOCK_HOLD:Item(9, "LOCK SWAP ZONE", Type.DEBUFF, 6, false)
 	/** Flip opponents control horizontally  */
-	data object REV_CTRL_H:Item(10, "Horiz. REV.CTRL", duration = 4, true, Type.DIRECT)
+	data object REV_CTRL_H:Item(10, "Horiz. REV.CTRL", Type.DEBUFF, 4, true)
 	/** Increase Oopponents Speed to 20G for 7 seconds */
-	data object SPEED:Item(11, "BOOST FIRE", 7, true, Type.DIRECT)
-	/**  piece becomes I shape and hard drops for 10 seconds */
-	data object ALL_I:Item(12, "I FEVER!!", 10, true, Type.SELF, BCOLOR.RAINBOW)
-	data object REV_CTRL_V:Item(13, "FLIP 180 Vertical", 4, true, Type.DIRECT)
-	data object REMOTE:Item(14, "REMOTE CONTROL", 1)
-	/** Opponent's field becomes totally invisible for 3 seconds */
-	data object DARK:Item(15, "INVISIBLE FIELD")
+	data object SPEED:Item(11, "BOOST FIRE", Type.DEBUFF, 7, true)
+	/**  piece becomes I shape and lockDelay unlimited for 10 seconds
+	 * invulnerable to any item from opponents and remove effects */
+	data object ALL_I:Item(12, "I FEVER!!", Type.BUFF, 10, true, BCOLOR.RAINBOW)
+	/** Flip opponents control vertically  */
+	data object REV_CTRL_V:Item(13, "Vert.REV.CTRL", Type.DEBUFF, 4, true)
+	/** Owner's ctrl also affects target player
+	 * 送り主の操作(ctrl)を標的のプレイヤーにも影響させる */
+	data object REMOTE:Item(14, "REMOTE CONTROL", Type.DEBUFF, 6, true)
+	/** Opponent's field becomes totally invisible for 7 seconds */
+	data object DARK:Item(15, "INVISIBLE FIELD", Type.BLIND, 7, true)
 	/** Erase upper half of owner's field*/
-	data object DEL_TOP:Item(16, "ERASE Top HALF") {
+	data object DEL_TOP:Item(16, "ERASE Top HALF", Type.RECOVERY) {
 		override fun statInterrupt(e:GameEngine):Boolean {
 			val lines = e.field.delUpperRange
 			if(e.stime==40) {
@@ -141,7 +149,7 @@ sealed class Item(val id:Int, val showName:String? = null,
 		}
 	}
 	/** Erase lower half of owner's field*/
-	data object DEL_BOTTOM:Item(17, "ERASE Bot.HALF") {
+	data object DEL_BOTTOM:Item(17, "ERASE Bot.HALF", Type.RECOVERY) {
 		override fun statInterrupt(e:GameEngine):Boolean {
 			val lines = e.field.delLowerRange
 			if(e.stime==40) {
@@ -154,24 +162,26 @@ sealed class Item(val id:Int, val showName:String? = null,
 		}
 	}
 	/** Erase even lines of owner's field*/
-	data object DEL_EVEN:Item(18, "ERASE EvEn") {
+	data object DEL_EVEN:Item(18, "ERASE EvEn", Type.RECOVERY) {
 		override fun statInterrupt(e:GameEngine):Boolean {
 			val lines = e.field.delEvenRange
 			if(e.stime in 20..<20+lines.size*8&&e.stime%8==0) {
 				val y = lines[(e.stime-20)/8]
+				e.playSE("item_laser_h")
+				e.receiver.lineClear(e, setOf(y))
 
 			} else if(e.stime>=45+lines.size*8) {
 				e.field.delEven()
-				e.playSE("linefall0")
+				e.playSE("linefall1")
 			}
 			return e.stime<60+lines.size*8
 			// 終了
 		}
 	}
 
-	data object TRANSFORM:Item(19, "Piece TRANSFORM", 1)
+	data object TRANSFORM:Item(19, "Piece TRANSFORM", Type.DEBUFF, 3)
 	/** Fires a laser vertically that erases blocks in the opponent's field. */
-	data object LASER:Item(20, "Satellite LASER", 0) {
+	data object LASER:Item(20, "Satellite LASER", Type.DISTURB) {
 		override fun statInterrupt(e:GameEngine):Boolean {
 			if(e.stime==0) {
 				e.playSE("laser")
@@ -182,11 +192,21 @@ sealed class Item(val id:Int, val showName:String? = null,
 		}
 	}
 
-	data object NEGA:Item(21, "NEGA Field", 0)
-	data object SHOTGUN:Item(22, "SHOTGUN!", 0) {
+	data object NEGA:Item(21, "NEGA Field", Type.DISTURB, 3, true) {
 		override fun statInterrupt(e:GameEngine):Boolean {
 			if(e.stime==0) {
 				e.playSE("bomb")
+				e.field.negaField()
+			}
+			return e.stime<30
+			// 終了
+		}
+	}
+
+	data object SHOTGUN:Item(22, "SHOTGUN!", Type.DISTURB, 3, true) {
+		override fun statInterrupt(e:GameEngine):Boolean {
+			if(e.stime==30) {
+				e.playSE("item_shotgun")
 				e.field.shotgunField(e.random, e.owner.receiver)
 			}
 			return e.stime<30
@@ -194,7 +214,7 @@ sealed class Item(val id:Int, val showName:String? = null,
 		}
 	}
 	/** Swap the field with opponent's one. */
-	class EXCHANGE:Item(23, "SWAP Field", color = BCOLOR.PURPLE) {
+	class EXCHANGE:Item(23, "SWAP Field", Type.BACKFIRE, color = BCOLOR.PURPLE) {
 		private var opp = 0
 		private var tempField:Field = Field()
 		override fun statInterrupt(e:GameEngine):Boolean {
@@ -223,7 +243,7 @@ sealed class Item(val id:Int, val showName:String? = null,
 		}
 	}
 	/** Opponent's next piece will remain when once lines-cleared with it, and it leaves whole spaces that lines. */
-	data object HARD_MINO:Item(24) {
+	data object HARD_MINO:Item(24, "HARD_MINO", Type.DISTURB) {
 		override fun statInterrupt(e:GameEngine):Boolean {
 			if(e.stime==15) {
 				e.getNextObject(e.nextPieceCount)?.setHard(1)
@@ -233,11 +253,15 @@ sealed class Item(val id:Int, val showName:String? = null,
 		}
 	}
 
-	data object SHUFFLE:Item(25)
+	/** 相手が積んでいるブロックの縦列をランダムで入れ替えます。
+	 * Shuffles each vertical columns of blocks stacked in the opponent's field.
+	 *
+	 * */
+	data object SHUFFLE:Item(25, "SHUFFLER", Type.RANDOM)
 	/**
 	 * */
-	data object RANDOM:Item(26, "RANDOMIZER", color = BCOLOR.RAINBOW)
-	data object FREE_FALL:Item(27, "Free Fall", type = Type.SELF, color = BCOLOR.GREEN) {
+	data object RANDOM:Item(26, "RANDOMIZER", Type.RANDOM, color = BCOLOR.RAINBOW)
+	data object FREE_FALL:Item(27, "Free Fall", Type.RECOVERY, color = BCOLOR.GREEN) {
 		override fun statInterrupt(e:GameEngine):Boolean {
 			if(e.stime==40) {
 				e.playSE("linefall1")
@@ -249,7 +273,7 @@ sealed class Item(val id:Int, val showName:String? = null,
 		}
 	}
 	/** Move the blocks of owner's field to left side, and open the right with empty spaces. */
-	data object MOVE_LEFT:Item(28, "Align Left") {
+	data object MOVE_LEFT:Item(28, "Align Left", Type.RECOVERY) {
 		override fun statInterrupt(e:GameEngine):Boolean {
 			if(e.stime==40) {
 				e.playSE("linefall1")
@@ -261,7 +285,7 @@ sealed class Item(val id:Int, val showName:String? = null,
 		}
 	}
 	/** Move the blocks of owner's field to right side, and open the left with empty spaces. */
-	data object MOVE_RIGHT:Item(29, "Align Right") {
+	data object MOVE_RIGHT:Item(29, "Align Right", Type.RECOVERY) {
 		override fun statInterrupt(e:GameEngine):Boolean {
 			if(e.stime in 10..<40) {
 				e.frameX -= 2
@@ -276,7 +300,7 @@ sealed class Item(val id:Int, val showName:String? = null,
 		}
 	}
 	/** Flip the opponent's field vertically( and random horizontally). */
-	class FLIP_180:Item(30, "FLIP 180") {
+	class FLIP_180:Item(30, "FLIP 180", Type.DISTURB) {
 		private var tempField:Field = Field()
 		override fun statInterrupt(e:GameEngine):Boolean {
 			if(e.stime==0) {
@@ -296,12 +320,13 @@ sealed class Item(val id:Int, val showName:String? = null,
 			// 終了
 		}
 	}
+
 	/** Fires a wide laser vertically that erases blocks in your field. */
 	data object LASER_16T:Item(31, "WIDE LASER 16t")
 	/** Reflects opponent's next attack for 16 seconds, including any Item. */
-	data object REFLECT:Item(32, "Reflect Shield", 16, true, Type.SELF)
+	data object REFLECT:Item(32, "Reflect Shield", Type.BUFF, 16, true)
 	/** Double Sending Garbage Power for 16 seconds. */
-	data object DOUBLE_RISE:Item(33, "Doubled Power", 16, true, Type.SELF, BCOLOR.YELLOW)
+	data object DOUBLE_RISE:Item(33, "Doubled Power", Type.BUFF, 16, true, BCOLOR.YELLOW)
 	data object ALL_CLEAR:Item(34, "All Cleaner") {
 		override fun statInterrupt(e:GameEngine):Boolean {
 			if(e.stime==20) {
@@ -314,18 +339,50 @@ sealed class Item(val id:Int, val showName:String? = null,
 		}
 	}
 
-	data object MISS:Item(35, "Miss", 20, false, Type.SELF, color = BCOLOR.WHITE)
-	data object COPY_FIELD:Item(36, "Field DUPLICATE", color = BCOLOR.PURPLE)
-	data object FAKE_NEXT:Item(37, "??!?")
+	data object MISS:Item(35, "Miss", Type.BACKFIRE, 10, color = BCOLOR.WHITE)
+	data object COPY_FIELD:Item(36, "Field DUPLICATE", type = Type.BACKFIRE, color = BCOLOR.PURPLE)
+	data object FAKE_NEXT:Item(37, "??!?", Type.BLIND, 7)
 	/** All blocks in opponent's field change temporally to bone block that can't be seen their colors.
 	 * When next piece */
-	data object BONE_BLOCK:Item(38, "[]CUI BONE",16)
-	data object SPOT_LIGHT:Item(39, "SpotLight in dark",8)
-	data object SPIN_FIELD:Item(40, "Spinning Field")
+	data object BONE_BLOCK:Item(38, "[]CUI BONE", Type.DISTURB, 16)
+	data object SPOT_LIGHT:Item(39, "SpotLight in dark", Type.BLIND, 8)
+	data object SPIN_FIELD:Item(40, "Spinning Field", Type.BLIND)
 
 	companion object {
-		enum class Type {
-			INTERRUPT, DIRECT, SELF
+		enum class Behavior {
+			/**現在のcurrentPieceを消滅させ、相手を妨害する効果
+			 * 多重付与の場合、順番に処理される
+			 * 1人プレイでも自身に適用される */
+			INTERRUPT,
+			/**現在のcurrentPieceの影響せず直接操作する効果
+			 * 同時に適用され、並行的に消化される
+			 * 1人プレイでも自身に適用される*/
+			DIRECT,
+			/**自身に対する効果
+			 * 同時に適用され、並行的に消化されうる*/
+			SELF,
+			/**自身と相手に同時に適用される効果 1人プレイでは無効*/
+			DUAL
+
+		}
+
+		enum class Type(val behavior:Behavior) {
+			/**フィールド隠し*/
+			BLIND(Behavior.INTERRUPT),
+			/***現在のcurrentPieceをフィールドまたはNEXTピース乱し*/
+			DISTURB(Behavior.INTERRUPT),
+			/**currentPieceを無効化しない妨害効果*/
+			DEBUFF(Behavior.DIRECT),
+			/**強化効果*/
+			BUFF(Behavior.SELF),
+			/**フィールド回復*/
+			RECOVERY(Behavior.SELF),
+			/**ハズレ*/
+			BACKFIRE(Behavior.SELF),
+			/**自身と相手に同時に適用される効果 1人プレイでは無効*/
+			DUAL(Behavior.DUAL),
+
+			RANDOM(Behavior.SELF)
 		}
 		//operator fun get(index: Int): BGM = if(this._idx)
 		val entries:List<Item>
@@ -374,7 +431,12 @@ sealed class Item(val id:Int, val showName:String? = null,
 				SPOT_LIGHT,
 				SPIN_FIELD
 			)*/
-
+		val setGM = setOf(
+			MIRROR(), ROLL_ROLL(), DEATH, XRAY(), COLOR(), DARK, DEL_TOP, DEL_BOTTOM, DEL_EVEN, TRANSFORM, LASER,
+			NEGA, SHOTGUN, EXCHANGE(), HARD_MINO, FREE_FALL, MOVE_LEFT, MOVE_RIGHT, FLIP_180(),
+		)
+		val setDS = setOf(DEL_BOTTOM, HIDE_NEXT, ALL_I, LOCK_SPIN, SPEED, SHUFFLE)
+		//↓DELFIELD,HIDE NEXT,FEVER!,ROTATE LOCK,BOOST FIRE,SHUFFLE FIELD
 		fun values() = entries.toTypedArray()
 		fun valueOf(name:String):Item? = entries.find {entry -> name==entry.showName||name==entry::class.simpleName}
 	}

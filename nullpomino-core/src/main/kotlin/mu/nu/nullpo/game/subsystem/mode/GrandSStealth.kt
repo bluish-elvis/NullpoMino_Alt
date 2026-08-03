@@ -352,9 +352,9 @@ class GrandSStealth:AbstractGrand() {
 			receiver.drawScore(engine, 0, 5, "$scDisp", NUM, 2f)
 
 			receiver.drawScore(engine, 0, 9, "Level", BASE, COLOR.PURPLE)
-			receiver.drawScore(engine, 1, 10, "%3d".format(maxOf(engine.statistics.level, 0)), NUM)
+			receiver.drawScore(engine, 1, 10, "%3d".format(maxOf(engine.statistics.level, 0)), NUM_W)
 			receiver.drawScoreSpeed(engine, 0, 11, if(engine.speed.gravity<0) 40 else engine.speed.gravity/128, 4)
-			receiver.drawScore(engine, 1, 12, "%3d".format(nextSecLv), NUM)
+			receiver.drawScore(engine, 1, 12, "%3d".format(nextSecLv), NUM_W)
 
 			receiver.drawScore(engine, 0, 14, "Time", BASE, COLOR.PURPLE)
 			if(engine.ending!=2||rollTime/10%2==0||!engine.gameActive)

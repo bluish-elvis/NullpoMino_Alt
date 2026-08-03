@@ -60,9 +60,8 @@ object ResourceHolder:mu.nu.nullpo.gui.common.ResourceHolder() {
 	override val imgBadges = ResourceImageSlick(super.imgBadges)
 
 	override val imgFont = super.imgFont.map {ResourceImageSlick(it)}
-	override val imgFontNano = ResourceImageSlick(super.imgFontNano)
+	override val imgFontNano = super.imgFontNano.map{ResourceImageSlick(it)}
 	override val imgNum = super.imgNum.map {ResourceImageSlick(it)}
-	override val imgNumT = ResourceImageSlick(super.imgNumT)
 	override val imgGrade = super.imgGrade.map {ResourceImageSlick(it)}
 	override val imgFontMedal = ResourceImageSlick(super.imgFontMedal)
 

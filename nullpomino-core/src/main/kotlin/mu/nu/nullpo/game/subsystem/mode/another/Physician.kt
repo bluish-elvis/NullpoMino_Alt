@@ -98,7 +98,7 @@ class Physician:AbstractMode() {
 		engine.clearMode = ColorStraight(4, false, true)
 		engine.garbageColorClear = false
 		engine.colorClearSize = 4
-		engine.lineGravityType = Cascade
+		engine.lineGravityType = Cascade.Connect
 		engine.nextPieceEnable = PIECE_ENABLE
 		engine.randomBlockColor = true
 		engine.blockColors = BLOCK_COLORS

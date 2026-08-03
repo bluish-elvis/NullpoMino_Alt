@@ -104,9 +104,9 @@ open class EventReceiver {
 		get() = if(owner.menuOnly) 0f else (owner.mode?.let {m ->
 			frameY+if(bigSideNext) NEW_FIELD_OFFSET_Y_BSP[m.gameStyle.ordinal][displaySize+1].let {
 				it[minOf(it.lastIndex, playerID)]
-			}
+			}+24
 			else NEW_FIELD_OFFSET_Y[m.gameStyle.ordinal][displaySize+1].let {it[minOf(it.lastIndex, playerID)]}+
-				if(nextDisplayType==0) nextHeight else 0
+				if(nextDisplayType==0) 48 else 32
 		})?:0f
 
 	/** @return X position of score display area*/
@@ -345,7 +345,7 @@ open class EventReceiver {
 		alpha:Float = 1f) =
 		drawMenu(engine, x, y, str, font, if(flag) when(font) {
 			NANO -> if(engine.playerID%2==0) COLOR.YELLOW else COLOR.ORANGE
-			NUM, NUM_T -> COLOR.RAINBOW
+			NUM, NUM_T, NUM_W -> COLOR.RAINBOW
 			else -> getPlayerColor(engine.playerID)
 		} else COLOR.WHITE, scale, alpha)
 

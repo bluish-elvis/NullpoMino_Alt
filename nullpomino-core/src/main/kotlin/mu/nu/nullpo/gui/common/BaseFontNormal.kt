@@ -40,7 +40,7 @@ abstract class BaseFontNormal:BaseFont {
 	}
 
 	override fun processTxt(x:Float, y:Float, str:String, color:COLOR, scale:Float, alpha:Float, rainbow:Int,
-		draw:(i:Int, dx:Float, dy:Float, scale:Float, sx:Int, sy:Int, sw:Int, sh:Int, a:Float)->Unit) {
+		draw:(i:Int, dx:Float, dy:Float, scale:Float, sx:Int, sy:Int, sw:Int, sh:Int, a:Float)->Unit):Float {
 		var dx = x
 		var dy = y
 		str.forEachIndexed {i, char ->
@@ -55,20 +55,23 @@ abstract class BaseFontNormal:BaseFont {
 				val fontColor = (if(color==COLOR.RAINBOW) COLOR.getRainbowColor(rainbow, i) else color).ordinal
 				val wy = dy+if(char.isLowerCase()) 3f*scale else 0f
 
+				val sx = c%32
+				val sy = c/32+fontColor*4
 				when {
-					scale<=.5f -> draw(0, dx, wy, scale*2, c%32*8, (c/32+fontColor*4)*8, 8, 8, a)
-					scale>=(5f/3f) -> draw(2, dx, wy, scale/2, c%32*32, (c/32+fontColor*4)*32, 32, 32, a)
-					else -> draw(1, dx, wy, scale, c%32*W, (c/32+fontColor*4)*16, 16, 16, a)
+					scale<=2f/3f -> draw(0, dx, wy, scale*2, sx*8, sy*8, 8, 8, a)
+					scale>=(5f/3f) -> draw(2, dx, wy, scale/2, sx*32, sy*32, 32, 32, a)
+					else -> draw(1, dx, wy, scale, sx*16, sy*16, 16, 16, a)
 				}
 				dx += W*scale
 			}
 		}
+		return dx-x
 	}
 
-	override fun printFont(x:Float, y:Float, str:String, color:COLOR, scale:Float, alpha:Float, rainbow:Int) =
+	/*override fun printFont(x:Float, y:Float, str:String, color:COLOR, scale:Float, alpha:Float, rainbow:Int) =
 		processTxt(x, y, str, color, scale, alpha, rainbow)
 		{i:Int, dx:Float, dy:Float, s:Float, sx:Int, sy:Int, sw:Int, sh:Int, a:Float ->
 			getImg(i).draw(dx, dy, dx+sw*s, dy+sh*s, sx, sy, sx+sw, sy+sh, alpha = a)
-		}
+		}*/
 
 }

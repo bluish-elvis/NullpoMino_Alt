@@ -935,7 +935,7 @@ class GrandPuzzle:AbstractMode() {
 				if(thisStageTotalPieceLockCount%gimmickXRay==0)
 					engine.itemXRayEnable = true
 				else if(engine.itemXRayEnable) {
-					engine.itemQueue.removeFirst()
+					engine.itemActive.removeFirst()
 					engine.resetFieldVisible()
 				}
 				// カラー
@@ -943,7 +943,7 @@ class GrandPuzzle:AbstractMode() {
 					if(thisStageTotalPieceLockCount%gimmickColor==0)
 						engine.itemColorEnable = true
 					else if(engine.itemColorEnable) {
-						engine.itemQueue.removeFirst()
+						engine.itemActive.removeFirst()
 						engine.resetFieldVisible()
 					}
 		}
@@ -1335,7 +1335,7 @@ class GrandPuzzle:AbstractMode() {
 		engine.statistics.writeProperty(prop, engine.playerID)
 		if(!owner.replayMode) {
 			owner.statsProp.setProperty("decoration", owner.stats.decoration)
-			owner.statsProp.save(owner.statsFile)
+			owner.statsProp.save(GameManager.statsFile)
 		}
 		// Update rankings
 		return (!owner.replayMode&&startStage==0&&trainingType==0&&startNextc==0&&mapSet<mapSetDefaults&&!always20g&&engine

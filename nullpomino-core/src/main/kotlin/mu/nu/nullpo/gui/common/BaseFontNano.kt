@@ -41,7 +41,7 @@ abstract class BaseFontNano:BaseFont {
 
 	abstract override val rainbowCount:Int
 	override fun processTxt(x:Float, y:Float, str:String, color:COLOR, scale:Float, alpha:Float, rainbow:Int,
-		draw:(i:Int, dx:Float, dy:Float, scale:Float, sx:Int, sy:Int, sw:Int, sh:Int, a:Float)->Unit) {
+		draw:(i:Int, dx:Float, dy:Float, scale:Float, sx:Int, sy:Int, sw:Int, sh:Int, a:Float)->Unit):Float {
 		var dx = x-2*scale
 		var dy = y
 
@@ -56,20 +56,22 @@ abstract class BaseFontNano:BaseFont {
 				val shift = /*if(stringChar==0x31) -1 else */0
 				val col = (if(color==COLOR.RAINBOW) COLOR.getRainbowColor(rainbow, i) else color).ordinal
 				val c = stringChar-32// Character output
-				val sx = (c%32)*W
-				val sy = (c/32+col*3)*H
+				val sx = c%32
+				val sy = c/32+col*3
 
-				draw(0, dx+shift*scale, dy, scale, sx, sy, W, H, alpha)
+				if(scale<=2f/3f) draw(0, dx+shift*scale, dy, scale*2, sx*6, sy*7, 6, 7, alpha)
+				else draw(1, dx+shift*scale, dy, scale, sx*12, sy*14, 12, 14, alpha)
 				dx += (W-2)*scale
 			}
 		}
+		return dx-x+2
 	}
 
-	override fun printFont(x:Float, y:Float, str:String, color:COLOR, scale:Float, alpha:Float, rainbow:Int) =
+	/*override fun printFont(x:Float, y:Float, str:String, color:COLOR, scale:Float, alpha:Float, rainbow:Int) =
 		processTxt(
 			x, y, str, color, scale, alpha, rainbow
 		) {i:Int, dx:Float, dy:Float, s:Float, sx:Int, sy:Int, w:Int, h:Int, a:Float ->
 			getImg(i).draw(dx, dy, dx+w*s, dy+h*s, sx, sy, sx+w, sy+h, alpha = a)
-		}
+		}*/
 
 }

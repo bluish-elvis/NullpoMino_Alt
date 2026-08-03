@@ -292,8 +292,10 @@ class RetroA:AbstractMode() {
 	}
 
 	/** This function will be called when hard-drop is used */
-	override fun afterHardDropFall(engine:GameEngine, fall:Int) {
-		scoreHD += fall
+	override fun afterHardDropFall(engine:GameEngine, fall:Int)  = (fall).let {
+		engine.statistics.scoreHD += it
+		scDisp += it
+		engine.receiver.addScore(engine, engine.nowPieceX+2, engine.nowPieceBottomY+2, 0, str = "+$it")
 	}
 
 	/** Renders game result screen */

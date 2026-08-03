@@ -1,5 +1,5 @@
 /*
- Copyright (c) 2022-2024, NullNoname
+ Copyright (c) 2010-2024, NullNoname
  All rights reserved.
 
  Converted to Kotlin and modified by Venom_Nhelv as bluish-elvis
@@ -28,38 +28,14 @@
  ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  POSSIBILITY OF SUCH DAMAGE.
  */
+package mu.nu.nullpo.gui.slick.img
 
-package mu.nu.nullpo.gui.common.fx
+import mu.nu.nullpo.gui.common.BaseFontNum
+import mu.nu.nullpo.gui.slick.NullpoMinoSlick
+import mu.nu.nullpo.gui.slick.ResourceHolder
 
-import mu.nu.nullpo.game.event.EventReceiver.COLOR
-import mu.nu.nullpo.gui.common.AbstractRenderer
-import mu.nu.nullpo.gui.common.BaseFont.FONT
-import mu.nu.nullpo.gui.common.BaseFontNano
-
-class PopupPoint(x:Int, y:Int, val pts:Int, val str:String, private val c:Int, private val big:Boolean = false)
-	:SpriteSheet(x, y) {
-	val color get() = if(c==COLOR.RAINBOW.ordinal) COLOR.getRainbowColor(ticks).ordinal else c
-	override var alpha
-		get() = minOf(1f, 2f-ticks/36f)
-		set(v) {}
-
-	override fun update(r:AbstractRenderer):Boolean {
-		if(dx<20) x += -(dx-20)*.1f
-		y += vel.y
-		vel.y = maxOf(-.75f, .5f-ticks*0.03f)
-		return ++ticks>=72||(pts==0&&str.isEmpty())
-	}
-
-	override fun draw(i:Int, r:AbstractRenderer) {
-		val (sPtr, col) =
-			if(pts>0) ("+${pts}" to if(ticks/2%2==0) COLOR.WHITE else COLOR.all[color]) else ("-${str}" to COLOR.RED)
-		if(pts!=0)r.drawFont(dx.toInt(), dy.toInt(), sPtr, FONT.NUM, col, if(big) 1.5f else 1f, alpha)
-		if(str.isNotEmpty())
-			r.drawFont(dx.toInt(), (dy-BaseFontNano.H).toInt(), str, FONT.NANO, col, if(big) 1f else .5f, alpha)
-	}
-
-	override val dx:Float get() = x-"$pts".length*FONT.NUM.w*if(big) 0.75f else 0.5f
-
-	//
-
+/** 普通の文字列の表示クラス */
+object FontNumWide:BaseFontNum.Wide() {
+	override val rainbowCount get() = NullpoMinoSlick.rainbow
+	override fun getImg(i:Int) = ResourceHolder.imgNum[3]
 }

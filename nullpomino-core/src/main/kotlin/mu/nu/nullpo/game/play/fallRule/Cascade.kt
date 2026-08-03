@@ -34,15 +34,19 @@ package mu.nu.nullpo.game.play.fallRule
 import mu.nu.nullpo.game.component.Block
 import mu.nu.nullpo.game.component.Field
 import mu.nu.nullpo.game.play.GameEngine
-import mu.nu.nullpo.game.play.fallRule.Cascade.connectedNeighbors
 
-data object Cascade:LineGravity {
+sealed class Cascade:LineGravity {
+	data object Connect:Cascade()
+	data object Color:Cascade()
+	data object All:Cascade()
 
-	private fun connectedNeighbors(x:Int, y:Int, b:Block):Sequence<Pair<Int, Int>> = sequence {
-		if(b.getAttribute(Block.ATTRIBUTE.CONNECT_UP)) yield(x to y-1)
-		if(b.getAttribute(Block.ATTRIBUTE.CONNECT_DOWN)) yield(x to y+1)
-		if(b.getAttribute(Block.ATTRIBUTE.CONNECT_LEFT)) yield(x-1 to y)
-		if(b.getAttribute(Block.ATTRIBUTE.CONNECT_RIGHT)) yield(x+1 to y)
+	private fun Field.connectedNeighbors(x:Int, y:Int, b:Block):Sequence<Pair<Int, Int>> = sequence {
+		val color=this@Cascade is Color
+		if(b.getAttribute(Block.ATTRIBUTE.CONNECT_UP)&&(!color||getBlock(x, y-1)?.color==b.color)) yield(x to y-1)
+		if(b.getAttribute(Block.ATTRIBUTE.CONNECT_DOWN)&&(!color||getBlock(x, y+1)?.color==b.color)) yield(x to y+1)
+		if(this@Cascade is All) return@sequence
+		if(b.getAttribute(Block.ATTRIBUTE.CONNECT_LEFT)&&(!color||getBlock(x-1, y)?.color==b.color)) yield(x-1 to y)
+		if(b.getAttribute(Block.ATTRIBUTE.CONNECT_RIGHT)&&(!color||getBlock(x+1, y)?.color==b.color)) yield(x+1 to y)
 	}
 
 	fun isCascadeTarget(b:Block) =

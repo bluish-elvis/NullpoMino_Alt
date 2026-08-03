@@ -33,5 +33,5 @@ package mu.nu.nullpo.gui.slick.img
 /** 普通の文字列の表示クラス */
 object FontNano:mu.nu.nullpo.gui.common.BaseFontNano() {
 	override val rainbowCount get() = mu.nu.nullpo.gui.slick.NullpoMinoSlick.rainbow
-	override fun getImg(i:Int) = mu.nu.nullpo.gui.slick.ResourceHolder.imgFontNano
+	override fun getImg(i:Int) = mu.nu.nullpo.gui.slick.ResourceHolder.imgFontNano.let{it[i%it.size]}
 }

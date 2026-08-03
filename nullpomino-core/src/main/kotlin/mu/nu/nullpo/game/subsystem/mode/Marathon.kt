@@ -211,7 +211,7 @@ class Marathon:NetDummyMode() {
 			?:tableBGMChange[goalType].maxBy {it.key}.value
 	/* Calculate score */
 	override fun calcScore(engine:GameEngine, ev:ScoreEvent):Int {
-		super.calcScore(engine, ev)
+		val pts = super.calcScore(engine, ev)
 		// BGM fade-out effects and BGM changes
 		if(engine.statistics.lines>=nextbgmLine(engine.statistics.lines)-1) owner.musMan.fadeSW = true
 		bgmLv(engine.statistics.lines).let {newBgm ->
@@ -238,7 +238,7 @@ class Marathon:NetDummyMode() {
 			setSpeed(engine)
 			engine.playSE("levelup")
 		}
-		return if(ev.lines>0) lastScore else 0
+		return pts
 	}
 
 	/* Soft drop */
@@ -248,9 +248,10 @@ class Marathon:NetDummyMode() {
 	}
 
 	/* Hard drop */
-	override fun afterHardDropFall(engine:GameEngine, fall:Int) {
-		engine.statistics.scoreHD += fall*2
-		scDisp += fall*2
+	override fun afterHardDropFall(engine:GameEngine, fall:Int) = (fall*2).let {
+		engine.statistics.scoreHD += it
+		scDisp += it
+		engine.receiver.addScore(engine, engine.nowPieceX+2, engine.nowPieceBottomY+2, 0, str = "+$it")
 	}
 
 	override fun onResult(engine:GameEngine):Boolean {

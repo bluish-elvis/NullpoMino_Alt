@@ -169,7 +169,7 @@ abstract class Avalanche1PDummyMode:AbstractMode() {
 
 	protected open fun readyInit(engine:GameEngine):Boolean {
 		engine.numColors = numColors
-		engine.lineGravityType = Cascade
+		engine.lineGravityType = Cascade.All
 		engine.cascadeDelay = if(cascadeSlow) 2 else 1
 		engine.displaySize = if(bigDisplay) 1 else 0
 

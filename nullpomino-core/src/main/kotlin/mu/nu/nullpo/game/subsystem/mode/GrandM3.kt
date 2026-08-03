@@ -585,15 +585,15 @@ class GrandM3:AbstractGrand() {
 			// level
 			receiver.drawScore(engine, 0, 9, "Level", BASE, headCol)
 
-			receiver.drawScore(engine, 1, 10, "%3d".format(maxOf(engine.statistics.level, 0)), NUM)
+			receiver.drawScore(engine, 1, 10, "%3d".format(maxOf(engine.statistics.level, 0)), NUM_W)
 			receiver.drawScoreSpeed(
 				engine, 0, 11, if(g20) 40 else floor(ln(engine.speed.gravity.toDouble())).toInt()*4, 4
 			)
 			if(coolCount>0) {
-				receiver.drawScore(engine, 4, 11, "+", BASE)
+				receiver.drawScore(engine, 4, 11, "+", NUM_W)
 				receiver.drawScore(engine, 5, 11, "%1d".format(coolCount), GRADE)
 			}
-			receiver.drawScore(engine, 1, 12, "%3d".format(nextSecLv), NUM)
+			receiver.drawScore(engine, 1, 12, "%3d".format(nextSecLv), NUM_W)
 
 			// Time
 			receiver.drawScore(engine, 0, 14, "Time", BASE, headCol)

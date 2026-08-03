@@ -683,17 +683,18 @@ abstract class AbstractRenderer:EventReceiver() {
 		val rX = x+cps
 		if(engine.isNextVisible&&engine.ruleOpt.nextDisplay>=1) {
 			val pid = engine.nextPieceCount
-			drawFont(x, y-fbs, "${engine.nextPieceArraySize}", NANO, ORANGE, .5f)
-			printFontSpecific(x, y-nextHeight-8, "${engine.statistics.randSeed}", NANO, WHITE, .5f, .5f)
+			drawFont(x, y-fbs+2, "${engine.nextPieceArraySize}", NANO, ORANGE, .5f)
+			printFontSpecific(x, y-40, "${engine.statistics.randSeed}", NANO, WHITE, .5f, .5f)
 			engine.getNextObject(pid)?.let {
 				//int x2 = x + 4 + ((-1 + (engine.field.getWidth() - piece.getWidth() + 1) / 2) * 16);
 				val x2 = x+engine.getSpawnPosX(it, engine.field)*fbs //Rules with spawn x modified were misaligned.
 				val y2 = y+engine.getSpawnPosY(it, engine.field)*fbs
 				val ym = y+engine.getSpawnMinPosY(it)*fbs
 				drawPieceOutline(x2, ym, it, fbs, .5f)
-				if(engine.ruleOpt.fieldCeiling||!engine.ruleOpt.pieceEnterAboveField)
+				if(engine.ruleOpt.fieldCeiling||!engine.ruleOpt.pieceEnterAboveField) {
 					drawPieceOutline(x2, y2, it, fbs, .5f)
-				drawPiece(x2, y2, it)
+					drawPiece(x2, y-fbs*3, it)
+				}else drawPiece(x2, y2, it)
 				if(showCenter) drawDia(
 					x2+(it.spinCX+.5f)*fbs, y2+(it.spinCY+.5f)*fbs, fbs*2/3, fbs*2/3,
 					engine.replayTimer/(14f-engine.speed.rank*10f), alpha = .75f,
@@ -701,42 +702,43 @@ abstract class AbstractRenderer:EventReceiver() {
 						if(getAttribute(ATTRIBUTE.BONE)) Block.COLOR.WHITE else color
 					}), outlineW = 2f
 				)
-				drawFont(cX-45, y-26, "%3d".format(pid), NANO, if(pid%7==0) YELLOW else WHITE, .75f)
 			}
+			drawFont(cX-40, y-fbs*3, "NEXT", NANO, getRainbowColor(pid), .75f)
+			drawFont(cX-54, y-fbs*2, "%04d".format(pid), NANO, if(pid%7==0) YELLOW else WHITE, .5f)
+
 			fun drawLatestItem(x:Number, y:Number) = engine.latestSpawnItem?.let {i ->
 				drawFont(x, y, "$i", NANO, getBlockColor(i.color), .75f)
 			}
 
-
 			if(engine.ruleOpt.nextDisplay>1) when(nextDisplayType) {
 				2 -> {
-					drawFont(rX, y-fbs/2, "NEXT", NANO, ORANGE, .75f)
-					drawLatestItem(rX, y-fbs/2+12)
+					drawFont(rX, y-fbs, "NEXT", NANO, ORANGE, .75f)
+					drawLatestItem(rX, y-fbs-12)
 					for(i in 0..<minOf(engine.ruleOpt.nextDisplay, 14)) {
 						engine.getNextObject(pid+i)?.let {
 							val centerX = ((4-it.width-1)*fbs)/2-it.minimumBlockX*fbs
 							val centerY = ((4-it.height-1)*fbs)/2-it.minimumBlockY*fbs
-							val pY = y+i*3*fbs
+							val pY = y+(i*3-1)*fbs
 							drawPiece(rX+centerX, pY+centerY, it, 1f)
 							(pid+i+1).let {n -> if(n%7==0) drawFont(rX, pY, "$n", NANO, YELLOW, .5f)}
 						}
 					}
 				}
 				1 -> {
-					drawFont(rX, y, "NEXT", NANO, ORANGE, .75f)
-					drawLatestItem(rX, y+12)
+					drawFont(rX, y-fbs, "NEXT", NANO, ORANGE, .75f)
+					drawLatestItem(rX, y-fbs-12)
 					for(i in 0..<minOf(engine.ruleOpt.nextDisplay, 14)) {
 						engine.getNextObject(pid+i)?.let {
 							val centerX = ((4-it.width-1)*fbs)/4-it.minimumBlockX*fbs/2
 							val centerY = ((4-it.height-1)*fbs)/4-it.minimumBlockY*fbs/2
-							val pY = y+i*2*fbs
+							val pY = y+(i*2-1)*fbs
 							drawPiece(rX+centerX, pY+centerY, it, .5f)
 							(pid+i+1).let {n -> if(n%7==0) drawFont(rX, pY, "$n", NANO, YELLOW, .5f)}
 						}
 					}
 				}
 				else -> {
-					drawFont(cX-16, y-nextHeight, "NEXT", NANO, ORANGE, .75f)
+					drawFont(cX+16, y-nextHeight, "Queue", NANO, ORANGE, .75f)
 					drawLatestItem(cX+45, y-nextHeight)
 					// NEXT1~4
 					for(i in (0..<minOf(3, engine.ruleOpt.nextDisplay-1)).reversed())
@@ -1114,7 +1116,7 @@ abstract class AbstractRenderer:EventReceiver() {
 	}
 
 	override fun addScore(x:Int, y:Int, pts:Int, color:COLOR, str:String, big:Boolean) {
-		if(pts!=0) efxFG.add(PopupPoint(x, y, pts, str, color.ordinal, big))
+		if(pts!=0||str.isNotEmpty())efxFG.add(PopupPoint(x, y, pts, str, color.ordinal, big))
 	}
 
 	override fun addCombo(x:Int, y:Int, pts:Int, type:PopupCombo.CHAIN, ex:Int) {

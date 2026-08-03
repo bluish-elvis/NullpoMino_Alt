@@ -527,49 +527,51 @@ class GameEngine(
 
 	/** Latest Item that came Next piece*/
 	var latestSpawnItem:Item? = null
-	var itemQueue:MutableList<Item> = mutableListOf(); private set
-	/** Item enable flag */
+	/** Enabled/Queued Item List */
+	var itemActive:MutableList<Item> = mutableListOf(); private set
+	/** Enabled head Item  */
 	var itemEnable:Item?
-		get() = itemQueue.firstOrNull()
+		get() = itemActive.firstOrNull()
 		set(value) {
-			if(value!=null) itemQueue.addFirst(value)
+			if(value!=null) itemActive.addFirst(value)
 		}
 	/** RollRoll (Auto rotation) enable flag */
 	var itemRollRollEnable
-		get() = itemEnable is Item.ROLL_ROLL
+		get() = itemActive.any {it is Item.ROLL_ROLL}
 		set(value) {
 			itemEnable = if(value) Item.ROLL_ROLL() else null
 		}
 	/** RollRoll (Auto rotation) interval */
 	var itemRollRollInterval
-		get() = (itemEnable as? Item.ROLL_ROLL)?.interval?:0
+		get() = (itemActive.firstOrNull {it is Item.ROLL_ROLL} as? Item.ROLL_ROLL)?.interval?:0
 		set(value) {
-			if(itemEnable is Item.ROLL_ROLL) (itemEnable as? Item.ROLL_ROLL)?.interval = value
+			(itemActive.firstOrNull {it is Item.ROLL_ROLL} as? Item.ROLL_ROLL)?.interval = value
 		}//; private set
 
 	/** X-RAY enable flag */
 	var itemXRayEnable
 		get() = itemEnable is Item.XRAY
 		set(value) {
-			itemEnable = if(value) Item.XRAY() else null
+			if(value) itemActive.addFirst(Item.XRAY()) else itemActive.removeIf {it is Item.XRAY}
 		}
 	/** X-RAY time counter */
 	private var itemXRayCount
-		get() = (itemEnable as? Item.XRAY)?.time?:0
+		get() = (itemActive.firstOrNull {it is Item.XRAY} as? Item.XRAY)?.time?:0
 		set(value) {
-			if(itemEnable is Item.XRAY) (itemEnable as? Item.XRAY)?.time = value
+			if(itemActive.firstOrNull {it is Item.XRAY} is Item.XRAY) (itemActive.firstOrNull {it is Item.XRAY} as? Item.XRAY)?.time =
+				value
 		}//; private set
 	/** Color-block enable flag */
 	var itemColorEnable
-		get() = itemEnable is Item.COLOR
+		get() = itemActive.any {it is Item.COLOR}
 		set(value) {
-			itemEnable = if(value) Item.COLOR() else null
+			if(value) itemActive.addFirst(Item.COLOR()) else itemActive.removeIf {it is Item.COLOR}
 		}
 	/** Color-block counter */
 	private var itemColorCount
-		get() = (itemEnable as? Item.COLOR)?.time?:0
+		get() = (itemActive.firstOrNull {it is Item.COLOR} as? Item.COLOR)?.time?:0
 		set(value) {
-			if(itemEnable is Item.COLOR) (itemEnable as? Item.COLOR)?.time = value
+			(itemActive.firstOrNull {it is Item.COLOR} as? Item.COLOR)?.time = value
 		}//; private set
 
 	/** Gameplay-interruptable item */
@@ -620,7 +622,7 @@ class GameEngine(
 		}
 	/** Reverse roles of up/down keys in-game */
 	var owReverseUpDown
-		get() = owTune.reverseUpDown xor itemQueue.any {it is Item.REV_CTRL_V}
+		get() = owTune.reverseUpDown xor itemActive.any {it is Item.REV_CTRL_V}
 		set(value) {
 			owTune.reverseUpDown = value
 		}
@@ -796,7 +798,7 @@ class GameEngine(
 	 * @return -1:左 0:なし 1:右
 	 */
 	val moveDirection
-		get() = (if(itemQueue.any {it is Item.REV_CTRL_H}) -1 else 1)*
+		get() = (if(itemActive.any {it is Item.REV_CTRL_H}) -1 else 1)*
 
 			if(ruleOpt.moveLeftAndRightAllow&&ctrl.isPress(Controller.BUTTON_LEFT)&&ctrl.isPress(Controller.BUTTON_RIGHT)) {
 				when {
@@ -840,7 +842,7 @@ class GameEngine(
 		speed.reset()
 		playerProp.reset()
 		gCount = 0
-		owner.recordProp.load(owner.recorder(ruleOpt.strRuleName))
+		owner.recordProp.load(GameManager.recorder(owner, ruleOpt.strRuleName))
 		replayData = ReplayData()
 
 		if(!owner.replayMode) {
@@ -1031,7 +1033,7 @@ class GameEngine(
 
 		allowTextRenderByReceiver = true
 
-		itemQueue.clear()
+		itemActive.clear()
 		itemRollRollInterval = 30
 
 		itemXRayCount = 0
@@ -1067,7 +1069,7 @@ class GameEngine(
 			else {
 				it.loadRanking(owner.recordProp)
 				it.ranking.forEachIndexed {i, r ->
-					r.load("${owner.recorder(ruleOpt.strRuleName)}${if(it.ranking.size>1) "_$i" else ""}.lb")
+					r.load("${GameManager.recorder(owner, ruleOpt.strRuleName)}${if(it.ranking.size>1) "_$i" else ""}.lb")
 				}
 				if(playerProp.isLoggedIn) it.loadRankingPlayer(playerProp)
 			}
@@ -1495,45 +1497,52 @@ class GameEngine(
 		fpf = 0
 		// 各ステータスの処理
 		if(!lagStop) {
-			val fs = stat
-			when(stat) {
-				is Status.SETTING -> statSetting()
-				is Status.PROFILE -> statProfile()
-				is Status.READY -> statReady()
-				is Status.MOVE -> {
-					dasRepeat = true
-					dasInstant = false
-					do {
-						statMove()
-						if(dasRepeat) stime++
-					} while(dasRepeat)
+			if(!itemActive.any {it is Item.FREEZE&&it.lifetime>0}) {
+				val fs = stat
+				when(stat) {
+					is Status.SETTING -> statSetting()
+					is Status.PROFILE -> statProfile()
+					is Status.READY -> statReady()
+					is Status.MOVE -> {
+						dasRepeat = true
+						dasInstant = false
+						do {
+							statMove()
+							if(dasRepeat) stime++
+						} while(dasRepeat)
+					}
+					is Status.LOCKFLASH -> statLockFlash()
+					is Status.LINECLEAR -> statLineClear()
+					is Status.ARE -> statARE()
+					is Status.ENDINGSTART -> statEndingStart()
+					is Status.CUSTOM -> statCustom()
+					is Status.EXCELLENT -> statExcellent()
+					is Status.GAMEOVER -> statGameOver()
+					is Status.RESULT -> statResult()
+					is Status.FIELDEDIT -> statFieldEdit()
+					is Status.INTERRUPTITEM -> statInterruptItem()
+					is Status.NOTHING -> {}
 				}
-				is Status.LOCKFLASH -> statLockFlash()
-				is Status.LINECLEAR -> statLineClear()
-				is Status.ARE -> statARE()
-				is Status.ENDINGSTART -> statEndingStart()
-				is Status.CUSTOM -> statCustom()
-				is Status.EXCELLENT -> statExcellent()
-				is Status.GAMEOVER -> statGameOver()
-				is Status.RESULT -> statResult()
-				is Status.FIELDEDIT -> statFieldEdit()
-				is Status.INTERRUPTITEM -> statInterruptItem()
-				is Status.NOTHING -> {}
+				if(stat==fs) {
+					if(stime>=0) stime++ else stime = 0
+				}
+				// fieldのBlock stateや統計情報を更新
+				fieldUpdate()
+				//if(ending==0||staffrollEnableStatistics) statistics.update()
 			}
-			if(stat==fs) {
-				if(stime>=0) stime++ else stime = 0
-			}
-			// fieldのBlock stateや統計情報を更新
-			fieldUpdate()
-			//if(ending==0||staffrollEnableStatistics) statistics.update()
-
-			if(intHanabi>0) intHanabi--
 			// 最後の処理
+			if(intHanabi>0) intHanabi--
 
 			owner.mode?.onLast(this)
 			receiver.onLast(this)
 			ai?.also {if(!owner.replayMode||owner.replayRerecord) it.onLast(this, playerID)}
 
+			itemActive.forEach {
+				if(it.type==Item.Companion.Type.DEBUFF) {
+					it.lifetime--
+					if(it.lifetime<=0) itemActive.remove(it)
+				}
+			}
 			// Timer増加
 			if(gameActive&&timerActive) statistics.time++
 			if(tempHanabi>0&&intHanabi<=0) {
@@ -1713,7 +1722,7 @@ class GameEngine(
 				}
 			}
 
-			owner.mode?.onReadyDone(this,readyDone)
+			owner.mode?.onReadyDone(this, readyDone)
 			if(!readyDone) {
 				//  button input状態リセット
 				ctrl.reset()
@@ -2317,8 +2326,7 @@ class GameEngine(
 						} else combo = -1
 
 						owner.mode?.calcScore(this, ev)?.let {sc ->
-							if(sc>0)
-								receiver.addScore(this, nowPieceX, nowPieceBottomY, sc, COLOR.fromPlayerID(playerID))
+							if(sc>0) receiver.addScore(this, nowPieceX, nowPieceBottomY, sc)
 						}
 					}
 
@@ -2338,7 +2346,7 @@ class GameEngine(
 								stopSE("danger")
 								if(ending==2&&staffrollNoDeath) stat = Status.NOTHING
 							}
-							(lineGravityType==Cascade)&&!connectBlocks -> {
+							(lineGravityType is Cascade)&&!connectBlocks -> {
 								stat = Status.LINECLEAR
 								stime = lineDelay
 								statLineClear()
@@ -2370,7 +2378,7 @@ class GameEngine(
 										b.data[b.direction].filter {(blk) -> blk.item!=null})
 								}
 								nowPieceObject = null
-								stat = Status.INTERRUPTITEM(Status.MOVE)
+								stat = Status.INTERRUPTITEM(Status.MOVE,interruptItem)
 							}
 							else -> {
 								// AREなし
@@ -2474,10 +2482,11 @@ class GameEngine(
 				// Blockを消す演出を出す (まだ実際には消えていない)
 				if(owner.mode?.blockBreak(this, it)!=true)
 					receiver.blockBreak(this, it)
-				it.flatMap {(y, r) -> r.mapNotNull {(x, b) -> b.item}}.distinct().let {i ->
+
+				it.flatMap {(_, r) -> r.mapNotNull {(_, b) -> b.item}}.distinct().let {i ->
 					if(i.isNotEmpty()) {
 						playSE("item_trigger")
-						itemQueue.addAll(i)
+						itemActive.addAll(i)
 						interruptItem = i.first()
 					}
 				}
@@ -2488,7 +2497,7 @@ class GameEngine(
 				owner.mode?.calcScore(this, ev)?.let {
 					if(it>0) {
 						receiver.addScore(this,
-							nowPieceX, check.linesYfolded.maxBy {i -> i.size}.average().toInt(), it)
+							nowPieceX, check.linesYfolded.maxBy {i -> i.size}.average(), it)
 					}
 				}
 				receiver.calcScore(this, ev)
@@ -2527,7 +2536,7 @@ class GameEngine(
 						// AREなし:中断効果のあるアイテム処理
 						nowPieceObject?.setDarkness(0f)
 						nowPieceObject = null
-						stat = Status.INTERRUPTITEM(Status.MOVE)
+						stat = Status.INTERRUPTITEM(Status.MOVE,interruptItem)
 						latestSpawnItem = null
 						field.filterBlocks {b, _, _ -> b.item==interruptItem}.forEach {(b, _, _) ->
 							b.item = null

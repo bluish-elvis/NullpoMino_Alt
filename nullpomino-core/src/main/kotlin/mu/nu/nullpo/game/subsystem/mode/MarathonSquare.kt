@@ -430,12 +430,12 @@ class MarathonSquare:AbstractMode() {
 		for(y in -1*hiddenHeight..<height)
 			engine.field.setLineFlag(y, false)
 		// Set cascade flag
-		engine.lineGravityType = Cascade
+		engine.lineGravityType = Cascade.Connect
 	}
 
 	/* When the lines clear ends */
 	override fun lineClearEnd(engine:GameEngine):Boolean {
-		if(engine.lineGravityType==Cascade&&engine.lineGravityTotalLines>0&&tntAvalanche) {
+		if(engine.lineGravityType==Cascade.Connect&&engine.lineGravityTotalLines>0&&tntAvalanche) {
 			val field = engine.field
 			for(i in field.allSpaceRows.toList().reversed())
 				if(field.isEmptyLine(i)) {

@@ -352,14 +352,14 @@ class GrandZ:AbstractGrand() {
 				receiver.drawScore(engine, 0, 5, engine.statistics.time.toTimeStr, NUM_T)
 			// Level
 			receiver.drawScore(engine, 0, 8, "Level", BASE, color)
-			receiver.drawScore(engine, 0, 9, "%3d".format(maxOf(engine.statistics.level, 0)), NUM)
+			receiver.drawScore(engine, 0, 9, "%3d".format(maxOf(engine.statistics.level, 0)), NUM_W)
 			receiver.drawScoreSpeed(
 				engine, 0, 10, if(gametype==1)
 					if(engine.statistics.level<600) engine.statistics.level/600f else 1-(engine.statistics.level-600)/400f
 				else engine.statistics.level/999f,
 				4f
 			)
-			receiver.drawScore(engine, 0, 11, "%3d".format(nextSecLv), NUM)
+			receiver.drawScore(engine, 0, 11, "%3d".format(nextSecLv), NUM_W)
 			// Lines
 			receiver.drawScore(
 				engine, 0, 13, if(gametype==1) "JOKERS" else "Lines", BASE,

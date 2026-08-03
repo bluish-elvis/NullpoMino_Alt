@@ -34,13 +34,14 @@ package mu.nu.nullpo.gui.common
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
 
 abstract class BaseFontGrade:BaseFont {
+
 	companion object {
 		const val WB = 64
 		const val WS = 32
 	}
 
 	override fun processTxt(x:Float, y:Float, str:String, color:COLOR, scale:Float, alpha:Float, rainbow:Int,
-		draw:(i:Int, dx:Float, dy:Float, scale:Float, sx:Int, sy:Int, sw:Int, sh:Int, a:Float)->Unit) =
+		draw:(i:Int, dx:Float, dy:Float, scale:Float, sx:Int, sy:Int, sw:Int, sh:Int, a:Float)->Unit):Float =
 		if(scale>=5f/3f) {
 			//processBigFont
 			var dx = x
@@ -94,6 +95,7 @@ abstract class BaseFontGrade:BaseFont {
 				} else (24*scale).toInt()
 				i++
 			}
+			dx-x
 		} else {
 //processMiniFont
 			var dx = x
@@ -134,13 +136,14 @@ abstract class BaseFontGrade:BaseFont {
 				}
 				i++
 			}
+			dx-x
 		}
 
-	override fun printFont(x:Float, y:Float, str:String, color:COLOR, scale:Float, alpha:Float, rainbow:Int) =
+	/*override fun printFont(x:Float, y:Float, str:String, color:COLOR, scale:Float, alpha:Float, rainbow:Int) =
 		processTxt(
 			x, y, str, color, scale, alpha, rainbow,
 		) {i:Int, dx:Float, dy:Float, s:Float, sx:Int, sy:Int, sw:Int, sh:Int, a:Float ->
 			getImg(i).draw(dx, dy, dx+sw*s, dy+sh*s, sx, sy, sx+sw, sy+sh, a)
-		}
+		}*/
 
 }

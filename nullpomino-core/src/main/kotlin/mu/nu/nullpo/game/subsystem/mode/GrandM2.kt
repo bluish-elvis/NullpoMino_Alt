@@ -363,9 +363,9 @@ class GrandM2:AbstractGrand() {
 
 			// level
 			receiver.drawScore(engine, 0, 9, "Level", BASE, if(g20&&mRollSTime&&mRollQuads) COLOR.CYAN else COLOR.BLUE)
-			receiver.drawScore(engine, 1, 10, "%3d".format(maxOf(engine.statistics.level, 0)), NUM, g20)
+			receiver.drawScore(engine, 1, 10, "%3d".format(maxOf(engine.statistics.level, 0)), NUM_W, g20)
 			receiver.drawScoreSpeed(engine, 0, 11, if(g20) 1f else engine.speed.rank, 4f)
-			receiver.drawScore(engine, 1, 12, "%3d".format(nextSecLv), NUM, g20)
+			receiver.drawScore(engine, 1, 12, "%3d".format(nextSecLv), NUM_W, g20)
 			val section = engine.statistics.level/100
 			// Time
 			receiver.drawScore(engine, 0, 14, "Time", BASE, if(g20&&mRollSTime) COLOR.CYAN else COLOR.BLUE)

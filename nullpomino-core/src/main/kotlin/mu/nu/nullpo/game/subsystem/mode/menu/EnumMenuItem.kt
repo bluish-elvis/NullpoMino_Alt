@@ -36,7 +36,7 @@ import mu.nu.nullpo.util.CustomProperties
 import kotlin.enums.EnumEntries
 
 class EnumMenuItem<T:Enum<T>>(name:String, displayName:String, color:EventReceiver.COLOR, default:T,
-	val all:EnumEntries<T>, compact:Boolean = false, perRule:Boolean = false)
+	val all:EnumEntries<T>, compact:Boolean = false, perRule:Boolean = false, val showStr:(T)->String = {"$it"})
 	:AbstractMenuItem<T>(name, displayName, color, default, compact, perRule) {
 	var ordinal = defaultValue.ordinal
 		get() = value.ordinal
@@ -46,7 +46,7 @@ class EnumMenuItem<T:Enum<T>>(name:String, displayName:String, color:EventReceiv
 		}
 
 	override val valueString:String
-		get() = "$value"
+		get() = showStr(value)
 
 	val min get() = all.indices.first
 	val max get() = all.indices.last

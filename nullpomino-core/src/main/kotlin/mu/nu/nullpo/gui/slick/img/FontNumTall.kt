@@ -30,13 +30,12 @@
  */
 package mu.nu.nullpo.gui.slick.img
 
-import mu.nu.nullpo.gui.common.BaseFontNumTall
+import mu.nu.nullpo.gui.common.BaseFontNum
 import mu.nu.nullpo.gui.slick.NullpoMinoSlick
 import mu.nu.nullpo.gui.slick.ResourceHolder
 
 /** 普通の文字列の表示クラス */
-object FontNumTall:BaseFontNumTall() {
+object FontNumTall:BaseFontNum.Tall() {
 	override val rainbowCount get() = NullpoMinoSlick.rainbow
-	override fun getImg(i:Int) = ResourceHolder.imgNumT
-
+	override fun getImg(i:Int) = ResourceHolder.imgNum[2]
 }

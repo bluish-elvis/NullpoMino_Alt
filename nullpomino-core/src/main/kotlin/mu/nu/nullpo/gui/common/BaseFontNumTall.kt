@@ -33,15 +33,19 @@ package mu.nu.nullpo.gui.common
 
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
 
-abstract class BaseFontNumTall:BaseFont {
+sealed class BaseFontNum(val lw:Int,val lh:Int):BaseFont {
+	abstract class Tall:BaseFontNum(TW,TH)
+	abstract class Wide:BaseFontNum(WW,WH)
 	companion object {
-		const val W:Int = 16
-		const val H:Int = 32
+		const val TW:Int = 16
+		const val TH:Int = 32
+		const val WW:Int = 16
+		const val WH:Int = 16
 	}
 
 	abstract override val rainbowCount:Int
 	override fun processTxt(x:Float, y:Float, str:String, color:COLOR, scale:Float, alpha:Float, rainbow:Int,
-		draw:(i:Int, dx:Float, dy:Float, scale:Float, sx:Int, sy:Int, sw:Int, sh:Int, a:Float)->Unit) {
+		draw:(i:Int, dx:Float, dy:Float, scale:Float, sx:Int, sy:Int, sw:Int, sh:Int, a:Float)->Unit):Float {
 		var dx = x
 		var dy = y
 		str.forEachIndexed {i, c ->
@@ -50,7 +54,7 @@ abstract class BaseFontNumTall:BaseFont {
 				when(it) {
 					0x0A -> {
 						// 改行 (\n)
-						dy += H*scale
+						dy += lh*scale
 						dx = x
 						0
 					}
@@ -69,17 +73,18 @@ abstract class BaseFontNumTall:BaseFont {
 				val sx = if(c.code==0x20) 0 else (stringChar-48)%16
 				val sy = (if(color==COLOR.RAINBOW) COLOR.getRainbowColor(rainbow, i) else color).ordinal
 				val a = if(c.code==0x20) alpha*.4f else alpha
-				draw(0, dx, dy, scale, sx*W, sy*H, W, H, a)
+				draw(0, dx, dy, scale, sx*lw, sy*lh, lw, lh, a)
 
-				dx += W*scale
+				dx += lw*scale
 			}
 		}
+		return dx-x
 	}
 
-	override fun printFont(x:Float, y:Float, str:String, color:COLOR, scale:Float, alpha:Float, rainbow:Int) =
+	/*override fun printFont(x:Float, y:Float, str:String, color:COLOR, scale:Float, alpha:Float, rainbow:Int) =
 		processTxt(x, y, str, color, scale, alpha, rainbow)
 		{i:Int, dx:Float, dy:Float, s:Float, sx:Int, sy:Int, w:Int, h:Int, a:Float ->
 			getImg(i).draw(dx, dy, dx+w*s, dy+h*s, sx, sy, sx+w, sy+h, alpha = a)
-		}
+		}*/
 
 }

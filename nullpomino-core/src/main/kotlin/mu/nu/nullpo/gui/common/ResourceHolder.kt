@@ -118,10 +118,9 @@ abstract class ResourceHolder {
 
 	/** Regular fonts */
 	internal open val imgFont:List<ResourceImage<*>> = listOf("_small", "", "_big").map {ResourceImageStr("font$it")}
-	internal open val imgFontNano:ResourceImage<*> = ResourceImageStr("font_nano")
+	internal open val imgFontNano:List<ResourceImage<*>> = listOf("", "_big").map {ResourceImageStr("font_nano$it")}
 	/** Number fonts */
-	internal open val imgNum:List<ResourceImage<*>> = listOf("small", "big", "tall").map {ResourceImageStr("number_$it")}
-	internal open val imgNumT:ResourceImage<*> = ResourceImageStr("number_tall")
+	internal open val imgNum:List<ResourceImage<*>> = listOf("small", "big", "tall", "wide").map {ResourceImageStr("number_$it")}
 	/** Grade fonts */
 	internal open val imgGrade:List<ResourceImage<*>> = listOf("small", "big").map {ResourceImageStr("grade_$it")}
 	/** Medal fonts */
@@ -157,7 +156,7 @@ abstract class ResourceHolder {
 	/**Item Spritesheets*/
 	internal open val imgItemAnims:List<ResourceImage<*>> =
 		listOf("mirr", "roll", "big", "xray", "col", "dark", "morph", "nega", "shot", "excg", "hard", "reve").map {
-			ResourceImageStr("effects/frag_$it")
+			ResourceImageStr("effects/item_$it")
 		}
 	/** Beam Spritesheets for lines clears [horizontal,vertical] */
 	internal open val imgLine:List<ResourceImage<*>> = listOf("h", "v").map {ResourceImageStr("effects/del_$it")}
@@ -217,7 +216,7 @@ abstract class ResourceHolder {
 
 		flattenList<ResourceImage<*>>(
 			listOf(
-				imgBadges, imgFont, imgFontNano, imgNum, imgNumT, imgGrade, imgFontMedal, imgCursor,
+				imgBadges, imgFont, imgFontNano, imgNum, imgGrade, imgFontMedal, imgCursor,
 				imgFrame, imgFrameOld, imgFieldBG, imgFieldBGO, imgLine, imgTitleBG, imgLogo, imgLogoSmall,
 				imgMenuBG/*, imgPlayBG, imgPlayBGA*/
 			)
@@ -261,7 +260,7 @@ abstract class ResourceHolder {
 		(0..2).flatMap {setOf("decide$it", "garbage$it", "erase$it", "eraseold$it", "firecracker$it","medal${it+1}")}+
 		(0..4).map {"grade$it"}+(0..5).map {"applause$it"}+
 		Piece.Shape.names.map {"piece_${it.lowercase()}"}+(1..4).map {"lines$it"}+
-		setOf("spawn", "trigger", "buff","laser_h", "laser_v", "laser_w","nuke").map {"item_$it"}+
+		setOf("spawn", "trigger", "buff","laser_h", "laser_v", "laser_w","nuke","shotgun").map {"item_$it"}+
 		(1..5).map {"countdown$it"}+setOf(5, 10).map {"timebonus_$it"}
 		).toSet()
 

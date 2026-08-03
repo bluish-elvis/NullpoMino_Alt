@@ -256,7 +256,7 @@ class MarathonExtreme:NetDummyMode() {
 		tableBGMChange.indexOfFirst {lines<it}.let {if(it<0) tableBGMChange.size else it}
 	/* Calculate score */
 	override fun calcScore(engine:GameEngine, ev:ScoreEvent):Int {
-		super.calcScore(engine, ev)
+		val pts=super.calcScore(engine, ev)
 		if(engine.ending==0) {
 			// BGM fade-out effects and BGM changes
 

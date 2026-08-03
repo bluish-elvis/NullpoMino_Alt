@@ -1583,13 +1583,12 @@ class Field {
 		return result
 	}
 
-	val delEvenRange get() = allPlacedRows.filter {it and 1==0}
+	val delEvenRange get() = allPlacedRows.filter {(it%2)==0}
 	fun delEven() {
 		for(y in delEvenRange) delLine(y)
 	}
 
 	val delLowerRange get() = height-(height-highestBlockY+1 shr 1)..<height
-
 	fun delLower() {
 //		for(i in 1..(height-highestBlockY+1 shr 1)) delLine(height-i)
 		for(y in delLowerRange) delLine(y)
@@ -1597,7 +1596,6 @@ class Field {
 
 	// I think this rounds up.
 	val delUpperRange get() = highestBlockY..<highestBlockY+((height-highestBlockY)/2)
-
 	fun delUpper() {
 //		for(y in 0..<(((height-highestBlockY)/2.0).roundToLong().toInt()))) delLine(highestBlockY+y)
 		for(y in delUpperRange) delLine(y)

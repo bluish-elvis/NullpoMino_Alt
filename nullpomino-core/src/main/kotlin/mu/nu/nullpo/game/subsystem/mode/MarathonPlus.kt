@@ -408,7 +408,7 @@ class MarathonPlus:NetDummyMode() {
 
 	/* Calculate score */
 	override fun calcScore(engine:GameEngine, ev:ScoreEvent):Int {
-		super.calcScore(engine, ev)
+		val pts = super.calcScore(engine, ev)
 		var lv = engine.statistics.level
 
 		// Bonus level
@@ -491,7 +491,7 @@ class MarathonPlus:NetDummyMode() {
 				}
 			}
 		}
-		return if(ev.lines>0) lastScore else 0
+		return pts
 	}
 
 	/* Soft drop */
@@ -501,9 +501,10 @@ class MarathonPlus:NetDummyMode() {
 	}
 
 	/* Hard drop */
-	override fun afterHardDropFall(engine:GameEngine, fall:Int) {
-		engine.statistics.scoreHD += fall*2
-		scDisp += fall*2
+	override fun afterHardDropFall(engine:GameEngine, fall:Int) = (fall*2).let {
+		engine.statistics.scoreHD += it
+		scDisp += it
+		engine.receiver.addScore(engine, engine.nowPieceX+2, engine.nowPieceBottomY+2, 0, str = "+$it")
 	}
 
 	/* Ending */

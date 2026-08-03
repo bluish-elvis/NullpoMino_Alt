@@ -183,6 +183,7 @@ abstract class AbstractMode:GameMode {
 
 	override fun modeInit(manager:GameManager) {
 		menuTime = 0
+		lastPow = 0
 		owner = manager
 	}
 
@@ -225,6 +226,7 @@ abstract class AbstractMode:GameMode {
 
 	override fun onReady(engine:GameEngine):Boolean {
 		menuTime = 0
+		lastPow = 0
 		return false
 	}
 
@@ -274,13 +276,17 @@ abstract class AbstractMode:GameMode {
 	fun calcScore(engine:GameEngine, lines:Int):Int =
 		calcScore(engine,
 			ScoreEvent(engine.nowPieceObject, lines, engine.b2bCount, engine.combo, engine.twistType, engine.split))
+
+
+	protected var lastPow:Int = 0; private set
+
 	/** Calculates lines-clear score
 	 * (This function will be called even if no lines are cleared)
 	 * @param engine GameEngine
 	 * @param ev Cleared Lines Data
 	 */
-	override fun calcScore(engine:GameEngine, ev:ScoreEvent):Int {
-		calcPower(engine, ev, true)
+	override fun calcScore(engine:GameEngine, ev:ScoreEvent):Int{
+		lastPow = calcPower(engine, ev, true)
 		val spd = maxOf(0, engine.lockDelay-engine.lockDelayNow)+if(engine.manualLock) 1 else 0
 		val pts = calcScoreBase(engine, ev)
 		val get = calcScoreCombo(pts, ev.combo, engine.statistics.level, spd)
@@ -288,15 +294,14 @@ abstract class AbstractMode:GameMode {
 		else engine.statistics.scoreBonus += get
 		scDisp += minOf(get, spd)
 		lastScore = get
-		return if(pts>0||gameIntensity==2) get else 0
+		return get
 	}
 
 	/** Time to display the most recent increase in score */
 	var scDisp = 0L//; private set
 
 	/** Most recent increase in score */
-	var lastScore = 0
-
+	protected var lastScore = 0
 	/** npmAlt style Scoring: base Point */
 	fun calcScoreBase(engine:GameEngine, ev:ScoreEvent):Int {
 		val ln = ev.lines
@@ -354,7 +359,7 @@ abstract class AbstractMode:GameMode {
 				renSum = get
 			}
 			renDel
-		} else 0
+		} else if(pts>0)pts+spd else 0
 
 	/**Tetris World Style Goal*/
 	fun calcPoint(engine:GameEngine, ev:ScoreEvent):Int = ev.lines.let {li ->
@@ -384,15 +389,17 @@ abstract class AbstractMode:GameMode {
 	/**VS Attack line bonuss based tetr.io garbage by osk, g3ner1c, emmachase
 	 * @param statC if true increase to statistics attacks
 	 * @return total,lines/twist,bonus*/
-	fun calcPower(engine:GameEngine, ev:ScoreEvent, statC:Boolean = false):Int = calcPower(engine, ev).also {(base, bonus) ->
-		if(statC) {
-			if(ev.twist) engine.statistics.attacksTwist += base
-			else engine.statistics.attacksLine += base
-			engine.statistics.attacksBonus += bonus
-		}
-	}.total*(1+(engine.itemEnable is Item.DOUBLE_RISE).toInt())
+	fun calcPower(engine:GameEngine, ev:ScoreEvent, statC:Boolean = false):Int =
+		calcPower(engine, ev).also {(base, bonus, total) ->
+			if(statC) {
+				if(ev.twist) engine.statistics.attacksTwist += base
+				else engine.statistics.attacksLine += base
+				engine.statistics.attacksBonus += bonus
+				lastPow = total
+			}
+		}.total*(1+(engine.itemActive.contains(Item.DOUBLE_RISE)).toInt())
 
-	fun calcPower(engine:GameEngine, ev:ScoreEvent):PowData {
+	private fun calcPower(engine:GameEngine, ev:ScoreEvent):PowData {
 		val lines = ev.lines
 		if(lines<=0) return PowData()
 		val base = when {
@@ -787,16 +794,16 @@ abstract class AbstractMode:GameMode {
 				}
 				Statistic.LEVEL -> {
 					receiver.drawMenu(engine, 0, y+1, "Level", BASE, color, scale)
-					receiver.drawMenu(engine, 5, y, "%03d".format(engine.statistics.level+1), NUM, scale*2)
+					receiver.drawMenu(engine, 5, y, "%03d".format(engine.statistics.level+1), NUM_W, scale*2)
 				}
 				Statistic.LEVEL_ADD_DISP -> {
 					receiver.drawMenu(engine, 0, y+1, "Level", BASE, color, scale)
 					receiver.drawMenu(engine, 5, y, "%03d".format(engine.statistics.level+engine.statistics.levelDispAdd),
-						NUM, scale*2)
+						NUM_W, scale*2)
 				}
 				Statistic.LEVEL_MANIA -> {
 					receiver.drawMenu(engine, 0, y+1, "Level", BASE, color, scale)
-					receiver.drawMenu(engine, 5, y, "%03d".format(engine.statistics.level), NUM, scale*2)
+					receiver.drawMenu(engine, 5, y, "%03d".format(engine.statistics.level), NUM_W, scale*2)
 				}
 				Statistic.LINES -> {
 					receiver.drawMenu(engine, 6, y, "Lines", BASE, color, scale*.8f)
@@ -929,6 +936,7 @@ abstract class AbstractMode:GameMode {
 	companion object {
 		data class PowData(val base:Int = 0, val bonus:Int = 0) {
 			val total = base+bonus
+			operator fun component3() = total
 		}
 
 		val log:Logger? = LogManager.getLogger()

@@ -37,6 +37,7 @@ import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.gui.common.BaseFont
 import mu.nu.nullpo.gui.common.BaseFont.FONT.BASE
 import mu.nu.nullpo.gui.common.BaseFont.FONT.NUM
+import mu.nu.nullpo.gui.common.BaseFontNumber.Companion.isNumFont
 import mu.nu.nullpo.util.CustomProperties
 import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger
@@ -91,16 +92,14 @@ abstract class AbstractMenuItem<T>(
 			if(focus==0) receiver.drawMenu(engine, 0, y, BaseFont.CURSOR, BASE, true)
 			receiver.drawMenu(
 				engine, label.length+2, y, valueString,
-				if(valueString.all {it.isDigit()}) NUM else BASE,
-				if(focus==0) COLOR.RAINBOW else COLOR.WHITE
+				if(valueString.isNumFont) NUM else BASE, if(focus==0) COLOR.RAINBOW else COLOR.WHITE
 			)
 		} else {
 			receiver.drawMenu(engine, 0, y, label, BASE, color = color)
 			if(focus==0) receiver.drawMenu(engine, 0, y+1, BaseFont.CURSOR, BASE, true)
 			receiver.drawMenu(
 				engine, 1, y+1, valueString,
-				if(valueString.all {it.isDigit()}) NUM else BASE,
-				if(focus==0) COLOR.RAINBOW else COLOR.WHITE
+				if(valueString.isNumFont) NUM else BASE, if(focus==0) COLOR.RAINBOW else COLOR.WHITE
 			)
 		}
 	}
