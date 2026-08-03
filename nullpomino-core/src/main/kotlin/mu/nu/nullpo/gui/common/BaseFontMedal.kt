@@ -33,7 +33,6 @@ package mu.nu.nullpo.gui.common
 
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
 import mu.nu.nullpo.game.event.EventReceiver.COLOR.*
-import mu.nu.nullpo.gui.slick.NullpoMinoSlick.Companion.rainbow
 
 abstract class BaseFontMedal:BaseFont {
 	companion object {
@@ -41,24 +40,29 @@ abstract class BaseFontMedal:BaseFont {
 		const val H = 24
 
 		const val SC = 1f*H/BaseFontNormal.H
-		/** paddingLeft */
-		const val PL = 5
+		/** paddingHorizontal */
+		const val PH = 5
 		/** paddingTop */
 		const val PT = 4
 		/** marginedBottom */
 		const val MB = H-PT
+		private fun col(color:COLOR, rainbow:Int) = when(color) {
+			GREEN -> 4; ORANGE -> 3
+			BLUE, CYAN, COBALT -> 2; RED, PINK -> 1
+			RAINBOW -> 1+rainbow.mod(4); else -> 0
+		}
 	}
 
 	protected fun processTxt(x:Float, y:Float, str:String, tier:Int, scale:Float,
-		draw:(x:Float, y:Float, dx:Float, dy:Float, sx:Int, sy:Int, sw:Int, sh:Int)->Unit) {
+		draw:(x:Float, y:Float, dx:Float, dy:Float, sx:Int, sy:Int, sw:Int, sh:Int)->Unit):Float {
 		val sy = if(tier<0) rainbowCount.mod(5)*H else maxOf(0, 4-tier)*H
 		val ww = str.length*9
 		val bx = x-(ww+10)/2f*(1-scale)
 		val by = y-H/2f*(1-scale)
 
-		draw(bx-PL*scale, by-PT*scale, bx, by+MB*scale, 0, sy, 4, sy+H)
-		draw(bx-scale, by-PT*scale, bx+(1+ww)*scale, by+MB*scale, 4, sy, 6, sy+H)
-		draw(bx+(1+ww)*scale, by-PT*scale, bx+(5+ww)*scale, by+MB*scale, 6, sy, 10, sy+H)
+		draw(bx-PH*scale, by-PT*scale, bx, by+MB*scale, 0, sy, 4, sy+H)
+		draw(bx-scale, by-PT*scale, bx+ww*scale, by+MB*scale, 4, sy, 6, sy+H)
+		draw(bx+ww*scale, by-PT*scale, bx+(PH+ww)*scale, by+MB*scale, 6, sy, 10, sy+H)
 		str.forEachIndexed {i, c ->
 			val stringChar = c.uppercaseChar().code-0x41
 			if(stringChar in 0x00..0x1B) {// Character output
@@ -67,6 +71,7 @@ abstract class BaseFontMedal:BaseFont {
 				draw(dx, by*scale, dx+9*scale, by+16*scale, sx, sy+4, sx+9, sy+20)
 			}
 		}
+		return (PH*2+1+ww)*scale
 	}
 	/** 文字列を描画
 	 * @param x X-coordinate
@@ -76,18 +81,27 @@ abstract class BaseFontMedal:BaseFont {
 	 * @param scale 拡大率
 	 */
 	fun printFont(x:Float, y:Float, str:String, tier:Int, scale:Float = 1f, alpha:Float = if(tier==0) 0.5f else 1f,
-		darkness:Float = 0f) =
+		darkness:Float = 0f):Float =
 		processTxt(x, y, str, tier, scale)
 		{dx:Float, dy:Float, w:Float, h:Float, sx:Int, sy:Int, sw:Int, sh:Int ->
-			getImg(0).draw(
-				dx, dy, w, h, sx, sy, sw, sh,
-				alpha, (1f-darkness).coerceIn(0f, 1f).let {brit -> Triple(brit, brit, brit)}
-			)
+			getImg(0).draw(dx, dy, w, h, sx, sy, sw, sh, alpha, (1f-darkness).coerceIn(0f, 1f)
+				.let {brit -> Triple(brit, brit, brit)})
 		}
 
+	fun printFontRightAlign(x:Float, y:Float, str:String, tier:Int, scale:Float = 1f, alpha:Float = if(tier==0) 0.5f else 1f,
+		darkness:Float = 0f):Float {
+		val dq = mutableListOf<(lx:Float)->Unit>()
+		return processTxt(x, y, str, tier, scale)
+		{dx:Float, dy:Float, w:Float, h:Float, sx:Int, sy:Int, sw:Int, sh:Int ->
+			dq.add {lx ->
+				getImg(0).draw(dx-lx, dy, w-lx, h, sx, sy, sw, sh, alpha, (1f-darkness).coerceIn(0f, 1f)
+					.let {brit -> Triple(brit, brit, brit)})
+			}
+		}.also {slideX -> dq.forEach {it(slideX)}}
+	}
+
 	fun printFont(x:Number, y:Number, str:String, tier:Int, scale:Float = 1f, alpha:Float = if(tier==0) 0.5f else 1f,
-		darkness:Float = 0f) =
-		printFont(x.toFloat(), y.toFloat(), str, tier, scale, alpha, darkness)
+		darkness:Float = 0f):Float = printFont(x.toFloat(), y.toFloat(), str, tier, scale, alpha, darkness)
 	/** 文字列を描画
 	 * @param x X-coordinate
 	 * @param y Y-coordinate
@@ -96,18 +110,10 @@ abstract class BaseFontMedal:BaseFont {
 	 * @param scale 拡大率
 	 */
 	fun printFontGrid(x:Number, y:Number, str:String, tier:Int = 0, scale:Float = 1f, alpha:Float = if(tier==0) 0.5f else 1f,
-		darkness:Float = 0f) = printFont(x.toFloat()*16, y.toFloat()*16, str, tier, scale, alpha, darkness)
+		darkness:Float = 0f):Float = printFont(x.toFloat()*16, y.toFloat()*16, str, tier, scale, alpha, darkness)
 
-	private fun col(color:COLOR) = when(color) {
-		GREEN -> 4; ORANGE -> 3
-		BLUE, CYAN, COBALT -> 2; RED, PINK -> 1
-		RAINBOW -> 1+rainbow.mod(4); else -> 0
-	}
-
-	override fun processTxt(x:Float, y:Float, str:String, color:COLOR, scale:Float, alpha:Float, rainbow:Int,
-		draw:(i:Int, dx:Float, dy:Float, scale:Float, sx:Int, sy:Int, sw:Int, sh:Int, a:Float)->Unit) =
-		printFont(x, y, str, col(color), scale, alpha)
 	//x:Float, y:Float, str:String, tier:Int, scale:Float,
+
 	/** Draws the string
 	 * @param x X-coordinate
 	 * @param y Y-coordinate
@@ -115,6 +121,10 @@ abstract class BaseFontMedal:BaseFont {
 	 * @param color Letter color
 	 * @param scale Enlargement factor
 	 */
-	override fun printFont(x:Float, y:Float, str:String, color:COLOR, scale:Float, alpha:Float, rainbow:Int) =
-		printFont(x, y, str, col(color), scale, alpha)
+	override fun printFont(x:Float, y:Float, str:String, color:COLOR, scale:Float, alpha:Float, rainbow:Int):Float =
+		printFont(x, y, str, col(color, rainbow), scale, alpha)
+
+	override fun printFontRightAlign(x:Float, y:Float, str:String, color:COLOR, scale:Float, alpha:Float,
+		rainbow:Int):Float =
+		printFontRightAlign(x, y, str, col(color, rainbow), scale, alpha)
 }

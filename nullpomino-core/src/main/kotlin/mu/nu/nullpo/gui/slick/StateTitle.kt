@@ -31,16 +31,20 @@
 package mu.nu.nullpo.gui.slick
 
 import mu.nu.nullpo.game.component.BGM
+import mu.nu.nullpo.game.component.Statistics
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
-import mu.nu.nullpo.game.play.GameManager
 import mu.nu.nullpo.game.play.GameManager.Companion.buildTypeString
+import mu.nu.nullpo.game.play.GameManager.Companion.statsFile
 import mu.nu.nullpo.game.play.GameManager.Companion.versionMajor
 import mu.nu.nullpo.game.play.GameManager.Companion.versionMinor
+import mu.nu.nullpo.game.play.GameManager.Companion.versionString
 import mu.nu.nullpo.gui.common.*
 import mu.nu.nullpo.gui.common.bg.tech.Blocks
 import mu.nu.nullpo.gui.net.UpdateChecker
 import mu.nu.nullpo.gui.slick.BaseMenuConfigState.Column
 import mu.nu.nullpo.gui.slick.img.*
+import mu.nu.nullpo.util.CustomProperties
+import mu.nu.nullpo.util.GeneralUtil.toTimeStr
 import org.apache.logging.log4j.LogManager
 import org.newdawn.slick.*
 import org.newdawn.slick.state.StateBasedGame
@@ -58,6 +62,9 @@ internal class StateTitle:BaseMenuChooseState() {
 	private var rollY = -480f
 	private val bg = Blocks()
 	private var rend:RendererSlick? = null
+
+	var stats = Statistics()
+	var statsProp = CustomProperties(statsFile)
 
 	init {
 		minChoiceY = 20-list.size*3/2
@@ -79,9 +86,10 @@ internal class StateTitle:BaseMenuChooseState() {
 		// Call GC
 		System.gc()
 		BaseStaffRoll.load()
+		statsProp.load(statsFile)?.let {p -> stats.readProperty(p)}
 		// Update title bar
 		if(container is AppGameContainer) {
-			container.setTitle("NullpoMino version${GameManager.versionString}")
+			container.setTitle("NullpoMino version${versionString}")
 			container.setUpdateOnlyWhenVisible(true)
 			rend = RendererSlick(container.graphics)
 		}
@@ -103,6 +111,7 @@ internal class StateTitle:BaseMenuChooseState() {
 		if(rollY>mY+150) rollY -= mY+480+150
 		bg.update()
 	}
+
 	private fun drawChoices(x:Int, y:Int = minChoiceY, choices:List<String>) {
 
 		FontNormal.printFontGrid(x-2, y+cursor*BaseFontMedal.SC-BaseFontMedal.PT/16f, BaseFont.CURSOR, COLOR.RAINBOW, 1.5f)
@@ -140,6 +149,16 @@ internal class StateTitle:BaseMenuChooseState() {
 		FontNano.printFont(250+testSine, 16, "$testSine")
 		FontNano.printFont(250+testCosi/10, 32, "$testCosi")
 		FontNano.printFont(500, 22, "${BaseStaffRoll.height}")
+
+		FontNano.printFont(4, 100, "total play time", COLOR.WHITE, 1f, .5f)
+		FontNumber.printFont(4, 114, stats.time.toTimeStr, COLOR.WHITE, 2f, .5f)
+		listOf("placed pieces" to stats.totalPieceLocked, "summary lines" to stats.lines, "summary attacks" to stats.attacks)
+			.reversed().forEachIndexed {i, (str, num) ->
+				FontNano.printFontRightAlign(640, 306-i*48, str, COLOR.WHITE, 1f, .5f)
+				FontNumber.printFontRightAlign(640, 320-i*48, "$num", COLOR.WHITE, 2f, .5f)
+			}
+		FontNano.printFontRightAlign(640, 434, "summary score", COLOR.WHITE, 1f, .5f)
+		FontNumber.printFontRightAlign(640, 448, "${stats.score}", COLOR.WHITE, 2f, .5f)
 		RenderStaffRoll.draw(500f-BaseStaffRoll.width, 0f, rollY, 480f, .8f)
 		super.renderImpl(container, game, g)
 

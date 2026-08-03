@@ -59,14 +59,9 @@ class GameManager(
 	val stats:Statistics = Statistics()
 	/** Properties used by statistics */
 	var statsProp = CustomProperties(statsFile)
-	val statsFile get() = "scores/stats"
 
 	/** Properties for Ranking/Records game mode */
-	var recordProp = CustomProperties(recorder()+".rec")
-
-	fun recorder(ruleName:String? = null):String =
-		"scores/"+(ruleName?.let {"$it/"}?:"")+(mode?.id?:"")
-	//fun recorder():String = "scores/${mode?.name ?: "mode"}.rec"
+	var recordProp = CustomProperties(recorder(this)+".rec")
 
 	/** Properties for replay file */
 	var replayProp = CustomProperties()
@@ -186,7 +181,7 @@ class GameManager(
 		/** Major version */
 		const val versionMajor = 7.7f
 		/** Minor version */
-		const val versionMinor = 2026.06f
+		const val versionMinor = 2026.08f
 		/** Development-build flag (false:Release-build true:Dev-build) */
 		const val isDevBuild = true
 		/** Get minor version (For compatibility with old replays)
@@ -205,6 +200,12 @@ class GameManager(
 		 * @param type Build type (false:Release true:Development)
 		 * @return Build type as String
 		 */
+
 		fun getBuildTypeString(type:Boolean) = if(type) "Development" else "Release"
+		//fun recorder():String = "scores/${mode?.name ?: "mode"}.rec"
+		fun recorder(gameManager:GameManager, ruleName:String? = null):String =
+			"scores/"+(ruleName?.let {"$it/"}?:"")+(gameManager.mode?.id?:"")
+
+		val statsFile get() = "scores/stats"
 	}
 }

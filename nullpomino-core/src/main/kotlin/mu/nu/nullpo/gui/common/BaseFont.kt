@@ -63,9 +63,10 @@ interface BaseFont {
 	}
 
 	val rainbowCount:Int
+
 	fun getImg(i:Int):ResourceImage<*>
 	fun processTxt(x:Float, y:Float, str:String, color:COLOR, scale:Float, alpha:Float, rainbow:Int,
-		draw:(i:Int, dx:Float, dy:Float, scale:Float, sx:Int, sy:Int, sw:Int, sh:Int, a:Float)->Unit)
+		draw:(i:Int, dx:Float, dy:Float, scale:Float, sx:Int, sy:Int, sw:Int, sh:Int, a:Float)->Unit):Float
 	/** Draws the string
 	 * @param x X-coordinate
 	 * @param y Y-coordinate
@@ -74,11 +75,29 @@ interface BaseFont {
 	 * @param scale Enlargement factor
 	 */
 	fun printFont(x:Float, y:Float, str:String, color:COLOR = COLOR.WHITE, scale:Float = 1f, alpha:Float = 1f,
-		rainbow:Int = rainbowCount)
+		rainbow:Int = rainbowCount):Float =
+		processTxt(
+			x, y, str, color, scale, alpha, rainbow,
+		) {i:Int, dx:Float, dy:Float, s:Float, sx:Int, sy:Int, sw:Int, sh:Int, a:Float ->
+			getImg(i).draw(dx, dy, dx+sw*s, dy+sh*s, sx, sy, sx+sw, sy+sh, a)
+		}
+
+	fun printFontRightAlign(x:Float, y:Float, str:String, color:COLOR = COLOR.WHITE, scale:Float = 1f, alpha:Float = 1f,
+		rainbow:Int = rainbowCount):Float {
+		val dq = mutableListOf<(lx:Float)->Unit>()
+		return processTxt(
+			x, y, str, color, scale, alpha, rainbow,
+		) {i:Int, dx:Float, dy:Float, s:Float, sx:Int, sy:Int, sw:Int, sh:Int, a:Float ->
+			dq.add {lx -> getImg(i).draw(dx-lx, dy, dx+sw*s-lx, dy+sh*s, sx, sy, sx+sw, sy+sh, a)}
+		}.also {slideX -> dq.forEach {it(slideX)}}
+	}
 
 	fun printFont(x:Number, y:Number, str:String, color:COLOR = COLOR.WHITE, scale:Float = 1f, alpha:Float = 1f,
-		rainbow:Int = rainbowCount) =
-		printFont(x.toFloat(), y.toFloat(), str, color, scale, alpha, rainbow)
+		rainbow:Int = rainbowCount):Float = printFont(x.toFloat(), y.toFloat(), str, color, scale, alpha, rainbow)
+
+	fun printFontRightAlign(x:Number, y:Number, str:String, color:COLOR = COLOR.WHITE, scale:Float = 1f, alpha:Float = 1f,
+		rainbow:Int = rainbowCount):Float = printFontRightAlign(x.toFloat(), y.toFloat(), str, color, scale, alpha, rainbow)
+
 	/** flagThefalseIf it&#39;s the casefontColorTrue color, trueIf it&#39;s the
 	 * casefontColorTrue colorDraws the string in
 	 * @param x X-coordinate
@@ -91,7 +110,7 @@ interface BaseFont {
 	 */
 	fun printFont(x:Number, y:Number, str:String, flag:Boolean, fontColorFalse:COLOR = COLOR.WHITE,
 		fontColorTrue:COLOR = COLOR.RAINBOW, scale:Float = 1f, alpha:Float = 1f,
-		rainbow:Int = rainbowCount) =
+		rainbow:Int = rainbowCount):Float =
 		printFont(x, y, str, if(flag) fontColorTrue else fontColorFalse, scale, alpha, rainbow)
 	/** Draws the string (16x16Grid units)
 	 * @param fontX X-coordinate
@@ -100,7 +119,7 @@ interface BaseFont {
 	 * @param fontColor Letter color
 	 */
 	fun printFontGrid(fontX:Number, fontY:Number, fontStr:String, fontColor:COLOR = COLOR.WHITE, scale:Float = 1f,
-		alpha:Float = 1f, rainbow:Int = rainbowCount) =
+		alpha:Float = 1f, rainbow:Int = rainbowCount):Float =
 		printFont(fontX.toFloat()*16, fontY.toFloat()*16, fontStr, fontColor, scale, alpha, rainbow)
 	/** flagThefalseIf it&#39;s the casefontColorTrue color, trueIf it&#39;s the
 	 * casefontColorTrue colorDraws the string in (16x16Grid units)
@@ -113,7 +132,10 @@ interface BaseFont {
 	 */
 	fun printFontGrid(fontX:Number, fontY:Number, fontStr:String, flag:Boolean,
 		fontColorFalse:COLOR = COLOR.WHITE, fontColorTrue:COLOR = COLOR.RAINBOW, scale:Float = 1f,
-		alpha:Float = 1f, rainbow:Int = rainbowCount) =
+		alpha:Float = 1f, rainbow:Int = rainbowCount):Float =
 		printFont(fontX.toFloat()*16, fontY.toFloat()*16, fontStr, flag, fontColorFalse, fontColorTrue, scale, alpha, rainbow)
+
+	fun getWidth(str:String, scale:Float = 1f):Float =
+		processTxt(0f, 0f, str, COLOR.WHITE, scale, 0f, 0) {_, _, _, _, _, _, _, _, _ ->}
 
 }

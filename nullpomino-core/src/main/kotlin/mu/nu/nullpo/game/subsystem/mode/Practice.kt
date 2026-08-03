@@ -381,9 +381,9 @@ class Practice:AbstractGrand() {
 						eraseStyle = rangeCursor(eraseStyle+change, 0, BLOCK_ERASE_TYPE_STRING.size-1)
 						if(eraseStyle!=0&&cascadeStyle==0) cascadeStyle = 1
 					}
-					48 -> itemFilter = rangeCursor(cascadeStyle+change, 0, ItemFilters.entries.size-1)
+					48 -> itemFilter = rangeCursor(itemFilter+change, 0, ItemFilters.entries.size-1)
 					49 -> {
-						itemFreq = rangeCursor(eraseStyle+change, 0, 20)
+						itemFreq = rangeCursor(itemFreq+change, 0, 20)
 					}
 				}
 			}
@@ -620,6 +620,11 @@ class Practice:AbstractGrand() {
 			if(eraseStyle==2) engine.clearMode = LineSpark
 		}
 
+		if(itemFreq>0){
+			engine.nextPieceArrayObject.forEachIndexed { i, it ->
+				if(i%itemFreq==0)it.setItem(Item.entries.filter(ItemFilters.entries[itemFilter].filter).random(engine.random))
+			}
+		}
 	}
 
 	/* ReadyAt the time ofCalled at initialization (Start gameJust before) */
@@ -671,11 +676,6 @@ class Practice:AbstractGrand() {
 		engine.meterColor = GameEngine.METER_COLOR_GREEN
 		setMeter(engine)
 
-		if(itemFreq>0){
-			engine.nextPieceArrayObject.forEachIndexed { i, it ->
-				if(i%itemFreq==0)it.setItem(Item.entries.filter(ItemFilters.entries[itemFilter].filter).random(engine.random))
-			}
-		}
 	}
 
 	/** Set Hebo Hidden params
@@ -855,7 +855,7 @@ class Practice:AbstractGrand() {
 	/* Processing on the move */
 	override fun onMove(engine:GameEngine):Boolean {
 		// Occurrence new piece
-		val ret = if(leveltype==LEVELTYPE_MANIA||leveltype==LEVELTYPE_MANIAPLUS) super.onMove(engine) else false
+		val ret = (leveltype==LEVELTYPE_MANIA||leveltype==LEVELTYPE_MANIAPLUS)&&super.onMove(engine)
 
 		// EndingStart
 		if(engine.ending==2&&!rollStarted) {
@@ -1088,7 +1088,7 @@ class Practice:AbstractGrand() {
 
 		enum class ItemFilters(val filter:(it:Item)->Boolean) {
 			None({false}), Offence({it.type==Type.DIRECT||it.type==Type.INTERRUPT}),
-			Defence({it.type==Type.SELF}),
+			Defence({it.type==Type.SELF}),Maso({it.type==Type.BACKFIRE}),All({true})
 		}
 		/** LevelThe display name of the type */
 		private val LEVELTYPE_STRING = listOf("none", "10Lines", "Points", "Mania", "Mania+")

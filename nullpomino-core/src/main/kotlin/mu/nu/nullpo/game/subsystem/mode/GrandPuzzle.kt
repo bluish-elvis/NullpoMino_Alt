@@ -1335,7 +1335,7 @@ class GrandPuzzle:AbstractMode() {
 		engine.statistics.writeProperty(prop, engine.playerID)
 		if(!owner.replayMode) {
 			owner.statsProp.setProperty("decoration", owner.stats.decoration)
-			owner.statsProp.save(owner.statsFile)
+			owner.statsProp.save(GameManager.statsFile)
 		}
 		// Update rankings
 		return (!owner.replayMode&&startStage==0&&trainingType==0&&startNextc==0&&mapSet<mapSetDefaults&&!always20g&&engine

@@ -36,6 +36,7 @@ import mu.nu.nullpo.game.component.Piece.Companion.createQueueFromIntStr
 import mu.nu.nullpo.game.event.*
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
 import mu.nu.nullpo.game.play.GameEngine
+import mu.nu.nullpo.game.subsystem.mode.RetroS.Companion.HazardType.*
 import mu.nu.nullpo.game.subsystem.mode.menu.*
 import mu.nu.nullpo.gui.common.BaseFont.FONT.*
 import mu.nu.nullpo.util.CustomProperties
@@ -67,7 +68,7 @@ class RetroS:AbstractMode() {
 	private var powerOn:Boolean by DelegateMenuItem(itemPower)
 
 	/** せり上がりパターンの種類 (0=RANDOM 1=BLOXEED 2=TA SHIRASE) */
-	private val itemGarbage = EnumMenuItem("garbageType", "GARBAGE", COLOR.BLUE, HazardType.NONE, HazardType.entries)
+	private val itemGarbage = EnumMenuItem("garbageType", "GARBAGE", COLOR.BLUE, NONE, HazardType.entries)
 	/** Selected game type */
 	private var hazardType:HazardType by DelegateMenuItem(itemGarbage)
 
@@ -178,7 +179,13 @@ class RetroS:AbstractMode() {
 	override fun onSettingChanged(engine:GameEngine) {
 		owner.bgMan.bg = startLevel/2
 		engine.big = big
-		if(hazardType!=HazardType.NONE) garbageCount = 13-startLevel
+		engine.owSkin = when(hazardType) {
+			NONE -> 29
+			RANDOM -> 42
+			PATTERN -> 31
+			COPY -> 30
+		}
+		if(hazardType!=NONE) garbageCount = 13-startLevel
 		super.onSettingChanged(engine)
 	}
 
@@ -203,7 +210,7 @@ class RetroS:AbstractMode() {
 				nextDisplay = 1
 			}
 			if(powerOn) engine.nextPieceArrayID = createQueueFromIntStr(STRING_POWERON_PATTERN)
-			if(hazardType==HazardType.RANDOM) garbagePos =
+			if(hazardType==RANDOM) garbagePos =
 				engine.random.nextInt(if(big) engine.field.width/2 else engine.field.width)
 		}
 
@@ -290,7 +297,7 @@ class RetroS:AbstractMode() {
 			li>=4 -> 2000 // Quadruple
 			else -> 0
 		}*if(engine.field.isEmpty) 10 else 1  // Perfect clear bonus
-		if(li==0&&hazardType!=HazardType.NONE) {
+		if(li==0&&hazardType!=NONE) {
 			// せり上がり
 			garbageCount--
 
@@ -302,7 +309,7 @@ class RetroS:AbstractMode() {
 				val h = field.height
 				if(big) {
 					when(hazardType) {
-						HazardType.RANDOM -> {
+						RANDOM -> {
 							field.pushUp(2)
 							for(x in 0..<w/2)
 								if(x!=garbagePos)
@@ -316,7 +323,7 @@ class RetroS:AbstractMode() {
 							//int prevHole=garbagePos;do
 							garbagePos = engine.random.nextInt(w/2)
 						}
-						HazardType.PATTERN -> {
+						PATTERN -> {
 							field.pushUp(2)
 							for(i in field.width/2-1 downTo 0) tableGarbagePatternBig[garbagePos].let {
 								if((it.first shr i) and 1!=0)
@@ -350,7 +357,7 @@ class RetroS:AbstractMode() {
 								}
 				} else {
 					when(hazardType) {
-						HazardType.RANDOM -> {
+						RANDOM -> {
 							field.pushUp()
 							for(x in 0..<w)
 								if(x!=garbagePos)
@@ -370,7 +377,7 @@ class RetroS:AbstractMode() {
 							//int prevHole=garbagePos;do
 							garbagePos = engine.random.nextInt(w)
 						}
-						HazardType.PATTERN -> {
+						PATTERN -> {
 							field.pushUp()
 							for(i in field.width-1 downTo 0)
 								tableGarbagePattern[garbagePos].let {

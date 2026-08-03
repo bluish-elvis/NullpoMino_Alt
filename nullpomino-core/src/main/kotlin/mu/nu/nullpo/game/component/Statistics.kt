@@ -395,11 +395,14 @@ class Statistics {
 	}
 
 	/** 他のStatisticsの値を合成
-	 * 全モードの累計に使用するため、モードによって基準が異なるScoreは除外
 	 * @param s Copy source
 	 */
 	fun combine(s:Statistics?) {
 		s?.let {b ->
+			scoreHD += b.scoreHD
+			scoreSD += b.scoreSD
+			scoreBonus += b.scoreBonus
+			scoreLine += b.scoreLine
 			lines += b.lines
 			attacksLine += b.attacksLine
 			attacksTwist += b.attacksTwist

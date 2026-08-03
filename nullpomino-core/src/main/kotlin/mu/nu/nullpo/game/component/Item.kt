@@ -98,27 +98,27 @@ sealed class Item(val id:Int, val showName:String? = null,
 		}
 	}
 	/** Opponent's field becomes barely visible for 3 seconds */
-	class XRAY:Item(3, "X-RAY", 4) {
+	class XRAY:Item(3, "X-RAY", 4,true) {
 		var time = 0
 	}
 
-	class COLOR:Item(4, "Color Illumination", 3) {
+	class COLOR:Item(4, "Color Illumination", 3,true) {
 		var time = 0
 	}
 	/** disable opponent's spinning piece */
-	data object LOCK_SPIN:Item(5, "LOCK SPIN SHOCK")
-	data object HIDE_NEXT:Item(6, "HIDDEN QUEUE")
+	data object LOCK_SPIN:Item(5, "LOCK SPIN SHOCK", 3)
+	data object HIDE_NEXT:Item(6, "HIDDEN QUEUE",7)
 	/** Changes opponent's lockDelay to 0 */
-	data object MAGNET:Item(7, "MAGNA LOCK")
+	data object MAGNET:Item(7, "MAGNA LOCK",5)
 	/** Freezes opponent's play for 3 seconds */
-	data object FREEZE:Item(8, "CHRONOS FREEZE") {
+	data object FREEZE:Item(8, "CHRONOS FREEZE", 3, true, Type.DIRECT) {
 		override fun statInterrupt(e:GameEngine):Boolean = e.stime<200
 		// 終了
 	}
 	/** Unable opponents HoldSwap Slots */
 	data object LOCK_HOLD:Item(9, "LOCK SWAP ZONE", 6, false, Type.DIRECT)
 	/** Flip opponents control horizontally  */
-	data object REV_CTRL_H:Item(10, "Horiz. REV.CTRL", duration = 4, true, Type.DIRECT)
+	data object REV_CTRL_H:Item(10, "Horiz. REV.CTRL", 4, true, Type.DIRECT)
 	/** Increase Oopponents Speed to 20G for 7 seconds */
 	data object SPEED:Item(11, "BOOST FIRE", 7, true, Type.DIRECT)
 	/**  piece becomes I shape and hard drops for 10 seconds */
@@ -126,7 +126,7 @@ sealed class Item(val id:Int, val showName:String? = null,
 	data object REV_CTRL_V:Item(13, "FLIP 180 Vertical", 4, true, Type.DIRECT)
 	data object REMOTE:Item(14, "REMOTE CONTROL", 1)
 	/** Opponent's field becomes totally invisible for 3 seconds */
-	data object DARK:Item(15, "INVISIBLE FIELD")
+	data object DARK:Item(15, "INVISIBLE FIELD",7,true)
 	/** Erase upper half of owner's field*/
 	data object DEL_TOP:Item(16, "ERASE Top HALF") {
 		override fun statInterrupt(e:GameEngine):Boolean {
@@ -169,7 +169,7 @@ sealed class Item(val id:Int, val showName:String? = null,
 		}
 	}
 
-	data object TRANSFORM:Item(19, "Piece TRANSFORM", 1)
+	data object TRANSFORM:Item(19, "Piece TRANSFORM", 3)
 	/** Fires a laser vertically that erases blocks in the opponent's field. */
 	data object LASER:Item(20, "Satellite LASER", 0) {
 		override fun statInterrupt(e:GameEngine):Boolean {
@@ -194,7 +194,7 @@ sealed class Item(val id:Int, val showName:String? = null,
 		}
 	}
 	/** Swap the field with opponent's one. */
-	class EXCHANGE:Item(23, "SWAP Field", color = BCOLOR.PURPLE) {
+	class EXCHANGE:Item(23, "SWAP Field",type=Type.BACKFIRE, color = BCOLOR.PURPLE) {
 		private var opp = 0
 		private var tempField:Field = Field()
 		override fun statInterrupt(e:GameEngine):Boolean {
@@ -223,7 +223,7 @@ sealed class Item(val id:Int, val showName:String? = null,
 		}
 	}
 	/** Opponent's next piece will remain when once lines-cleared with it, and it leaves whole spaces that lines. */
-	data object HARD_MINO:Item(24) {
+	data object HARD_MINO:Item(24,"HARD_MINO",0) {
 		override fun statInterrupt(e:GameEngine):Boolean {
 			if(e.stime==15) {
 				e.getNextObject(e.nextPieceCount)?.setHard(1)
@@ -233,7 +233,7 @@ sealed class Item(val id:Int, val showName:String? = null,
 		}
 	}
 
-	data object SHUFFLE:Item(25)
+	data object SHUFFLE:Item(25,"SHUFFLER",0)
 	/**
 	 * */
 	data object RANDOM:Item(26, "RANDOMIZER", color = BCOLOR.RAINBOW)
@@ -276,7 +276,7 @@ sealed class Item(val id:Int, val showName:String? = null,
 		}
 	}
 	/** Flip the opponent's field vertically( and random horizontally). */
-	class FLIP_180:Item(30, "FLIP 180") {
+	class FLIP_180:Item(30, "FLIP 180",0) {
 		private var tempField:Field = Field()
 		override fun statInterrupt(e:GameEngine):Boolean {
 			if(e.stime==0) {
@@ -314,9 +314,9 @@ sealed class Item(val id:Int, val showName:String? = null,
 		}
 	}
 
-	data object MISS:Item(35, "Miss", 20, false, Type.SELF, color = BCOLOR.WHITE)
-	data object COPY_FIELD:Item(36, "Field DUPLICATE", color = BCOLOR.PURPLE)
-	data object FAKE_NEXT:Item(37, "??!?")
+	data object MISS:Item(35, "Miss", 10, false, Type.BACKFIRE, color = BCOLOR.WHITE)
+	data object COPY_FIELD:Item(36, "Field DUPLICATE", type = Type.BACKFIRE, color = BCOLOR.PURPLE)
+	data object FAKE_NEXT:Item(37, "??!?",7)
 	/** All blocks in opponent's field change temporally to bone block that can't be seen their colors.
 	 * When next piece */
 	data object BONE_BLOCK:Item(38, "[]CUI BONE",16)
@@ -325,7 +325,7 @@ sealed class Item(val id:Int, val showName:String? = null,
 
 	companion object {
 		enum class Type {
-			INTERRUPT, DIRECT, SELF
+			INTERRUPT, DIRECT, SELF, BACKFIRE
 		}
 		//operator fun get(index: Int): BGM = if(this._idx)
 		val entries:List<Item>

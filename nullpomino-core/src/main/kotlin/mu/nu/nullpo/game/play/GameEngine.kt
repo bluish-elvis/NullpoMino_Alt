@@ -840,7 +840,7 @@ class GameEngine(
 		speed.reset()
 		playerProp.reset()
 		gCount = 0
-		owner.recordProp.load(owner.recorder(ruleOpt.strRuleName))
+		owner.recordProp.load(GameManager.recorder(owner, ruleOpt.strRuleName))
 		replayData = ReplayData()
 
 		if(!owner.replayMode) {
@@ -1067,7 +1067,7 @@ class GameEngine(
 			else {
 				it.loadRanking(owner.recordProp)
 				it.ranking.forEachIndexed {i, r ->
-					r.load("${owner.recorder(ruleOpt.strRuleName)}${if(it.ranking.size>1) "_$i" else ""}.lb")
+					r.load("${GameManager.recorder(owner, ruleOpt.strRuleName)}${if(it.ranking.size>1) "_$i" else ""}.lb")
 				}
 				if(playerProp.isLoggedIn) it.loadRankingPlayer(playerProp)
 			}
@@ -1713,7 +1713,7 @@ class GameEngine(
 				}
 			}
 
-			owner.mode?.onReadyDone(this,readyDone)
+			owner.mode?.onReadyDone(this, readyDone)
 			if(!readyDone) {
 				//  button input状態リセット
 				ctrl.reset()
