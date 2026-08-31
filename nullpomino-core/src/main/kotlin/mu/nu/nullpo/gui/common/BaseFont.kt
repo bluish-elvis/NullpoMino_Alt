@@ -57,40 +57,73 @@ interface BaseFont {
 	}
 	/** Font constants */
 	enum class FONT(val w:Int, val h:Int = 16) {
-		BASE(BaseFontNormal.W), NANO(BaseFontNano.W, BaseFontNano.H),
-		NUM(BaseFontNumber.W), NUM_T(BaseFontNum.TW, BaseFontNum.TH),NUM_W(BaseFontNum.WW, BaseFontNum.WH),
-		GRADE(BaseFontGrade.WS), GRADE_BIG(BaseFontGrade.WB), MEDAL(BaseFontMedal.W), TTF(BaseFontTTF.FONT_SIZE);
+		BASE(BaseFontNormal.W) {
+			override fun getWidth(str:String, scale:Float):Float = BaseFontNormal.calcWidths(str, scale).maxOrNull()?:0f
+		},
+		NANO(BaseFontNano.W, BaseFontNano.H) {
+			override fun getWidth(str:String, scale:Float):Float = BaseFontNano.calcWidths(str, scale).maxOrNull()?:0f
+		},
+		NUM(BaseFontNumber.W) {
+			override fun getWidth(str:String, scale:Float):Float =
+				str.lines().maxOfOrNull{BaseFontNumber.strCount(it)*BaseFontNumber.W*scale}?:0f
+		},
+		NUM_T(BaseFontNum.TW, BaseFontNum.TH) {
+			override fun getWidth(str:String, scale:Float):Float =
+				str.lines().maxOfOrNull{BaseFontNumber.strCount(it)*BaseFontNum.TW*scale}?:0f
+		},
+		NUM_W(BaseFontNum.WW, BaseFontNum.WH) {
+			override fun getWidth(str:String, scale:Float):Float =
+				str.lines().maxOfOrNull{BaseFontNumber.strCount(it)*BaseFontNum.WW*scale}?:0f
+		},
+		GRADE(BaseFontGrade.WS){
+			override fun getWidth(str:String, scale:Float):Float = BaseFontGrade.calcWidth(str, false)*scale
+		}, GRADE_BIG(BaseFontGrade.WB){
+			override fun getWidth(str:String, scale:Float):Float = BaseFontGrade.calcWidth(str, true)*scale
+		}, MEDAL(BaseFontMedal.W){
+			override fun getWidth(str:String, scale:Float):Float = BaseFontMedal.calcWidth(str)*scale
+		}, TTF(BaseFontTTF.FONT_SIZE);
+
+		open fun getWidth(str:String, scale:Float = 1f):Float = str.lines().maxOfOrNull {it.length*w*scale}?:0f
 	}
 
 	val rainbowCount:Int
 
 	fun getImg(i:Int):ResourceImage<*>
+	/**
+	 * @return width of rendered text
+	 */
+	fun processTxt(
+		x:Float, y:Float, str:String, colors:(Char, Int)->COLOR, scale:Float, alpha:Float, rainbow:Int,
+		draw:(i:Int, li:Int, dx:Float, dy:Float, scale:Float, sx:Int, sy:Int, sw:Int, sh:Int, a:Float)->Unit):List<Float>
+
 	fun processTxt(x:Float, y:Float, str:String, color:COLOR, scale:Float, alpha:Float, rainbow:Int,
-		draw:(i:Int, dx:Float, dy:Float, scale:Float, sx:Int, sy:Int, sw:Int, sh:Int, a:Float)->Unit):Float
+		draw:(i:Int, li:Int, dx:Float, dy:Float, scale:Float, sx:Int, sy:Int, sw:Int, sh:Int, a:Float)->Unit):List<Float> =
+		processTxt(x, y, str, {_, _ -> color}, scale, alpha, rainbow, draw)
+
 	/** Draws the string
 	 * @param x X-coordinate
 	 * @param y Y-coordinate
 	 * @param str String
 	 * @param color Letter color
 	 * @param scale Enlargement factor
+	 * @return width of draw
 	 */
 	fun printFont(x:Float, y:Float, str:String, color:COLOR = COLOR.WHITE, scale:Float = 1f, alpha:Float = 1f,
 		rainbow:Int = rainbowCount):Float =
 		processTxt(
 			x, y, str, color, scale, alpha, rainbow,
-		) {i:Int, dx:Float, dy:Float, s:Float, sx:Int, sy:Int, sw:Int, sh:Int, a:Float ->
+		) {i:Int, li:Int, dx:Float, dy:Float, s:Float, sx:Int, sy:Int, sw:Int, sh:Int, a:Float ->
 			getImg(i).draw(dx, dy, dx+sw*s, dy+sh*s, sx, sy, sx+sw, sy+sh, a)
-		}
+		}.maxOrNull()?:0f
 
 	fun printFontRightAlign(x:Float, y:Float, str:String, color:COLOR = COLOR.WHITE, scale:Float = 1f, alpha:Float = 1f,
-		rainbow:Int = rainbowCount):Float {
-		val dq = mutableListOf<(lx:Float)->Unit>()
-		return processTxt(
+		rainbow:Int = rainbowCount):Float = getWidths(str, scale).let {lx ->
+		processTxt(
 			x, y, str, color, scale, alpha, rainbow,
-		) {i:Int, dx:Float, dy:Float, s:Float, sx:Int, sy:Int, sw:Int, sh:Int, a:Float ->
-			dq.add {lx -> getImg(i).draw(dx-lx, dy, dx+sw*s-lx, dy+sh*s, sx, sy, sx+sw, sy+sh, a)}
-		}.also {slideX -> dq.forEach {it(slideX)}}
-	}
+		) {i:Int, li:Int, dx:Float, dy:Float, s:Float, sx:Int, sy:Int, sw:Int, sh:Int, a:Float ->
+			getImg(i).draw(dx-lx[li], dy, dx+sw*s-lx[li], dy+sh*s, sx, sy, sx+sw, sy+sh, a)
+		}
+	}.maxOrNull()?:0f
 
 	fun printFont(x:Number, y:Number, str:String, color:COLOR = COLOR.WHITE, scale:Float = 1f, alpha:Float = 1f,
 		rainbow:Int = rainbowCount):Float = printFont(x.toFloat(), y.toFloat(), str, color, scale, alpha, rainbow)
@@ -135,7 +168,9 @@ interface BaseFont {
 		alpha:Float = 1f, rainbow:Int = rainbowCount):Float =
 		printFont(fontX.toFloat()*16, fontY.toFloat()*16, fontStr, flag, fontColorFalse, fontColorTrue, scale, alpha, rainbow)
 
-	fun getWidth(str:String, scale:Float = 1f):Float =
-		processTxt(0f, 0f, str, COLOR.WHITE, scale, 0f, 0) {_, _, _, _, _, _, _, _, _ ->}
+	fun getWidths(str:String, scale:Float = 1f):List<Float> =
+		processTxt(0f, 0f, str, COLOR.WHITE, scale, 0f, 0) {_, _, _, _, _, _, _, _, _, _ ->}
+
+	fun getWidth(str:String, scale:Float = 1f):Float = getWidths(str, scale).maxOrNull()?:0f
 
 }

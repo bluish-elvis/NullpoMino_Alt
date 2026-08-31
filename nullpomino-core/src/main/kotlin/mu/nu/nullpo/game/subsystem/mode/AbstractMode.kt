@@ -43,6 +43,7 @@ import mu.nu.nullpo.game.subsystem.mode.menu.MenuList
 import mu.nu.nullpo.game.subsystem.mode.menu.PresetItem
 import mu.nu.nullpo.gui.common.BaseFont
 import mu.nu.nullpo.gui.common.BaseFont.FONT.*
+import mu.nu.nullpo.gui.common.BaseFontNano
 import mu.nu.nullpo.gui.common.BaseFontNumber.Companion.isNumFont
 import mu.nu.nullpo.gui.net.NetLobbyFrame
 import mu.nu.nullpo.util.CustomProperties
@@ -277,7 +278,6 @@ abstract class AbstractMode:GameMode {
 		calcScore(engine,
 			ScoreEvent(engine.nowPieceObject, lines, engine.b2bCount, engine.combo, engine.twistType, engine.split))
 
-
 	protected var lastPow:Int = 0; private set
 
 	/** Calculates lines-clear score
@@ -285,7 +285,7 @@ abstract class AbstractMode:GameMode {
 	 * @param engine GameEngine
 	 * @param ev Cleared Lines Data
 	 */
-	override fun calcScore(engine:GameEngine, ev:ScoreEvent):Int{
+	override fun calcScore(engine:GameEngine, ev:ScoreEvent):Int {
 		lastPow = calcPower(engine, ev, true)
 		val spd = maxOf(0, engine.lockDelay-engine.lockDelayNow)+if(engine.manualLock) 1 else 0
 		val pts = calcScoreBase(engine, ev)
@@ -359,7 +359,7 @@ abstract class AbstractMode:GameMode {
 				renSum = get
 			}
 			renDel
-		} else if(pts>0)pts+spd else 0
+		} else if(pts>0) pts+spd else 0
 
 	/**Tetris World Style Goal*/
 	fun calcPoint(engine:GameEngine, ev:ScoreEvent):Int = ev.lines.let {li ->
@@ -779,7 +779,7 @@ abstract class AbstractMode:GameMode {
 				Statistic.SCORE -> {
 					receiver.drawMenu(engine, 0, y, "Score", BASE, color, scale*.75f)
 					receiver.drawMenu(engine, 0, y, "%7d".format(engine.statistics.score), NUM, scale*1.9f)
-					receiver.drawMenu(engine, 7f, y+1.25f, "Score", NANO, color, scale*.75f)
+					receiver.drawMenu(engine, engine.fieldWidth, y+1.25f, "Score", NANO, color, scale*.75f)
 				}
 				Statistic.ATTACKS -> {
 					receiver.drawMenu(engine, 6, y, "Lines", BASE, color, scale*.8f)
@@ -794,16 +794,16 @@ abstract class AbstractMode:GameMode {
 				}
 				Statistic.LEVEL -> {
 					receiver.drawMenu(engine, 0, y+1, "Level", BASE, color, scale)
-					receiver.drawMenu(engine, 5, y, "%03d".format(engine.statistics.level+1), NUM_W, scale*2)
+					receiver.drawMenu(engine, 4, y, "%03d".format(engine.statistics.level+1), NUM_W, scale*2)
 				}
 				Statistic.LEVEL_ADD_DISP -> {
 					receiver.drawMenu(engine, 0, y+1, "Level", BASE, color, scale)
-					receiver.drawMenu(engine, 5, y, "%03d".format(engine.statistics.level+engine.statistics.levelDispAdd),
+					receiver.drawMenu(engine, 4, y, "%03d".format(engine.statistics.level+engine.statistics.levelDispAdd),
 						NUM_W, scale*2)
 				}
 				Statistic.LEVEL_MANIA -> {
 					receiver.drawMenu(engine, 0, y+1, "Level", BASE, color, scale)
-					receiver.drawMenu(engine, 5, y, "%03d".format(engine.statistics.level), NUM_W, scale*2)
+					receiver.drawMenu(engine, 4, y, "%03d".format(engine.statistics.level), NUM_W, scale*2)
 				}
 				Statistic.LINES -> {
 					receiver.drawMenu(engine, 6, y, "Lines", BASE, color, scale*.8f)

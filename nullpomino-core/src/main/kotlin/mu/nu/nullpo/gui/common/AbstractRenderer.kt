@@ -1207,11 +1207,11 @@ abstract class AbstractRenderer:EventReceiver() {
 			drawFrame(offsetX, offsetY, engine, inside)
 			printFontSpecific(offsetX-30, offsetY-8, engine.stat::class.java.simpleName, NANO, WHITE, .5f, .5f)
 			"%d".format(engine.stime).let {s ->
-				printFontSpecific(offsetX-s.length*6, offsetY, s, NANO, WHITE, .5f, .5f)
+				printFontSpecific(offsetX-NANO.getWidth(s, .5f), offsetY, s, NANO, WHITE, .5f, .5f)
 			}
 			engine.statc.forEachIndexed {i, it ->
 				"%3d".format(it).let {s ->
-					printFontSpecific(offsetX-s.length*6, offsetY+10+i*7, s, NANO, WHITE, .5f, .5f)
+					printFontSpecific(offsetX-NANO.getWidth(s, .5f), offsetY+10+i*7, s, NANO, WHITE, .5f, .5f)
 				}
 			}
 			efxBG.forEachIndexed {i, it -> it.draw(i, this)}

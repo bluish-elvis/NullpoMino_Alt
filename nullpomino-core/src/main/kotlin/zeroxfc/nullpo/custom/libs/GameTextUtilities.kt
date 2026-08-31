@@ -184,13 +184,13 @@ object GameTextUtilities {
 	fun drawDirectTextAlign(receiver:EventReceiver, x:Number, y:Number, alignment:Int, str:String, color:COLOR = COLOR.WHITE,
 		scale:Float = 1f) {
 		val offsetX = when(alignment) {
-			ALIGN_TOP_MIDDLE, ALIGN_MIDDLE_MIDDLE, ALIGN_BOTTOM_MIDDLE -> 8*str.length*scale
-			ALIGN_TOP_RIGHT, ALIGN_MIDDLE_RIGHT, ALIGN_BOTTOM_RIGHT -> 16*str.length*scale
+			ALIGN_TOP_MIDDLE, ALIGN_MIDDLE_MIDDLE, ALIGN_BOTTOM_MIDDLE -> BASE.getWidth(str,scale)/2f
+			ALIGN_TOP_RIGHT, ALIGN_MIDDLE_RIGHT, ALIGN_BOTTOM_RIGHT -> BASE.getWidth(str,scale)
 			else -> 0f
 		}
 		val offsetY = when(alignment) {
-			ALIGN_MIDDLE_LEFT, ALIGN_MIDDLE_MIDDLE, ALIGN_MIDDLE_RIGHT -> 8*scale
-			ALIGN_BOTTOM_LEFT, ALIGN_BOTTOM_MIDDLE, ALIGN_BOTTOM_RIGHT -> 16*scale
+			ALIGN_MIDDLE_LEFT, ALIGN_MIDDLE_MIDDLE, ALIGN_MIDDLE_RIGHT -> BASE.h*scale/2f
+			ALIGN_BOTTOM_LEFT, ALIGN_BOTTOM_MIDDLE, ALIGN_BOTTOM_RIGHT -> BASE.h*scale
 			else -> 0f
 		}
 		receiver.drawFont(x.toFloat()-offsetX, y.toFloat()-offsetY, str, BASE, color, scale)

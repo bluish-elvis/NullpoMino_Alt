@@ -548,9 +548,9 @@ open class LSPIAI:DummyAI(), Runnable {
 		bestOppRtSub = -1
 		bestOppPts = 0.0
 		oppforceHold = false
-		height = engine.fieldHeight
+		height = engine.field.height
 		hiddenHeight = engine.fieldHiddenHeight
-		width = engine.fieldWidth
+		width = engine.field.width
 		val pieceNow = engine.nowPieceObject
 		val nowX = engine.nowPieceX
 		val nowY = engine.nowPieceY

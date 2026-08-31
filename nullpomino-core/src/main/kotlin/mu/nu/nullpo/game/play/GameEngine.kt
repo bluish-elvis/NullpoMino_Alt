@@ -2286,7 +2286,7 @@ class GameEngine(
 
 					if(ending==0||staffrollEnableStatistics)
 						statistics.totalPieceLocked++// AREなし
-					if(fieldWidth==10&&owner.mode?.gameStyle==GameStyle.TETROMINO) {
+					if(field.width==10&&owner.mode?.gameStyle==GameStyle.TETROMINO) {
 						val momentum = nowPieceSteps-(2*(twistType!=null).toInt())-(2*underRoof.toInt())
 						val d = momentum-it.finesseLimit(nowPieceX)
 						val finePts = /*if(nowPieceBottomY>=fieldHeight-1||underRoof) 5 else*/ if(d<=0) 5 else maxOf(3-d, 0)
@@ -2855,12 +2855,12 @@ class GameEngine(
 		if(ctrl.isMenuRepeatKey(Controller.BUTTON_LEFT, false)&&!ctrl.isPress(Controller.BUTTON_C)) {
 			playSE("move")
 			mapEditX--
-			if(mapEditX<0) mapEditX = fieldWidth-1
+			if(mapEditX<0) mapEditX = field.width-1
 		}
 		if(ctrl.isMenuRepeatKey(Controller.BUTTON_RIGHT, false)&&!ctrl.isPress(Controller.BUTTON_C)) {
 			playSE("move")
 			mapEditX++
-			if(mapEditX>fieldWidth-1) mapEditX = 0
+			if(mapEditX>field.width-1) mapEditX = 0
 		}
 		if(ctrl.isMenuRepeatKey(up, false)) {
 			playSE("move")

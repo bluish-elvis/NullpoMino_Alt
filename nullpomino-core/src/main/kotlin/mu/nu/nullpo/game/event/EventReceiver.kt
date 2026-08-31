@@ -173,8 +173,8 @@ open class EventReceiver {
 	 * @param engine GameEngine
 	 */
 	fun shootFireworks(engine:GameEngine) {
-		val mx = engine.fieldWidth*engine.blockSize
-		val my = engine.fieldHeight*8
+		val mx = engine.field.width*engine.blockSize
+		val my = engine.field.height*8
 		val x = engine.fX+random.nextInt(mx)
 		val y = (engine.fY+random.nextInt(my)+50).let {
 			if(my<engine.field.highestBlockY) it+my else it
@@ -239,7 +239,7 @@ open class EventReceiver {
 					val ns = scale/2
 					val isBig = NANO.h*ns>=NUM.h*.75f
 					drawFont(
-						x+f.length*NUM.w*scale, y+NUM.h*(scale-ns),
+						x+NUM.getWidth(f,scale), y+NUM.h*(scale-ns),
 						it[1], if(isBig) NUM else NANO, color, if(isBig) ns else ns*NUM.h/NANO.h, alpha
 					)
 				}
@@ -312,7 +312,8 @@ open class EventReceiver {
 		}
 
 	private fun menuPos(engine:GameEngine, x:Float, y:Float, str:String, font:FONT, scale:Float):Pair<Float, Float> {
-		var sx = if(x<-2) engine.fieldWidth*BS/2-str.length*font.w*scale/2 else BS*x
+		var sx = if(x>=engine.field.width) engine.field.width*BS-font.getWidth(str, scale) else
+			if(x<-2) engine.field.width*BS/2-font.getWidth(str, scale)/2 else BS*x
 		var sy = y*BS
 		if(!engine.owner.menuOnly) {
 			sx += engine.fX

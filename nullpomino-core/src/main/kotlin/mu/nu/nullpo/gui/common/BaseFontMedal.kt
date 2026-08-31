@@ -33,6 +33,7 @@ package mu.nu.nullpo.gui.common
 
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
 import mu.nu.nullpo.game.event.EventReceiver.COLOR.*
+import mu.nu.nullpo.util.GeneralUtil.length
 
 abstract class BaseFontMedal:BaseFont {
 	companion object {
@@ -51,12 +52,17 @@ abstract class BaseFontMedal:BaseFont {
 			BLUE, CYAN, COBALT -> 2; RED, PINK -> 1
 			RAINBOW -> 1+rainbow.mod(4); else -> 0
 		}
+
+		fun calcWidth(str:String):Float = PH*2f+1+str.count {it.uppercaseChar().code in 0x41..0x5A}.length*W
 	}
+
+	override fun getWidth(str:String, scale:Float):Float = calcWidth(str)*scale
+	override fun getWidths(str:String, scale:Float):List<Float> = listOf(calcWidth(str)*scale)
 
 	protected fun processTxt(x:Float, y:Float, str:String, tier:Int, scale:Float,
 		draw:(x:Float, y:Float, dx:Float, dy:Float, sx:Int, sy:Int, sw:Int, sh:Int)->Unit):Float {
 		val sy = if(tier<0) rainbowCount.mod(5)*H else maxOf(0, 4-tier)*H
-		val ww = str.length*9
+		val ww = str.length*W
 		val bx = x-(ww+10)/2f*(1-scale)
 		val by = y-H/2f*(1-scale)
 
@@ -71,13 +77,15 @@ abstract class BaseFontMedal:BaseFont {
 				draw(dx, by*scale, dx+9*scale, by+16*scale, sx, sy+4, sx+9, sy+20)
 			}
 		}
-		return (PH*2+1+ww)*scale
+		return getWidth(str, scale)
 	}
 
-	override fun processTxt(x:Float, y:Float, str:String,
-		color:COLOR, scale:Float, alpha:Float, rainbow:Int,
-		draw:(i:Int, dx:Float, dy:Float, scale:Float, sx:Int, sy:Int, sw:Int, sh:Int, a:Float)->Unit):Float =
-		processTxt(x, y, str, col(color, rainbow), scale) {_, _, _, _, _, _, _, _ ->}
+	override fun processTxt(
+		x:Float, y:Float, str:String,
+		colors:(Char, Int)->COLOR, scale:Float, alpha:Float, rainbow:Int,
+		draw:(i:Int, li:Int, dx:Float, dy:Float, scale:Float, sx:Int, sy:Int, sw:Int, sh:Int, a:Float)->Unit
+	):List<Float> =
+		listOf(processTxt(x, y, str, col(colors(str[0], 0), rainbow), scale) {_, _, _, _, _, _, _, _ ->})
 
 	/** 文字列を描画
 	 * @param x X-coordinate
@@ -95,7 +103,7 @@ abstract class BaseFontMedal:BaseFont {
 		}
 
 	fun printFontRightAlign(x:Float, y:Float, str:String, tier:Int, scale:Float = 1f, alpha:Float = if(tier==0) 0.5f else 1f,
-		darkness:Float = 0f):Float {
+		darkness:Float = 0f):Float = printFont(x-getWidth(str, scale), y, str, tier, scale, alpha, darkness)/*{
 		val dq = mutableListOf<(lx:Float)->Unit>()
 		return processTxt(x, y, str, tier, scale)
 		{dx:Float, dy:Float, w:Float, h:Float, sx:Int, sy:Int, sw:Int, sh:Int ->
@@ -104,7 +112,7 @@ abstract class BaseFontMedal:BaseFont {
 					.let {brit -> Triple(brit, brit, brit)})
 			}
 		}.also {slideX -> dq.forEach {it(slideX)}}
-	}
+	}*/
 
 	fun printFont(x:Number, y:Number, str:String, tier:Int, scale:Float = 1f, alpha:Float = if(tier==0) 0.5f else 1f,
 		darkness:Float = 0f):Float = printFont(x.toFloat(), y.toFloat(), str, tier, scale, alpha, darkness)

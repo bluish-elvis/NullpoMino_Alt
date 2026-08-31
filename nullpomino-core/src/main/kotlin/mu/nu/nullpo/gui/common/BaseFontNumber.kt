@@ -38,25 +38,25 @@ abstract class BaseFontNumber:BaseFont {
 		const val W:Int = 12
 		const val H:Int = 16
 		val listChar = listOf(0x20, 0x25, 0x2b, 0x3f)+(0x2d..0x2f).toList()+(0x30..0x3a).toList()
+
 		val String.isNumFont get() = all {!it.isTitleCase()&&it.code in listChar}
+		fun strCount(str:String):Int = str.count {!it.isTitleCase()&&it.code in listChar}
 	}
 
+	override fun getWidths(str:String, scale:Float):List<Float> = str.lines().map {strCount(it)*W*scale}
+
 	abstract override val rainbowCount:Int
-	override fun processTxt(x:Float, y:Float, str:String, color:COLOR, scale:Float, alpha:Float, rainbow:Int,
-		draw:(i:Int, dx:Float, dy:Float, scale:Float, sx:Int, sy:Int, sw:Int, sh:Int, a:Float)->Unit):Float {
+	override fun processTxt(
+		x:Float, y:Float, str:String, colors:(Char, Int)->COLOR, scale:Float, alpha:Float, rainbow:Int,
+		draw:(i:Int, li:Int, dx:Float, dy:Float, scale:Float, sx:Int, sy:Int, sw:Int, sh:Int, a:Float)->Unit
+	):List<Float> = str.lines().mapIndexed {li, ls ->
 		var dx = x
-		var dy = y
+		val dy = y+H*li*scale
 		val fontBig = scale>=1.5f
-		str.forEachIndexed {i, c ->
+		ls.forEachIndexed {i, c ->
 			// 文字出力
 			val stringChar = c.code.let {
 				when(it) {
-					0x0A -> {
-						// 改行 (\n)
-						dy += H*scale
-						dx = x
-						0
-					}
 					0x20 -> 0x30//space // 0x3a = :
 					0x3f -> 0x3b//?
 					0x2b -> 0x3c//+
@@ -70,15 +70,15 @@ abstract class BaseFontNumber:BaseFont {
 
 			if(stringChar in 0x30..0x40) { // 文字出力
 				val sx = if(c.code==0x20) 0 else (stringChar-48).mod(17)
-				val sy = (if(color==COLOR.RAINBOW) COLOR.getRainbowColor(rainbow, i) else color).ordinal
+				val sy = colors(c, i).let {(if(it==COLOR.RAINBOW) COLOR.getRainbowColor(rainbow, i) else it).ordinal}
 				val a = if(c.code==0x20) alpha*.4f else alpha
-				if(fontBig) draw(1, dx, dy, scale/2, sx*W*2, sy*H*2, W*2, H*2, a)
-				else draw(0, dx, dy-1, scale, sx*W, sy*H, W, H, a)
+				if(fontBig) draw(1, li, dx, dy, scale/2, sx*W*2, sy*H*2, W*2, H*2, a)
+				else draw(0, li, dx, dy-1, scale, sx*W, sy*H, W, H, a)
 
 				dx += W*scale
 			}
 		}
-		return dx-x
+		dx-x
 	}
 
 	/*override fun printFont(x:Float, y:Float, str:String, color:COLOR, scale:Float, alpha:Float, rainbow:Int) =
