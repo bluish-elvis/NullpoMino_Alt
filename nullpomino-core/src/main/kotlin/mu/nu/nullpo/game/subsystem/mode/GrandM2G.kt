@@ -64,8 +64,8 @@ class GrandM2G:AbstractGrand() {
 	/** せり上がりした count */
 	private var garbageTotal = 0
 
-	/** Section Time記録表示中ならtrue */
-	private var isShowBestSectionTime = false
+	override val sectionPages = 2
+	override val resultPages = 3
 
 	/** せり上がりパターンの種類 (0=RANDOM 1=TGM+ 2=TA SHIRASE) */
 	private val itemGarbage = EnumMenuItem("garbageType", "GARBAGE", COLOR.BLUE, HazardType.PATTERN, HazardType.entries)
@@ -165,19 +165,6 @@ class GrandM2G:AbstractGrand() {
 	private fun stNewRecordCheck(engine:GameEngine, section:Int, goalType:Int) =
 		stMedalCheck(engine, section, sectionTime[section], bestSectionTime[section][goalType])
 
-	/* Called at settings screen */
-	override fun onSetting(engine:GameEngine):Boolean {
-		// Menu
-		if(!engine.owner.replayMode) {
-			// section time display切替
-			if(engine.ctrl.isPush(Controller.BUTTON_F)) {
-				engine.playSE("change")
-				isShowBestSectionTime = !isShowBestSectionTime
-			}
-		}
-		return super.onSetting(engine)
-	}
-
 	override fun onSettingChanged(engine:GameEngine) {
 		engine.statistics.level = startLevel*100
 		nextSecLv = (engine.statistics.level+100).coerceIn(100, 999)
@@ -215,7 +202,7 @@ class GrandM2G:AbstractGrand() {
 			if(!owner.replayMode&&startLevel==0&&!big&&!always20g
 				&&engine.ai==null
 			)
-				if(!isShowBestSectionTime) {
+				if(isShowBestSectionTime<=0) {
 					// Rankings
 					receiver.drawScore(engine, 3, 2, "LEVEL TIME", BASE, COLOR.BLUE)
 
@@ -525,14 +512,7 @@ class GrandM2G:AbstractGrand() {
 
 	/* 結果画面 */
 	override fun renderResult(engine:GameEngine) {
-		receiver.drawMenu(
-			engine,
-			0,
-			0,
-			"${BaseFont.UP_S}${BaseFont.DOWN_S} PAGE${(engine.statc[1]+1)}/3",
-			BASE, COLOR.RED
-		)
-
+		super.renderResult(engine)
 		when(engine.statc[1]) {
 			0 -> {
 				drawResultStats(
@@ -563,28 +543,6 @@ class GrandM2G:AbstractGrand() {
 				Statistic.PPS
 			)
 		}
-	}
-
-	/* 結果画面の処理 */
-	override fun onResult(engine:GameEngine):Boolean {
-		// ページ切り替え
-		if(engine.ctrl.isMenuRepeatKey(Controller.BUTTON_UP)) {
-			engine.statc[1]--
-			if(engine.statc[1]<0) engine.statc[1] = 2
-			engine.playSE("change")
-		}
-		if(engine.ctrl.isMenuRepeatKey(Controller.BUTTON_DOWN)) {
-			engine.statc[1]++
-			if(engine.statc[1]>2) engine.statc[1] = 0
-			engine.playSE("change")
-		}
-		//  section time display切替
-		if(engine.ctrl.isPush(Controller.BUTTON_F)) {
-			engine.playSE("change")
-			isShowBestSectionTime = !isShowBestSectionTime
-		}
-
-		return false
 	}
 
 	/* リプレイ保存 */

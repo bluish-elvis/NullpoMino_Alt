@@ -84,6 +84,8 @@ class GrandCleaner:AbstractMode() {
 	/** Current round's ranking position */
 	private var rankingRank = 0
 
+	override val resultPages = 1
+
 	/** Score records */
 	@Serializable
 	data class ScoreData(val st:Statistics = Statistics()):Comparable<ScoreData> {
@@ -134,8 +136,6 @@ class GrandCleaner:AbstractMode() {
 		engine.createFieldIfNeeded()
 		version = if(!owner.replayMode) CURRENT_VERSION
 		else owner.replayProp.getProperty("allclearmania.version", 0)
-
-
 
 		if(version<=0) {
 			engine.readyStart = 45
@@ -350,26 +350,9 @@ class GrandCleaner:AbstractMode() {
 		return 0
 	}
 
-	/* 結果画面の処理 */
-	override fun onResult(engine:GameEngine):Boolean {
-		if(engine.ctrl.isMenuRepeatKey(Controller.BUTTON_UP)) {
-			engine.statc[1]--
-			if(engine.statc[1]<0) engine.statc[1] = 2
-			engine.playSE("change")
-		}
-		if(engine.ctrl.isMenuRepeatKey(Controller.BUTTON_DOWN)) {
-			engine.statc[1]++
-			if(engine.statc[1]>2) engine.statc[1] = 0
-			engine.playSE("change")
-		}
-
-		return false
-	}
-
 	/* Render results screen */
 	override fun renderResult(engine:GameEngine) {
-//		receiver.drawMenu(engine, 0, 0, "${BaseFont.UP_S}${BaseFont.DOWN_S} PAGE${engine.statc[1]+1}/3", BASE, COLOR.RED)
-
+		super.renderResult(engine)
 		drawResultStats(engine, receiver, 2, COLOR.PINK, Statistic.BRAVOS)
 
 		drawResultStats(engine, receiver, 6, COLOR.PINK, Statistic.LINES, Statistic.LEVEL_MANIA, Statistic.PIECE,

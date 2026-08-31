@@ -37,34 +37,66 @@ abstract class BaseFontNano:BaseFont {
 	companion object {
 		const val W = 12
 		const val H = 14
-	}
+		const val Wh = 6
+		const val Hh = 7
 
-	abstract override val rainbowCount:Int
-	override fun processTxt(x:Float, y:Float, str:String, color:COLOR, scale:Float, alpha:Float, rainbow:Int,
-		draw:(i:Int, dx:Float, dy:Float, scale:Float, sx:Int, sy:Int, sw:Int, sh:Int, a:Float)->Unit):Float {
-		var dx = x-2*scale
-		var dy = y
+		private fun ofs(c:Char, size:Boolean) = if(!size) when(c.code) {
+			0x31 -> -1 to 0
+			0x27, 0x2c, 0x2e, 0x49, 0x6c -> 0 to -1
+			0x3a, 0x3b -> -1 to -1
+			0x69 -> -1 to -2
+			0x23, 0x24, 0x25, 0x2a, 0x2f, 0x5c, 0x4d, 0x6d, 0x57, 0x77, 0x5e, 0x7e, 0x7f -> 1 to 0
+			else -> 0 to 0
+		} else when(c.code) {
+			0x23, 0x40, 0x4d, 0x6d, 0x7e, 0x7f -> 0 to 0
+			0x78 -> 0 to -1
+			0x24, 0x25, 0x2a, 0x2b, 0x2d, 0x3d, 0x59 -> -1 to -1
+			0x5a, 0x7a -> -1 to -2
+			0x26 -> -2 to -1
+			0x49, 0x69 -> -2 to -3
+			0x31 -> -4 to -3
+			else -> -2 to -2
+		}
 
-		str.forEachIndexed {i, char ->
-			val stringChar = char.code
-
-			if(stringChar==0x0A) {
-				// 改行 (\n)
-				dy = (dy+16*scale)
-				dx = x-2*scale
-			} else {// 文字出力
-				val shift = /*if(stringChar==0x31) -1 else */0
-				val col = (if(color==COLOR.RAINBOW) COLOR.getRainbowColor(rainbow, i) else color).ordinal
-				val c = stringChar-32// Character output
-				val sx = c%32
-				val sy = c/32+col*3
-
-				if(scale<=2f/3f) draw(0, dx+shift*scale, dy, scale*2, sx*6, sy*7, 6, 7, alpha)
-				else draw(1, dx+shift*scale, dy, scale, sx*12, sy*14, 12, 14, alpha)
-				dx += (W-2)*scale
+		fun calcWidths(str:String, scale:Float) = str.lines().map {
+			it.fold(0f) {acc, c ->
+				acc+if(scale<=2f/3f) {
+					val (sl, sr) = ofs(c, false)
+					(Wh-1+sl+sr)*scale*2
+				} else {
+					val (sl, sr) = ofs(c, true)
+					(W+sl+sr)*scale
+				}
 			}
 		}
-		return dx-x+2
+	}
+
+	override fun getWidths(str:String, scale:Float):List<Float> = calcWidths(str, scale)
+
+	abstract override val rainbowCount:Int
+	override fun processTxt(x:Float, y:Float, str:String, colors:(Char, Int)->COLOR, scale:Float, alpha:Float, rainbow:Int,
+		draw:(i:Int, li:Int, dx:Float, dy:Float, scale:Float, sx:Int, sy:Int, sw:Int, sh:Int, a:Float)->Unit):List<Float> = str.lines().mapIndexed {li, ls ->
+		var dx = x-2*scale
+		val dy = y+16*li*scale
+		ls.forEachIndexed {i, char ->
+			val stringChar = char.code
+			val col = colors(char, i).let {(if(it==COLOR.RAINBOW) COLOR.getRainbowColor(rainbow, i) else it).ordinal}
+			val c = stringChar-32// Character output
+			val sx = c%32
+			val sy = c/32+col*3
+
+			dx += if(scale<=2f/3f) {
+				val (sl, sr) = ofs(char, false)
+				val hs = scale*2
+				draw(0, li,dx+sl*hs, dy, hs, sx*6, sy*7, 6, 7, alpha)
+				(Wh-1+sl+sr)*hs
+			} else {
+				val (sl, sr) = ofs(char, true)
+				draw(1, li, dx+sl*scale, dy, scale, sx*12, sy*14, 12, 14, alpha)
+				(W+sl+sr)*scale
+			}
+		}
+		dx-x+2
 	}
 
 	/*override fun printFont(x:Float, y:Float, str:String, color:COLOR, scale:Float, alpha:Float, rainbow:Int) =

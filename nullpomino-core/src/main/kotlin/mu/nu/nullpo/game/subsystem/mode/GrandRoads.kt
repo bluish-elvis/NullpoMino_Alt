@@ -79,7 +79,7 @@ class GrandRoads:NetDummyMode() {
 		get() = sectionTime.filter {it>0}.average().toFloat()
 
 	/** Section Time記録表示中ならtrue */
-	private var isShowBestSectionTime = false
+	private var isShowBestSectionTime = 0
 
 	private val itemMode = StringsMenuItem(
 		"goalType", "DIFFICULTY", COLOR.BLUE, 0, courses.map {it.showName}
@@ -153,7 +153,7 @@ class GrandRoads:NetDummyMode() {
 		sectionsDone = 0
 		big = false
 		showST = true
-		isShowBestSectionTime = false
+		isShowBestSectionTime = 0
 
 		rankingRank = -1
 		sectionIsNewRecord.fill(false)
@@ -249,7 +249,7 @@ class GrandRoads:NetDummyMode() {
 			// section time display切替
 			if(engine.ctrl.isPush(Controller.BUTTON_F)) {
 				engine.playSE("change")
-				isShowBestSectionTime = !isShowBestSectionTime
+				isShowBestSectionTime = (isShowBestSectionTime+1).mod(2)
 			}
 			return if(engine.statc[1]==1) {
 				// Cancel
@@ -347,7 +347,7 @@ class GrandRoads:NetDummyMode() {
 		//receiver.drawScoreBadges(engine, playerID,5,-4,100,decTemp);
 		if(engine.isShowRanking) {
 			if(!owner.replayMode&&startLevel==0&&!big&&engine.ai==null&&!netIsWatch) {
-				if(isShowBestSectionTime) {
+				if(isShowBestSectionTime<=0) {
 					receiver.drawScore(engine, 0, 2, "F:VIEW RANKING", BASE, COLOR.GREEN)
 					// Section Time
 					receiver.drawScore(engine, 0, 3, "LEVEL TIME", BASE, COLOR.BLUE)
@@ -574,18 +574,14 @@ class GrandRoads:NetDummyMode() {
 
 	/** Renders game result screen */
 	override fun renderResult(engine:GameEngine) {
-		if(!netIsWatch)
-			receiver.drawMenu(
-				engine, 0, 0, "${UP_S}${DOWN_S} PAGE${engine.statc[1]+1}/3", BASE, COLOR.RED
-			)
-
+		if(!netIsWatch) super.renderResult(engine)
 		if(engine.statc[1]==0) {
 			val gcolor = when(engine.statistics.rollClear) {
 				2 -> COLOR.ORANGE
 				1 -> COLOR.GREEN
 				else -> COLOR.RED
 			}
-			receiver.drawMenu(engine, 0, 1, "LIFE REMAINED", BASE, COLOR.BLUE, .8f)
+			receiver.drawMenu(engine, 0, 1, "LIFE REMAINED", NANO, COLOR.BLUE, .8f)
 			receiver.drawMenu(engine, 7, 1, "%2d".format(engine.lives), NUM, gcolor, 2f)
 
 			receiver.drawMenu(engine, 0, 2, "%4d".format(norm), NUM, gcolor, 2f)
@@ -624,25 +620,16 @@ class GrandRoads:NetDummyMode() {
 	}
 
 	/** Additional routine for game result screen */
+	override val resultPages = 3
 	override fun onResult(engine:GameEngine):Boolean {
-		if(goalType>=Course.HELL.ordinal&&engine.statistics.rollClear>=1) owner.musMan.bgm = BGM.Result(3)
 		if(!netIsWatch) {
+			if(engine.stime==0)
+				if(goalType>=Course.HELL.ordinal&&engine.statistics.rollClear>=1) owner.musMan.bgm = BGM.Result(3)
 			if(engine.ctrl.isPush(Controller.BUTTON_F)) {
 				engine.playSE("change")
-				isShowBestSectionTime = !isShowBestSectionTime
-			}
-			if(engine.ctrl.isMenuRepeatKey(Controller.BUTTON_UP)) {
-				engine.statc[1]--
-				if(engine.statc[1]<0) engine.statc[1] = 2
-				engine.playSE("change")
-			}
-			if(engine.ctrl.isMenuRepeatKey(Controller.BUTTON_DOWN)) {
-				engine.statc[1]++
-				if(engine.statc[1]>2) engine.statc[1] = 0
-				engine.playSE("change")
+				isShowBestSectionTime = (isShowBestSectionTime+1).mod(2)
 			}
 		}
-
 		return super.onResult(engine)
 	}
 

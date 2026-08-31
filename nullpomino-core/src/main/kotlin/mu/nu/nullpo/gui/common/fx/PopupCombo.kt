@@ -33,8 +33,7 @@ package mu.nu.nullpo.gui.common.fx
 
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
 import mu.nu.nullpo.gui.common.AbstractRenderer
-import mu.nu.nullpo.gui.common.BaseFont.FONT.NANO
-import mu.nu.nullpo.gui.common.BaseFont.FONT.NUM
+import mu.nu.nullpo.gui.common.BaseFont.FONT.*
 import zeroxfc.nullpo.custom.libs.Vector
 
 class PopupCombo(x:Int, y:Int, val pts:Int, val type:CHAIN, val ex:Int = 0):SpriteSheet(
@@ -48,6 +47,7 @@ class PopupCombo(x:Int, y:Int, val pts:Int, val type:CHAIN, val ex:Int = 0):Spri
 	override fun update(r:AbstractRenderer):Boolean {
 		x += vel.x
 		vel.x = (ox+ex-x)*0.1f
+		if(vel.x<0&&x<=-18) vel.x *= -1
 		return ++ticks>=60
 	}
 
@@ -57,17 +57,17 @@ class PopupCombo(x:Int, y:Int, val pts:Int, val type:CHAIN, val ex:Int = 0):Spri
 		when(type) {
 			CHAIN.B2B -> {
 				r.drawFont(x-18, y-15, "SKILL", NANO, COLOR.RED, .75f, alpha)
-				r.drawFont(x-18, y, "%2d".format(pts), NUM, COLOR.YELLOW, 1.5f, alpha)
+				r.drawFont(x-18, y, "%2d".format(pts), NUM_W, COLOR.YELLOW, 1.5f, alpha)
 				r.drawFont(x-18, y+20, "Rush!", NANO, COLOR.ORANGE, .75f, alpha)
 			}
 			CHAIN.COMBO -> {
-				r.drawFont(x-18, y-0, "%2d".format(pts), NUM, COLOR.CYAN, 1.5f, alpha)
-				r.drawFont(x+18, y+8, "REN", NANO, COLOR.BLUE, .5f, alpha)
+				r.drawFont(x-18, y-0, "%2d".format(pts), NUM_W, COLOR.CYAN, 1.5f, alpha)
+				r.drawFont(x+32, y+8, "REN", NANO, COLOR.BLUE, .5f, alpha)
 				r.drawFont(x-18, y+20, "Combo!", NANO, COLOR.BLUE, .75f, alpha)
 			}
 			CHAIN.CHAIN -> {
 				r.drawFont(x-18, y-0, "%2d".format(pts), NUM, COLOR.YELLOW, 1.5f, alpha)
-				r.drawFont(x+18, y+8, "Hits", NANO, COLOR.ORANGE, .5f, alpha)
+				r.drawFont(x+32, y+8, "Hits", NANO, COLOR.ORANGE, .5f, alpha)
 				r.drawFont(x-18, y+20, "Chain!", NANO, COLOR.ORANGE, .75f, alpha)
 			}
 		}

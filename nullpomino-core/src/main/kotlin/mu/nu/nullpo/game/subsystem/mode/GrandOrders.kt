@@ -609,37 +609,29 @@ class GrandOrders:NetDummyMode() {
 
 	/** Additional routine for game result screen */
 	override fun onResult(engine:GameEngine):Boolean {
-//		if(goalType>=Course.HELL.ordinal&&engine.statistics.rollClear>=1) owner.musMan.bgm = BGM.Result(3)
 		if(!netIsWatch) {
-			if(engine.ctrl.isMenuRepeatKey(Controller.BUTTON_UP)) {
-				engine.statc[1]--
-				if(engine.statc[1]<0) engine.statc[1] = 2
+//				if(engine.stime==0)
+//		if( goalType>=Course.HELL&&engine.statistics.rollClear>=1) owner.musMan.bgm = BGM.Result(3)
+			if(engine.ctrl.isPush(Controller.BUTTON_F)) {
 				engine.playSE("change")
-			}
-			if(engine.ctrl.isMenuRepeatKey(Controller.BUTTON_DOWN)) {
-				engine.statc[1]++
-				if(engine.statc[1]>2) engine.statc[1] = 0
-				engine.playSE("change")
+				isShowBest = !isShowBest
 			}
 		}
-
 		return super.onResult(engine)
 	}
 
+	override val resultPages = 3
+
 	/** Renders game result screen */
 	override fun renderResult(engine:GameEngine) {
-		if(!netIsWatch) receiver.drawMenu(
-			engine, 0, 0, "${UP_S}${DOWN_S} PAGE${engine.statc[1]+1}/3", BASE,
-			COLOR.RED
-		)
-
+		super.renderResult(engine)
 		if(engine.statc[1]==0) {
 			val gcolor = when(engine.statistics.rollClear) {
 				2 -> COLOR.ORANGE
 				1 -> COLOR.GREEN
 				else -> COLOR.RED
 			}
-			receiver.drawMenu(engine, 0, 1, "LIFE REMAINED", BASE, COLOR.BLUE, .8f)
+			receiver.drawMenu(engine, 0, 1, "LIFE REMAINED", NANO, COLOR.BLUE, .8f)
 			receiver.drawMenu(engine, 7, 1, "%2d".format(engine.lives), NUM, gcolor, 2f)
 
 			receiver.drawMenu(engine, 0, 2, "%04d".format(prog), NUM, gcolor, 2f)
@@ -1020,7 +1012,7 @@ class GrandOrders:NetDummyMode() {
 			 * @param rndTarget 1以上にするとジェムブロックを数値分ランダムで配置する。0(OFF)では初期配置のまま。
 			 * 	99以上にすると…？*/
 			data class Target(override val lv:Int, override val norm:Int, override val time:Int = 0, val mapRange:IntRange,
-				val rndTarget:Int=0):Mission()
+				val rndTarget:Int = 0):Mission()
 			/**積んであるブロックが枠しか見えない状態で[time]秒以内に[norm]本ラインを消せばクリア
 			 * @param misc 1以上で、数値に応じた速度で固定したブロックが順次不可視になる。*/
 			data class Dark(override val lv:Int, override val norm:Int, override val time:Int = 0, val misc:Int):
@@ -1255,10 +1247,10 @@ class GrandOrders:NetDummyMode() {
 				when(this) {
 					S1 -> listOf(BigBlock(2, 20, 60),
 						LevelStar(1, 6, 70))
-					S8->listOf(
-						LevelStar(-1,20,60),Triples(8,5,120),Cycle(8,100),LevelStar(-5,40,100)
+					S8 -> listOf(
+						LevelStar(-1, 20, 60), Triples(8, 5, 120), Cycle(8, 100), LevelStar(-5, 40, 100)
 					)
-					GM->listOf(Pressure(-1,40,80), Target(12,10,290,20..27), Enduro(14,240), Monochrome(-1,70,420))
+					GM -> listOf(Pressure(-1, 40, 80), Target(12, 10, 290, 20..27), Enduro(14, 240), Monochrome(-1, 70, 420))
 					GiantStep -> listOf(
 						BigBlock(2, 10, 60), Quads(4, 5, 120),
 						Cycle(4, 120), BigBlock(5, 20, 120), LevelStar(6, 15, 90), BigBlock(10, 20, 120))
@@ -1282,7 +1274,7 @@ class GrandOrders:NetDummyMode() {
 					S2, S3 -> {i ->
 						InterLines.FALL(if(i==0) 10 else 5)
 					}
-					GiantStep->{i->if(i==3||i==5) InterLines.FALL(10) else null}
+					GiantStep -> {i -> if(i==3||i==5) InterLines.FALL(10) else null}
 					Amateur, Pro, Bronze, Silver, Gold, Platinum -> {_ -> null}
 					else -> {_ -> InterLines.FALL(1)}
 				}

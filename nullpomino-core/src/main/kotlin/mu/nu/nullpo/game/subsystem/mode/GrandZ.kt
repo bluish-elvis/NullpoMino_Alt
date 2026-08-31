@@ -35,8 +35,7 @@ import mu.nu.nullpo.game.component.Controller
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
 import mu.nu.nullpo.game.event.ScoreEvent
 import mu.nu.nullpo.game.play.GameEngine
-import mu.nu.nullpo.game.subsystem.mode.menu.BooleanMenuItem
-import mu.nu.nullpo.game.subsystem.mode.menu.DelegateMenuItem
+import mu.nu.nullpo.game.subsystem.mode.menu.*
 import mu.nu.nullpo.gui.common.BaseFont
 import mu.nu.nullpo.gui.common.BaseFont.FONT.*
 import mu.nu.nullpo.util.CustomProperties
@@ -46,7 +45,6 @@ import mu.nu.nullpo.util.GeneralUtil.toTimeStr
 /** FINAL mode (Original from NullpoUE build 010210 by Zircean) */
 class GrandZ:AbstractGrand() {
 	override val medalSKQuads = listOf(listOf(5, 10, 17, 25), listOf(1, 2, 4, 6))
-	private var gametype = 0
 	private var joker = 0
 	private var stacks = 0
 
@@ -69,14 +67,13 @@ class GrandZ:AbstractGrand() {
 	/** Section Time */
 	private val sectionLine = MutableList(sectionMax) {0}
 
-	/** false:Leaderboard, true:Section time record
-	 *  (Push F in settings screen to flip it) */
-	private var isShowBestSectionTime = false
-
+	private val itemType = StringsMenuItem("gametype", "COURSE", COLOR.RED, 0, tableModeName)
+	private var gametype:Int by DelegateMenuItem(itemType)
 	/** Selected start level */
-	private var startLevel = 0
+	private val itemLevel = LevelGrandMenuItem(COLOR.RED, sectionMax)
+	private var startLevel:Int by DelegateMenuItem(itemLevel)
 
-	private val itemBig = BooleanMenuItem("big", "BIG", COLOR.ORANGE, false)
+	private val itemBig = BooleanMenuItem("big", "BIG", COLOR.RED, false)
 	/** BigMode */
 	private var big:Boolean by DelegateMenuItem(itemBig)
 
@@ -115,6 +112,7 @@ class GrandZ:AbstractGrand() {
 	override val name = "Grand Finale"
 	override val gameIntensity = 3
 
+	override val menu = MenuList("final", itemType, itemLevel, itemAlert, itemST, itemBig)
 	/** This function will be called when the game enters the main game
 	 * screen. */
 	override fun playerInit(engine:GameEngine) {
@@ -130,7 +128,6 @@ class GrandZ:AbstractGrand() {
 		sectionLine.fill(0)
 		medals.reset()
 
-		isShowBestSectionTime = false
 		startLevel = 0
 		secAlert = false
 		big = false
@@ -156,22 +153,6 @@ class GrandZ:AbstractGrand() {
 		version = (if(!owner.replayMode) CURRENT_VERSION else owner.replayProp.getProperty("final.version", 0))
 
 		owner.bgMan.bg = 30+startLevel
-	}
-
-	override fun loadSetting(engine:GameEngine, prop:CustomProperties, ruleName:String, playerID:Int) {
-		gametype = prop.getProperty("final.gametype", 0)
-		startLevel = prop.getProperty("final.startLevel", 0)
-		secAlert = prop.getProperty("final.lvstopse", true)
-		showST = prop.getProperty("final.showsectiontime", true)
-		big = prop.getProperty("final.big", false)
-	}
-
-	override fun saveSetting(engine:GameEngine, prop:CustomProperties, ruleName:String, playerID:Int) {
-		prop.setProperty("final.gametype", gametype)
-		prop.setProperty("final.startLevel", startLevel)
-		prop.setProperty("final.lvstopse", secAlert)
-		prop.setProperty("final.showsectiontime", showST)
-		prop.setProperty("final.big", big)
 	}
 
 	/** Set the gravity speed
@@ -212,57 +193,10 @@ class GrandZ:AbstractGrand() {
 
 	/** Main routine for game setup screen */
 	override fun onSetting(engine:GameEngine):Boolean {
-		if(!engine.owner.replayMode) {
-			// Configuration changes
-			val change = updateCursor(engine, 3)
-
-			if(change!=0) {
-				engine.playSE("change")
-
-				when(menuCursor) {
-					0 -> {
-						gametype += change
-						if(gametype<0) gametype = 2
-						if(gametype>2) gametype = 0
-					}
-					1 -> secAlert = !secAlert
-					2 -> showST = !showST
-					3 -> big = !big
-				}
-			}
-
-			// Check for F button, when pressed this will flip Leaderboard/Best Section Time Records
-			if(engine.ctrl.isPush(Controller.BUTTON_F)) {
-				engine.playSE("change")
-				isShowBestSectionTime = !isShowBestSectionTime
-			}
-
-			// Check for A button, when pressed this will begin the game
-			if(menuTime<5) menuTime++ else if(engine.ctrl.isPush(Controller.BUTTON_A)) {
-				engine.playSE("decide")
-				return false
-			}
-
-			// Check for B button, when pressed this will shut down the game engine.
-			if(engine.ctrl.isPush(Controller.BUTTON_B)) engine.quitFlag = true
-
-			sectionsDone = 0
-		} else {
-			menuTime++
-			menuCursor = -1
+		if(engine.owner.replayMode) {
 			owner.musMan.bgm = BGM.Finale(gametype)
-			return menuTime<60
 		}
-
-		return true
-	}
-
-	/** Renders game setup screen */
-	override fun renderSetting(engine:GameEngine) {
-		drawMenu(
-			engine, receiver, 0, COLOR.RED, 0, "COURSE" to tableModeName[gametype],
-			"LVSTOPSE" to secAlert, "SHOW STIME" to showST, "BIG" to big
-		)
+		return super.onSetting(engine)
 	}
 
 	/** Ready screen */
@@ -296,7 +230,7 @@ class GrandZ:AbstractGrand() {
 
 		if(engine.isShowRanking) {
 			if(!owner.replayMode&&startLevel==0&&!big&&engine.ai==null)
-				if(!isShowBestSectionTime) {
+				if(isShowBestSectionTime<=0) {
 					// Leaderboard
 					val topY = if(receiver.bigSideNext) 5 else 3
 					receiver.drawScore(engine, 0, topY-1, "GRADE LV TIME", BASE, COLOR.RED)
@@ -577,8 +511,7 @@ class GrandZ:AbstractGrand() {
 
 	/** Renders game result screen */
 	override fun renderResult(engine:GameEngine) {
-		receiver.drawMenu(engine, 0, 0, "${BaseFont.UP_S}${BaseFont.DOWN_S} PAGE${engine.statc[1]+1}/3", BASE, COLOR.RED)
-
+		super.renderResult(engine)
 		if(engine.statc[1]==0) {
 			if(grade>=1&&grade<tableGradeName.size) {
 				val gcolor = when(engine.statistics.rollClear) {
@@ -616,26 +549,7 @@ class GrandZ:AbstractGrand() {
 	}
 
 	/** Additional routine for game result screen */
-	override fun onResult(engine:GameEngine):Boolean {
-		// Page change
-		if(engine.ctrl.isMenuRepeatKey(Controller.BUTTON_UP)) {
-			engine.statc[1]--
-			if(engine.statc[1]<0) engine.statc[1] = 2
-			engine.playSE("change")
-		}
-		if(engine.ctrl.isMenuRepeatKey(Controller.BUTTON_DOWN)) {
-			engine.statc[1]++
-			if(engine.statc[1]>2) engine.statc[1] = 0
-			engine.playSE("change")
-		}
-		// Flip Leaderboard/Best Section Time Records
-		if(engine.ctrl.isPush(Controller.BUTTON_F)) {
-			engine.playSE("change")
-			isShowBestSectionTime = !isShowBestSectionTime
-		}
-
-		return false
-	}
+	override val resultPages = 3
 
 	/** This function will be called when the replay data is going to be
 	 * saved */

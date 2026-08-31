@@ -42,7 +42,7 @@ interface BaseFontTTF {
 	 * @param size unsupported: Font size
 	 */
 	fun print(x:Float, y:Float, str:String, color:EventReceiver.COLOR = EventReceiver.COLOR.WHITE, alpha:Float = 1f,
-		size:Float = FONT_SIZE.toFloat())
+		size:Float = FONT_SIZE.toFloat()):Float
 
 	fun print(x:Int, y:Int, str:String, color:EventReceiver.COLOR = EventReceiver.COLOR.WHITE, alpha:Float = 1f,
 		size:Int = FONT_SIZE) =

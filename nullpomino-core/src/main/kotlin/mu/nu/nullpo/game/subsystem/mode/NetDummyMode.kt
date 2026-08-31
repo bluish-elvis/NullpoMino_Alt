@@ -88,8 +88,8 @@ abstract class NetDummyMode:AbstractMode(), NetLobbyListener {
 	/** NET: Player name (Declared in NetDummyMode) */
 	protected var netPlayerName:String? = null
 
-	/** NET: Replay send status (0:Before Send 1:Sending 2:Sent) (Declared in
-	 * NetDummyMode) */
+	/** NET: Replay send status (0:Before Send 1:Sending 2:Sent)
+	 * (Declared in NetDummyMode) */
 	protected var netReplaySendStatus = 0
 
 	/** NET: Current round's online ranking position (Declared in NetDummyMode) */
@@ -423,7 +423,7 @@ abstract class NetDummyMode:AbstractMode(), NetLobbyListener {
 			return true
 		}
 
-		return false
+		return super.onResult(engine)
 	}
 
 	override fun renderSetting(engine:GameEngine) {

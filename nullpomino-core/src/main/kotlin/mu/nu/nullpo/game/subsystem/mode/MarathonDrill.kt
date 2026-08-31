@@ -429,9 +429,10 @@ class MarathonDrill:NetDummyMode() {
 	}
 
 	override fun onResult(engine:GameEngine):Boolean {
-		owner.musMan.fadeSW = false
-		owner.musMan.bgm = if(engine.statistics.time<10800) BGM.Result(1) else BGM.Result(2)
-
+		if(engine.stime==0) {
+			owner.musMan.fadeSW = false
+			owner.musMan.bgm = if(engine.statistics.time<10800) BGM.Result(1) else BGM.Result(2)
+		}
 		return super.onResult(engine)
 	}
 

@@ -401,11 +401,7 @@ Ready&Go screen disappears) */
 
 	/* Render results screen */
 	override fun renderResult(engine:GameEngine) {
-		receiver.drawMenu(
-			engine, 0, 0, "${BaseFont.UP_L}${BaseFont.DOWN_L} PAGE${(engine.statc[1]+1)}/2",
-			BASE, COLOR.RED
-		)
-
+		super.renderResult(engine)
 		when {
 			engine.statc[1]==0 -> {
 				drawResultStats(
@@ -430,22 +426,7 @@ Ready&Go screen disappears) */
 	}
 
 	/* Results screen */
-	override fun onResult(engine:GameEngine):Boolean {
-		// Page change
-		if(engine.ctrl.isMenuRepeatKey(Controller.BUTTON_UP)) {
-			engine.statc[1]--
-			if(engine.statc[1]<0) engine.statc[1] = 1
-			engine.playSE("change")
-		}
-		if(engine.ctrl.isMenuRepeatKey(Controller.BUTTON_DOWN)) {
-			engine.statc[1]++
-			if(engine.statc[1]>1) engine.statc[1] = 0
-			engine.playSE("change")
-		}
-
-		return super.onResult(engine)
-	}
-
+	override val resultPages = 2
 	/* Save replay */
 	override fun saveReplay(engine:GameEngine, prop:CustomProperties):Boolean {
 		savePreset(engine, owner.replayProp, -1)

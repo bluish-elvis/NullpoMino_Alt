@@ -74,7 +74,7 @@ class RendererSlick(
 		g.setDrawMode(Graphics.MODE_NORMAL)
 	}
 
-	override fun printFontSpecific(x:Float, y:Float, str:String, font:FONT, color:COLOR, scale:Float, alpha:Float) {
+	override fun printFontSpecific(x:Float, y:Float, str:String, font:FONT, color:COLOR, scale:Float, alpha:Float):Float =
 		when(font) {
 			FONT.NANO -> FontNano.printFont(x, y, str, color, scale, alpha)
 			FONT.NUM -> FontNumber.printFont(x, y, str, color, scale, alpha)
@@ -84,9 +84,8 @@ class RendererSlick(
 			FONT.GRADE -> FontGrade.printFont(x, y, str, color, scale, alpha)
 			else -> FontNormal.printFont(x, y, str, color, scale, alpha)
 		}
-	}
 
-	override fun printTTFSpecific(x:Float, y:Float, str:String, color:COLOR, scale:Float, alpha:Float) =
+	override fun printTTFSpecific(x:Float, y:Float, str:String, color:COLOR, scale:Float, alpha:Float):Float =
 		FontTTF.print(x, y, str, color, alpha, scale)
 
 	override fun drawStaffRoll(x:Number, y:Number, scr:Number, height:Number, alpha:Float) {
@@ -321,7 +320,7 @@ class RendererSlick(
 				Polygon(floatArrayOf(rX+size, y-size, rX, y, rX, bY, rX+size, bY+size)),
 				fi.getSubImage(16, 96, 16, 32), 1f, 1f, true
 			)
-			if(f==Frame.METAL){
+			if(f==Frame.METAL) {
 				val fi = resources.imgFrameOld[4]
 			}
 		} else if(engine.frame==Frame.GRADE) {

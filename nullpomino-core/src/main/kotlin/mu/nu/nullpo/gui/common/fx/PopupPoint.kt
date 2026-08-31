@@ -53,7 +53,7 @@ class PopupPoint(x:Int, y:Int, val pts:Int, val str:String, private val c:Int, p
 	override fun draw(i:Int, r:AbstractRenderer) {
 		val (sPtr, col) =
 			if(pts>0) ("+${pts}" to if(ticks/2%2==0) COLOR.WHITE else COLOR.all[color]) else ("-${str}" to COLOR.RED)
-		if(pts!=0)r.drawFont(dx.toInt(), dy.toInt(), sPtr, FONT.NUM, col, if(big) 1.5f else 1f, alpha)
+		if(pts!=0) r.drawFont(dx.toInt(), dy.toInt(), sPtr, FONT.NUM, col, if(big) 1.5f else 1f, alpha)
 		if(str.isNotEmpty())
 			r.drawFont(dx.toInt(), (dy-BaseFontNano.H).toInt(), str, FONT.NANO, col, if(big) 1f else .5f, alpha)
 	}

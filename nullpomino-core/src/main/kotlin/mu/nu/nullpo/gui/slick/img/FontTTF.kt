@@ -35,7 +35,7 @@ import mu.nu.nullpo.game.event.EventReceiver.COLOR
 import org.newdawn.slick.Color
 
 object FontTTF:mu.nu.nullpo.gui.common.BaseFontTTF {
-	override fun print(x:Float, y:Float, str:String, color:COLOR, alpha:Float, size:Float) {
+	override fun print(x:Float, y:Float, str:String, color:COLOR, alpha:Float, size:Float):Float =
 		mu.nu.nullpo.gui.slick.ResourceHolder.ttfFont?.let {
 			it.drawString(
 				x, y, str, when(color) {
@@ -50,6 +50,7 @@ object FontTTF:mu.nu.nullpo.gui.common.BaseFontTTF {
 					COLOR.COBALT -> Color(0, 0, 128)
 					else -> Color(255, 255, 255)
 				}.apply {a = alpha})
-		}
-	}
+			it.getWidth(str).toFloat()
+		}?:0f
+
 }

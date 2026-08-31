@@ -69,10 +69,6 @@ class GrandBasic:AbstractGrand() {
 	private val sectionHanabi = MutableList(sectionMax+2) {0}
 	private val sectionScore = MutableList(sectionMax+2) {0L}
 
-	/** false:Leaderboard, true:Section time record
-	 *  (Push F in settings screen to flip it) */
-	private var isShowBestSectionTime = false
-
 	private val itemLevel = LevelGrandMenuItem(COLOR.GREEN, 3)
 	/** Level at start */
 	private var startLevel:Int by DelegateMenuItem(itemLevel)
@@ -91,6 +87,7 @@ class GrandBasic:AbstractGrand() {
 
 	/** Your place on leaderboard (-1: out of rank) */
 	private var rankingRank = 0
+	override val resultPages = 3
 
 	override val rankingMax = 20
 
@@ -188,18 +185,6 @@ class GrandBasic:AbstractGrand() {
 		}
 	}
 
-	/** Main routine for game setup screen */
-	override fun onSetting(engine:GameEngine):Boolean {
-		if(!engine.owner.replayMode) {
-			// Check for F button, when pressed this will flip Leaderboard/Best Section Time Records
-			if(engine.ctrl.isPush(Controller.BUTTON_F)) {
-				engine.playSE("change")
-				isShowBestSectionTime = !isShowBestSectionTime
-			}
-		}
-		return super.onSetting(engine)
-	}
-
 	override fun onSettingChanged(engine:GameEngine) {
 		if(startLevel<0) startLevel = 2
 		if(startLevel>2) startLevel = 0
@@ -214,7 +199,6 @@ class GrandBasic:AbstractGrand() {
 	override fun onReadyDone(engine:GameEngine, readyDone:Boolean) {
 		super.onReadyDone(engine, readyDone)
 		if(!readyDone) {
-			isShowBestSectionTime = false
 			owner.musMan.fadeSW = true
 		}
 	}
@@ -246,7 +230,7 @@ class GrandBasic:AbstractGrand() {
 			if(!owner.replayMode&&startLevel==0&&!big&&!always20g
 				&&engine.ai==null
 			)
-				if(!isShowBestSectionTime) {
+				if(isShowBestSectionTime<=0) {
 					// Score Leaderboard
 					receiver.drawScore(engine, 0, 2, "HANABI SCORE TIME", BASE, COLOR.BLUE)
 
@@ -494,7 +478,7 @@ class GrandBasic:AbstractGrand() {
 
 	/** Renders game result screen */
 	override fun renderResult(engine:GameEngine) {
-		receiver.drawMenu(engine, 0, 0, "${BaseFont.UP_S}${BaseFont.DOWN_S} PAGE${engine.statc[1]+1}/3", BASE, COLOR.RED)
+		super.renderResult(engine)
 
 		if(engine.statc[1]==0) {
 			receiver.drawMenu(engine, 0, 2, "%04d".format(hanabi), NUM, 2f)
@@ -531,28 +515,6 @@ class GrandBasic:AbstractGrand() {
 			drawResultStats(
 				engine, receiver, 2, COLOR.GREEN, Statistic.LPM, Statistic.SPM, Statistic.PIECE, Statistic.PPS
 			)
-	}
-
-	/** Additional routine for game result screen */
-	override fun onResult(engine:GameEngine):Boolean {
-		// Page change
-		if(engine.ctrl.isMenuRepeatKey(Controller.BUTTON_UP)) {
-			engine.statc[1]--
-			if(engine.statc[1]<0) engine.statc[1] = 2
-			engine.playSE("change")
-		}
-		if(engine.ctrl.isMenuRepeatKey(Controller.BUTTON_DOWN)) {
-			engine.statc[1]++
-			if(engine.statc[1]>2) engine.statc[1] = 0
-			engine.playSE("change")
-		}
-		// Flip Leaderboard/Best Section Time Records
-		if(engine.ctrl.isPush(Controller.BUTTON_F)) {
-			engine.playSE("change")
-			isShowBestSectionTime = !isShowBestSectionTime
-		}
-
-		return false
 	}
 
 	/** This function will be called when the replay data is going to be saved */

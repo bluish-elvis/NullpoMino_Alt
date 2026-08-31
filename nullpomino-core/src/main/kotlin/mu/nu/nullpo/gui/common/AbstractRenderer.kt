@@ -157,10 +157,9 @@ abstract class AbstractRenderer:EventReceiver() {
 			else if(id<0&&id.absoluteValue in 1..bgaMax+1) bgaType[id.absoluteValue-1].speed = sp
 	}
 
-	override fun drawFont(x:Float, y:Float, str:String, font:FONT, color:COLOR, scale:Float, alpha:Float) {
+	override fun drawFont(x:Float, y:Float, str:String, font:FONT, color:COLOR, scale:Float, alpha:Float):Float =
 		if(font==TTF) printTTFSpecific(x, y, str, color, scale, alpha)
 		else printFontSpecific(x, y, str, font, color, scale, alpha)
-	}
 
 	/** Draw a block
 	 * @param x X pos
@@ -694,7 +693,7 @@ abstract class AbstractRenderer:EventReceiver() {
 				if(engine.ruleOpt.fieldCeiling||!engine.ruleOpt.pieceEnterAboveField) {
 					drawPieceOutline(x2, y2, it, fbs, .5f)
 					drawPiece(x2, y-fbs*3, it)
-				}else drawPiece(x2, y2, it)
+				} else drawPiece(x2, y2, it)
 				if(showCenter) drawDia(
 					x2+(it.spinCX+.5f)*fbs, y2+(it.spinCY+.5f)*fbs, fbs*2/3, fbs*2/3,
 					engine.replayTimer/(14f-engine.speed.rank*10f), alpha = .75f,
@@ -1116,7 +1115,7 @@ abstract class AbstractRenderer:EventReceiver() {
 	}
 
 	override fun addScore(x:Int, y:Int, pts:Int, color:COLOR, str:String, big:Boolean) {
-		if(pts!=0||str.isNotEmpty())efxFG.add(PopupPoint(x, y, pts, str, color.ordinal, big))
+		if(pts!=0||str.isNotEmpty()) efxFG.add(PopupPoint(x, y, pts, str, color.ordinal, big))
 	}
 
 	override fun addCombo(x:Int, y:Int, pts:Int, type:PopupCombo.CHAIN, ex:Int) {
@@ -1175,8 +1174,7 @@ abstract class AbstractRenderer:EventReceiver() {
 		if(!engine.allowTextRenderByReceiver) return
 		if(!engine.isVisible) return
 
-		drawMenu(engine, .75f, 0f+engine.fieldHeight, "RETRY", BASE, if(engine.statc[0]==0) RAINBOW else WHITE)
-		drawMenu(engine, 6.75f, 0f+engine.fieldHeight, "END", BASE, if(engine.statc[0]==1) RAINBOW else WHITE)
+		drawMenu(engine, -3, engine.fieldHeight, "[A]: Back", NANO, alpha = 1-rainbowCount*.05f)
 	}
 
 	/* fieldエディット画面の描画処理 */
@@ -1207,11 +1205,11 @@ abstract class AbstractRenderer:EventReceiver() {
 			drawFrame(offsetX, offsetY, engine, inside)
 			printFontSpecific(offsetX-30, offsetY-8, engine.stat::class.java.simpleName, NANO, WHITE, .5f, .5f)
 			"%d".format(engine.stime).let {s ->
-				printFontSpecific(offsetX-s.length*6, offsetY, s, NANO, WHITE, .5f, .5f)
+				printFontSpecific(offsetX-NANO.getWidth(s, .5f), offsetY, s, NANO, WHITE, .5f, .5f)
 			}
 			engine.statc.forEachIndexed {i, it ->
 				"%3d".format(it).let {s ->
-					printFontSpecific(offsetX-s.length*6, offsetY+10+i*7, s, NANO, WHITE, .5f, .5f)
+					printFontSpecific(offsetX-NANO.getWidth(s, .5f), offsetY+10+i*7, s, NANO, WHITE, .5f, .5f)
 				}
 			}
 			efxBG.forEachIndexed {i, it -> it.draw(i, this)}
@@ -1246,13 +1244,13 @@ abstract class AbstractRenderer:EventReceiver() {
 	open fun drawBlendAdd(unit:()->Unit) = unit()
 
 	protected abstract fun printFontSpecific(x:Float, y:Float, str:String, font:FONT, color:COLOR, scale:Float,
-		alpha:Float)
+		alpha:Float):Float
 
 	protected fun printFontSpecific(x:Number, y:Number, str:String, font:FONT, color:COLOR, scale:Float,
 		alpha:Float) =
 		printFontSpecific(x.toFloat(), y.toFloat(), str, font, color, scale, alpha)
 
-	protected abstract fun printTTFSpecific(x:Float, y:Float, str:String, color:COLOR, scale:Float, alpha:Float)
+	protected abstract fun printTTFSpecific(x:Float, y:Float, str:String, color:COLOR, scale:Float, alpha:Float):Float
 	protected fun printTTFSpecific(x:Number, y:Number, str:String, color:COLOR, size:Int, alpha:Float) =
 		printTTFSpecific(x.toFloat(), y.toFloat(), str, color, size.toFloat()/BaseFontTTF.FONT_SIZE, alpha)
 

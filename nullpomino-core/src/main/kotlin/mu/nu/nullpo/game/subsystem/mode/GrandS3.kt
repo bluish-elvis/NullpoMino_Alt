@@ -87,11 +87,10 @@ class GrandS3:AbstractGrand() {
 	/** 裏段位 */
 	private var secretGrade = 0
 
-	/** Section Time記録表示中ならtrue */
-	private var isShowBestSectionTime = 0
-
 	/** Number of sections */
 	override val sectionMax = 26
+	override val sectionPages = 3
+	override val resultPages = 3
 
 	override val medalSKQuads = listOf(listOf(10, 20, 30, 40), listOf(1, 2, 4, 6))
 	override val medalTSLines = listOf(listOf(32, 64, 96, 128), listOf(1, 2, 4, 6))
@@ -224,19 +223,6 @@ class GrandS3:AbstractGrand() {
 	private fun stMedalCheck(engine:GameEngine, section:Int) =
 		stMedalCheck(engine, section, sectionTime.getOrElse(section) {rollTime},
 			bestSectionTime.let {it[section.coerceIn(it.indices)]})
-
-	/* Called at settings screen */
-	override fun onSetting(engine:GameEngine):Boolean {
-		// Menu
-		if(!owner.replayMode) {
-			// section time display切替
-			if(engine.ctrl.isPush(Controller.BUTTON_F)) {
-				engine.playSE("change")
-				isShowBestSectionTime = (isShowBestSectionTime+1).mod(3)
-			}
-		}
-		return super.onSetting(engine)
-	}
 
 	override fun onSettingChanged(engine:GameEngine) {
 		super.onSettingChanged(engine)
@@ -711,8 +697,7 @@ class GrandS3:AbstractGrand() {
 
 	/* 結果画面 */
 	override fun renderResult(engine:GameEngine) {
-		receiver.drawMenu(engine, 0, 0, "${BaseFont.UP_S}${BaseFont.DOWN_S} PAGE${engine.statc[1]+1}/3", BASE, COLOR.RED)
-
+		super.renderResult(engine)
 		when(engine.statc[1]) {
 			0 -> {
 				val gcolor = when(engine.statistics.rollClear) {
@@ -766,30 +751,15 @@ class GrandS3:AbstractGrand() {
 
 	/* 結果画面の処理 */
 	override fun onResult(engine:GameEngine):Boolean {
-		owner.musMan.fadeSW = false
-		owner.musMan.bgm = when(engine.ending) {
-			0 -> BGM.Result(0)
-			2 if engine.statistics.rollClear>0 -> BGM.Result(3)
-			else -> BGM.Result(2)
+		if(engine.stime==0) {
+			owner.musMan.fadeSW = false
+			owner.musMan.bgm = when(engine.ending) {
+				0 -> BGM.Result(0)
+				2 if engine.statistics.rollClear>0 -> BGM.Result(3)
+				else -> BGM.Result(2)
+			}
 		}
-		// ページ切り替え
-		if(engine.ctrl.isMenuRepeatKey(Controller.BUTTON_UP)) {
-			engine.statc[1] = engine.statc[1]
-			if(engine.statc[1]<0) engine.statc[1] = 2
-			engine.playSE("change")
-		}
-		if(engine.ctrl.isMenuRepeatKey(Controller.BUTTON_DOWN)) {
-			engine.statc[1]++
-			if(engine.statc[1]>2) engine.statc[1] = 0
-			engine.playSE("change")
-		}
-		// section time display切替
-		if(engine.ctrl.isPush(Controller.BUTTON_F)) {
-			engine.playSE("change")
-			isShowBestSectionTime = (isShowBestSectionTime+1).mod(3)
-		}
-
-		return false
+		return super.onResult(engine)
 	}
 
 	/* リプレイ保存 */

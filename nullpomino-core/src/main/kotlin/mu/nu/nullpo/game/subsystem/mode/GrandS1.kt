@@ -57,9 +57,6 @@ class GrandS1:AbstractGrand() {
 	/** 裏段位 */
 	private var secretGrade = 0
 
-	/** Section Time記録表示中ならtrue */
-	private var isShowBestSectionTime = false
-
 	private val itemLevel = LevelGrandMenuItem(COLOR.BLUE, false)
 	/** Level at start */
 	private var startLevel:Int by DelegateMenuItem(itemLevel)
@@ -148,19 +145,6 @@ class GrandS1:AbstractGrand() {
 	private fun stMedalCheck(engine:GameEngine, section:Int) =
 		stMedalCheck(engine, section, sectionTime[section], bestSectionTime.let {it[section.coerceIn(it.indices)]})
 
-	/* Called at settings screen */
-	override fun onSetting(engine:GameEngine):Boolean {
-		// Menu
-		if(!owner.replayMode) {
-			// section time display切替
-			if(engine.ctrl.isPush(Controller.BUTTON_F)) {
-				engine.playSE("change")
-				isShowBestSectionTime = !isShowBestSectionTime
-			}
-		}
-		return super.onSetting(engine)
-	}
-
 	override fun onSettingChanged(engine:GameEngine) {
 		super.onSettingChanged(engine)
 		if(qualify in 1..6150) qualify = 12300
@@ -176,7 +160,6 @@ class GrandS1:AbstractGrand() {
 
 	override fun onReadyDone(engine:GameEngine, readyDone:Boolean) {
 		super.onReadyDone(engine, readyDone)
-		isShowBestSectionTime = false
 		owner.musMan.fadeSW = true
 	}
 
@@ -198,7 +181,7 @@ class GrandS1:AbstractGrand() {
 		receiver.drawScoreBadges(engine, 5, -4, 100, decTemp)
 		if(engine.isShowRanking) {
 			if(!owner.replayMode&&startLevel==0&&!big&&engine.ai==null)
-				if(!isShowBestSectionTime) {
+				if(isShowBestSectionTime<=0) {
 					// Rankings
 					val topY = if(receiver.bigSideNext) 5 else 3
 					receiver.drawScore(engine, 2, topY-1, "LEVEL  TIME", BASE, COLOR.BLUE)
@@ -461,8 +444,7 @@ class GrandS1:AbstractGrand() {
 
 	/* 結果画面 */
 	override fun renderResult(engine:GameEngine) {
-		receiver.drawMenu(engine, 0, 0, "${BaseFont.UP_S}${BaseFont.DOWN_S} PAGE${engine.statc[1]+1}/3", BASE, COLOR.RED)
-
+		super.renderResult(engine)
 		when(engine.statc[1]) {
 			0 -> {
 				if(grade>=1&&grade<tableGradeName.size) {
@@ -512,30 +494,18 @@ class GrandS1:AbstractGrand() {
 	}
 
 	/* 結果画面の処理 */
-	override fun onResult(engine:GameEngine):Boolean {
-		owner.musMan.fadeSW = false
-		owner.musMan.bgm = BGM.Result(
-			if(engine.ending>0)
-				if(engine.statistics.level<900) 2 else 3 else 0
-		)
-		// ページ切り替え
-		if(engine.ctrl.isMenuRepeatKey(Controller.BUTTON_UP)) {
-			engine.statc[1]--
-			if(engine.statc[1]<0) engine.statc[1] = 2
-			engine.playSE("change")
-		}
-		if(engine.ctrl.isMenuRepeatKey(Controller.BUTTON_DOWN)) {
-			engine.statc[1]++
-			if(engine.statc[1]>2) engine.statc[1] = 0
-			engine.playSE("change")
-		}
-		// section time display切替
-		if(engine.ctrl.isPush(Controller.BUTTON_F)) {
-			engine.playSE("change")
-			isShowBestSectionTime = !isShowBestSectionTime
-		}
+	override val resultPages = 3
+	override val sectionPages = 2
 
-		return false
+	override fun onResult(engine:GameEngine):Boolean {
+		if(engine.stime==0) {
+			owner.musMan.fadeSW = false
+			owner.musMan.bgm = BGM.Result(
+				if(engine.ending>0)
+					if(engine.statistics.level<900) 2 else 3 else 0
+			)
+		}
+		return super.onResult(engine)
 	}
 
 	/* リプレイ保存 */

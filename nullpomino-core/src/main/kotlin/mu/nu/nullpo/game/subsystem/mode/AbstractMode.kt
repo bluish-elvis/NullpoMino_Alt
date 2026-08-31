@@ -59,6 +59,27 @@ import kotlin.math.*
 abstract class AbstractMode:GameMode {
 	final override val id get() = this::class.simpleName?:"noName"
 
+	protected var menuTime = 0
+	override val name = this::class.simpleName?:"No Name"
+	override val players = 1
+	override val gameStyle = GameStyle.TETROMINO
+	override val gameIntensity = 0
+
+	/** Number of frames spent in menu */
+	override val color
+		get() = if(players>1) COLOR.ORANGE else when(gameIntensity) {
+			-1 -> COLOR.PINK
+			0 -> COLOR.GREEN
+			1 -> COLOR.BLUE
+			2 -> COLOR.CYAN
+			3 -> COLOR.RED
+			else -> COLOR.WHITE
+		}
+	protected var menuColor = COLOR.WHITE
+
+	override val isOnlineMode = false
+	override val isVSMode = false
+
 	/** GameManager that owns this mode */
 	protected var owner = GameManager()
 
@@ -77,7 +98,6 @@ abstract class AbstractMode:GameMode {
 	override val ranking:List<Leaderboard<*>> =
 		List(1) {Leaderboard(this.rankingMax, serializer<List<Int>>())}
 
-	protected var menuColor = COLOR.WHITE
 	/*abstract */override val menu = MenuList(id)
 	protected var statcMenu
 		get() = menu.menuSubPos
@@ -97,23 +117,8 @@ abstract class AbstractMode:GameMode {
 		set(x) {
 			menu.menuCursor = x
 		}
-	/** Number of frames spent in menu */
-	protected var menuTime = 0
-	override val name = this::class.simpleName?:"No Name"
-	override val players = 1
-	override val gameStyle = GameStyle.TETROMINO
-	override val gameIntensity = 0
-	override val color
-		get() = if(players>1) COLOR.ORANGE else when(gameIntensity) {
-			-1 -> COLOR.PINK
-			0 -> COLOR.GREEN
-			1 -> COLOR.BLUE
-			2 -> COLOR.CYAN
-			3 -> COLOR.RED
-			else -> COLOR.WHITE
-		}
-	override val isOnlineMode = false
-	override val isVSMode = false
+	protected var rankingCursor = 0
+	protected open val resultPages:Int = 1
 	/** Show Player profile */
 	protected var showPlayerStats = false
 	protected val playerProperties:List<ProfileProperties> = owner.engine.map {it.playerProp}
@@ -244,7 +249,22 @@ abstract class AbstractMode:GameMode {
 	override fun onExcellent(engine:GameEngine):Boolean = false
 	override fun outExcellent(engine:GameEngine):Boolean = false
 	override fun onGameOver(engine:GameEngine):Boolean = false
-	override fun onResult(engine:GameEngine):Boolean = false
+	override fun onResult(engine:GameEngine):Boolean {
+		// Page change
+		if(resultPages>1) {
+			val goPage = when {
+				engine.ctrl.isMenuRepeatKey(Controller.BUTTON_UP) -> -1
+				engine.ctrl.isMenuRepeatKey(Controller.BUTTON_DOWN) -> 1
+				else -> 0
+			}
+			if(goPage!=0) {
+				engine.statc[1] = rangeCursor(engine.statc[1]+goPage, 0..<resultPages)
+				engine.playSE("change")
+			}
+		}
+		return false
+	}
+
 	override fun onFieldEdit(engine:GameEngine):Boolean = false
 	override fun onCustom(engine:GameEngine):Boolean = false
 
@@ -277,7 +297,6 @@ abstract class AbstractMode:GameMode {
 		calcScore(engine,
 			ScoreEvent(engine.nowPieceObject, lines, engine.b2bCount, engine.combo, engine.twistType, engine.split))
 
-
 	protected var lastPow:Int = 0; private set
 
 	/** Calculates lines-clear score
@@ -285,7 +304,7 @@ abstract class AbstractMode:GameMode {
 	 * @param engine GameEngine
 	 * @param ev Cleared Lines Data
 	 */
-	override fun calcScore(engine:GameEngine, ev:ScoreEvent):Int{
+	override fun calcScore(engine:GameEngine, ev:ScoreEvent):Int {
 		lastPow = calcPower(engine, ev, true)
 		val spd = maxOf(0, engine.lockDelay-engine.lockDelayNow)+if(engine.manualLock) 1 else 0
 		val pts = calcScoreBase(engine, ev)
@@ -359,7 +378,7 @@ abstract class AbstractMode:GameMode {
 				renSum = get
 			}
 			renDel
-		} else if(pts>0)pts+spd else 0
+		} else if(pts>0) pts+spd else 0
 
 	/**Tetris World Style Goal*/
 	fun calcPoint(engine:GameEngine, ev:ScoreEvent):Int = ev.lines.let {li ->
@@ -432,6 +451,12 @@ abstract class AbstractMode:GameMode {
 	override fun renderSetting(engine:GameEngine) {
 		//TODO: Custom page breaks
 		menu.drawMenu(engine, engine.playerID, receiver, 0)
+		val maxC = menu.menus.size
+		receiver.drawMenu(engine, 0, -1, if(engine.ctrl.isPress(Controller.BUTTON_UP)) BaseFont.UP_S else BaseFont.UP_L,
+			BASE, COLOR.getRainbowColor((menuCursor-1).mod(maxC)))
+		receiver.drawMenu(engine, 9, -1, if(engine.ctrl.isPress(Controller.BUTTON_DOWN)) BaseFont.DOWN_S else BaseFont.DOWN_L,
+			BASE, COLOR.getRainbowColor((menuCursor+1).mod(maxC)))
+		receiver.drawMenu(engine, -3, -1, "Value ${menuCursor+1} / $maxC", NANO, COLOR.getRainbowColor(menuCursor))
 	}
 
 	override fun renderLineClear(engine:GameEngine) {}
@@ -451,7 +476,15 @@ abstract class AbstractMode:GameMode {
 	override fun renderEndingStart(engine:GameEngine) {}
 	override fun renderExcellent(engine:GameEngine) {}
 	override fun renderGameOver(engine:GameEngine) {}
-	override fun renderResult(engine:GameEngine) {}
+	override fun renderResult(engine:GameEngine) {
+		receiver.drawMenu(engine, 0, -1, if(engine.ctrl.isPress(Controller.BUTTON_UP)) BaseFont.UP_S else BaseFont.UP_L,
+			BASE, COLOR.getRainbowColor((engine.statc[1]-1).mod(resultPages)))
+		receiver.drawMenu(engine, 9, -1, if(engine.ctrl.isPress(Controller.BUTTON_DOWN)) BaseFont.DOWN_S else BaseFont.DOWN_L,
+			BASE, COLOR.getRainbowColor((engine.statc[1]+1).mod(resultPages)))
+		receiver.drawMenu(engine, -3, -1, "Page ${engine.statc[1]+1} / $resultPages", NANO,
+			COLOR.getRainbowColor(engine.statc[1]))
+	}
+
 	override fun renderCustom(engine:GameEngine) {}
 	override fun renderFieldEdit(engine:GameEngine) {}
 
@@ -509,6 +542,9 @@ abstract class AbstractMode:GameMode {
 					onSettingChanged(engine)
 				}
 			}
+		}
+		else if(engine.ctrl.isPush(Controller.BUTTON_E)&&engine.ai==null&&!isOnlineMode) {
+			rankingCursor = 0
 		}
 	}
 
@@ -779,7 +815,7 @@ abstract class AbstractMode:GameMode {
 				Statistic.SCORE -> {
 					receiver.drawMenu(engine, 0, y, "Score", BASE, color, scale*.75f)
 					receiver.drawMenu(engine, 0, y, "%7d".format(engine.statistics.score), NUM, scale*1.9f)
-					receiver.drawMenu(engine, 7f, y+1.25f, "Score", NANO, color, scale*.75f)
+					receiver.drawMenu(engine, engine.fieldWidth, y+1.25f, "Score", NANO, color, scale*.75f)
 				}
 				Statistic.ATTACKS -> {
 					receiver.drawMenu(engine, 6, y, "Lines", BASE, color, scale*.8f)
@@ -794,16 +830,16 @@ abstract class AbstractMode:GameMode {
 				}
 				Statistic.LEVEL -> {
 					receiver.drawMenu(engine, 0, y+1, "Level", BASE, color, scale)
-					receiver.drawMenu(engine, 5, y, "%03d".format(engine.statistics.level+1), NUM_W, scale*2)
+					receiver.drawMenu(engine, 4, y, "%03d".format(engine.statistics.level+1), NUM_W, scale*2)
 				}
 				Statistic.LEVEL_ADD_DISP -> {
 					receiver.drawMenu(engine, 0, y+1, "Level", BASE, color, scale)
-					receiver.drawMenu(engine, 5, y, "%03d".format(engine.statistics.level+engine.statistics.levelDispAdd),
+					receiver.drawMenu(engine, 4, y, "%03d".format(engine.statistics.level+engine.statistics.levelDispAdd),
 						NUM_W, scale*2)
 				}
 				Statistic.LEVEL_MANIA -> {
 					receiver.drawMenu(engine, 0, y+1, "Level", BASE, color, scale)
-					receiver.drawMenu(engine, 5, y, "%03d".format(engine.statistics.level), NUM_W, scale*2)
+					receiver.drawMenu(engine, 4, y, "%03d".format(engine.statistics.level), NUM_W, scale*2)
 				}
 				Statistic.LINES -> {
 					receiver.drawMenu(engine, 6, y, "Lines", BASE, color, scale*.8f)

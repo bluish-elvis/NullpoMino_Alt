@@ -31,7 +31,6 @@
 package mu.nu.nullpo.game.subsystem.mode
 
 import mu.nu.nullpo.game.component.BGM
-import mu.nu.nullpo.game.component.Controller
 import mu.nu.nullpo.game.event.*
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
 import mu.nu.nullpo.game.net.NetUtil
@@ -255,27 +254,17 @@ class Marathon:NetDummyMode() {
 	}
 
 	override fun onResult(engine:GameEngine):Boolean {
-		val b = if(engine.ending==0) BGM.Result(1) else BGM.Result(2)
-		owner.musMan.fadeSW = false
-		owner.musMan.bgm = b
-
-		// Page change
-		if(engine.ctrl.isMenuRepeatKey(Controller.BUTTON_UP)) {
-			engine.statc[1]--
-			if(engine.statc[1]<0) engine.statc[1] = 1
-			engine.playSE("change")
+		if(engine.stime==0) {
+			owner.musMan.fadeSW = false
+			owner.musMan.bgm = if(engine.ending==0) BGM.Result(1) else BGM.Result(2)
 		}
-		if(engine.ctrl.isMenuRepeatKey(Controller.BUTTON_DOWN)) {
-			engine.statc[1]++
-			if(engine.statc[1]>1) engine.statc[1] = 0
-			engine.playSE("change")
-		}
-
 		return super.onResult(engine)
 	}
 
+	override val resultPages = 2
 	/* Render results screen */
 	override fun renderResult(engine:GameEngine) {
+		super.renderResult(engine)
 		when {
 			engine.statc[1]==0 -> drawResultStats(
 				engine, receiver, 0, COLOR.BLUE, Statistic.SCORE, Statistic.LINES, Statistic.TIME,

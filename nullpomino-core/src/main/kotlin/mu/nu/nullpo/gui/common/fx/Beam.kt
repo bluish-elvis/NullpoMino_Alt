@@ -45,6 +45,7 @@ sealed class Beam(x:Float, y:Float, val w:Int, val h:Int, alpha:Float = 1f, var 
 	class V(x:Float, y:Float, w:Int, h:Int, alpha:Float = 1f, angle:Float = 0f):Beam(x, y, w, h, alpha, angle) {
 		override val isV:Boolean get() = true
 	}
+
 	override fun update(r:AbstractRenderer):Boolean = ++ticks>=16
 
 	override fun draw(i:Int, r:AbstractRenderer) {

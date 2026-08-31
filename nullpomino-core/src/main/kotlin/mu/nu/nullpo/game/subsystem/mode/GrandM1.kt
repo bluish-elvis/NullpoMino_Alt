@@ -30,7 +30,8 @@
  */
 package mu.nu.nullpo.game.subsystem.mode
 
-import mu.nu.nullpo.game.component.*
+import mu.nu.nullpo.game.component.BGM
+import mu.nu.nullpo.game.component.Block
 import mu.nu.nullpo.game.event.*
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
 import mu.nu.nullpo.game.play.GameEngine
@@ -77,13 +78,11 @@ class GrandM1:AbstractGrand() {
 
 	/** Section Score */
 	private val sectionScore = MutableList(sectionMax) {0}
+	private val sectionGrade = MutableList(sectionMax) {0}
 
 	/** Section Time記録 */
 	private val bestSectionTime = MutableList(sectionMax) {DEFAULT_SECTION_TIME}
 	private val bestSectionScore = MutableList(sectionMax) {0}
-
-	/** Section Time記録表示中ならtrue */
-	private var isShowBestSectionTime = false
 
 	private val itemLevel = LevelGrandMenuItem(COLOR.BLUE)
 	/** Level at start */
@@ -102,6 +101,7 @@ class GrandM1:AbstractGrand() {
 
 	/** Current round's ranking position */
 	private var rankingRank = 0
+	override val resultPages = 3
 
 	override val ranking = listOf(
 		Leaderboard(rankingMax, kotlinx.serialization.serializer<List<Rankable.GrandRow>>()) {Rankable.GrandRow()})
@@ -212,19 +212,6 @@ class GrandM1:AbstractGrand() {
 	private fun stMedalCheck(engine:GameEngine, section:Int) =
 		stMedalCheck(engine, section, sectionTime[section], bestSectionTime[section])
 
-	/* Called at settings screen */
-	override fun onSetting(engine:GameEngine):Boolean {
-		// Menu
-		if(!engine.owner.replayMode) {
-			// section time display切替
-			if(engine.ctrl.isPush(Controller.BUTTON_F)) {
-				engine.playSE("change")
-				isShowBestSectionTime = !isShowBestSectionTime
-			}
-		}
-		return super.onSetting(engine)
-	}
-
 	override fun onSettingChanged(engine:GameEngine) {
 		engine.statistics.level = startLevel*100
 		setSpeed(engine)
@@ -234,12 +221,12 @@ class GrandM1:AbstractGrand() {
 
 	override fun onReadyDone(engine:GameEngine, readyDone:Boolean) {
 		super.onReadyDone(engine, readyDone)
-			if(!readyDone) {
-			isShowBestSectionTime = false
+		if(!readyDone) {
 			bgmSet(engine)
 		}
 	}
-	fun bgmSet(engine:GameEngine){
+
+	fun bgmSet(engine:GameEngine) {
 		bgmLv = if(engine.statistics.level<500) 0 else 1
 		owner.musMan.bgm = if(engine.statistics.level<500) BGM.GrandM(0) else BGM.GrandM(1)
 
@@ -278,7 +265,7 @@ class GrandM1:AbstractGrand() {
 		receiver.drawScoreBadges(engine, 5, -4, 100, decTemp)
 		if(engine.isShowRanking) {
 			if(!owner.replayMode&&startLevel==0&&!big&&!always20g&&engine.ai==null)
-				if(!isShowBestSectionTime) {
+				if(isShowBestSectionTime<=0) {
 					// Rankings
 					receiver.drawScore(engine, 0, 2, "GRADE TIME LEVEL", BASE, COLOR.BLUE)
 
@@ -430,9 +417,10 @@ class GrandM1:AbstractGrand() {
 
 		if(li>=1) {
 			// 段位上昇
+			val sect = minOf(sectionsDone, sectionMax-1)
 			while(grade<17&&engine.statistics.score>=tableGradeScore[grade]) {
 				engine.playSE("grade${grade*4/17}")
-				grade++
+				sectionGrade[sect]=++grade
 				when {
 					grade in 0..4 -> engine.playSE("grade0")
 					grade in 5..8 -> engine.playSE("grade1")
@@ -508,7 +496,7 @@ class GrandM1:AbstractGrand() {
 			}
 
 			lastScore = pts
-			sectionScore[minOf(sectionsDone, sectionMax-1)] += pts
+			sectionScore[sect] += pts
 			engine.statistics.scoreLine += pts
 			return pts
 		}
@@ -590,8 +578,7 @@ class GrandM1:AbstractGrand() {
 
 	/* 結果画面 */
 	override fun renderResult(engine:GameEngine) {
-		receiver.drawMenu(engine, 0, 0, "${BaseFont.UP_S}${BaseFont.DOWN_S} PAGE${engine.statc[1]+1}/3", BASE, COLOR.RED)
-
+		super.renderResult(engine)
 		when(engine.statc[1]) {
 			0 -> {
 				receiver.drawMenu(engine, 0, 2, "GRADE", BASE, COLOR.BLUE)
@@ -631,33 +618,6 @@ class GrandM1:AbstractGrand() {
 	}
 
 	/* 結果画面の処理 */
-	override fun onResult(engine:GameEngine):Boolean {
-		owner.musMan.fadeSW = false
-		owner.musMan.bgm = when(engine.ending) {
-			0 -> BGM.Result(0)
-			2 -> BGM.Result(3)
-			else -> BGM.Result(2)
-		}
-		engine.statistics.time = lastGradeTime
-		// ページ切り替え
-		if(engine.ctrl.isMenuRepeatKey(Controller.BUTTON_UP)) {
-			engine.statc[1]--
-			if(engine.statc[1]<0) engine.statc[1] = 2
-			engine.playSE("change")
-		}
-		if(engine.ctrl.isMenuRepeatKey(Controller.BUTTON_DOWN)) {
-			engine.statc[1]++
-			if(engine.statc[1]>2) engine.statc[1] = 0
-			engine.playSE("change")
-		}
-		// section time display切替
-		if(engine.ctrl.isPush(Controller.BUTTON_F)) {
-			engine.playSE("change")
-			isShowBestSectionTime = !isShowBestSectionTime
-		}
-
-		return false
-	}
 
 	/* リプレイ保存 */
 	override fun saveReplay(engine:GameEngine, prop:CustomProperties):Boolean {

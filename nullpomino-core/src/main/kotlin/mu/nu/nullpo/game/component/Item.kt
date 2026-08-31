@@ -53,7 +53,7 @@ sealed class Item(val id:Int, val showName:String? = null, val type:Type = Type.
 
 	constructor(id:Int, showName:String):this(id, showName, type = Type.RECOVERY)
 
-	var lifetime = if(isSec)duration*60 else duration
+	var lifetime = if(isSec) duration*60 else duration
 	open fun statMoveEffect(e:GameEngine):Boolean = false
 
 	/**

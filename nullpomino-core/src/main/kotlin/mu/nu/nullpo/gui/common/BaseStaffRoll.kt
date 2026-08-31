@@ -44,36 +44,28 @@ abstract class BaseStaffRoll {
 		Plane, Header
 	}
 
-	abstract val font:ResourceImage<*>
+	abstract val font:BaseFontNano
 	abstract val img:ResourceImage<*>
 
 	/** @param scr scroll amount pixels
 	 * @param dh draw height*/
 	fun draw(x:Float, y:Float, scr:Float, dh:Float, alpha:Float = 1f) {
-		fun cmp(c:Char) = when(c) {
-			' ', ':' -> .5f
-			'(', ')', '.' -> .33f
-			'/', 'I' -> .25f
-			else -> 0f
-		}
 
-		fun drawFont(str:String, x:Float, type:LineType, y:Float, dh:Float, alpha:Float) =
-			str.fold(x+width/2f-(str.length-str.sumOf {cmp(it).toDouble()}.toFloat())*.5f*fw) {cx, it ->
-				val fontColor = when(type) {
-					LineType.Header -> if(it.isUpperCase()) BLUE else GREEN
-					LineType.Plane -> if(it.isUpperCase()) ORANGE else WHITE
+		fun drawFont(str:String, x:Float, type:LineType, y:Float, dh:Float, alpha:Float) {
+			val dx = x+width/2f-(font.getWidth(str, scale/2))
+			val fontColor = {c:Char, _:Int ->
+				when(type) {
+					LineType.Header -> if(c.isUpperCase()) BLUE else GREEN
+					LineType.Plane -> if(c.isUpperCase()) ORANGE else WHITE
 				}
-				val chr = it.code
-				val sx = BW*((chr-32)%32)
-				val sy = BH*((chr-32)/32+fontColor.ordinal*3)
-				val dx = cx-fw*cmp(it)/2
-				font.draw(
-					dx, y, cx+fw, maxOf(y, minOf(y+dh, y+fh)),
-					sx.toFloat(), sy.toFloat(), sx+BW.toFloat(),
-					if(fh>dh) sy+14f-minOf(14f, (y+fh-y-dh)/scale) else sy+14f, alpha
-				)
-				cx+fw-fw*cmp(it)/2
 			}
+			font.processTxt(
+				dx, y, str, fontColor, scale, alpha, 0
+			) {i, li, dx, dy, scale, sx, sy, sw, sh, a ->
+				font.getImg(i).draw(dx, dy, dx+sw*scale, maxOf((dy+sh*scale), minOf(y+dh, y+1)),
+					sx.toFloat(), sy.toFloat(), sx+sw.toFloat(), sy+sh.toFloat()-((y-dh)/scale).coerceIn(0f..sh.toFloat()), a)
+			}
+		}
 
 		strList.drop(maxOf(0, floor(scr/lh).toInt()))
 			.take(

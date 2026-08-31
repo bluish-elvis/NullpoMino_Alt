@@ -41,7 +41,7 @@ import mu.nu.nullpo.game.component.Block
 import mu.nu.nullpo.game.play.GameEngine
 import zeroxfc.nullpo.custom.libs.AnchorPoint
 import zeroxfc.nullpo.custom.libs.Vector
-import java.util.Random
+import java.util.*
 import kotlin.math.PI
 
 /**

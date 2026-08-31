@@ -37,40 +37,38 @@ abstract class BaseFontNormal:BaseFont {
 	companion object {
 		const val W:Int = 16
 		const val H:Int = 16
+		fun calcWidths(str:String, scale:Float):List<Float> = str.lines().map {it.length*W*scale}
 	}
 
-	override fun processTxt(x:Float, y:Float, str:String, color:COLOR, scale:Float, alpha:Float, rainbow:Int,
-		draw:(i:Int, dx:Float, dy:Float, scale:Float, sx:Int, sy:Int, sw:Int, sh:Int, a:Float)->Unit):Float {
-		var dx = x
-		var dy = y
-		str.forEachIndexed {i, char ->
+	override fun getWidths(str:String, scale:Float):List<Float> = calcWidths(str, scale)
 
-			if(char.code==0x0A) {
-				// New lines (\n)
-				dy += H*scale
-				dx = x
-			} else {
+	override fun processTxt(x:Float, y:Float, str:String, colors:(Char, Int)->COLOR, scale:Float, alpha:Float, rainbow:Int,
+		draw:(i:Int, li:Int, dx:Float, dy:Float, scale:Float, sx:Int, sy:Int, sw:Int, sh:Int, a:Float)->Unit):List<Float> =
+		str.lines().mapIndexed {li, ls ->
+			var dx = x
+			val dy = y+H*li*scale
+			ls.forEachIndexed {i, char ->
 				val c = if(char.code==0x20) 96 else char.code-32// Character output
 				val a = if(char.code==0x20) alpha/3f else alpha
-				val fontColor = (if(color==COLOR.RAINBOW) COLOR.getRainbowColor(rainbow, i) else color).ordinal
+				val fontColor = colors(char, i).let {(if(it==COLOR.RAINBOW) COLOR.getRainbowColor(rainbow, i) else it).ordinal}
 				val wy = dy+if(char.isLowerCase()) 3f*scale else 0f
 
 				val sx = c%32
 				val sy = c/32+fontColor*4
 				when {
-					scale<=2f/3f -> draw(0, dx, wy, scale*2, sx*8, sy*8, 8, 8, a)
-					scale>=(5f/3f) -> draw(2, dx, wy, scale/2, sx*32, sy*32, 32, 32, a)
-					else -> draw(1, dx, wy, scale, sx*16, sy*16, 16, 16, a)
+					scale<=2f/3f -> draw(0, li, dx, wy, scale*2, sx*8, sy*8, 8, 8, a)
+					scale>=(5f/3f) -> draw(2, li, dx, wy, scale/2, sx*32, sy*32, 32, 32, a)
+					else -> draw(1, li, dx, wy, scale, sx*16, sy*16, 16, 16, a)
 				}
 				dx += W*scale
 			}
+			dx-x
+			// New lines (\n)
 		}
-		return dx-x
-	}
 
 	/*override fun printFont(x:Float, y:Float, str:String, color:COLOR, scale:Float, alpha:Float, rainbow:Int) =
 		processTxt(x, y, str, color, scale, alpha, rainbow)
-		{i:Int, dx:Float, dy:Float, s:Float, sx:Int, sy:Int, sw:Int, sh:Int, a:Float ->
+		{i:Int, li:Int, dx:Float, dy:Float, s:Float, sx:Int, sy:Int, sw:Int, sh:Int, a:Float ->
 			getImg(i).draw(dx, dy, dx+sw*s, dy+sh*s, sx, sy, sx+sw, sy+sh, alpha = a)
 		}*/
 

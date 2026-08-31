@@ -2286,7 +2286,7 @@ class GameEngine(
 
 					if(ending==0||staffrollEnableStatistics)
 						statistics.totalPieceLocked++// AREなし
-					if(fieldWidth==10&&owner.mode?.gameStyle==GameStyle.TETROMINO) {
+					if(field.width==10&&owner.mode?.gameStyle==GameStyle.TETROMINO) {
 						val momentum = nowPieceSteps-(2*(twistType!=null).toInt())-(2*underRoof.toInt())
 						val d = momentum-it.finesseLimit(nowPieceX)
 						val finePts = /*if(nowPieceBottomY>=fieldHeight-1||underRoof) 5 else*/ if(d<=0) 5 else maxOf(3-d, 0)
@@ -2378,7 +2378,7 @@ class GameEngine(
 										b.data[b.direction].filter {(blk) -> blk.item!=null})
 								}
 								nowPieceObject = null
-								stat = Status.INTERRUPTITEM(Status.MOVE,interruptItem)
+								stat = Status.INTERRUPTITEM(Status.MOVE, interruptItem)
 							}
 							else -> {
 								// AREなし
@@ -2536,7 +2536,7 @@ class GameEngine(
 						// AREなし:中断効果のあるアイテム処理
 						nowPieceObject?.setDarkness(0f)
 						nowPieceObject = null
-						stat = Status.INTERRUPTITEM(Status.MOVE,interruptItem)
+						stat = Status.INTERRUPTITEM(Status.MOVE, interruptItem)
 						latestSpawnItem = null
 						field.filterBlocks {b, _, _ -> b.item==interruptItem}.forEach {(b, _, _) ->
 							b.item = null
@@ -2812,15 +2812,16 @@ class GameEngine(
 	 * - [statc].0 cursor */
 	private fun statResult() {
 		// Event
-		owner.musMan.fadeSW = false
-		owner.musMan.bgm = BGM.Result(
-			when {
-				ending==2 -> if(owner.mode?.gameIntensity in 1..2) (if(statistics.time<10800) 1 else 2) else 3
-				ending!=0 -> if(statistics.time<10800) 1 else 2
-				else -> 0
-			}
-		)
-
+		if(stime==0) {
+			owner.musMan.fadeSW = false
+			owner.musMan.bgm = BGM.Result(
+				when {
+					ending==2 -> if(owner.mode?.gameIntensity in 1..2) (if(statistics.time<10800) 1 else 2) else 3
+					ending!=0 -> if(statistics.time<10800) 1 else 2
+					else -> 0
+				}
+			)
+		}
 		if(owner.mode?.onResult(this)==true) return
 		receiver.onResult(this)
 
@@ -2828,18 +2829,16 @@ class GameEngine(
 		gameActive = false
 		timerActive = false
 
-		// Cursor movement
+		/*// Cursor movement
 		if(ctrl.isMenuRepeatKey(Controller.BUTTON_LEFT)||ctrl.isMenuRepeatKey(Controller.BUTTON_RIGHT)) {
 			statc[0] = (statc[0]==0).toInt()
 			playSE("cursor")
-		}
+		}*/
 
 		// Confirm
-		if(ctrl.isPush(Controller.BUTTON_A)) {
+		if(stime>=60&&ctrl.isPush(Controller.BUTTON_A)) {
 			playSE("decide")
-
-			if(statc[0]==0) owner.reset()
-			else quitFlag = true
+			owner.reset()
 		}
 	}
 
@@ -2855,12 +2854,12 @@ class GameEngine(
 		if(ctrl.isMenuRepeatKey(Controller.BUTTON_LEFT, false)&&!ctrl.isPress(Controller.BUTTON_C)) {
 			playSE("move")
 			mapEditX--
-			if(mapEditX<0) mapEditX = fieldWidth-1
+			if(mapEditX<0) mapEditX = field.width-1
 		}
 		if(ctrl.isMenuRepeatKey(Controller.BUTTON_RIGHT, false)&&!ctrl.isPress(Controller.BUTTON_C)) {
 			playSE("move")
 			mapEditX++
-			if(mapEditX>fieldWidth-1) mapEditX = 0
+			if(mapEditX>field.width-1) mapEditX = 0
 		}
 		if(ctrl.isMenuRepeatKey(up, false)) {
 			playSE("move")
@@ -2953,7 +2952,7 @@ class GameEngine(
 			else undoStack.removeLast()
 			undoStack.removeLast()
 		} else {
-			if(undoStack.size<1) return false
+			if(undoStack.isEmpty()) return false
 			else undoStack.removeLast()
 		}
 		playSE("cursor")
@@ -3013,7 +3012,9 @@ class GameEngine(
 	}
 
 	/** Constants of main game status */
-	sealed class Status(var time:Int = 0) {
+	sealed class Status {
+		var time:Int = 0
+
 		data object NOTHING:Status()
 		data object SETTING:Status()
 		data object PROFILE:Status()

@@ -124,7 +124,7 @@ data object Line:ClearType {
 			} else if(comboType==COMBO_TYPE_DISABLE) combo = 0
 
 			lineGravityTotalLines += lineClearing
-			statistics.blocks += li*fieldWidth
+			statistics.blocks += li*field.width//check.size
 			if(inGame) statistics.lines += li
 			check.linesY.let {
 				owner.mode?.lineClear(this, it)

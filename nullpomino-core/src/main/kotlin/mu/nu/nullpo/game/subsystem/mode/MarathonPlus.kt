@@ -576,8 +576,7 @@ class MarathonPlus:NetDummyMode() {
 
 	/* Render results screen */
 	override fun renderResult(engine:GameEngine) {
-		receiver.drawMenu(engine, 0, 0, "${BaseFont.UP_S}${BaseFont.DOWN_S} PAGE${(engine.statc[1]+1)}/2", BASE, COLOR.RED)
-
+		super.renderResult(engine)
 		if(engine.statc[1]==0) {
 
 			drawResultStats(engine, receiver, 1, COLOR.BLUE, Statistic.SCORE, Statistic.LINES, Statistic.LEVEL, Statistic.TIME)
@@ -605,22 +604,7 @@ class MarathonPlus:NetDummyMode() {
 	}
 
 	/* Results screen */
-	override fun onResult(engine:GameEngine):Boolean {
-		// Page change
-		if(engine.ctrl.isMenuRepeatKey(Controller.BUTTON_UP)) {
-			engine.statc[1]--
-			if(engine.statc[1]<0) engine.statc[1] = 1
-			engine.playSE("change")
-		}
-		if(engine.ctrl.isMenuRepeatKey(Controller.BUTTON_DOWN)) {
-			engine.statc[1]++
-			if(engine.statc[1]>1) engine.statc[1] = 0
-			engine.playSE("change")
-		}
-
-		return super.onResult(engine)
-	}
-
+	override val resultPages = 2
 	/* Called when saving replay */
 	override fun saveReplay(engine:GameEngine, prop:CustomProperties):Boolean {
 		saveSetting(engine, prop)

@@ -326,27 +326,11 @@ class SprintUltra:NetDummyMode() {
 	}
 
 	/* Results screen */
-	override fun onResult(engine:GameEngine):Boolean {
-		// Page change
-		if(engine.ctrl.isMenuRepeatKey(Controller.BUTTON_UP)) {
-			engine.statc[1]--
-			if(engine.statc[1]<0) engine.statc[1] = 2
-			engine.playSE("change")
-		}
-		if(engine.ctrl.isMenuRepeatKey(Controller.BUTTON_DOWN)) {
-			engine.statc[1]++
-			if(engine.statc[1]>2) engine.statc[1] = 0
-			engine.playSE("change")
-		}
-
-		return super.onResult(engine)
-	}
+	override val resultPages = 3
 
 	/* Render results screen */
 	override fun renderResult(engine:GameEngine) {
-		receiver.drawMenu(
-			engine, 0, 0, "${BaseFont.UP_L}${BaseFont.DOWN_L} PAGE${engine.statc[1]+1}/2", BASE, COLOR.RED
-		)
+		super.renderResult(engine)
 		if(engine.statc[1]<=1) {
 			if(rankingRank[0]==0) receiver.drawMenu(engine, 0, 3, "NEW RECORD", BASE, COLOR.ORANGE)
 			else if(rankingRank[0]!=-1)

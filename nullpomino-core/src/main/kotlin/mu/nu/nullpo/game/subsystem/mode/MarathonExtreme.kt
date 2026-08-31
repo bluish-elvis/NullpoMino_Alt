@@ -296,27 +296,17 @@ class MarathonExtreme:NetDummyMode() {
 	}
 
 	override fun onResult(engine:GameEngine):Boolean {
-		val b = if(engine.ending==0) BGM.Result(0) else BGM.Result(3)
-		owner.musMan.fadeSW = false
-		owner.musMan.bgm = b
-
-		// Page change
-		if(engine.ctrl.isMenuRepeatKey(Controller.BUTTON_UP)) {
-			engine.statc[1]--
-			if(engine.statc[1]<0) engine.statc[1] = 1
-			engine.playSE("change")
+		if(engine.stime==0) {
+			owner.musMan.fadeSW = false
+			owner.musMan.bgm = if(engine.ending==0) BGM.Result(0) else BGM.Result(3)
 		}
-		if(engine.ctrl.isMenuRepeatKey(Controller.BUTTON_DOWN)) {
-			engine.statc[1]++
-			if(engine.statc[1]>1) engine.statc[1] = 0
-			engine.playSE("change")
-		}
-
 		return super.onResult(engine)
 	}
 
+	override val resultPages = 2
 	/* Render results screen */
 	override fun renderResult(engine:GameEngine) {
+		super.renderResult(engine)
 		when {
 			engine.statc[1]==0 -> drawResultStats(
 				engine, receiver, 0, COLOR.RED, Statistic.SCORE, Statistic.LINES, Statistic.TIME,

@@ -64,9 +64,6 @@ class GrandS2:AbstractGrand() {
 	/** 裏段位 */
 	private var secretGrade = 0
 
-	/** Section Time記録表示中ならtrue */
-	private var isShowBestSectionTime = false
-
 	/** Number of sections */
 	override val sectionMax get() = tableSectionMax[goalType]
 
@@ -187,19 +184,6 @@ class GrandS2:AbstractGrand() {
 	private fun stMedalCheck(engine:GameEngine, section:Int) =
 		stMedalCheck(engine, section, sectionTime[section], bestSectionTime[goalType][section])
 
-	/* Called at settings screen */
-	override fun onSetting(engine:GameEngine):Boolean {
-		// Menu
-		if(!owner.replayMode) {
-			// section time display切替
-			if(engine.ctrl.isPush(Controller.BUTTON_F)) {
-				engine.playSE("change")
-				isShowBestSectionTime = !isShowBestSectionTime
-			}
-		}
-		return super.onSetting(engine)
-	}
-
 	override fun onSettingChanged(engine:GameEngine) {
 		super.onSettingChanged(engine)
 		val lv = startLevel*100
@@ -228,7 +212,7 @@ class GrandS2:AbstractGrand() {
 		receiver.drawScoreBadges(engine, 5, -4, 100, decTemp)
 		if(engine.isShowRanking) {
 			if(!owner.replayMode&&startLevel==0&&!big&&engine.ai==null)
-				if(!isShowBestSectionTime) {
+				if(isShowBestSectionTime<=0) {
 					// Rankings
 					val topY = if(receiver.bigSideNext) 5 else 3
 					receiver.drawScore(engine, 0, topY-1, "GRADE LV TIME", BASE, COLOR.RED)
@@ -547,8 +531,7 @@ class GrandS2:AbstractGrand() {
 
 	/* 結果画面 */
 	override fun renderResult(engine:GameEngine) {
-		receiver.drawMenu(engine, 0, 0, "${BaseFont.UP_S}${BaseFont.DOWN_S} PAGE${engine.statc[1]+1}/3", BASE, COLOR.RED)
-
+		super.renderResult(engine)
 		when(engine.statc[1]) {
 			0 -> {
 				val gcolor = when(engine.statistics.rollClear) {
@@ -598,33 +581,20 @@ class GrandS2:AbstractGrand() {
 	}
 
 	/* 結果画面の処理 */
+	override val resultPages = 3
+	override val sectionPages = 2
+
 	override fun onResult(engine:GameEngine):Boolean {
-		owner.musMan.fadeSW = false
-		owner.musMan.bgm = when(engine.ending) {
-			0 -> BGM.Result(0)
-			2 if engine.statistics.rollClear>0 -> BGM.Result(3)
-			else -> BGM.Result(2)
+		if(engine.stime==0) {
+			owner.musMan.fadeSW = false
+			owner.musMan.bgm = when(engine.ending) {
+				0 -> BGM.Result(0)
+				2 if engine.statistics.rollClear>0 -> BGM.Result(3)
+				else -> BGM.Result(2)
+			}
 		}
-		// ページ切り替え
-		if(engine.ctrl.isMenuRepeatKey(Controller.BUTTON_UP)) {
-			engine.statc[1]--
-			if(engine.statc[1]<0) engine.statc[1] = 2
-			engine.playSE("change")
-		}
-		if(engine.ctrl.isMenuRepeatKey(Controller.BUTTON_DOWN)) {
-			engine.statc[1]++
-			if(engine.statc[1]>2) engine.statc[1] = 0
-			engine.playSE("change")
-		}
-		// section time display切替
-		if(engine.ctrl.isPush(Controller.BUTTON_F)) {
-			engine.playSE("change")
-			isShowBestSectionTime = !isShowBestSectionTime
-		}
-
-		return false
+		return super.onResult(engine)
 	}
-
 	/* リプレイ保存 */
 	override fun saveReplay(engine:GameEngine, prop:CustomProperties):Boolean {
 		owner.replayProp.setProperty("speedmania2.version", version)

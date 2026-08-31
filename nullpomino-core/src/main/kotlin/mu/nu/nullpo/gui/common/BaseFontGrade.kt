@@ -38,26 +38,48 @@ abstract class BaseFontGrade:BaseFont {
 	companion object {
 		const val WB = 64
 		const val WS = 32
+		fun calcWidth(str:String, isBig:Boolean):Float = if(isBig) str.foldIndexed(0f) {i, acc, c ->
+			val nX = str.getOrNull(i+1)?.code?:-1
+			val nY = str.getOrNull(i+2)?.code?:-1
+			acc+when(c.code) {
+				in 0x30..0x39 -> 48
+				0x53, 0x73 -> if(nX in 0x31..0x39) (if(nX==0x31&&nY in 0x30..0x33) -32 else 16) else 48 // s,S
+				0x4D -> if(nX in 0x31..0x39) 16 else 48 // m
+				0x6D -> if(str.slice(i..minOf(str.length-1, i+5)).contains("master", true)) 128-48 else 48 // M
+				0x4B, 0x6B, 0x56, 0x76, 0x4F, 0x6F -> 48 // K,V,O
+				0x47, 0x67 -> if(str.slice(i..minOf(str.length-1, i+4)).contains("grand", true)) 112 else // G
+					if(nX==0x6D||nX==0x4D) 16 else 48
+				else -> 0
+			}
+		} else str.foldIndexed(0f) {i, acc, c ->
+			val nX = str.getOrNull(i+1)?.code?:-1
+			acc+when(c.code) {
+				in 0x30..0x39 -> if(c.code==0x31&&nX in 0x31..0x33) 0 else 32
+				0x53, 0x73, 0x6D, 0x4D, 0x4B, 0x6B, 0x56, 0x76, 0x4F, 0x6F, 0x47, 0x67 -> 32 // S,M,K,V,O,G
+				else -> 0
+			}
+		}
 	}
 
-	override fun processTxt(x:Float, y:Float, str:String, color:COLOR, scale:Float, alpha:Float, rainbow:Int,
-		draw:(i:Int, dx:Float, dy:Float, scale:Float, sx:Int, sy:Int, sw:Int, sh:Int, a:Float)->Unit):Float =
+	override fun getWidth(str:String, scale:Float):Float = calcWidth(str, scale>=5f/3f)*scale
+	override fun processTxt(
+		x:Float, y:Float, str:String, colors:(Char, Int)->COLOR, scale:Float, alpha:Float, rainbow:Int,
+		draw:(i:Int, li:Int, dx:Float, dy:Float, scale:Float, sx:Int, sy:Int, sw:Int, sh:Int, a:Float)->Unit
+	):List<Float> = listOf(
 		if(scale>=5f/3f) {
 			//processBigFont
 			var dx = x
 			var i = 0
 			while(i<str.length) {
-				val col = (if(color==COLOR.RAINBOW) COLOR.getRainbowColor(rainbow, i) else color).ordinal
+				val col = colors(str[i], i).let {(if(it==COLOR.RAINBOW) COLOR.getRainbowColor(rainbow, i) else it).ordinal}
 				var cd = str[i].code
-				var nX = -1
-				var nY = -1
-				if(i<str.length-1) nX = str[i+1].code
-				if(i<str.length-2) nY = str[i+2].code
+				val nX = str.getOrNull(i+1)?.code?:-1
+				val nY = str.getOrNull(i+2)?.code?:-1
 				when(cd) {
 					in 0x31..0x39 -> cd -= 0x31
 					0x53, 0x73 -> // S
 						if(nX in 0x31..0x39) {
-							if(nX==0x31&&nY>=0x30&&nY<=0x33) {
+							if(nX==0x31&&nY in 0x30..0x33) {
 								cd = 25+nY-0x30
 								i++
 							} else cd = 16+nX-0x31
@@ -73,7 +95,7 @@ abstract class BaseFontGrade:BaseFont {
 						} else if(cd==0x6D) 10 else 14
 					0x4B, 0x6B -> cd = 11//K
 					0x56, 0x76 -> cd = 12//V
-					0x4F, 0x6F -> cd = 13//O
+					0x30, 0x4F, 0x6F -> cd = 13//O
 					0x47, 0x67 -> //G
 						cd = if(str.slice(i..minOf(str.length-1, i+4)).contains("grand", true)) {
 							i += 4
@@ -90,7 +112,7 @@ abstract class BaseFontGrade:BaseFont {
 					val sx = (if(cd<16) cd else (cd-16)%12)*sz
 					val sy = ((if(cd>=16) if(cd>=28) if(cd>=40) 3 else 2 else 1 else 0)+col*4)*48
 					val sc = scale/2
-					draw(1, dx-4*sc, y-4*sc, sc, sx, sy, sz, 48, alpha)
+					draw(1, 0, dx-4*sc, y-4*sc, sc, sx, sy, sz, 48, alpha)
 					(sz*sc).toInt()
 				} else (24*scale).toInt()
 				i++
@@ -101,7 +123,7 @@ abstract class BaseFontGrade:BaseFont {
 			var dx = x
 			var i = 0
 			while(i<str.length) {
-				val col = (if(color==COLOR.RAINBOW) COLOR.getRainbowColor(rainbow, i) else color).ordinal
+				val col = colors(str[i], i).let {(if(it==COLOR.RAINBOW) COLOR.getRainbowColor(rainbow, i) else it).ordinal}
 				var cd = str[i].code
 				when(cd) {
 					in 0x31..0x39 -> if(cd==0x31&&i<str.length-1) str.getOrNull(i+1)?.code?.let {next ->
@@ -121,7 +143,7 @@ abstract class BaseFontGrade:BaseFont {
 						cd = 18//M
 						if(str.slice(i..minOf(str.length-1, i+5)).contains("master", true)) i += 5
 					}
-					0x47, 67 -> {
+					0x47, 0x67 -> {
 						cd = 19
 						if(str.slice(i..minOf(str.length-1, i+4)).contains("grand", true)) i += 4
 					}//G
@@ -131,13 +153,13 @@ abstract class BaseFontGrade:BaseFont {
 					val sx = cd%10*32
 					val sy = (cd/10+col*2)*32
 					val sc = scale/2
-					draw(0, dx-2*sc, y-2*sc, sc, sx, sy, 32, 32, alpha)
+					draw(0, 0, dx-2*sc, y-2*sc, sc, sx, sy, 32, 32, alpha)
 					dx += (32*sc).toInt()
 				}
 				i++
 			}
 			dx-x
-		}
+		})
 
 	/*override fun printFont(x:Float, y:Float, str:String, color:COLOR, scale:Float, alpha:Float, rainbow:Int) =
 		processTxt(

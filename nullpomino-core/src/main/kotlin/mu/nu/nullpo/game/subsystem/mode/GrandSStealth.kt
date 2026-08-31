@@ -35,8 +35,7 @@ import mu.nu.nullpo.game.component.Controller
 import mu.nu.nullpo.game.event.*
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
 import mu.nu.nullpo.game.play.GameEngine
-import mu.nu.nullpo.game.subsystem.mode.menu.BooleanMenuItem
-import mu.nu.nullpo.game.subsystem.mode.menu.DelegateMenuItem
+import mu.nu.nullpo.game.subsystem.mode.menu.*
 import mu.nu.nullpo.gui.common.BaseFont
 import mu.nu.nullpo.gui.common.BaseFont.FONT.*
 import mu.nu.nullpo.util.CustomProperties
@@ -68,12 +67,9 @@ class GrandSStealth:AbstractGrand() {
 	/** Set to true by default, set to false when sectionQuads is below 2 */
 	private var gmQuads = false
 
-	/** false:Leaderboard, true:Section time record
-	 * (Push F in settings screen to flip it) */
-	private var isShowBestSectionTime = false
-
 	/** Selected start level */
-	private var startLevel = 0
+	private val itemLevel = LevelGrandMenuItem(COLOR.ORANGE, sectionMax)
+	private var startLevel:Int by DelegateMenuItem(itemLevel)
 
 	private val itemBig = BooleanMenuItem("big", "BIG", COLOR.ORANGE, false)
 	/** BigMode */
@@ -94,6 +90,7 @@ class GrandSStealth:AbstractGrand() {
 	override val name = "Grand Phantom"
 	override val gameIntensity = 3
 
+	override val menu = MenuList("phantommania", itemLevel, itemAlert, itemST, itemBig)
 	override val ranking = listOf(
 		Leaderboard(rankingMax, kotlinx.serialization.serializer<List<Rankable.GrandRow>>())
 	)
@@ -114,7 +111,6 @@ class GrandSStealth:AbstractGrand() {
 		bgmLv = 0
 		sectionQuads.fill(0)
 		medals.reset()
-		isShowBestSectionTime = false
 		startLevel = 0
 		secAlert = true
 		big = false
@@ -142,22 +138,6 @@ class GrandSStealth:AbstractGrand() {
 		}
 
 		owner.bgMan.bg = startLevel
-	}
-
-	/** Load the settings */
-	override fun loadSetting(engine:GameEngine, prop:CustomProperties, ruleName:String, playerID:Int) {
-		startLevel = prop.getProperty("phantommania.startLevel", 0)
-		secAlert = prop.getProperty("phantommania.lvstopse", true)
-		showST = prop.getProperty("phantommania.showsectiontime", true)
-		big = prop.getProperty("phantommania.big", false)
-	}
-
-	/** Save the settings */
-	override fun saveSetting(engine:GameEngine, prop:CustomProperties, ruleName:String, playerID:Int) {
-		prop.setProperty("phantommania.startLevel", startLevel)
-		prop.setProperty("phantommania.lvstopse", secAlert)
-		prop.setProperty("phantommania.showsectiontime", showST)
-		prop.setProperty("phantommania.big", big)
 	}
 
 	/** Set the starting bgmLv */
@@ -218,74 +198,22 @@ class GrandSStealth:AbstractGrand() {
 	private fun stMedalCheck(engine:GameEngine, section:Int) =
 		stMedalCheck(engine, section, sectionTime[section], bestSectionTime[section])
 
-	/** Main routine for game setup screen */
-	override fun onSetting(engine:GameEngine):Boolean {
-		if(!owner.replayMode) {
-			// Configuration changes
-			val change = updateCursor(engine, 3)
 
-			if(change!=0) {
-				engine.playSE("change")
-
-				when(menuCursor) {
-					0 -> {
-						startLevel += change
-						if(startLevel<0) startLevel = 9
-						if(startLevel>9) startLevel = 0
-						owner.bgMan.bg = startLevel
-					}
-					1 -> secAlert = !secAlert
-					2 -> showST = !showST
-					3 -> big = !big
-				}
-			}
-
-			// Check for F button, when pressed this will flip Leaderboard/Best Section Time Records
-			if(engine.ctrl.isPush(Controller.BUTTON_F)) {
-				engine.playSE("change")
-				isShowBestSectionTime = !isShowBestSectionTime
-			}
-
-			// Check for A button, when pressed this will begin the game
-			if(menuTime<5) menuTime++ else if(engine.ctrl.isPush(Controller.BUTTON_A)) {
-				engine.playSE("decide")
-				isShowBestSectionTime = false
-				sectionsDone = 0
-				return false
-			}
-
-			// Check for B button, when pressed this will shut down the game engine.
-			if(engine.ctrl.isPush(Controller.BUTTON_B)) engine.quitFlag = true
-		} else {
-			menuTime++
-			menuCursor = -1
-
-			return menuTime<60
-		}
-
-		return true
-	}
-
-	/** Renders game setup screen */
-	override fun renderSetting(engine:GameEngine) {
-		drawMenu(
-			engine, receiver, 0, COLOR.PURPLE, 0, "Level" to startLevel*100, "LVSTOPSE" to secAlert, "SHOW STIME" to showST,
-			"BIG" to big
-		)
+	override fun onSettingChanged(engine:GameEngine) {
+		engine.statistics.level = startLevel*100
+		nextSecLv = (engine.statistics.level+100).coerceIn(100, 999)
+		owner.bgMan.bg = engine.statistics.level/100
+		engine.big = big
+		engine.heboHiddenEnable = true
+		setSpeed(engine)
+		super.onSettingChanged(engine)
 	}
 
 	/** This function will be called before the game actually begins (after
 	 * Ready&Go screen disappears) */
 	override fun startGame(engine:GameEngine) {
-		engine.statistics.level = startLevel*100
-		nextSecLv = (startLevel*100+100).coerceIn(100, 999)
+		onSettingChanged(engine)
 
-		owner.bgMan.bg = engine.statistics.level/100
-
-		engine.big = big
-		engine.heboHiddenEnable = true
-
-		setSpeed(engine)
 		setStartBgmlv(engine)
 		owner.musMan.bgm = tableBGM[bgmLv]
 	}
@@ -300,7 +228,7 @@ class GrandSStealth:AbstractGrand() {
 
 		if(engine.isShowRanking) {
 			if(!owner.replayMode&&startLevel==0&&!big&&engine.ai==null)
-				if(!isShowBestSectionTime) {
+				if(isShowBestSectionTime<=0) {
 					// Leaderboard
 					val topY = if(receiver.bigSideNext) 5 else 3
 					receiver.drawScore(engine, 0, topY-1, "GRADE LV TIME", BASE, COLOR.PURPLE)
@@ -567,8 +495,7 @@ class GrandSStealth:AbstractGrand() {
 
 	/** Renders game result screen */
 	override fun renderResult(engine:GameEngine) {
-		receiver.drawMenu(engine, 0, 0, "${BaseFont.UP_S}${BaseFont.DOWN_S} PAGE${(engine.statc[1]+1)}/3", BASE, COLOR.RED)
-
+		super.renderResult(engine)
 		if(engine.statc[1]==0) {
 			val col = when(rollClear) {
 				1 -> COLOR.GREEN
@@ -606,26 +533,8 @@ class GrandSStealth:AbstractGrand() {
 	}
 
 	/** Additional routine for game result screen */
-	override fun onResult(engine:GameEngine):Boolean {
-		// Page change
-		if(engine.ctrl.isMenuRepeatKey(Controller.BUTTON_UP)) {
-			engine.statc[1]--
-			if(engine.statc[1]<0) engine.statc[1] = 2
-			engine.playSE("change")
-		}
-		if(engine.ctrl.isMenuRepeatKey(Controller.BUTTON_DOWN)) {
-			engine.statc[1]++
-			if(engine.statc[1]>2) engine.statc[1] = 0
-			engine.playSE("change")
-		}
-		// Flip Leaderboard/Best Section Time Records
-		if(engine.ctrl.isPush(Controller.BUTTON_F)) {
-			engine.playSE("change")
-			isShowBestSectionTime = !isShowBestSectionTime
-		}
-
-		return false
-	}
+	override val resultPages = 3
+	override val sectionPages = 2
 
 	/** This function will be called when the replay data is going to be
 	 * saved */

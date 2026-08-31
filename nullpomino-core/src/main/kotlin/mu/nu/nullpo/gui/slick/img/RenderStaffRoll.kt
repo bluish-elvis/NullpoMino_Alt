@@ -31,7 +31,8 @@
 
 package mu.nu.nullpo.gui.slick.img
 
+
 object RenderStaffRoll:mu.nu.nullpo.gui.common.BaseStaffRoll() {
-	override val font = FontNano.getImg(0)
+	override val font = FontNano
 	override val img = mu.nu.nullpo.gui.slick.ResourceHolder.imgLogoSmall
 }

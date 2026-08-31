@@ -32,6 +32,8 @@
 package mu.nu.nullpo.gui.common
 
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
+import mu.nu.nullpo.gui.common.BaseFontNumber.Companion.listChar
+import mu.nu.nullpo.gui.common.BaseFontNumber.Companion.strCount
 
 sealed class BaseFontNum(val lw:Int,val lh:Int):BaseFont {
 	abstract class Tall:BaseFontNum(TW,TH)
@@ -41,23 +43,22 @@ sealed class BaseFontNum(val lw:Int,val lh:Int):BaseFont {
 		const val TH:Int = 32
 		const val WW:Int = 16
 		const val WH:Int = 16
+
 	}
 
+	override fun getWidths(str:String, scale:Float):List<Float> = str.lines().map{strCount(it)*lw*scale}
+
 	abstract override val rainbowCount:Int
-	override fun processTxt(x:Float, y:Float, str:String, color:COLOR, scale:Float, alpha:Float, rainbow:Int,
-		draw:(i:Int, dx:Float, dy:Float, scale:Float, sx:Int, sy:Int, sw:Int, sh:Int, a:Float)->Unit):Float {
+	override fun processTxt(
+		x:Float, y:Float, str:String, colors:(Char, Int)->COLOR, scale:Float, alpha:Float, rainbow:Int,
+		draw:(i:Int, li:Int, dx:Float, dy:Float, scale:Float, sx:Int, sy:Int, sw:Int, sh:Int, a:Float)->Unit
+	):List<Float> = str.lines().mapIndexed { li, ls ->
 		var dx = x
-		var dy = y
-		str.forEachIndexed {i, c ->
+		val dy = y+lh*li*scale
+		ls.forEachIndexed {i, c ->
 			// 文字出力
 			val stringChar = c.code.let {
 				when(it) {
-					0x0A -> {
-						// 改行 (\n)
-						dy += lh*scale
-						dx = x
-						0
-					}
 					0x20 -> 0x30//space // 0x3a = :
 					0x3f -> 0x3b//?
 					0x2b -> 0x3c//+
@@ -71,14 +72,14 @@ sealed class BaseFontNum(val lw:Int,val lh:Int):BaseFont {
 
 			if(stringChar in 0x30..0x40) { // 文字出力
 				val sx = if(c.code==0x20) 0 else (stringChar-48)%16
-				val sy = (if(color==COLOR.RAINBOW) COLOR.getRainbowColor(rainbow, i) else color).ordinal
+				val sy = colors(c,i).let{(if(it==COLOR.RAINBOW) COLOR.getRainbowColor(rainbow, i) else it).ordinal}
 				val a = if(c.code==0x20) alpha*.4f else alpha
-				draw(0, dx, dy, scale, sx*lw, sy*lh, lw, lh, a)
+				draw(0, li, dx, dy, scale, sx*lw, sy*lh, lw, lh, a)
 
 				dx += lw*scale
 			}
 		}
-		return dx-x
+		dx-x
 	}
 
 	/*override fun printFont(x:Float, y:Float, str:String, color:COLOR, scale:Float, alpha:Float, rainbow:Int) =

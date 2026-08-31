@@ -225,6 +225,7 @@ class GrandPuzzle:AbstractMode() {
 		MenuList("gemmania", itemStage, itemMaps, itemGhost, item20g, itemAlert, itemST, itemRandom, itemTraining, itemNextc)
 	/** Version */
 	private var version = 0
+	override val resultPages = 3
 
 	/** Current round's ranking position */
 	private var rankingRank = 0
@@ -1272,26 +1273,9 @@ class GrandPuzzle:AbstractMode() {
 			}
 	}
 
-	/* 結果画面の処理 */
-	override fun onResult(engine:GameEngine):Boolean {
-		if(engine.ctrl.isMenuRepeatKey(Controller.BUTTON_UP)) {
-			engine.statc[1]--
-			if(engine.statc[1]<0) engine.statc[1] = 2
-			engine.playSE("change")
-		}
-		if(engine.ctrl.isMenuRepeatKey(Controller.BUTTON_DOWN)) {
-			engine.statc[1]++
-			if(engine.statc[1]>2) engine.statc[1] = 0
-			engine.playSE("change")
-		}
-
-		return false
-	}
-
 	/* Render results screen */
 	override fun renderResult(engine:GameEngine) {
-		receiver.drawMenu(engine, 0, 0, "${BaseFont.UP_S}${BaseFont.DOWN_S} PAGE${engine.statc[1]+1}/3", BASE, COLOR.RED)
-
+		super.renderResult(engine)
 		if(engine.statc[1]==0) {
 			val gcolor = when(allClear) {
 				1 -> COLOR.GREEN

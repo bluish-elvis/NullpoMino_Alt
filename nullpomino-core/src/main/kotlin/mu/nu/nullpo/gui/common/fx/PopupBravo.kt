@@ -34,9 +34,7 @@ package mu.nu.nullpo.gui.common.fx
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
 import mu.nu.nullpo.gui.common.AbstractRenderer
 import mu.nu.nullpo.gui.common.BaseFont.FONT.BASE
-import kotlin.math.PI
-import kotlin.math.cos
-import kotlin.math.sin
+import kotlin.math.*
 
 class PopupBravo(x:Float, y:Float, val w:Int, val h:Int):SpriteSheet(x, y) {
 

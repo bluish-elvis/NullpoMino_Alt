@@ -31,6 +31,7 @@
 
 package mu.nu.nullpo.game.subsystem.mode
 
+import mu.nu.nullpo.game.component.Controller
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
 import mu.nu.nullpo.game.event.Rankable
 import mu.nu.nullpo.game.event.ScoreEvent
@@ -104,11 +105,18 @@ abstract class AbstractGrand:AbstractMode() {
 
 	protected var decTemp = 0
 
+	override val resultPages = 3
+	/** 0:Leaderboard, >=1:Section time record
+	 *  (Push F in settings screen to flip it) */
+	protected open var isShowBestSectionTime = 0
+	protected open val sectionPages = 2
+
 	override fun playerInit(engine:GameEngine) {
 		nextSecLv = 0
 		lvupFlag = false
 
 		comboValue = 0
+		isShowBestSectionTime = 0
 
 		sectionTime.fill(0)
 		sectionIsNewRecord.fill(false)
@@ -118,6 +126,24 @@ abstract class AbstractGrand:AbstractMode() {
 		spinCount = 0
 		sectionSpins.fill(0 to 0)
 		super.playerInit(engine)
+	}
+
+	override fun onSetting(engine:GameEngine):Boolean {
+		if(!engine.owner.replayMode) {
+			if(sectionPages>1 && engine.ctrl.isPush(Controller.BUTTON_F)) {
+				engine.playSE("change")
+				isShowBestSectionTime = (isShowBestSectionTime+1).mod(sectionPages)
+			}
+		}
+		return super.onSetting(engine)
+	}
+	override fun onReadyDone(engine:GameEngine, readyDone:Boolean) {
+		super.onReadyDone(engine, readyDone)
+		if(!readyDone) {
+			isShowBestSectionTime = 0
+			sectionsDone = 0
+			decTemp = 0
+		}
 	}
 	/** ST medal check
 	 * @param engine GameEngine
@@ -200,13 +226,6 @@ abstract class AbstractGrand:AbstractMode() {
 		engine.ghost = /*(engine.speed.rank<1f)&&*/(engine.statistics.level<100||alwaysGhost)
 	}
 
-	override fun onReadyDone(engine:GameEngine, readyDone:Boolean) {
-		super.onReadyDone(engine, readyDone)
-		if(!readyDone) {
-			sectionsDone = 0
-			decTemp = 0
-		}
-	}
 
 	override fun onMove(engine:GameEngine):Boolean {
 		// 新規ピース出現時
@@ -299,5 +318,14 @@ abstract class AbstractGrand:AbstractMode() {
 		receiver.drawMenuMedal(engine, 1, y+2, "RE", medals.RE)
 		receiver.drawMenuMedal(engine, 4, y+2, "RO", medals.RO)
 		receiver.drawMenuMedal(engine, 7, y+2, "CO", medals.CO)
+	}
+
+	override fun onResult(engine:GameEngine):Boolean {
+		// Flip Leaderboard/Best Section Time Records
+		if(sectionPages>1&&engine.ctrl.isPush(Controller.BUTTON_F)) {
+			engine.playSE("change")
+			isShowBestSectionTime = (isShowBestSectionTime+1).mod(sectionPages)
+		}
+		return super.onResult(engine)
 	}
 }

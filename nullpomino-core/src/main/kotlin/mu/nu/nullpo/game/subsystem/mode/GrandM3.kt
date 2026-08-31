@@ -124,9 +124,6 @@ class GrandM3:AbstractGrand() {
 	/** Roll 中に稼いだ point (合計) */
 	private var rollPointsTotal = 0f
 
-	/** Section Time記録表示中ならtrue */
-	private var isShowBestSectionTime = false
-
 	private val itemGoal = StringsMenuItem(
 		"goalType", "GOAL", COLOR.BLUE, 0,
 		tableGoalLevel.map {"$it LEVEL"}
@@ -422,19 +419,6 @@ class GrandM3:AbstractGrand() {
 	 */
 	private fun getGradeName(g:Int):String = (if(goalType==0) tableGradeName else tableLongGradeName).getOrElse(g) {"N/A"}
 
-	/* Called at settings screen */
-	override fun onSetting(engine:GameEngine):Boolean {
-		// Menu
-		if(!engine.owner.replayMode) {
-			// section time display切替
-			if(engine.ctrl.isPush(Controller.BUTTON_F)) {
-				engine.playSE("change")
-				isShowBestSectionTime = !isShowBestSectionTime
-			}
-		}
-		return super.onSetting(engine)
-	}
-
 	override fun onSettingChanged(engine:GameEngine) {
 		owner.bgMan.bg = 20+startLevel
 		engine.statistics.level = startLevel*100
@@ -477,7 +461,7 @@ class GrandM3:AbstractGrand() {
 		receiver.drawScoreBadges(engine, 6, -1, 100, decTemp)
 		if(engine.isShowRanking) {
 			if(startLevel==0&&!big&&!always20g&&!owner.replayMode&&engine.ai==null)
-				if(!isShowBestSectionTime) {
+				if(isShowBestSectionTime<=0) {
 					// Rankings
 
 					receiver.drawScore(engine, 0, 2, "GRADE TIME LEVEL", BASE, COLOR.BLUE)
@@ -664,7 +648,6 @@ class GrandM3:AbstractGrand() {
 	/* Ready→Goの処理 */
 	override fun onReady(engine:GameEngine):Boolean {
 		if(!owner.replayMode&&engine.stime==0) {
-			isShowBestSectionTime = false
 			sectionsDone = 0
 			if(!always20g&&!big&&enableExam) {
 				log.debug("** Exam debug log START **")
@@ -1136,8 +1119,7 @@ class GrandM3:AbstractGrand() {
 						)
 			}
 		} else {
-			receiver.drawMenu(engine, 0, 0, "${BaseFont.UP_S}${BaseFont.DOWN_S} PAGE${engine.statc[1]+1}/3", BASE, COLOR.RED)
-
+			super.renderResult(engine)
 			when(engine.statc[1]) {
 				0 -> {
 					receiver.drawMenu(engine, 0, 3, "GRADE", BASE, COLOR.BLUE)
@@ -1227,37 +1209,21 @@ class GrandM3:AbstractGrand() {
 			passFrame--
 			return true
 		}
-		engine.statistics.time = lastGradeTime
-		engine.allowTextRenderByReceiver = true
+		if(engine.statc[2]==0) {
+			engine.statistics.time = lastGradeTime
+			engine.allowTextRenderByReceiver = true
 
-		owner.musMan.fadeSW = false
-		owner.musMan.bgm = when {
-			engine.ending==1||engine.ending==2&&engine.statistics.rollClear==0 -> BGM.Result(2)
-			engine.statistics.rollClear>0||promotionFlag&&grade>=promotionalExam -> BGM.Result(3)
-			demotionFlag&&grade<=demotionExamGrade -> BGM.Result(1)
-			else -> BGM.Result(0)
+			owner.musMan.fadeSW = false
+			owner.musMan.bgm = when {
+				engine.ending==1||engine.ending==2&&engine.statistics.rollClear==0 -> BGM.Result(2)
+				engine.statistics.rollClear>0||promotionFlag&&grade>=promotionalExam -> BGM.Result(3)
+				demotionFlag&&grade<=demotionExamGrade -> BGM.Result(1)
+				else -> BGM.Result(0)
+			}
 		}
-
-		// ページ切り替え
-		if(engine.ctrl.isMenuRepeatKey(Controller.BUTTON_UP)) {
-			engine.statc[1]--
-			if(engine.statc[1]<0) engine.statc[1] = 2
-			engine.playSE("change")
-		}
-		if(engine.ctrl.isMenuRepeatKey(Controller.BUTTON_DOWN)) {
-			engine.statc[1]++
-			if(engine.statc[1]>2) engine.statc[1] = 0
-			engine.playSE("change")
-		}
-		// section time display切替
-		if(engine.ctrl.isPush(Controller.BUTTON_F)) {
-			engine.playSE("change")
-			isShowBestSectionTime = !isShowBestSectionTime
-		}
-
 		engine.statc[2]++
 
-		return false
+		return super.onResult(engine)
 	}
 
 	/* リプレイ保存 */

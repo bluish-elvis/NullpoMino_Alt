@@ -394,24 +394,11 @@ class RetroN:AbstractMode() {
 	}
 
 	/* 結果画面の処理 */
-	override fun onResult(engine:GameEngine):Boolean {
-		if(engine.ctrl.isMenuRepeatKey(Controller.BUTTON_UP)) {
-			engine.statc[1]--
-			if(engine.statc[1]<0) engine.statc[1] = 1
-			engine.playSE("change")
-		}
-		if(engine.ctrl.isMenuRepeatKey(Controller.BUTTON_DOWN)) {
-			engine.statc[1]++
-			if(engine.statc[1]>1) engine.statc[1] = 0
-			engine.playSE("change")
-		}
-
-		return false
-	}
+	override val resultPages = 2
 
 	/** Renders game result screen */
 	override fun renderResult(engine:GameEngine) {
-		receiver.drawMenu(engine, 0, 0, "${BaseFont.UP_S}${BaseFont.DOWN_S} PAGE${engine.statc[1]+1}/2", BASE, COLOR.ORANGE)
+		super.renderResult(engine)
 		receiver.drawMenu(engine, 0, 1, "PLAY DATA", BASE, COLOR.ORANGE)
 
 		if(engine.statc[1]==0) {
